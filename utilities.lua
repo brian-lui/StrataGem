@@ -122,22 +122,6 @@ function rng.random(n)
 	return (math.floor(new_seed / 2048) % n) + 1
 end
 
-function columnSort(column_num, grd)
-	local column = {}
-	for i = 1, grd.rows do
-		column[i] = grd[i][column_num].gem
-	end
-	for i = grd.rows, 1, -1 do
-		 if not column[i] then
-			 table.remove(column, i)
-		 end
-	end
-	for _ = 1, grd.rows - #column do
-		table.insert(column, 1, false)
-	end
-	return column
-end
-
 local deepcpy_mapping = {}
 local real_deepcpy
 function real_deepcpy(tab)

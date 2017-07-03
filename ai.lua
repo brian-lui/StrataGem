@@ -28,7 +28,7 @@ end
 local function simulateGravity(use_grid)
 	use_grid = use_grid or stage.grid
 	for j = 1, use_grid.columns do
-		local sorted_column = columnSort(j, use_grid)
+		local sorted_column = use_grid:columnSort(j)
 		for i = 1, use_grid.rows do
 			use_grid[i][j].gem = sorted_column[i]
 		end

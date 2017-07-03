@@ -31,8 +31,6 @@ COLOR = {
 
 SPEED = {
 	MIN_SNAP = window.width / 512, -- snap-to if it's less than this number
-	DROP = window.height / 120, -- pixels per frame for loose gems to drop
-	DROP_MULTIPLE = window.height / 240, -- multiplier for scoring_combo
 	ROTATE = math.pi / 25,
 	PLATFORM_ROTATION = 0.02,
 	PLATFORM_FADE = 8,

@@ -1,8 +1,15 @@
 local class = require "middleclass"
 
+local Gem = require "gem"
+
 local grid = class("Grid")
 
+local window = _G.window -- TODO: Remove global
+grid.static.DROP_SPEED = window.height / 120 -- pixels per frame for loose gems to drop
+grid.static.DROP_MULTIPLE_SPEED = window.height / 240 -- multiplier for scoring_combo
+
 function grid:initialize(stage, game)
+	self.game = game
 	self.columns = 8
 	self.rows = 14	-- 7-14 basin, 1-6 for rush/double/normal, 0 and 15 sentinels
 	self.x = {}
@@ -30,10 +37,7 @@ end
 function grid:gems()
 	--if not grd then print(debug.traceback()) assert(grd, "wrong grid") end
 	local gems, rows, columns, index = {}, {}, {}, 0
-	if not self.rows then
-		love.errhand("waaaat")
-		love.quit()
-	end
+
 	for i = 0, self.rows + 1 do
 		for j = 0, self.columns + 1 do
 			if self[i][j].gem then
@@ -81,14 +85,12 @@ function grid:getDropLocations(piece, optional_shift)
 	return ret
 end
 
-local function getPermittedColors(use_grid, column, banned_color1, banned_color2)
-	use_grid = use_grid or grid
+function grid:getPermittedColors(column, banned_color1, banned_color2)
 	local avail_color = {"RED", "BLUE", "GREEN", "YELLOW"}
-	local ban = {false, false, false, false}
 	local ban1 = false
 	local ret = {}
-	if use_grid[use_grid.rows - 1][column].gem then
-		ban1 = use_grid[use_grid.rows - 1][column].gem.color
+	if self[self.rows - 1][column].gem then
+		ban1 = self[self.rows - 1][column].gem.color
 	end
 	for i = 1, 4 do
 		if ban1 ~= avail_color[i] and banned_color1 ~= avail_color[i]
@@ -100,10 +102,9 @@ local function getPermittedColors(use_grid, column, banned_color1, banned_color2
 	return ret
 end
 
-local function generate1by1(player, column, banned_color1, banned_color2, use_grid, row)
-	use_grid = use_grid or grid
-	row = row or use_grid.rows -- grid.rows is the row underneath the bottom row
-	local avail_colors = getPermittedColors(use_grid, column, banned_color1, banned_color2)
+function grid:generate1by1(column, banned_color1, banned_color2)
+	local row = self.rows -- grid.rows is the row underneath the bottom row
+	local avail_colors = self:getPermittedColors(column, banned_color1, banned_color2)
 	local all_gems = {
 		{color = "RED", gem = Gem.RedGem, freq = 1},
 		{color = "BLUE", gem = Gem.BlueGem, freq = 1},
@@ -119,41 +120,49 @@ local function generate1by1(player, column, banned_color1, banned_color2, use_gr
 		end
 	end
 	local make_color = Gem:random(legal_gems)
-	local distance = use_grid.y[row+1] - use_grid.y[row]
-	local speed = SPEED.DROP + SPEED.DROP_MULTIPLE * game.scoring_combo
+	local distance = self.y[row+1] - self.y[row]
+	local speed = self.DROP_SPEED + self.DROP_MULTIPLE_SPEED * self.game.scoring_combo
 	local duration = distance / speed
 	print("garbage distaces, duration", distance, duration)
 	local make_gem = function(r, c)
-		use_grid[r][c].gem = make_color:new(use_grid.x[c], use_grid.y[r+1], true)
-		use_grid[r][c].gem:moveTo{x = use_grid.x[c], y = use_grid.y[r], duration = duration}
+		self[r][c].gem = make_color:new(self.x[c], self.y[r+1], true)
+		self[r][c].gem:moveTo{x = self.x[c], y = self.y[r], duration = duration}
 	end
 	make_gem(row, column)
 end
 
-local function moveAllUp(player, rows_to_add, use_grid)
+-- TODO: Remove this? Gems shouldn't store their own grid coordinates
+-- move a gem from a spot on the grid to another spot
+local function moveGem(gem, row, column)
+	gem.row, gem.column = row, column
+end
+
+local p1, p2 = _G.p1, _G.p2	-- TODO: Remove globals
+function grid:moveAllUp(player, rows_to_add)
 -- Moves all gems in the player's half up by rows_to_add.
-	use_grid = use_grid or grid
-	local last_row = use_grid.rows - rows_to_add
+	local last_row = self.rows - rows_to_add
 	local start_col, end_col = 1, 4
-	if player == p2 then start_col, end_col = 5, 8 end
+	if player == p2 then
+		start_col, end_col = 5, 8
+	end
 	for r = 1, last_row do
 		for c = start_col, end_col do
-			use_grid[r][c].gem = use_grid[r+rows_to_add][c].gem
-			if use_grid[r][c].gem then
-				grid:moveGemAnim(use_grid[r][c].gem, r, c)
-				grid:moveGem(use_grid[r][c].gem, r, c)
+			self[r][c].gem = self[r+rows_to_add][c].gem
+			if self[r][c].gem then
+				grid:moveGemAnim(self[r][c].gem, r, c)
+				moveGem(self[r][c].gem, r, c)
 			end
 		end
 	end
-	for i = last_row + 1, use_grid.rows do
+	for i = last_row + 1, self.rows do
 		for j = start_col, end_col do
-			use_grid[i][j].gem = false
+			self[i][j].gem = false
 		end
 	end
 end
 
 function grid:addBottomRow(player)
-	moveAllUp(player, 1)
+	self:moveAllUp(player, 1)
 	local start, finish, step = p1.start_col, p1.end_col, 1
 	if player == p2 then start, finish, step = p2.end_col, p2.start_col, -1 end
 	for col = start, finish, step do
@@ -166,7 +175,7 @@ function grid:addBottomRow(player)
 				ban2 = self[self.rows][next_col].gem.color
 			end
 		end
-		generate1by1(player, col, ban1, ban2, self)
+		self:generate1by1(col, ban1, ban2)
 	end
 
 end
@@ -186,15 +195,10 @@ end
 function grid:moveGemAnim(gem, row, column)
 	local target_x, target_y = self.x[column], self.y[row]
 	local dist = ((target_x - gem.x) ^ 2 + (target_y - gem.y) ^ 2) ^ 0.5
-	local angle = math.atan2(target_y - gem.y, target_x - gem.x)
-	local speed = SPEED.DROP + SPEED.DROP_MULTIPLE * game.scoring_combo
+	--local angle = math.atan2(target_y - gem.y, target_x - gem.x)
+	local speed = self.DROP_SPEED + self.DROP_MULTIPLE_SPEED * self.game.scoring_combo
 	local duration = math.abs(dist / speed)
 	gem:moveTo{x = target_x, y = target_y, duration = duration, exit = {gem.landedInGrid, gem}}
-end
-
--- move a gem from a spot on the grid to another spot
-function grid:moveGem(gem, row, column)
-	gem.row, gem.column = row, column
 end
 
 -- instructions to animate the falling gems
@@ -206,10 +210,26 @@ function grid:dropColumnsAnim()
 	end
 end
 
+function grid:columnSort(column_num)
+	local column = {}
+	for i = 1, self.rows do
+		column[i] = self[i][column_num].gem
+	end
+	for i = self.rows, 1, -1 do
+		 if not column[i] then
+			 table.remove(column, i)
+		 end
+	end
+	for _ = 1, self.rows - #column do
+		table.insert(column, 1, false)
+	end
+	return column
+end
+
 -- creates the grid after gems have fallen
 function grid:dropColumns()
 	for c = 1, self.columns do
-		local sorted_column = columnSort(c, self)
+		local sorted_column = self:columnSort(c)
 		for r = 1, self.rows do
 			self[r][c].gem = sorted_column[r]
 			local cell = self[r][c].gem
@@ -220,7 +240,7 @@ function grid:dropColumns()
 end
 
 function grid:updateGravity(dt)
-	if game.grid_wait == 0 then
+	if self.game.grid_wait == 0 then
 		-- move gems to new positions
 		for gem in self:gems() do
 			gem:update(dt)
@@ -281,6 +301,7 @@ function grid:removeGem(g)
 	self[g.row][g.column].gem = false
 end
 
+--[[
 grid.debug = {}
 function grid.debug.drawGridlines(self)
 	for i = 1, #self.x do
@@ -333,5 +354,6 @@ function grid.debug.getGridOwnership(self)
 	end
 	return ret
 end
+--]]
 
 return grid
