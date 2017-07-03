@@ -1,3 +1,4 @@
+local love = _G.love
 local image = require 'image'
 local json = require 'dkjson'
 
@@ -21,7 +22,9 @@ function print(...)
 end
 
 function sprint(...)
-	if frame % 10 == 0 then print(...) end
+	if frame % 10 == 0 then
+		print(...)
+	end
 end
 
 debugTool = {}
@@ -94,24 +97,6 @@ function players()
   local p = {p1, p2}
   return function() i = i + 1 return p[i] end
 end
-    
-function gridGems(grd)
-	--if not grd then print(debug.traceback()) assert(grd, "wrong grid") end
-	local gems, rows, columns, index = {}, {}, {}, 0
-	for i = 0, grd.rows + 1 do
-		for j = 0, grd.columns + 1 do
-			if grd[i][j].gem then
-				gems[#gems+1] = grd[i][j].gem
-				rows[#rows+1] = i
-				columns[#columns+1] = j
-			end
-		end
-	end
-	return function()
-		index = index + 1
-		return gems[index], rows[index], columns[index]
-	end
-end
 
 function reverseTable(table)
 	local reversedTable = {}
@@ -137,24 +122,17 @@ function rng.random(n)
 	return (math.floor(new_seed / 2048) % n) + 1
 end
 
-function checkVersion()
-	local major, minor, revision, codename = love.getVersion()
-	local version = major * 10000 + minor * 100 + revision * 1
-	local min_version = 001000
-	assert(version >= min_version, "Please update your Love2D to the latest version.")
-end
-
 function columnSort(column_num, grd)
 	local column = {}
 	for i = 1, grd.rows do
 		column[i] = grd[i][column_num].gem
 	end
-	for i = grd.rows, 1, -1 do 
-		 if not column[i] then 
+	for i = grd.rows, 1, -1 do
+		 if not column[i] then
 			 table.remove(column, i)
-		 end 
-	end 
-	for i = 1, grd.rows - #column do
+		 end
+	end
+	for _ = 1, grd.rows - #column do
 		table.insert(column, 1, false)
 	end
 	return column

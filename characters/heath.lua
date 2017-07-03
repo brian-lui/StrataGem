@@ -10,7 +10,7 @@ local heath = {
 	small_image = love.graphics.newImage('images/Characters/heathsmall.png'),
 	action_image = love.graphics.newImage('images/Characters/heathaction.png'),
 	shadow_image = love.graphics.newImage('images/Characters/heathshadow.png'),
-	
+
 	character_id = "Heath",
 	meter_gain = {RED = 8, BLUE = 4, GREEN = 4, YELLOW = 4},
 	super_images = {
@@ -77,7 +77,7 @@ end
 --function particle_effects.SmallFire(gem)
 function particle_effects.SmallFire(row, col, owner)
 	--[[
-		TODO: update the y-tracking: 
+		TODO: update the y-tracking:
 			get the first_empty_row, and adjust as normal
 			however, instead of moving directly to y_dest, only move at speed of SPEED.DROP
 			this will make sure it moves along with the other gems, instead of instantly
@@ -141,8 +141,8 @@ function particle_effects.SmallFire(row, col, owner)
 	--[[
 	local draw_func = function(self, dt)
 		local trans = (self.transparency or 255)/255
-		--local glow2 = trans * ((math.sin(self.t * 20) + 1) * 127.5) 
-		--local glow1 = trans * ((math.cos(self.t * 20) + 1) * 127.5) 
+		--local glow2 = trans * ((math.sin(self.t * 20) + 1) * 127.5)
+		--local glow1 = trans * ((math.cos(self.t * 20) + 1) * 127.5)
 		local trans1 = trans * 255
 		--local trans2 = trans * ((math.sin(self.t * 20) + 1) * 127.5)
 		local trans2 = math.sin(self.t * 20) > 0 and 255 * trans or 0
@@ -258,7 +258,7 @@ end
 
 -- generate ouchies for enemy gems landing on fire
 function heath:afterGravity()
-	if game.scoring_combo > 0 then return {} end -- only check on the first round of gravity 
+	if game.scoring_combo > 0 then return {} end -- only check on the first round of gravity
 	local own_tbl = {p1, p2}
 	local gem_table = {} -- all enemy gems played this turn
 	local ret = {}
@@ -271,8 +271,8 @@ function heath:afterGravity()
 		for _, gem in pairs(self.played_pieces[i]) do
 			gem_table[#gem_table+1] = gem
 		end
-	end	
-	
+	end
+
 	local bottom_gems = {} -- only consider the bottom gem
 	for i = 1, #gem_table do
 		local gem = gem_table[i]
@@ -295,7 +295,7 @@ function heath:afterGravity()
 	end
 	if ouches > 0 then
 		self.enemy.hand:addDamage(ouches)
-		for i = 1, #ouch_gems do 
+		for i = 1, #ouch_gems do
 			particles.dust:generateBigFountain(ouch_gems[i], 120, self) -- placeholder animation
 			ret[#ret+1] = {1, particles.dust.generateBigFountain, particles.dust, ouch_gems[i], 120, self}
 		end
@@ -306,13 +306,13 @@ end
 -- Make fire for horizontal matches
 -- Super-clear if super was active
 function heath:beforeMatch(gem_table)
-	local own_tbl = {p1, p2}	
+	local own_tbl = {p1, p2}
 
 	-- store horizontal fire locations, used in aftermatch phase
 	for _, gem in pairs(gem_table) do
 		local owned = own_tbl[gem.owner] == self
 		local top_gem = gem.row-1 == stage.grid:getFirstEmptyRow(gem.column)
-		if owned and gem.horizontal and top_gem then 
+		if owned and gem.horizontal and top_gem then
 			self.pending_fires[#self.pending_fires+1] = {gem.row, gem.column, self}
 		end
 	end
@@ -331,7 +331,7 @@ function heath:beforeMatch(gem_table)
 			end
 		end
 		-- add clear-gems to gem_table for processing
-		for gem in gridGems(stage.grid) do
+		for gem in stage.grid:gems() do
 			-- flag gems to clear
 			local toclear = false
 			for clear_row, _ in pairs(rows_to_clear) do
@@ -369,7 +369,7 @@ function heath:duringMatch(gem_table)
 				current_columns[gem.column] = true
 			end
 		end
-		
+
 		local explode_round = 1 -- do the matched columns first, then expand outwards
 		--while still_need_checks() do
 		while next(check_columns) do
@@ -467,4 +467,3 @@ function heath:super()
 end
 
 return heath
-

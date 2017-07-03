@@ -25,12 +25,13 @@ end
 
 function engine.getMatches(use_grid, matching_number)
 	use_grid = use_grid or grid
+
 	matching_number = matching_number or 3
 	local match_colors = {"RED", "BLUE", "GREEN", "YELLOW"}
 	local ret = {}
 	for i = 1, #match_colors do
 		local c = match_colors[i]
-		for gem, row, column in gridGems(use_grid) do
+		for _, row, column in use_grid:gems() do
 			local h_match, v_match = 1, 1
 			local current_color = getColor(row, column, use_grid)
 			if current_color == c then
@@ -122,7 +123,7 @@ function engine.checkMatchedThisTurn(gem_table)
 		if owner == 1 or owner == 3 then p1_matched = true end
 		if owner == 2 or owner == 3 then p2_matched = true end
 	end
-	return p1_matched, p2_matched   
+	return p1_matched, p2_matched
 end
 
 function engine.generateMatchExplodingGems(gem_table)
@@ -156,14 +157,14 @@ end
 -- remove all gem flags claimed by a specific player
 function engine.removeAllGemOwners(player, use_grid)
 	use_grid = use_grid or grid
-	for gem in gridGems(use_grid) do
+	for gem in use_grid:gems() do
 		gem:removeOwner(player)
 	end
 end
 
 function engine.setAllGemFlags(flag_num, use_grid)
 	use_grid = use_grid or grid
-	for gem in gridGems(use_grid) do
+	for gem in use_grid:gems() do
 		gem.owner = flag_num
 	end
 end
@@ -212,7 +213,7 @@ function engine.flagMatchedGems(use_grid)
 				if grid[row][column].gem.owner == 1 then p1flag = true end
 				if grid[row][column].gem.owner == 2 then p2flag = true end
 				if grid[row][column].gem.owner == 3 then p1flag = true p2flag = true end
-			end    
+			end
 			for j = 1, matches[i].match do
 				local row = matches[i].row + (j-1)
 				local column = matches[i].column
@@ -260,7 +261,7 @@ function engine.calculateScore(gem_table)
 		elseif player.place_type == "rush" or player.place_type == "double" then
 			super[i] = super[i] * 0.25
 		end
-	end		
+	end
 
 	return dmg[1], dmg[2], super[1], super[2]
 end

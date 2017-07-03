@@ -12,11 +12,6 @@ local ai = {
 
 local countdown = 5 -- frames to wait before calculating move
 
-local printMaximumScore, makeGridCopy, simulateGravity, getScore, rotateRandom,
-	rotateAll, rotateToHorizontal, rotateToVertical, enumeratePieces, selectRandomPiece,
-	selectRandomColumn, getCoords, placePiece, simulatePlacePiece, simulateScore,
-	generateScoreMatrix
-
 -- debug function, prints maximum score and piece drop to achieve it
 local function printMaximumScore(maximum_score, possible_pieces)
 	print("Maximum possible score:", maximum_score)
@@ -27,21 +22,6 @@ local function printMaximumScore(maximum_score, possible_pieces)
 			", column " .. possible_pieces[i][3])
 		end
 	end
-end
-
--- creates a copy of the grid, for simulated grid instance scoring
-local function makeGridCopy(use_grid) 
-	local ret_grid = {}
-	use_grid = use_grid or stage.grid
-	for i = 0, stage.grid.rows + 1 do
-		ret_grid[i] = {}
-		for j = 0, stage.grid.columns + 1 do
-			ret_grid[i][j] = {gem = use_grid[i][j].gem}
-		end
-	end
-	ret_grid.columns = use_grid.columns
-	ret_grid.rows = use_grid.rows
-	return ret_grid
 end
 
 -- sends all gems to the bottom immediately
@@ -162,7 +142,7 @@ end
 
 -- return score for simulated grid + piece placement
 local function simulateScore(player, piece, coords)
-	local orig_grid = makeGridCopy(stage.grid)
+	local orig_grid = deepcpy(stage.grid)
 	simulatePlacePiece(orig_grid, piece, coords)
 	simulateGravity(orig_grid)
 
@@ -224,7 +204,7 @@ function ai.placeholder(player)
 			for pc = 1, #matrices[rot] do
 				for col = player.start_col, player.end_col - h_adj do
 					if matrices[rot][pc][col] == maximum_score then
-						possible_pieces[#possible_pieces+1] = {rotation = rot, piece_idx = pc, column = col} 
+						possible_pieces[#possible_pieces+1] = {rotation = rot, piece_idx = pc, column = col}
 					end
 				end
 			end

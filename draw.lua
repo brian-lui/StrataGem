@@ -161,7 +161,7 @@ function draw.drawGems()
 	love.graphics.push("all")
 		love.graphics.stencil(blockBottomGemRow, "replace", 1)
 		love.graphics.setStencilTest("equal", 0)
-		for gem, r, c in gridGems(stage.grid) do
+		for gem, r, c in stage.grid:gems() do
 			if game.phase == "Action" and r <= 6 then
 				gem:draw(nil, nil, {255, 255, 255, 192})
 			else
@@ -203,7 +203,7 @@ function draw.drawText()
 
 	-- words
 	for _, v in pairs(AllParticles.Words) do v:draw() end
-		
+
 	-- debug row/column display
 	love.graphics.push("all")
 		love.graphics.setColor(0, 255, 0)
@@ -238,7 +238,7 @@ function draw.drawAnimations()
 			love.graphics.print(i, 0, i)
 			love.graphics.print(i, i, 0)
 		end
-	love.graphics.pop()	
+	love.graphics.pop()
 	--]]
 end
 

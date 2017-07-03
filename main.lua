@@ -20,12 +20,10 @@ local UI = require 'uielements'
 local sandbox = require 'animationsandbox'
 
 game.version = "64.0"
-checkVersion()
-
 
 -- build screen
 love.window.setMode(window.width, window.height)
-love.window.setTitle("StrateGem")
+love.window.setTitle("StrataGem")
 
 -- build canvas layers
 local canvas = {}
@@ -66,7 +64,7 @@ function time.dip(logic_function)
 			time.bucket = time.bucket - time.step
 		end
 	end
-end	
+end
 
 function love.load()
 		rng.newSeed(os.time())
@@ -205,14 +203,14 @@ function love.keypressed(key)
 	if key == "escape" then love.event.quit() end
 	if key == "t" then
 		stage.grid:addBottomRow(p1)
-		for gem in gridGems(stage.grid) do
+		for gem in stage.grid:gems() do
 			gem.x = gem.target_x
 			gem.y = gem.target_y
 		end
 	end
 	if key == "y" then
 		stage.grid:addBottomRow(p2)
-		for gem in gridGems(stage.grid) do
+		for gem in stage.grid:gems() do
 			gem.x = gem.target_x
 			gem.y = gem.target_y
 		end
@@ -221,7 +219,7 @@ function love.keypressed(key)
 	if key == "a" then game.time_to_next = 1 end
 	if key == "s" then local hand = require 'hand' p1.hand:addDamage(1) end
 	if key == "d" then local hand = require 'hand' p2.hand:addDamage(1) end
-	if key == "f" then 
+	if key == "f" then
 		p1.cur_mp = math.min(p1.cur_mp + 20, p1.MAX_MP)
 		p2.cur_mp = math.min(p2.cur_mp + 20, p2.MAX_MP)
 	end
@@ -233,11 +231,11 @@ function love.keypressed(key)
 	--if key == "m" then sandbox.m() end
 	if key == "k" then canvas[6]:renderTo(function() love.graphics.clear() end) end
 	if key == "z" then startGame("1P", "heath", "walter", Background.Starfall, nil, 1) end
-	if key == "x" then 
+	if key == "x" then
 		p1.cur_mp = 64
 		--p2.cur_mp = 20
 	end
-	if key == "c" then 
+	if key == "c" then
 		local pic = require 'pic'
 		local image = require 'image'
 		local temp = pic:new{x = stage.width * 0.5, y = stage.height * 0.5, image = image.red_gem}
