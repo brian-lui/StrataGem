@@ -2,8 +2,8 @@
 	This powerful module provides the CPU moves in the single player game.
 --]]
 require 'utilities'
-local stage = require 'stage'
-local engine = require 'engine'
+local stage = game.stage
+local engine = game.engine
 
 local ai = {
 	finished = false,

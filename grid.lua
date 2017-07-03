@@ -5,8 +5,8 @@ local Gem = require "gem"
 local grid = class("Grid")
 
 local window = _G.window -- TODO: Remove global
-grid.static.DROP_SPEED = window.height / 120 -- pixels per frame for loose gems to drop
-grid.static.DROP_MULTIPLE_SPEED = window.height / 240 -- multiplier for scoring_combo
+grid.DROP_SPEED = window.height / 120 -- pixels per frame for loose gems to drop
+grid.DROP_MULTIPLE_SPEED = window.height / 240 -- multiplier for scoring_combo
 
 function grid:initialize(stage, game)
 	self.game = game
@@ -149,7 +149,7 @@ function grid:moveAllUp(player, rows_to_add)
 		for c = start_col, end_col do
 			self[r][c].gem = self[r+rows_to_add][c].gem
 			if self[r][c].gem then
-				grid:moveGemAnim(self[r][c].gem, r, c)
+				self:moveGemAnim(self[r][c].gem, r, c)
 				moveGem(self[r][c].gem, r, c)
 			end
 		end

@@ -92,8 +92,8 @@ function game:reset()
 	self.grid_wait = 0
 	self.screenshake_frames = 0
 	self.screenshake_vel = 0
-	self.rng.setSeed(os.time())	-- TODO: This probably causes desyncs
-	self.rng.orig_rng_seed = self.rng.getSeed() -- for debugging
+	self.rng:setSeed(os.time())	-- TODO: This probably causes desyncs
+	self.orig_rng_seed = self.rng:getSeed() -- for debugging
 	frame = 0
 end
 game:reset()

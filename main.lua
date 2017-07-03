@@ -1,12 +1,19 @@
 require 'inits'
 require 'lovedebug'
 require 'utilities' -- helper functions
-stage = require 'stage'  -- playing field area and grid
+
+local engine = require "engine"
+game.engine = engine
 Gem = require 'gem'
+local Stage = require 'stage'  -- playing field area and grid
+game.stage = Stage()
+local stage = game.stage
 local settings = require 'settings'
+local Particles = require 'particles'
+game.particles = Particles()
+local particles = game.particles
 local draw = require 'draw'
 local music = require 'music'
-local particles = require 'particles'
 local title = require 'title'
 local background = require 'background'
 local charselect = require 'charselect'
@@ -18,6 +25,8 @@ local client = require 'client'
 local animations = require 'animations'
 local UI = require 'uielements'
 local sandbox = require 'animationsandbox'
+
+engine.initialize()
 
 game.version = "64.0"
 

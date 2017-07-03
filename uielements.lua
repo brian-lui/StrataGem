@@ -1,6 +1,7 @@
 local image = require 'image'
 local class = require 'middleclass' -- class support
 local pic = require 'pic'
+local stage = game.stage
 
 -- Red X shown on gems in invalid placement spots
 local redX = pic:new{x = 0, y = 0, image = image.UI.redX}

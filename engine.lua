@@ -1,13 +1,29 @@
 require 'utilities' -- helper functions
-local stage = require 'stage'  -- total playing field area
-local particles = require 'particles'
+--local class = require "middleclass"
 local pairs = pairs
-local grid = stage.grid
+local stage	-- Set in initializer
+local particles	-- Set in initializer
+local grid	-- Set in initializer
 
 -------------------------------------------------------------------------------
 --------------------------------- MATCH ENGINE --------------------------------
 -------------------------------------------------------------------------------
 local engine = {}
+
+function engine.initialize()
+	particles = game.particles
+	stage = game.stage
+	grid = stage.grid
+	if not particles.super_ then
+		love.errhand("No particles.super_")
+	end
+	if not stage then
+		love.errhand("No stage")
+	end
+	if not grid then
+		love.errhand("No grid")
+	end
+end
 
 local function getColor(row, column, use_grid)
 	use_grid = use_grid or grid
@@ -146,7 +162,7 @@ function engine.generateMatchParticles(gem_table)
 			elseif player.place_type == "rush" or player.place_type == "double" then
 				num_super_particles = num_super_particles * 0.25
 			end
-			particles.super:generate(gem, num_super_particles)
+			particles.super_:generate(gem, num_super_particles)
 			particles.damage:generate(gem)
 			particles.pop:generate(gem)
 			particles.dust:generateBigFountain(gem, 24, player)

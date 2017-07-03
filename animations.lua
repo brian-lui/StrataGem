@@ -5,7 +5,7 @@
 
 local image = require 'image'
 local class = require 'middleclass'
-local stage = require 'stage'
+local stage = game.stage
 local pic = require 'pic'
 local tween = require 'tween'
 local pairs = pairs

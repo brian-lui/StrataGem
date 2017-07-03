@@ -1,5 +1,5 @@
 local image = require 'image'
-local particles = require 'particles'
+local particles = game.particles
 local tween = require 'tween'
 
 local lamer = {

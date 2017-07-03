@@ -4,8 +4,8 @@
 --]]
 
 require 'inits'
-local stage = require 'stage'
-local particles = require 'particles'
+local stage = game.stage
+local particles = game.particles
 local tween = require 'tween'
 local UI = require 'uielements'
 local anims = {}

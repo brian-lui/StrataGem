@@ -3,10 +3,10 @@
 require 'inits'
 local hand = require 'hand'
 local ai = require 'ai'
-local engine = require 'engine'
+local engine = game.engine
 local inputs = require 'inputs'
-local stage = require 'stage'
-local particles = require 'particles'
+local stage = game.stage
+local particles = game.particles
 local anims = require 'anims'
 local inspect = require 'inspect'
 

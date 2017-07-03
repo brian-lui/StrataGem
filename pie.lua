@@ -2,7 +2,7 @@ require 'inits' -- for AllGemPlatforms. SPEED
 local image = require 'image'
 local class = require 'middleclass' -- class support
 local pic = require 'pic'
-local particles = require 'particles'
+local particles = game.particles
 
 local Segment = class('Segment', pic)
 function Segment:initialize(pie, segment_number)

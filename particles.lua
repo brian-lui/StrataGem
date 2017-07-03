@@ -1,11 +1,21 @@
 local image = require 'image'
 local class = require 'middleclass'
-local stage = require 'stage'
+local stage
 local pic = require 'pic'
 local tween = require 'tween'
 local pairs = pairs
 
-local particles = {}
+local particles = class("Particles")
+
+function particles:initialize()
+	stage = game.stage
+	if not stage then
+		love.errhand()
+	end
+	if not particles.super_ then
+		love.errhand("No super??")
+	end
+end
 
 function particles.update(dt)
 	for _, particle_tbl in pairs(AllParticles) do
@@ -73,7 +83,7 @@ function DamageParticle:generate(gem)
 	-- TODO: bug: for multi-match, it calculates full_segments incorrectly because it's based on the damage after the first match
 	local already_particles = particles.getNumber("Damage", player)
 	local final_loc = math.min(2 + (full_segments/4) + (already_particles/12), 6)
-	
+
 	-- calculate bezier curve
 	local x1, y1 = gem.x, gem.y -- start
 	local x4, y4 = player.hand[2].x, player.hand[2].y
@@ -188,7 +198,7 @@ function SuperParticle:generate(gem, num_particles)
 		local y2 = y1 + math.sin(angle) * dist * 0.2
 		local x3, y3 = 0.5 * (x1 + x4), 0.5 * (y1 + y4)
 		local curve = love.math.newBezierCurve(x1, y1, x2, y2, x3, y3, x4, y4)
-		
+
 		-- create particle
 		local p = self:new(gem)
 
@@ -424,7 +434,7 @@ end
 function Dust:generateYellowFountain(x, y)
 	local duration = 120
 	local rotation = 0.5
-	
+
 	for i = 1, 48 do
 		local todraw = image.lookup.particle_freq.random("YELLOW")
 		local p_type = (i % 2 == 1) and "Dust" or "OverDust"
@@ -542,7 +552,7 @@ function WordEffects:generateRushParticle(gem1, gem2, horizontal)
 		x_center = math.random() * stage.width * 0.001
 		y_adj = -image.GEM_HEIGHT
 	end
-	local rotation = (x_drift / image.GEM_WIDTH) / (math.pi * 2) 
+	local rotation = (x_drift / image.GEM_WIDTH) / (math.pi * 2)
 
 	local p = self:new(x + x_drift, y + y_adj, todraw)
 	p.rotation = (x_drift / image.GEM_WIDTH) / (math.pi * 2)
@@ -618,7 +628,7 @@ local wordtypes = {
 		local x = player == p1 and stage.width * 0.4 or stage.width * 0.6
 		local y = stage.height * 0.3
 		local todraw = image.words.doublecast
-		local in_curve = function(t) 
+		local in_curve = function(t)
 			return x,
 			y,
 			3*(1-t)+1,
@@ -677,7 +687,7 @@ local wordtypes = {
 					stage.height*0.3 + (math.random()-0.5)*h)
 			end
 		end
-		
+
 		local in_curve = function(t)
 			generate_particles(t)
 			return x + t * 0.7 * stage.width, y, 1, math.min(t * 510, 255), 0
@@ -830,7 +840,7 @@ end
 -------------------------------------------------------------------------------
 
 particles.damage = DamageParticle
-particles.super = SuperParticle
+particles.super_ = SuperParticle
 particles.pop = PopParticle
 particles.explodingGem = ExplodingGem
 particles.damageTrail = DamageTrailParticle

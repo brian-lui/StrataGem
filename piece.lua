@@ -3,9 +3,9 @@ require 'inits' -- ID
 local image = require 'image'
 require 'utilities' -- helper functions
 local class = require 'middleclass' -- class support
-local stage = require 'stage'
-local particles = require 'particles'
-local engine = require 'engine'
+local stage = game.stage
+local particles = game.particles
+local engine = game.engine
 local tween = require 'tween'
 local pic = require 'pic'
 
@@ -13,7 +13,7 @@ local function updatePieceGems(self)
 	if self.horizontal then
 		for i = 1, self.size do
 			self.gems[i].x =
-				self.x 
+				self.x
 				- (self.gems[i].width / 2) * (self.size - 1)
 				+ (i - 1) * self.gems[i].width
 			self.gems[i].y = self.y
@@ -170,7 +170,7 @@ function Piece:isDropLegal(test_shifted_piece)
 		if midline then	shift = on_left and -1 or 1	end
 	end
 	local cols = self:getColumns(shift)
-	local gems_in_my_tub = 0 
+	local gems_in_my_tub = 0
 	for i = 1, self.size do
 		if not cols[i] then
 			return false
@@ -178,10 +178,10 @@ function Piece:isDropLegal(test_shifted_piece)
 			gems_in_my_tub = gems_in_my_tub + 1
 		end
 	end
-	return gems_in_my_tub == self.size or gems_in_my_tub == 0 
+	return gems_in_my_tub == self.size or gems_in_my_tub == 0
 end
 
--- Checks if the drop location is a legal drop location, and also that the player 
+-- Checks if the drop location is a legal drop location, and also that the player
 -- has the meter to play it. If gem is over midline, this function takes shift
 -- in order to force the drop to a legal position.
 function Piece:isDropValid(shift)
@@ -197,7 +197,7 @@ function Piece:isDropValid(shift)
 			gems_in_my_tub = gems_in_my_tub + 1
 		end
 	end
-	if not player.dropped_piece then 
+	if not player.dropped_piece then
 		if gems_in_my_tub == self.size then
 			place_type = "normal"
 		elseif gems_in_my_tub == 0 and self:isValidRush() and not player.supering then
@@ -264,7 +264,7 @@ end
 function Piece:select()
 	game.piece_origin.x = self.x
 	game.piece_origin.y = self.y
-	
+
 	game.active_piece = self
 	-- generate some particles!
 	for i = 1, self.size do
@@ -288,7 +288,7 @@ function Piece:deselect()
 	local char_ability_ok = player:pieceDroppedOK(self, shift)
 	if valid and not game.frozen and go_ahead and char_ability_ok then
 		player.place_type = place_type
-		self:dropIntoBasin(cols)				
+		self:dropIntoBasin(cols)
 	else -- snap back to original place
 		self:moveTo{x = game.piece_origin.x, y = game.piece_origin.y}
 	end

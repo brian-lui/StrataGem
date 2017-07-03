@@ -1,9 +1,9 @@
 require 'utilities'
 local anims = require 'anims'
 local image = require 'image'
-local stage = require 'stage'
+local stage = game.stage
 local pic = require 'pic'
-local particles = require 'particles'
+local particles = game.particles
 local animations = require 'animations'
 local UI = require 'uielements'
 

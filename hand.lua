@@ -3,6 +3,7 @@ local class = require 'middleclass' -- class support
 local Pie = require 'pie'
 local Piece = require 'piece'
 local GemPlatform = require 'gemplatform'
+local stage = game.stage
 
 local function destroyTopPieceAnim(hand)
 	print("Check top piece: ", hand[0].piece, hand.owner.ID)
@@ -58,7 +59,7 @@ function Hand:makeInitialPieces(gem_table)
 	for i = 6, 10 do
 		self[i].platform = GemPlatform:new(self.owner, i)
 		self:movePlatform(i, i-5)
-	end		
+	end
 end
 
 -- this describes the shape of the curve for the hands.
@@ -142,7 +143,7 @@ function Hand:getNewTurnPieces(gem_table)
 		local end_pos = math.max(i - player.pieces_to_get, 0)
 		if self[i].piece then self:movePiece(i, end_pos) end
 		if self[i].platform then self:movePlatform(i, end_pos) end
-	end	
+	end
 end
 
 -- Checks whether a player's pieces have stopped moving.
@@ -231,7 +232,7 @@ function Hand:endOfTurnUpdate()
 	local damage_arr = {}
 	for i = 2, 5 do	damage_arr[i-1] = player.pie[i].damage end
 	table.sort(damage_arr, function(a, b) return a > b end)
-	for i = 2, 5 do 
+	for i = 2, 5 do
 		player.pie[i].damage = damage_arr[i-1]
 		player.pie[i].damage_changed = true
 	end

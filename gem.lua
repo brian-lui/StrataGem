@@ -2,13 +2,17 @@ require 'inits'
 local image = require 'image'
 require 'utilities' -- helper functions
 local class = require 'middleclass' -- class support
-local particles = require 'particles'
 local GemPlatform = require 'gemplatform'
 local tween = require 'tween'
 local pic = require 'pic'
+local particles	-- Set in initializer
+local stage	-- Set in initializer
 
 local Gem = class('Gem', pic)
 function Gem:initialize(x, y, image, color, garbage)
+	particles = game.particles
+	stage = game.stage
+
 	pic.initialize(self, {x = x, y = y, image = image})
 	ID.gem = ID.gem + 1
 	self.horizontal = false -- for gem matches

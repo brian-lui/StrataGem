@@ -1,6 +1,6 @@
 require 'inits'
 local image = require 'image'
-local stage = require 'stage'
+local stage = game.stage
 local Piece = require 'piece'
 local Pie = require 'pie'
 local pic = require 'pic'

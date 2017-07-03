@@ -1,9 +1,10 @@
 local image = require 'image'
-local particles = require 'particles'
+local particles = game.particles
 local pic = require 'pic'
-local engine = require 'engine'
+local engine = game.engine
 local hand = require 'hand'
 local default = require 'characters/default'
+local stage = game.stage
 
 local heath = {
 	full_size_image = love.graphics.newImage('images/Characters/heath.png'),

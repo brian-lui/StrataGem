@@ -9,9 +9,9 @@
 local class = require 'middleclass'
 require 'inits'
 local image = require 'image'
-require 'particles'
+local particles = game.particles
 local pic = require 'pic'
-local stage = require 'stage'
+local stage = game.stage
 
 local BackgroundParticles = {}
 Background = {}
@@ -46,7 +46,7 @@ function Background.Cloud.Cloud:initialize(x, y, image, speed, classification)
   BackgroundParticles[ID.background] = self
 end
 
-local function Cloud_generateBigCloud(starting_x)	
+local function Cloud_generateBigCloud(starting_x)
 	local x = starting_x or image.background.cloud.bigcloud1:getWidth() * -1
 	local y = math.random(0, stage.height / 4)
 	local speed = Background.Cloud.big_cloud_speed()
@@ -199,7 +199,7 @@ end
 
 function Background.Starfall.drawImages()
 	Background.Starfall.background_image:draw()
-	
+
   for ID, instance in spairs(BackgroundParticles) do
     instance:draw()
   end
@@ -234,7 +234,7 @@ end
 
 Background.Seasons = {
 	Background_ID = "Seasons",
-	background_image = pic:new{x = stage.x_mid, y = stage.y_mid, 
+	background_image = pic:new{x = stage.x_mid, y = stage.y_mid,
 		image = image.seasons_background},
 	background_image2 = pic:new{x = stage.x_mid, y = stage.y_mid,
 		image = image.seasons_background2},
@@ -401,7 +401,7 @@ function Background.Seasons._generateLeaf()
 end
 
 function Background.Seasons._updateSummer(fading_in)
-	if not fading_in then	
+	if not fading_in then
 		Background.Seasons.leaf_time_to_next = Background.Seasons.leaf_time_to_next - 1
 	end
 
@@ -450,7 +450,7 @@ function Background.Seasons._updateFall()
 			instance.RGBTable = {255, 255, 255, transparency}
 			instance.fade_in = instance.fade_in - 1
 		end
-	
+
 		Background.Seasons.newcolor_time_to_next = Background.Seasons.newcolor_time_to_next - 1
 
 		if Background.Seasons.newcolor_time_to_next == 0 then
@@ -505,7 +505,7 @@ function Background.Seasons._updateWinter(transitioning)
 	else
 		Background.Seasons.winter_background_fadeout_time = math.max(0, Background.Seasons.winter_background_fadeout_time - 1)
 	end
-		
+
 	if Background.Seasons.snow_time_to_next == 0 then
 		Background.Seasons._generateSnow()
 		if not transitioning then
@@ -563,14 +563,14 @@ function Background.Seasons.drawImages()
 			transparency = math.floor(255 * (Background.Seasons.winter_background_fadeout_time / Background.Seasons.winter_background_fadeout_time_init))
 		end
 		local RGBTable = {255, 255, 255, transparency}
-		
+
 		Background.Seasons.background_image2:draw(false, nil, nil, nil, nil, RGBTable)
 	end
 
   for ID, instance in spairs(BackgroundParticles) do
   	if (instance.classification == "GreenLeaf" or instance.classification == "OldLeaf" or instance.classification == "FallingLeaf")
-  	and not (instance.new_image and Background.Seasons.winter_background_fadeout_time == 0) then  		
-  		instance:draw(false, nil, nil, nil, nil, instance.RGBTable) 
+  	and not (instance.new_image and Background.Seasons.winter_background_fadeout_time == 0) then
+  		instance:draw(false, nil, nil, nil, nil, instance.RGBTable)
   		if instance.new_image then
   			instance:draw(false, nil, nil, nil, nil, instance.new_RGBTable, instance.new_image)
   		end
@@ -586,7 +586,7 @@ function Background.Seasons.update()
 	Background.Seasons._moveThings()
 
 	if Background.Seasons.daycount < Background.Seasons.end_of_spring then
-		Background.Seasons._updateSpring()		
+		Background.Seasons._updateSpring()
 
 	elseif Background.Seasons.daycount < Background.Seasons.start_of_summer then
 		Background.Seasons._updateSpring(true)
@@ -602,7 +602,7 @@ function Background.Seasons.update()
 		Background.Seasons.winter_background = true
 		Background.Seasons._updateWinter()
 
-	elseif Background.Seasons.daycount < Background.Seasons.start_of_spring then	
+	elseif Background.Seasons.daycount < Background.Seasons.start_of_spring then
 		Background.Seasons._updateWinter(true)
 
 	else
