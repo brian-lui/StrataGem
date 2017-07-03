@@ -9,12 +9,6 @@ local particles = class("Particles")
 
 function particles:initialize()
 	stage = game.stage
-	if not stage then
-		love.errhand()
-	end
-	if not particles.super_ then
-		love.errhand("No super??")
-	end
 end
 
 function particles.update(dt)
@@ -840,7 +834,7 @@ end
 -------------------------------------------------------------------------------
 
 particles.damage = DamageParticle
-particles.super_ = SuperParticle
+particles.super_ = SuperParticle	-- If this is just called "super" it interferes with middleclass
 particles.pop = PopParticle
 particles.explodingGem = ExplodingGem
 particles.damageTrail = DamageTrailParticle

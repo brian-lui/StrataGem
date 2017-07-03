@@ -14,15 +14,6 @@ function engine.initialize()
 	particles = game.particles
 	stage = game.stage
 	grid = stage.grid
-	if not particles.super_ then
-		love.errhand("No particles.super_")
-	end
-	if not stage then
-		love.errhand("No stage")
-	end
-	if not grid then
-		love.errhand("No grid")
-	end
 end
 
 local function getColor(row, column, use_grid)
