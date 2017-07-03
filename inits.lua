@@ -1,3 +1,5 @@
+local love = _G.love
+
 window = {
 	width = 1024,
 	height = 768
@@ -56,6 +58,7 @@ mouse = {
 game = {
 	current_screen = "title",
 	input_method = mouse,
+	rng = love.math.newRandomGenerator(),
 	BGM = nil,
 	INIT_TIME_TO_NEXT = 430, -- frames in each action phase
 	INIT_PIECE_WAITING_TIME = 30, -- delay before new pieces
@@ -89,6 +92,8 @@ function game:reset()
 	self.grid_wait = 0
 	self.screenshake_frames = 0
 	self.screenshake_vel = 0
+	self.rng.setSeed(os.time())	-- TODO: This probably causes desyncs
+	self.rng.orig_rng_seed = self.rng.getSeed() -- for debugging
 	frame = 0
 end
 game:reset()

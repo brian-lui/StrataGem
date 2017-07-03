@@ -37,8 +37,8 @@ function Gem:random(gem_table)
 			rand_table[num] = gem_table[i].gem
 		end
 	end
-	
-	local rand = rng.random(num)
+
+	local rand = game.rng:random(num)
 	return rand_table[rand]
 end
 
@@ -81,7 +81,7 @@ function Gem:landedInStagingArea(place_type, owner)
 	for player in players() do
 		if player.place_type == "double" then
 			particles.words:generate("Doublecast", player)
-		elseif player.place_type == "rush" then 
+		elseif player.place_type == "rush" then
 			particles.words:generate("Rush", player)
 		end
 	end

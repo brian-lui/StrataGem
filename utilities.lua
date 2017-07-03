@@ -111,17 +111,6 @@ function pointIsInRect(x, y, rx, ry, rw, rh)
 	return x >= rx and y >= ry and x < rx + rw and y < ry + rh
 end
 
-rng = {orig_rng_seed = 0}
-function rng.newSeed(seed)
-	rng.seed = seed
-end
-
-function rng.random(n)
-	local new_seed = (((20077 * rng.seed) % 2147483648) + ((1103495168 * rng.seed) % 2147483648) + 12345) % 2147483648
-	rng.seed = new_seed
-	return (math.floor(new_seed / 2048) % n) + 1
-end
-
 local deepcpy_mapping = {}
 local real_deepcpy
 function real_deepcpy(tab)

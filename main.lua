@@ -67,10 +67,8 @@ function time.dip(logic_function)
 end
 
 function love.load()
-		rng.newSeed(os.time())
 		music.setBGM("bgm.mp3", 1)
 		frame = 0 -- framecount
-		rng.orig_rng_seed = rng.seed -- for debugging
 end
 
 
