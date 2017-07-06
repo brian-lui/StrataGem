@@ -13,13 +13,13 @@ local ai = {
 local countdown = 5 -- frames to wait before calculating move
 
 -- debug function, prints maximum score and piece drop to achieve it
-local function printMaximumScore(maximum_score, possible_pieces)
+local function printMaximumScore(maximum_score, possible_moves)
 	print("Maximum possible score:", maximum_score)
 
 	if maximum_score ~= 0 then
-		for i = 1, #possible_pieces do
-			print("At orientation " .. possible_pieces[i][1] .. ", piece " .. possible_pieces[i][2] ..
-			", column " .. possible_pieces[i][3])
+		for i = 1, #possible_moves do
+			print("At orientation " .. possible_moves[i][1] .. ", piece " .. possible_moves[i][2] ..
+			", column " .. possible_moves[i][3])
 		end
 	end
 end
@@ -151,7 +151,7 @@ local function simulateScore(player, piece, coords)
 end
 
 -- returns a scoring for all possible pieces and their placements
-local function generateScoreMatrix(player)
+local function generateScoreMatrices(player)
 	local piece_list = enumeratePieces(player)
 
 	rotateToHorizontal(player) -- settle down the pieces
@@ -172,63 +172,51 @@ local function generateScoreMatrix(player)
 	end
 	-- return values correspond to the piece rotation index values
 	local v1, h1, v2, h2 = matrix[1], matrix[2], matrix[3], matrix[4]
-	return v1, h1, v2, h2
+	return {v1, h1, v2, h2}
 end
 
 -- this currently always plays the highest possible scoring match, but doesn't discriminate further
 function ai.placeholder(player)
 	if countdown == 0 then
-		-- random play
-		local play_piece = selectRandomPiece(player)
-		local play_column = selectRandomColumn(play_piece, player)
-		local play_coords = getCoords(play_column)
-
-		local piece_list = enumeratePieces(player)
-
-		local v1, h1, v2, h2 = generateScoreMatrix(player)
-		local matrices = {v1, h1, v2, h2}
+		-- Get a set of moves that yield the highest score
+		local matrices = generateScoreMatrices(player)
 		local maximum_score = 0
-
-		for rot = 1, 4 do
-			local h_adj = (rot+1) % 2 -- 1 if horizontal at 2 and 4
-			for pc = 1, #matrices[rot] do -- total number of valid pieces
-				for col = player.start_col, player.end_col - h_adj do -- total valid columns
-					if matrices[rot][pc][col] > maximum_score then maximum_score = matrices[rot][pc][col] end
-				end
-			end
-		end
-
-		local possible_pieces = {}
+		local possible_moves = {}
 		for rot = 1, 4 do
 			local h_adj = (rot+1) % 2
 			for pc = 1, #matrices[rot] do
 				for col = player.start_col, player.end_col - h_adj do
-					if matrices[rot][pc][col] == maximum_score then
-						possible_pieces[#possible_pieces+1] = {rotation = rot, piece_idx = pc, column = col}
+					if matrices[rot][pc][col] > maximum_score then	-- Make a fresh table
+						possible_moves = {{rotation = rot, piece_idx = pc, column = col}}
+					elseif matrices[rot][pc][col] == maximum_score then	-- Add to the current table
+						possible_moves[#possible_moves+1] = {rotation = rot, piece_idx = pc, column = col}
 					end
 				end
 			end
 		end
 
-		--printMaximumScore(maximum_score, possible_pieces)
 		if maximum_score > 0 then
-			local random = math.random(#possible_pieces)
-			local selected = possible_pieces[random]
-			--local selected = possible_pieces[1] -- for debug, always select first piece
-			local piece_number = selected.piece_idx
-			local piece = piece_list[piece_number]
-			for i = 1, selected.rotation do
+			local selected = possible_moves[math.random(#possible_moves)]
+			--local selected = possible_moves[1] -- for debug, always select first piece
+			local piece = enumeratePieces(player)[selected.piece_idx]
+			for _ = 1, selected.rotation do
 				piece:rotate()
 			end
-			placePiece(piece, getCoords(selected.column))
 
+			placePiece(piece, getCoords(selected.column))
 		elseif player.cur_mp >= player.RUSH_COST then
-			local piece = play_piece
-			if piece.horizontal then piece:rotate() end
+			local piece = selectRandomPiece(player)
+			if piece.horizontal then	-- Always do vertical rushes.
+				piece:rotate()
+			end
+
 			placePiece(piece, {player.enemy.start_col, player.enemy.start_col}, "rush")
 		else
-			placePiece(play_piece, play_coords)
-			--placePiece(piece_list[1], getCoords(1))
+			-- random play
+			local piece = selectRandomPiece(player)
+			local coords = getCoords(selectRandomColumn(piece, player))
+
+			placePiece(piece, coords)
 		end
 
 		countdown = 5
