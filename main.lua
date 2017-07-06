@@ -1,9 +1,10 @@
+local love = _G.love
 require 'inits'
 require 'lovedebug'
 require 'utilities' -- helper functions
 
-local engine = require "engine"
-game.engine = engine
+local game = _G.game -- Defined in inits.lua, TODO: eventually de-globalize
+game.engine = require "engine"
 Gem = require 'gem'
 local Stage = require 'stage'  -- playing field area and grid
 game.stage = Stage()
@@ -24,9 +25,9 @@ local lobby = require 'lobby'
 local client = require 'client'
 local animations = require 'animations'
 local UI = require 'uielements'
-local sandbox = require 'animationsandbox'
+-- local sandbox = require 'animationsandbox'
 
-engine.initialize()
+game.engine.initialize()
 
 game.version = "64.0"
 
@@ -207,42 +208,39 @@ function startGame(gametype, char1, char2, bkground, seed, side)
 end
 
 function love.keypressed(key)
-	if key == "escape" then love.event.quit() end
-	if key == "t" then
+	if key == "escape" then
+		love.event.quit()
+	elseif key == "t" then
 		stage.grid:addBottomRow(p1)
 		for gem in stage.grid:gems() do
 			gem.x = gem.target_x
 			gem.y = gem.target_y
 		end
-	end
-	if key == "y" then
+	elseif key == "y" then
 		stage.grid:addBottomRow(p2)
 		for gem in stage.grid:gems() do
 			gem.x = gem.target_x
 			gem.y = gem.target_y
 		end
-	end
-	if key == "q" then reallyprint(love.filesystem.getSaveDirectory()) end
-	if key == "a" then game.time_to_next = 1 end
-	if key == "s" then local hand = require 'hand' p1.hand:addDamage(1) end
-	if key == "d" then local hand = require 'hand' p2.hand:addDamage(1) end
-	if key == "f" then
+	elseif key == "q" then reallyprint(love.filesystem.getSaveDirectory())
+	elseif key == "a" then game.time_to_next = 1
+	elseif key == "s" then local hand = require 'hand' p1.hand:addDamage(1)
+	elseif key == "d" then local hand = require 'hand' p2.hand:addDamage(1)
+	elseif key == "f" then
 		p1.cur_mp = math.min(p1.cur_mp + 20, p1.MAX_MP)
 		p2.cur_mp = math.min(p2.cur_mp + 20, p2.MAX_MP)
-	end
 	--if key == "g" then sandbox.g() end
 	--if key == "b" then sandbox.b() end
 	--if key == "h" then sandbox.h() end
 	--if key == "n" then sandbox.n() end
 	--if key == "j" then sandbox.j() end
 	--if key == "m" then sandbox.m() end
-	if key == "k" then canvas[6]:renderTo(function() love.graphics.clear() end) end
-	if key == "z" then startGame("1P", "heath", "walter", Background.Starfall, nil, 1) end
-	if key == "x" then
+	elseif key == "k" then canvas[6]:renderTo(function() love.graphics.clear() end)
+	elseif key == "z" then startGame("1P", "heath", "walter", Background.Starfall, nil, 1)
+	elseif key == "x" then
 		p1.cur_mp = 64
 		--p2.cur_mp = 20
-	end
-	if key == "c" then
+	elseif key == "c" then
 		local pic = require 'pic'
 		local image = require 'image'
 		local temp = pic:new{x = stage.width * 0.5, y = stage.height * 0.5, image = image.red_gem}
@@ -258,11 +256,9 @@ function love.keypressed(key)
 		local during = {10, 5, newbluegem}
 		temp:moveTo{x = 300, y = 200, duration = 120, exit = asdf, during = during}
 		queue.add(10, temp.moveTo, temp, {x = 600, y = 450, duration = 60, easing = "outQuart"})
-	end
-	if key == "v" then
+	elseif key == "v" then
 		debugTool.printSummaryState(stage.grid, p1, p2)
-	end
-	if key == "b" then
+	elseif key == "b" then
 		n(8, 7, "G")
 		n(8, 6, "G")
 		n(7, 5, "G")
@@ -271,8 +267,7 @@ function love.keypressed(key)
 		n(7, 3)
 		n(8, 3, "Y")
 		n(8, 2, "Y")
-	end
-	if key == "n" then
+	elseif key == "n" then
 		n(8, 2, "G")
 		n(8, 4, "G")
 		n(8, 5, "G")

@@ -1,7 +1,7 @@
 -- handles the main game phases
 
 require 'inits'
-local hand = require 'hand'
+--local hand = require 'hand'
 local ai = require 'ai'
 local engine = game.engine
 local inputs = require 'inputs'
@@ -16,7 +16,9 @@ function phase.intro(dt)
 	for player in players() do
 		player.hand:update(dt)
 	end
-	if frame == 30 then particles.words:generate("Ready") end
+	if frame == 30 then
+		particles.words:generate("Ready")
+	end
 	if frame == 120 then
 		particles.words:generate("Go")
 		game.phase = "Action"
@@ -26,19 +28,23 @@ end
 function phase.action(dt)
 	for player in players() do
 		player.hand:update(dt)
-		if player.actionPhase then player:actionPhase(dt) end
+		if player.actionPhase then
+			player:actionPhase(dt)
+		end
 	end
 	anims.update(dt)
 
 	game.time_to_next = game.time_to_next - 1
 	if game.type == "1P" then
-		if not ai.finished then ai.placeholder(game.them_player) end
+		if not ai.finished then
+			ai.placeholder(game.them_player)
+		end
 	end
 	if game.time_to_next == 0 then
 		inputs.maingameRelease(mouse.x, mouse.y)
 		particles.wordEffects:clear()
 		game.phase = "Resolve"
-		if game.type == "Netplay" then 
+		if game.type == "Netplay" then
 			if not client.our_delta[game.turn] then
 				client.prepareDelta("blank")
 			end
@@ -74,7 +80,7 @@ function phase.action(dt)
 				print("Need to speed up by " .. our_frames_behind .. " frames")
 				client.giving_frameback = our_frames_behind
 			end
-		
+
 			if client.compareStates() then
 				print("Frame: " .. frame, "Time: " .. love.timer.getTime() - client.match_start_time, "States match!")
 				print("Player 1 meter: " .. p1.cur_mp, "Player 2 meter: " .. p2.cur_mp)
@@ -106,8 +112,12 @@ function phase.action(dt)
 end
 
 function phase.resolve(dt)
-	if game.me_player.place_type == nil then print("PLACE TYPE BUG") end
-	for player in players() do player.hand:endOfTurnUpdate() end
+	if game.me_player.place_type == nil then
+		print("PLACE TYPE BUG")
+	end
+	for player in players() do
+		player.hand:endOfTurnUpdate()
+	end
 	anims.putPendingAtTop()
 	particles.upGem:removeAll() -- animation
 	game.frozen = true
@@ -134,10 +144,10 @@ end
 
 function phase.checkMatches(dt)
 	local _, matches = engine.checkMatches() -- sets horizontal/vertical flags for matches
-	if matches > 0 then 
-		game.phase = "FlagGems" 
-	else 
-		game.phase = "ResolvedMatches" 
+	if matches > 0 then
+		game.phase = "FlagGems"
+	else
+		game.phase = "ResolvedMatches"
 	end
 end
 
@@ -197,13 +207,17 @@ function phase.getPiece(dt)
 	local handsettled = true
 	for player in players() do
 		player.hand:update(dt)
-		if not player.hand:isSettled() then handsettled = false end
+		if not player.hand:isSettled() then
+			handsettled = false
+		end
 	end
 
 	stage.grid:updateGravity(dt)
 
-	if not game.finished_getting_pieces then 
-		for player in players() do player.hand:getNewTurnPieces() end
+	if not game.finished_getting_pieces then
+		for player in players() do
+			player.hand:getNewTurnPieces()
+		end
 		game.finished_getting_pieces = true
 	end
 
@@ -211,23 +225,27 @@ function phase.getPiece(dt)
 		for player in players() do player.hand:update(dt) end
 		-- ignore garbage pushing gems up, creating matches, for now
 
-		if stage.grid:isSettled() then 
+		if stage.grid:isSettled() then
 		-- garbage can possibly push gems up, creating matches.
 			local _, matches = engine.checkMatches()
 			if matches > 0 then
 				engine.setGarbageMatchFlags()
 				game.phase = "Gravity"
 			else
-				game.phase = "Cleanup" 
+				game.phase = "Cleanup"
 			end
-		end			
+		end
 	end
 end
 
 function phase.cleanup(dt)
 	stage.grid:updateGrid()
-	for player in players() do player:cleanup()	end
-	if game.type == "1P" then	ai.clear() end
+	for player in players() do
+		player:cleanup()
+	end
+	if game.type == "1P" then
+		ai.clear()
+	end
 	p1.pieces_fallen, p2.pieces_fallen = 0, 0
 	p1.dropped_piece, p2.dropped_piece = false, false
 	p1.played_pieces, p2.played_pieces = {}, {}
@@ -247,7 +265,7 @@ function phase.sync(dt)
 	client:newTurn()
 	game:newTurn()
 	-- If disconnected by server, change to vs AI
-	if not client.connected then	
+	if not client.connected then
 		game.type = "1P"
 		print("Disconnected from server :( changing to 1P mode")
 		game:newTurn()

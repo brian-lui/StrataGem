@@ -1,3 +1,4 @@
+local love = _G.love
 local json = require 'dkjson'
 local settings = {}
 settings.player = {name = "Card Gamer"}
@@ -7,7 +8,7 @@ settings.player = {name = "Card Gamer"}
 if love.filesystem.exists("player.txt") then
 	local player_str = love.filesystem.read("player.txt")
 	settings.player = json.decode(player_str)
-else	
+else
 	love.filesystem.write("player.txt", json.encode(settings.player))
 end
 
