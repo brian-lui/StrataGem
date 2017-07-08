@@ -1,5 +1,4 @@
 local image = require 'image'
-local particles = game.particles
 local tween = require 'tween'
 
 local lamer = {
@@ -8,7 +7,7 @@ local lamer = {
 	action_image = love.graphics.newImage('images/Characters/heathaction.png'),
 	shadow_image = love.graphics.newImage('images/Characters/heathshadow.png'),
 	super_fuzz_image = love.graphics.newImage('images/UI/superfuzzred.png'),
-	
+
 	character_id = "Lamer",
 	meter_gain = {RED = 4, BLUE = 4, GREEN = 4, YELLOW = 4},
 	super_images = {
@@ -83,6 +82,8 @@ end
 function lamer:superSlideIn()
 	local x_pos = self.ID == "P1" and stage.width * -0.2 or stage.width * 1.2
 
+	local particles = game.particles
+
 	local shadow = particles.superEffects2:new{
 		image = self.shadow_image,
 		x = x_pos,
@@ -138,7 +139,7 @@ function lamer:superSlideIn()
 					queue.add(40, self.remove, self)
 					self.tweening = nil
 				end
-			end			
+			end
 		end
 	}
 
@@ -156,4 +157,3 @@ function lamer:superSlideIn()
 end
 
 return lamer
-

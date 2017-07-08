@@ -3,33 +3,25 @@ require 'inits'
 require 'lovedebug'
 require 'utilities' -- helper functions
 
-local game = _G.game -- Defined in inits.lua, TODO: eventually de-globalize
-game.engine = require "engine"
-Gem = require 'gem'
-local Stage = require 'stage'  -- playing field area and grid
-game.stage = Stage()
+_G.game = require "game"()	-- TODO: de-globalize
+local game = _G.game
 local stage = game.stage
-local settings = require 'settings'
-local Particles = require 'particles'
-game.particles = Particles()
 local particles = game.particles
+
+Gem = require 'gem'
+--local settings = require 'settings'
 local draw = require 'draw'
 local music = require 'music'
 local title = require 'title'
 local background = require 'background'
 local charselect = require 'charselect'
 local inputs = require 'inputs'
-local character = require 'character'
 local phase = require 'phase'
 local lobby = require 'lobby'
 local client = require 'client'
 local animations = require 'animations'
 local UI = require 'uielements'
 -- local sandbox = require 'animationsandbox'
-
-game.engine.initialize()
-
-game.version = "64.0"
 
 -- build screen
 love.window.setMode(window.width, window.height)
@@ -180,8 +172,8 @@ function startGame(gametype, char1, char2, bkground, seed, side)
 	if seed then rng.newSeed(seed) end
 	side = side or 1
 	local function setPlayerToCharacter(player, char)
-		local temp_defaults = deepcpy(character.defaults)
-		local temp_char = deepcpy(character[char])
+		local temp_defaults = deepcpy(game.character.defaults)
+		local temp_char = deepcpy(game.character[char])
 		for k, v in pairs(temp_defaults) do player[k] = v end
 		for k, v in pairs(temp_char) do player[k] = v end
 	end
@@ -203,7 +195,7 @@ function startGame(gametype, char1, char2, bkground, seed, side)
 
 	game.type = gametype
 	p1.cur_mp, p2.cur_mp = 0, 0
-	character.setup()
+	game.character.setup()
 	game.current_screen = "maingame"
 end
 

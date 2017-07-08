@@ -1,4 +1,4 @@
-require 'inits'
+--require 'inits'
 require 'utilities'
 local class = require "middleclass"
 local image = require 'image'
@@ -6,7 +6,7 @@ local Grid = require "grid"
 
 local stage = class("Stage")
 
-function stage:initialize()
+function stage:initialize(game)
 	self.width = 1024
 	self.height = 768
 	self.gem_width = image.red_gem:getWidth()

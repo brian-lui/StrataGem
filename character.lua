@@ -1,7 +1,7 @@
 require 'inits'
 local image = require 'image'
-local stage = game.stage
-local Piece = require 'piece'
+local stage
+--local Piece = require 'piece'
 local Pie = require 'pie'
 local pic = require 'pic'
 local hand = require 'hand'
@@ -11,6 +11,10 @@ character.defaults = require 'characters/default' -- called from charselect
 character.heath = require 'characters/heath'
 character.walter = require 'characters/walter'
 character.gail = require 'characters/gail'
+
+function character.initialize(_stage)
+	stage = _stage
+end
 
 -- initialize super meter graphics
 local function setupSuperMeter(player)
@@ -22,7 +26,7 @@ local function setupSuperMeter(player)
 	player.super_block = {}
 	player.super_partial = {}
 	player.super_glow = {}
-	for i = 1, 4 do 
+	for i = 1, 4 do
 		player.super_block[i] = pic:new{x = stage.super[player][i].x,
 			y = stage.super[player][i].y, image = player.super_images.full}
 		player.super_partial[i] = pic:new{x = stage.super[player][i].x,
@@ -57,9 +61,17 @@ local function setupPies(player)
 	player.pie[1].damage = 4
 end
 
+-- TODO: Make player and/or character into classes and put this in there
+function character.addSuper(p1super, p2super)
+	p1.old_mp = p1.cur_mp
+	p1.cur_mp = math.min(p1.cur_mp + p1super, p1.MAX_MP)
+	p2.old_mp = p2.cur_mp
+	p2.cur_mp = math.min(p2.cur_mp + p2super, p2.MAX_MP)
+end
+
 -- do those things to set up the character. Called at start of match
 function character.setup()
-	for player in players() do
+	for player in game:players() do
 		player.hand = hand:new(player)
 		player.hand:makeInitialPieces()
 		setupSuperMeter(player)

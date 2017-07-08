@@ -15,7 +15,7 @@ local phase = {}
 function phase.intro(dt)
 	if frame == 15 then particles.words:generate("Ready") end
 	hand.update(dt)
-	if hand.isSettled(p1) and hand.isSettled(p2) then 
+	if hand.isSettled(p1) and hand.isSettled(p2) then
 		particles.words:generate("Go")
 		game.phase = "Action"
 	end
@@ -24,7 +24,7 @@ end
 function phase.action(dt)
 	hand.update(dt)
 	anims.update(dt)
-	for player in players() do
+	for player in game:players() do
 		if player.actionPhase then player:actionPhase(dt) end
 	end
 
@@ -36,7 +36,7 @@ function phase.action(dt)
 		inputs.maingameRelease(mouse.x, mouse.y)
 		particles.wordEffects:clear()
 		game.phase = "Resolve"
-		if game.type == "Netplay" then 
+		if game.type == "Netplay" then
 			if not client.our_delta[game.turn] then
 				client.prepareDelta("blank")
 			end
@@ -72,7 +72,7 @@ function phase.action(dt)
 				print("Need to speed up by " .. our_frames_behind .. " frames")
 				client.giving_frameback = our_frames_behind
 			end
-		
+
 			if client.compareStates() then
 				print("Frame: " .. frame, "Time: " .. love.timer.getTime() - client.match_start_time, "States match!")
 				print("Player 1 meter: " .. p1.cur_mp, "Player 2 meter: " .. p2.cur_mp)
@@ -133,7 +133,7 @@ end
 
 local function superPlays()
 	local ret = {}
-	for player in players() do
+	for player in game:players() do
 		if player.supering then ret[#ret+1] = player end
 	end
 	return ret
@@ -160,7 +160,7 @@ function phase.applyGravity(dt)
 	stage.grid:dropColumns()
 	stage.grid:updateGravity(dt)
 	if stage.grid:isSettled() then
-		for player in players() do
+		for player in game:players() do
 			local anims = player:afterGravity()
 			for i = 1, #anims do
 				queue.add(anims[i][1], anims[i][2], unpack(anims[i], 3))
@@ -170,37 +170,37 @@ function phase.applyGravity(dt)
 	end
 end
 
-function phase.checkMatches(dt)
-	local _, matches = engine.checkMatches()
-	if matches > 0 then 
-		game.phase = "DrawEffects" 
-	else 
-		game.phase = "ResolvedMatches" 
+function phase.getMatchedGems(dt)
+	local _, matches = stage.grid:getMatchedGems()
+	if matches > 0 then
+		game.phase = "DrawEffects"
+	else
+		game.phase = "ResolvedMatches"
 	end
 end
 
 function phase.drawEffects(dt)
-	local gem_table = engine.checkMatches()
+	local gem_table = stage.grid:getMatchedGems()
 	-- draw exploding gems, keep everything else the same
-	engine.flagMatchedGems()
+	stage.grid:flagMatchedGems()
 	engine.generateMatchExplodingGems()
-	for player in players() do player:beforeMatch(gem_table) end
+	for player in game:players() do player:beforeMatch(gem_table) end
 	game.grid_wait = SPEED.GEM_EXPLODE_FRAMES -- wait same time as fadeout animation
-	game.phase = "WaitForDrawEffects" 
+	game.phase = "WaitForDrawEffects"
 end
 
 function phase.waitForDrawEffects(dt)
 	game.grid_wait = math.max(0, game.grid_wait - 1)
 	if game.grid_wait == 0 then
 		game.phase = "ResolvingMatches"
-	end  
+	end
 end
 
 function phase.resolvingMatches(dt)
-	local gem_table = engine.checkMatches()
+	local gem_table = stage.grid:getMatchedGems()
 	game.scoring_combo = game.scoring_combo + 1
 
-	for player in players() do player:duringMatch(gem_table) end
+	for player in game:players() do player:duringMatch(gem_table) end
 
 	local p1dmg, p2dmg, p1super, p2super = engine.calculateScore(gem_table)
 	if game.type == "Netplay" then
@@ -211,13 +211,13 @@ function phase.resolvingMatches(dt)
 
 	local p1_matched, p2_matched = engine.checkMatchedThisTurn(gem_table)
 
-	if not p1_matched then engine.removeAllGemOwners(p1) end
-	if not p2_matched then engine.removeAllGemOwners(p2) end
+	if not p1_matched then stage.grid:removeAllGemOwners(p1) end
+	if not p2_matched then stage.grid:removeAllGemOwners(p2) end
 	print("Now adding super gain for p1:", p1super, "p2:", p2super)
-	engine.addSuper(p1super, p2super)
+	game.character.addSuper(p1super, p2super)
 
 	engine.generateMatchParticles()
-	engine.removeMatchedGems()
+	stage.grid:removeMatchedGems()
 	hand.addDamage(p1, p2dmg)
 	hand.addDamage(p2, p1dmg)
 	anims.screenshake(math.max(p1dmg, p2dmg))
@@ -226,18 +226,18 @@ function phase.resolvingMatches(dt)
 end
 
 function phase.resolvedMatches(dt)
-	for player in players() do player:afterMatch() end
+	for player in game:players() do player:afterMatch() end
 	game.scoring_combo = 0
-	engine.setAllGemFlags(0)
+	stage.grid:setAllGemOwners(0)
 	hand.update(dt)
-	if hand.isSettled(p1) and hand.isSettled(p2) then 
+	if hand.isSettled(p1) and hand.isSettled(p2) then
 		-- pause for a bit for match explosions before we advance the hands
 		game.piece_waiting_time = game.piece_waiting_time - 1
 	end
 	if game.piece_waiting_time <= 0 then
 		game.piece_waiting_time = game.INIT_PIECE_WAITING_TIME
 		p1.place_type, p2.place_type = "normal", "normal"
-		game.phase = "GetPiece" 
+		game.phase = "GetPiece"
 	end
 end
 
@@ -251,28 +251,28 @@ function phase.getPiece(dt)
 	if hand.isSettled(p1) and hand.isSettled(p2) then
 		hand.update(dt) -- activates cleanupHand, which may add penalty rows
 
-		if stage.grid:isSettled() then 
+		if stage.grid:isSettled() then
 		-- garbage can possibly push gems up, creating matches.
-			local _, matches = engine.checkMatches()
+			local _, matches = stage.grid:getMatchedGems()
 			if matches > 0 then
 				engine.setGarbageMatchFlags()
 				game.phase = "Gravity"
 			else
-				game.phase = "Cleanup" 
+				game.phase = "Cleanup"
 			end
-		end			
+		end
 	end
 end
 
 function phase.cleanup(dt)
 	stage.grid:updateGrid()
-	for player in players() do player:cleanup()	end
+	for player in game:players() do player:cleanup()	end
 	if game.type == "1P" then	ai.clear() end
 	p1.pieces_fallen, p2.pieces_fallen = 0, 0
 	p1.dropped_piece, p2.dropped_piece = false, false
 	p1.played_pieces, p2.played_pieces = {}, {}
 	game.finished_getting_pieces = false
-	engine.setAllGemFlags(0)
+	stage.grid:setAllGemOwners(0)
 
 	if engine.checkLoser() then
 		game.phase = "GameOver"
@@ -287,7 +287,7 @@ function phase.sync(dt)
 	client:newTurn()
 	game:newTurn()
 	-- If disconnected by server, change to vs AI
-	if not client.connected then	
+	if not client.connected then
 		game.type = "1P"
 		print("Disconnected from server :( changing to 1P mode")
 		game:newTurn()
@@ -322,7 +322,7 @@ phase.lookup = {
 	Resolve = phase.resolve,
 	SuperFreeze = phase.superFreeze,
 	Gravity = phase.applyGravity,
-	CheckMatches = phase.checkMatches,
+	CheckMatches = phase.getMatchedGems,
 	DrawEffects = phase.drawEffects,
 	WaitForDrawEffects = phase.waitForDrawEffects,
 	ResolvingMatches = phase.resolvingMatches,

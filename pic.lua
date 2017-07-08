@@ -1,4 +1,4 @@
-require 'inits'
+--require 'inits'
 local class = require 'middleclass'
 local tween = require 'tween'
 
@@ -31,7 +31,7 @@ function pic:draw(h_flip, x, y, rotation, scale, RGBTable, img, quad)
 		local y_scale = scale or self.scaling
 
 		local rgbt = {255, 255, 255}
-		if self.RGB then 
+		if self.RGB then
 			rgbt = self.RGB
 		end
 		rgbt[4] = self.transparency or 255
@@ -266,7 +266,7 @@ function pic:update(dt)
 				local new_target = table.remove(self.queued_moves, 1)
 				self.move_func = createMoveFunc(self, new_target)
 			end
-		end	
+		end
 	end
 end
 

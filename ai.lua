@@ -35,14 +35,6 @@ local function simulateGravity(use_grid)
 	end
 end
 
--- get score of simulated piece placements
-local function getScore(use_grid, matching_number)
-	use_grid = use_grid or stage.grid
-	matching_number = matching_number or 3
-	local gems_removed = engine.checkMatches(matching_number, use_grid)
-	return #gems_removed
-end
-
 -- randomly rotate all pieces in hand by 1
 local function rotateRandom(player)
 	for i = 1, player.hand_size do
@@ -141,13 +133,15 @@ local function simulatePlacePiece(use_grid, piece, coords) -- only works with 2-
 end
 
 -- return score for simulated grid + piece placement
-local function simulateScore(player, piece, coords)
+local function simulateScore(piece, coords)
 	local orig_grid = deepcpy(stage.grid)
 	simulatePlacePiece(orig_grid, piece, coords)
 	simulateGravity(orig_grid)
 
-	if not getScore(orig_grid) then print ("nil score") end
-	return getScore(orig_grid)
+	if not orig_grid:getScore() then
+		print ("nil score")
+	end
+	return orig_grid:getScore()
 end
 
 -- returns a scoring for all possible pieces and their placements
@@ -166,7 +160,7 @@ local function generateScoreMatrices(player)
 			local end_col = player.end_col
 			if piece_list[piece].horizontal then end_col = end_col - 1 end
 			for col = start_col, end_col do -- j: total valid columns
-				matrix[rotation][piece][col] = simulateScore(player, piece_list[piece], getCoords(col))
+				matrix[rotation][piece][col] = simulateScore(piece_list[piece], getCoords(col))
 			end
 		end
 	end

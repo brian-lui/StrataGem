@@ -1,4 +1,4 @@
-require 'inits'
+--require 'inits'
 local image = require 'image'
 require 'utilities' -- helper functions
 local class = require 'middleclass' -- class support
@@ -82,7 +82,7 @@ end
 -- landed in the staging area above the grid
 function Gem:landedInStagingArea(place_type, owner)
 	print("gem landed in staging area!")
-	for player in players() do
+	for player in game:players() do
 		if player.place_type == "double" then
 			particles.words:generate("Doublecast", player)
 		elseif player.place_type == "rush" then

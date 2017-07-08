@@ -2,7 +2,7 @@ require 'inits' -- for AllGemPlatforms. SPEED
 local image = require 'image'
 local class = require 'middleclass' -- class support
 local pic = require 'pic'
-local particles = game.particles
+local particles
 
 local Segment = class('Segment', pic)
 function Segment:initialize(pie, segment_number)
@@ -44,10 +44,14 @@ end
 
 local Pie = class('Pie', pic)
 function Pie:initialize(player, loc)
+	particles = game.particles
+	
 	local todraw = player == p1 and image.pie.p1 or image.pie.p2
 	local x_shift = image.UI.platform_gold:getWidth() * 0.5
 	local y_shift = image.UI.platform_gold:getHeight() * 0.15
-	if player == p1 then x_shift = x_shift * -1 end
+	if player == p1 then
+		x_shift = x_shift * -1
+	end
 
 	self.x = player.hand[loc].x + x_shift
 	self.y = player.hand[loc].y + y_shift

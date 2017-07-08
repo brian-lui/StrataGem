@@ -5,7 +5,9 @@ bgm[1] = love.audio.newSource("sounds/dummy.ogg")
 
 function music.setBGM(filename, n)
 	n = n or 1
-	if bgm[n] then bgm[n]:stop() end
+	if bgm[n] then
+		bgm[n]:stop()
+	end
 	bgm[n] = love.audio.newSource("music/" .. filename, "stream")
 	bgm[n]:setVolume(0.0001)
 	bgm[n]:setLooping(true)

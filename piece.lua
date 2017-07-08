@@ -1,11 +1,10 @@
 require 'inits' -- ID
 --local GemPlatform = require 'gemplatform'
-local image = require 'image'
+--local image = require 'image'
 require 'utilities' -- helper functions
 local class = require 'middleclass' -- class support
-local stage = game.stage
-local particles = game.particles
-local engine = game.engine
+local stage
+local particles
 local tween = require 'tween'
 local pic = require 'pic'
 
@@ -31,6 +30,9 @@ end
 
 local Piece = class('Piece')
 function Piece:initialize(tbl)
+	stage = game.stage
+	particles = game.particles
+	
 	ID.piece = ID.piece + 1
 	local tocopy = {"x", "y", "owner", "gem_table"}
 	for i = 1, #tocopy do

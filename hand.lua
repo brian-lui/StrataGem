@@ -1,9 +1,9 @@
 require 'utilities' -- helper functions
 local class = require 'middleclass' -- class support
-local Pie = require 'pie'
+--local Pie = require 'pie'
 local Piece = require 'piece'
 local GemPlatform = require 'gemplatform'
-local stage = game.stage
+local stage
 
 local function destroyTopPieceAnim(hand)
 	print("Check top piece: ", hand[0].piece, hand.owner.ID)
@@ -30,6 +30,8 @@ end
 
 local Hand = class('Hand')
 function Hand:initialize(player)
+	stage = game.stage
+
 	assert((player == p1 or player == p2), "Invalid player given!")
 	self.owner = player
 	for i = 0, 10 do

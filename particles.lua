@@ -7,8 +7,8 @@ local pairs = pairs
 
 local particles = class("Particles")
 
-function particles:initialize()
-	stage = game.stage
+function particles:initialize(_stage)
+	stage = _stage
 end
 
 function particles.update(dt)

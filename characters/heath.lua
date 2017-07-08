@@ -1,10 +1,9 @@
 local image = require 'image'
-local particles = game.particles
-local pic = require 'pic'
-local engine = game.engine
-local hand = require 'hand'
-local default = require 'characters/default'
-local stage = game.stage
+--local pic = require 'pic'
+--local engine = game.engine
+--local hand = require 'hand'
+--local default = require 'characters/default'
+--local stage = game.stage
 
 local heath = {
 	full_size_image = love.graphics.newImage('images/Characters/heath.png'),
@@ -77,6 +76,8 @@ end
 
 --function particle_effects.SmallFire(gem)
 function particle_effects.SmallFire(row, col, owner)
+	local stage = game.stage
+
 	--[[
 		TODO: update the y-tracking:
 			get the first_empty_row, and adjust as normal
@@ -169,6 +170,8 @@ function particle_effects.SmallFire(row, col, owner)
 end
 
 function particle_effects.BoomParticle(boom)
+	local stage = game.stage
+
 	local x_vel = stage.gem_width * (math.random() - 0.5)
 	local y_vel = stage.gem_height * -(math.random()*0.5 + 0.5)
 	local gravity = stage.gem_height
@@ -194,6 +197,9 @@ function particle_effects.BoomParticle(boom)
 end
 
 function particle_effects.Boom(row, col, owner)
+	local particles = game.particles
+	local stage = game.stage
+
 	local draw_t, draw_img = 0, 1
 	local draw_order = {1, 2, 3, 4, 5}
 	local already_boom_particled = false
@@ -259,7 +265,11 @@ end
 
 -- generate ouchies for enemy gems landing on fire
 function heath:afterGravity()
-	if game.scoring_combo > 0 then return {} end -- only check on the first round of gravity
+	local particles = game.particles
+
+	if game.scoring_combo > 0 then -- only check on the first round of gravity
+		return {}
+	end
 	local own_tbl = {p1, p2}
 	local gem_table = {} -- all enemy gems played this turn
 	local ret = {}
@@ -307,6 +317,8 @@ end
 -- Make fire for horizontal matches
 -- Super-clear if super was active
 function heath:beforeMatch(gem_table)
+	local stage = game.stage
+
 	local own_tbl = {p1, p2}
 
 	-- store horizontal fire locations, used in aftermatch phase
@@ -350,6 +362,9 @@ end
 -- TODO: warning - queue.add stage.grid.removeGem affects state
 
 function heath:duringMatch(gem_table)
+	local particles = game.particles
+	local stage = game.stage
+
 	if self.supering then
 		-- update the grid and add the ownership to the super-clear gems
 		stage.grid:updateGrid()
@@ -417,6 +432,8 @@ end
 
 -- take away super meter
 function heath:afterMatch()
+	local particles = game.particles
+
 	-- super
 	if self.supering then
 		self.cur_mp = 0

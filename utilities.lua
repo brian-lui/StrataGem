@@ -92,12 +92,6 @@ function spairs(tab, ...)
 	end
 end
 
-function players()
-  local i = 0
-  local p = {p1, p2}
-  return function() i = i + 1 return p[i] end
-end
-
 function reverseTable(table)
 	local reversedTable = {}
 	local itemCount = #table
@@ -133,7 +127,9 @@ function real_deepcpy(tab)
 end
 
 function deepcpy(tab)
-  if type(tab) ~= "table" then return tab end
+  if type(tab) ~= "table" then
+		return tab
+	end
   local ret = real_deepcpy(tab)
   deepcpy_mapping = {}
   return ret

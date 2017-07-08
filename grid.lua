@@ -53,12 +53,190 @@ function grid:gems()
 	end
 end
 
+-- Returns a list of matches, where each match is listed as the row and column
+-- of its topmost/leftmost gem, a length, and whether it's horizontal.
+function grid:getMatches(minimumLength)
+
+	local function getColor(row, column)
+		return self[row][column].gem and self[row][column].gem.color
+	end
+	
+	minimumLength = minimumLength or 3
+	local match_colors = {"RED", "BLUE", "GREEN", "YELLOW"}
+	local ret = {}
+	for _, c in pairs(match_colors) do
+		for _, row, column in self:gems() do
+			if getColor(row, column, self) == c then
+				-- HORIZONTAL MATCHES
+				local matchLength = 0
+				if getColor(row, column - 1, self) ~= c then	-- Only start a match at the beginning of a run
+					repeat
+						matchLength = matchLength + 1
+					until getColor(row, column + matchLength, self) ~= c
+				end
+				if matchLength >= minimumLength then
+					ret[#ret+1] = {length = matchLength, row = row, column = column, horizontal = true}
+				end
+
+				-- VERTICAL MATCHES
+				--[[local]] matchLength = 0
+				if getColor(row - 1, column, self) ~= c then -- Only start a match at the beginning of a run
+					repeat
+						matchLength = matchLength + 1
+					until getColor(row + matchLength, column, self) ~= c
+				end
+				if matchLength >= minimumLength then
+					ret[#ret+1] = {length = matchLength, row = row, column = column, horizontal = false}
+				end
+			end
+		end
+	end
+	return ret
+end
+
+-- Returns a list of gems which are part of matches, and the total number of
+-- matches (not number of matched gems).
+function grid:getMatchedGems(minimumLength)
+	local matches = self:getMatches(minimumLength or 3)
+	local gem_set = {}
+
+	for _, match in pairs(matches) do
+		if match.horizontal then
+			for i = 1, match.length do
+				local r, c = match.row, match.column + i - 1
+				local this_gem = self[r][c].gem
+				if this_gem then
+					gem_set[this_gem] = true
+					this_gem.horizontal = true
+				end
+			end
+		else
+			for i = 1, match.length do
+				local r, c = match.row + i - 1, match.column
+				local this_gem = self[r][c].gem
+				if this_gem then
+					gem_set[this_gem] = true
+					this_gem.vertical = true
+				end
+			end
+		end
+	end
+
+	local gem_table = {}
+	for gem, _ in pairs(gem_set) do
+		gem_table[#gem_table+1] = gem
+	end
+
+	return gem_table, #matches
+end
+
+-- If any gem in a set is owned by a player, make all other gems in its match
+-- also owned by that player (may be owned by both players).
+function grid:flagMatchedGems()
+	local matches = self:getMatches()
+
+	for i = 1, #matches do
+		local p1flag, p2flag = false, false
+		if matches[i].horizontal then
+			-- Check whether p1 or p2 own any of the gems in this match
+			for j = 1, matches[i].length do
+				local row = matches[i].row
+				local column = matches[i].column + (j-1)
+				if self[row][column].gem.owner == 1 then
+					p1flag = true
+				elseif self[row][column].gem.owner == 2 then
+					p2flag = true
+				elseif self[row][column].gem.owner == 3 then
+					p1flag = true
+					p2flag = true
+				end
+			end
+			-- Propagate owners to all gems in the match
+			for j = 1, matches[i].length do
+				local row = matches[i].row
+				local column = matches[i].column + (j-1)
+				if p1flag then
+					self[row][column].gem:addOwner(p1)
+				end
+				if p2flag then
+					self[row][column].gem:addOwner(p2)
+				end
+			end
+		else
+			-- Check whether p1 or p2 own any of the gems in this match
+			for j = 1, matches[i].length do
+				local row = matches[i].row + (j-1)
+				local column = matches[i].column
+				if self[row][column].gem.owner == 1 then p1flag = true end
+				if self[row][column].gem.owner == 2 then p2flag = true end
+				if self[row][column].gem.owner == 3 then p1flag = true p2flag = true end
+			end
+			-- Propagate owners to all gems in the match
+			for j = 1, matches[i].length do
+				local row = matches[i].row + (j-1)
+				local column = matches[i].column
+				if p1flag then self[row][column].gem:addOwner(p1) end
+				if p2flag then self[row][column].gem:addOwner(p2) end
+			end
+		end
+	end
+end
+
+-- get score of simulated piece placements
+function grid:getScore(matching_number)
+	matching_number = matching_number or 3
+	local gems_removed = self:getMatchedGems(matching_number)
+	return #gems_removed
+end
+
+function grid:removeMatchedGems(minimumLength)
+
+	local function getAboveGems(column, start_row)
+		start_row = start_row or 1
+		local above = {}
+		for i = start_row, 1, -1 do
+			if self[i][column].gem then
+				above[#above + 1] = self[i][column].gem
+			end
+		end
+		return above
+	end
+
+	local function propogateFlagsUp(gem_table)
+		for _, gem in pairs(gem_table) do
+			local ownership = gem.owner
+			local above_gems = getAboveGems(gem.column, gem.row)
+			for _, v in pairs(above_gems) do
+				v:setOwner(ownership)
+			end
+		end
+	end
+
+	local gem_table = self:getMatchedGems(minimumLength or 3)
+	propogateFlagsUp(gem_table)
+	for _, gem in pairs(gem_table) do
+		self:removeGem(gem)
+	end
+end
+
+-- remove all gem flags claimed by a specific player
+function grid:removeAllGemOwners(player)
+	for gem in self:gems() do
+		gem:removeOwner(player)
+	end
+end
+
+function grid:setAllGemOwners(flag_num)
+	for gem in self:gems() do
+		gem.owner = flag_num
+	end
+end
+
+-- This returns the first empty row, used to calculate where to display the shadow
+-- for the gem landing location. The starting row is 3, because rows 1 and 2 are the
+-- pending gem drop locations, and row 0 is a sentinel row
+-- Returns nil if column is invalid.
 function grid:getFirstEmptyRow(column)
---[[ This returns the first empty row, used to calculate where to display the shadow
-	for the gem landing location. The starting row is 3, because rows 1 and 2 are the
-	pending gem drop locations, and row 0 is a sentinel row
-	Returns nil if column is invalid.
---]]
 	if column then
 		local empty_spaces = 2 -- rows 1 and 2 are always considered empty
 		for i = 3, self.rows do
@@ -68,11 +246,10 @@ function grid:getFirstEmptyRow(column)
 	end
 end
 
+-- Returns a piece's landing locations as a table of {{column, row}, {c,r}}.
+-- optional_shift is +1/-1, used if the gem is over midline and column needs to be
+-- corrected.
 function grid:getDropLocations(piece, optional_shift)
---[[ Returns a piece's landing locations as a table of {{column, row}, {c,r}}.
-	optional_shift is +1/-1, used if the gem is over midline and column needs to be
-	corrected.
---]]
 	local column = piece:getColumns(optional_shift)
 	local row, ret = {}, {}
 	for i = 1, piece.size do

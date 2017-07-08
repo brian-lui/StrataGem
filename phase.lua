@@ -13,7 +13,7 @@ local inspect = require 'inspect'
 local phase = {}
 
 function phase.intro(dt)
-	for player in players() do
+	for player in game:players() do
 		player.hand:update(dt)
 	end
 	if frame == 30 then
@@ -26,7 +26,7 @@ function phase.intro(dt)
 end
 
 function phase.action(dt)
-	for player in players() do
+	for player in game:players() do
 		player.hand:update(dt)
 		if player.actionPhase then
 			player:actionPhase(dt)
@@ -115,7 +115,7 @@ function phase.resolve(dt)
 	if game.me_player.place_type == nil then
 		print("PLACE TYPE BUG")
 	end
-	for player in players() do
+	for player in game:players() do
 		player.hand:endOfTurnUpdate()
 	end
 	anims.putPendingAtTop()
@@ -137,13 +137,13 @@ function phase.applyGravity(dt)
 	stage.grid:updateGravity(dt) -- animation
 	local animation_done = stage.grid:isSettled() -- function
 	if animation_done then
-		for player in players() do player:afterGravity() end
+		for player in game:players() do player:afterGravity() end
 		game.phase = "CheckMatches"
 	end
 end
 
-function phase.checkMatches(dt)
-	local _, matches = engine.checkMatches() -- sets horizontal/vertical flags for matches
+function phase.getMatchedGems(dt)
+	local _, matches = stage.grid:getMatchedGems() -- sets horizontal/vertical flags for matches
 	if matches > 0 then
 		game.phase = "FlagGems"
 	else
@@ -152,9 +152,9 @@ function phase.checkMatches(dt)
 end
 
 function phase.flagGems(dt)
-	local gem_table = engine.checkMatches() -- sets h/v flags
-	engine.flagMatchedGems() -- state
-	for player in players() do player:beforeMatch(gem_table) end
+	local gem_table = stage.grid:getMatchedGems() -- sets h/v flags
+	stage.grid:flagMatchedGems() -- state
+	for player in game:players() do player:beforeMatch(gem_table) end
 	game.phase = "MatchAnimations"
 end
 
@@ -166,7 +166,7 @@ function phase.matchAnimations(dt)
 	elseif match_anim_phase == "explode" then
 		match_anim_count = math.max(match_anim_count - 1, 0)
 		if match_anim_count == 0 then
-			local matches = engine.checkMatches()
+			local matches = stage.grid:getMatchedGems()
 			engine.generateMatchParticles() -- animation
 			anims.screenshake(#matches) -- animation
 			match_anim_phase, match_anim_count = "start", 0
@@ -176,15 +176,15 @@ function phase.matchAnimations(dt)
 end
 
 function phase.resolvingMatches(dt)
-	local gem_table = engine.checkMatches()
+	local gem_table = stage.grid:getMatchedGems()
 	game.scoring_combo = game.scoring_combo + 1
-	for player in players() do player:duringMatch(gem_table) end
+	for player in game:players() do player:duringMatch(gem_table) end
 	local p1dmg, p2dmg, p1super, p2super = engine.calculateScore(gem_table)
 	local p1_matched, p2_matched = engine.checkMatchedThisTurn(gem_table)
-	if not p1_matched then engine.removeAllGemOwners(p1) end
-	if not p2_matched then engine.removeAllGemOwners(p2) end
-	engine.addSuper(p1super, p2super)
-	engine.removeMatchedGems()
+	if not p1_matched then stage.grid:removeAllGemOwners(p1) end
+	if not p2_matched then stage.grid:removeAllGemOwners(p2) end
+	game.character.addSuper(p1super, p2super)
+	stage.grid:removeMatchedGems()
 	p1.hand:addDamage(p2dmg)
 	p2.hand:addDamage(p1dmg)
 	stage.grid:dropColumnsAnim()
@@ -193,19 +193,19 @@ function phase.resolvingMatches(dt)
 end
 
 function phase.resolvedMatches(dt)
-	for player in players() do
+	for player in game:players() do
 		player:afterMatch()
 		player.hand:update(dt)
 		player.place_type = "normal"
 	end
 	game.scoring_combo = 0
-	engine.setAllGemFlags(0)
+	stage.grid:setAllGemOwners(0)
 	game.phase = "GetPiece"
 end
 
 function phase.getPiece(dt)
 	local handsettled = true
-	for player in players() do
+	for player in game:players() do
 		player.hand:update(dt)
 		if not player.hand:isSettled() then
 			handsettled = false
@@ -215,19 +215,19 @@ function phase.getPiece(dt)
 	stage.grid:updateGravity(dt)
 
 	if not game.finished_getting_pieces then
-		for player in players() do
+		for player in game:players() do
 			player.hand:getNewTurnPieces()
 		end
 		game.finished_getting_pieces = true
 	end
 
 	if handsettled then
-		for player in players() do player.hand:update(dt) end
+		for player in game:players() do player.hand:update(dt) end
 		-- ignore garbage pushing gems up, creating matches, for now
 
 		if stage.grid:isSettled() then
 		-- garbage can possibly push gems up, creating matches.
-			local _, matches = engine.checkMatches()
+			local _, matches = stage.grid:getMatchedGems()
 			if matches > 0 then
 				engine.setGarbageMatchFlags()
 				game.phase = "Gravity"
@@ -240,7 +240,7 @@ end
 
 function phase.cleanup(dt)
 	stage.grid:updateGrid()
-	for player in players() do
+	for player in game:players() do
 		player:cleanup()
 	end
 	if game.type == "1P" then
@@ -250,7 +250,7 @@ function phase.cleanup(dt)
 	p1.dropped_piece, p2.dropped_piece = false, false
 	p1.played_pieces, p2.played_pieces = {}, {}
 	game.finished_getting_pieces = false
-	engine.setAllGemFlags(0)
+	stage.grid:setAllGemOwners(0)
 
 	if engine.checkLoser() then
 		game.phase = "GameOver"
@@ -301,7 +301,7 @@ phase.lookup = {
 	SuperFreeze = phase.superFreeze,
 	GemTween = phase.applyGemTween,
 	Gravity = phase.applyGravity,
-	CheckMatches = phase.checkMatches,
+	CheckMatches = phase.getMatchedGems,
 	FlagGems = phase.flagGems,
 	MatchAnimations = phase.matchAnimations,
 	ResolvingMatches = phase.resolvingMatches,

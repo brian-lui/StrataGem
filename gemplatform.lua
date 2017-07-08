@@ -1,4 +1,4 @@
-require 'inits' -- for AllGemPlatforms. SPEED
+--require 'inits' -- for AllGemPlatforms. SPEED
 require 'utilities' -- move
 local image = require 'image'
 local class = require 'middleclass' -- class support

@@ -82,7 +82,7 @@ function draw.drawScreenElements()
 	UI.tub_img:draw() -- tub
 	UI.timer:draw()	-- timer bar
 
-	for player in players() do
+	for player in game:players() do
 		anims.drawSuper(player) -- super meter
 		player.animation:draw(flip) -- sprite
 	end
@@ -128,7 +128,7 @@ function draw.drawGems()
 	end
 
 	-- pies
-	for player in players() do
+	for player in game:players() do
 		for i = 2, 5 do
 			player.pie[i]:draw()
 		end
@@ -141,7 +141,7 @@ function draw.drawGems()
 
 
 	-- hand gems and pending-garbage gems
-	for player in players() do
+	for player in game:players() do
 		for i = 1, player.hand_size do
 			if player.hand[i].piece and player.hand[i].piece ~= game.active_piece then
 				for j = 1, player.hand[i].piece.size do

@@ -46,7 +46,7 @@ function client.connect()
 		print("Connected to server, sending user data")
 		client.connected = true
 		client_socket:settimeout(0)
-		local blob = {type = "connect", version = game.version, name = settings.player.name}
+		local blob = {type = "connect", version = game.VERSION, name = settings.player.name}
 		client.send(blob)
 	else
 		print("Server not found lol. Error code:")
@@ -200,7 +200,7 @@ local function receiveDelta(recv)
 		local fail = true
 	else -- received their delta sending
 		print("Frame: " .. frame, "Time: " .. love.timer.getTime() - client.match_start_time, "Correct delta received:")
-		for k, v in pairs(recv) do 
+		for k, v in pairs(recv) do
 			if type(v) == "table" then
 				for key, val in pairs(v) do print(key, val) end
 			else
@@ -254,7 +254,7 @@ local function receiveDisconnect()
 	client.disconnect()
 end
 
-local function receivePing() 
+local function receivePing()
 	client.send({type = "ping"})
 end
 
@@ -384,7 +384,7 @@ function client.compareStates(us, them)
 		end
 	end
 	for k, v in pairs(them) do
-		if us[k] == nil then 
+		if us[k] == nil then
 			print("OH NO IT DIDN'T MATCH: key for us not found,", k, v)
 		return false end
 	end
