@@ -84,9 +84,9 @@ function Gem:landedInStagingArea(place_type, owner)
 	print("gem landed in staging area!")
 	for player in game:players() do
 		if player.place_type == "double" then
-			particles.words:generate("Doublecast", player)
+			particles.words:generateDoublecast(player)
 		elseif player.place_type == "rush" then
-			particles.words:generate("Rush", player)
+			particles.words:generateRush(player)
 		end
 	end
 	if place_type == "double" then

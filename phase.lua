@@ -17,10 +17,10 @@ function phase.intro(dt)
 		player.hand:update(dt)
 	end
 	if frame == 30 then
-		particles.words:generate("Ready")
+		particles.words:generateReady()
 	end
 	if frame == 120 then
-		particles.words:generate("Go")
+		particles.words:generateGo()
 		game.phase = "Action"
 	end
 end
