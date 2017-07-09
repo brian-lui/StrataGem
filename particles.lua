@@ -605,7 +605,7 @@ end
 
 
 -------------------------------------------------------------------------------
--- words! Doublecast and rush so far. Later if we have start of round stuff, goes here too
+-- words! Doublecast, rush, go, and ready so far.
 local Words = class ('Words', pic)
 function Words:initialize(x, y, todraw, in_curve, in_tween, out_curve, out_tween, rotation)
 	pic.initialize(self, {x = x, y = y, rotation = rotation, image = todraw})
@@ -624,114 +624,105 @@ function Words:remove()
 	AllParticles.Words[self.ID] = nil
 end
 
-local wordtypes = {
-	Doublecast = function(player)
-		local x = player.ID == "P1" and stage.width * 0.4 or stage.width * 0.6
-		local y = stage.height * 0.3
-		local todraw = image.words.doublecast
-		local in_curve = function(t)
-			return x,
-			y,
-			3*(1-t)+1,
-			math.min(t+0.5, 1) * 255
-		end
-		local in_tween = {duration = 1, var = {t = 1}, movement = "outQuart"}
-		local out_curve = function(t)
-			return x,
-			y,
-			1,
-			math.clamp(4-t*2, 0, 1) * 255
-		end
-		local out_tween = {duration = 1, var = {t = 2}, movement = "inExpo"}
-		return x, y, todraw, in_curve, in_tween, out_curve, out_tween, 0
-	end,
-
-	Rush = function(player)
-		local x = player.ID == "P1" and stage.width * -0.1 or stage.width * 1.1
-		local y = stage.height * 0.3
-		local todraw = image.words.rush
-		local sign = player.ID == "P1" and 1 or -1
-		local rotation = 1/4
-		local in_curve = function(t)
-			return x + t*0.7*sign*stage.width,
-			y,
-			1,
-			255,
-			(1-t)/3
-		end
-		local in_tween = {duration = 1, var = {t = 1}, movement = "outBounce"}
-		local out_curve = function(t)
-			return x + t*0.7*sign*stage.width,
-			y,
-			1,
-			255,
-			(1-t)/4
-		end
-		local out_tween = {duration = 1, var = {t = 2}, movement = "inBack"}
-		return x, y, todraw, in_curve, in_tween, out_curve, out_tween, rotation
-	end,
-
-	Ready = function()
-		local x = stage.width * -0.2
-		local y = stage.height * 0.3
-		local todraw = image.words.ready
-		local h, w = todraw:getHeight(), todraw:getWidth()
-		local generate_particles = function(t)
-			if frame % 5 == 0 then
-				particles.wordEffects:generateReadyParticle("large",
-					x+t*0.7*stage.width + (math.random()-0.5)*w,
-					stage.height*0.3 + (math.random()-0.5)*h)
-			end
-			if frame % 2 == 0 then
-				particles.wordEffects:generateReadyParticle("small",
-					x+t*0.7*stage.width + (math.random()-0.5)*w,
-					stage.height*0.3 + (math.random()-0.5)*h)
-			end
-		end
-
-		local in_curve = function(t)
-			generate_particles(t)
-			return x + t * 0.7 * stage.width, y, 1, math.min(t * 510, 255), 0
-		end
-		local in_tween = {duration = 1, var = {t = 1}, movement = "outCubic"}
-		local out_curve = function(t)
-			generate_particles(t)
-			return x + t * 0.7 * stage.width, y, 1, math.max(755 - t*500, 0), 0
-		end
-		local out_tween = {duration = 1, var = {t = 2}, movement = "inCubic"}
-		return x, y, todraw, in_curve, in_tween, out_curve, out_tween, rotation
-	end,
-
-	Go = function()
-		local x = stage.width * 0.5
-		local y = stage.height * 0.3
-		local todraw = image.words.go
-		local in_curve = function(t)
-			return x, y, 0.1 + (t * 0.9), 255, 0
-		end
-		local in_tween = {duration = 0.6, var = {t = 1}, movement = "outQuart"}
-		local out_curve = function(t)
-			return x, y, 1, math.max(510 - t * 255, 0), 0
-		end
-		local out_tween = {duration = 0.3, var = {t = 2}, movement = "linear"}
-
-		particles.wordEffects:generateGoStar(x, y, stage.width * 0.25, stage.height * -0.4)
-		particles.wordEffects:generateGoStar(x, y, stage.width * 0.25, stage.height * -1.2)
-		particles.wordEffects:generateGoStar(x, y, stage.width * -0.25, stage.height * -0.4)
-		particles.wordEffects:generateGoStar(x, y, stage.width * -0.25, stage.height * -1.2)
-		particles.dust:generateYellowFountain(x, y)
-		return x, y, todraw, in_curve, in_tween, out_curve, out_tween, rotation
-	end,
-}
-
-function Words:generate(wordtype, player)
-	if wordtypes[wordtype] then
-		local x, y, todraw, in_curve, in_tween, out_curve, out_tween, rotation =
-			wordtypes[wordtype](player)
-		self:new(x, y, todraw, in_curve, in_tween, out_curve, out_tween, rotation)
-	else
-		print("invalid word type specified")
+function Words:generateDoublecast(player)
+	local x = player == p1 and stage.width * 0.4 or stage.width * 0.6
+	local y = stage.height * 0.3
+	local todraw = image.words.doublecast
+	local in_curve = function(t)
+		return x,
+		y,
+		3*(1-t)+1,
+		math.min(t+0.5, 1) * 255
 	end
+	local in_tween = {duration = 1, var = {t = 1}, movement = "outQuart"}
+	local out_curve = function(t)
+		return x,
+		y,
+		1,
+		math.clamp(4-t*2, 0, 1) * 255
+	end
+	local out_tween = {duration = 1, var = {t = 2}, movement = "inExpo"}
+
+	self:new(x, y, todraw, in_curve, in_tween, out_curve, out_tween, rotation)
+end
+
+function Words:generateRush(player)
+	local x = player == p1 and stage.width * -0.1 or stage.width * 1.1
+	local y = stage.height * 0.3
+	local todraw = image.words.rush
+	local sign = player == p1 and 1 or -1
+	local rotation = 1/4
+	local in_curve = function(t)
+		return x + t*0.7*sign*stage.width,
+		y,
+		1,
+		255,
+		(1-t)/3
+	end
+	local in_tween = {duration = 1, var = {t = 1}, movement = "outBounce"}
+	local out_curve = function(t)
+		return x + t*0.7*sign*stage.width,
+		y,
+		1,
+		255,
+		(1-t)/4
+	end
+	local out_tween = {duration = 1, var = {t = 2}, movement = "inBack"}
+
+	self:new(x, y, todraw, in_curve, in_tween, out_curve, out_tween, rotation)
+end
+
+function Words:generateReady()
+	local x = stage.width * -0.2
+	local y = stage.height * 0.3
+	local todraw = image.words.ready
+	local h, w = todraw:getHeight(), todraw:getWidth()
+	local generate_particles = function(t)
+		if frame % 5 == 0 then
+			particles.wordEffects:generateReadyParticle("large",
+				x+t*0.7*stage.width + (math.random()-0.5)*w,
+				stage.height*0.3 + (math.random()-0.5)*h)
+		end
+		if frame % 2 == 0 then
+			particles.wordEffects:generateReadyParticle("small",
+				x+t*0.7*stage.width + (math.random()-0.5)*w,
+				stage.height*0.3 + (math.random()-0.5)*h)
+		end
+	end
+	local in_curve = function(t)
+		generate_particles(t)
+		return x + t * 0.7 * stage.width, y, 1, math.min(t * 510, 255), 0
+	end
+	local in_tween = {duration = 1, var = {t = 1}, movement = "outCubic"}
+	local out_curve = function(t)
+		generate_particles(t)
+		return x + t * 0.7 * stage.width, y, 1, math.max(755 - t*500, 0), 0
+	end
+	local out_tween = {duration = 1, var = {t = 2}, movement = "inCubic"}
+
+	self:new(x, y, todraw, in_curve, in_tween, out_curve, out_tween, rotation)
+end
+
+function Words:generateGo()
+	local x = stage.width * 0.5
+	local y = stage.height * 0.3
+	local todraw = image.words.go
+	local in_curve = function(t)
+		return x, y, 0.1 + (t * 0.9), 255, 0
+	end
+	local in_tween = {duration = 0.6, var = {t = 1}, movement = "outQuart"}
+	local out_curve = function(t)
+		return x, y, 1, math.max(510 - t * 255, 0), 0
+	end
+	local out_tween = {duration = 0.3, var = {t = 2}, movement = "linear"}
+
+	particles.wordEffects:generateGoStar(x, y, stage.width * 0.25, stage.height * -0.4)
+	particles.wordEffects:generateGoStar(x, y, stage.width * 0.25, stage.height * -1.2)
+	particles.wordEffects:generateGoStar(x, y, stage.width * -0.25, stage.height * -0.4)
+	particles.wordEffects:generateGoStar(x, y, stage.width * -0.25, stage.height * -1.2)
+	particles.dust:generateYellowFountain(x, y)
+
+	self:new(x, y, todraw, in_curve, in_tween, out_curve, out_tween, rotation)
 end
 
 function Words:update(dt)
