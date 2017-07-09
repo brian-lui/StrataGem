@@ -159,7 +159,7 @@ end
 local buttons = {
 	start = {
 		item = objects.start,
-		action = function() 
+		action = function()
 			if current_char then
 				local gametype = "1P"
 				local char1 = current_char
@@ -175,7 +175,7 @@ local buttons = {
 	},
 	back = {
 		item = objects.back,
-		action = function() 
+		action = function()
 			game.current_screen = "title"
 			resetScreen()
 		end,

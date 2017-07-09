@@ -118,9 +118,9 @@ end
 
 -- these can take either the player object or the number
 function Gem:setOwner(player)
-	if player == p1 or player == 1 then
+	if player == 1 or player.ID == "P1" then
 		self.owner = 1
-	elseif player == p2 or player == 2 then
+	elseif player == 2 or player.ID == "P2" then
 		self.owner = 2
 	elseif player == 3 then
 		self.owner = 3
@@ -130,11 +130,11 @@ function Gem:setOwner(player)
 end
 
 function Gem:addOwner(player)
-	if player == 1 or player == p1 then
+	if player == 1 or player.ID == "P1" then
 		if self.owner == 0 or self.owner == 2 then
 			self.owner = self.owner + 1
 		end
-	elseif player == 2 or player == p2 then
+	elseif player == 2 or player.ID == "P2" then
 		if self.owner == 0 or self.owner == 1 then
 			self.owner = self.owner + 2
 		end
@@ -146,11 +146,11 @@ function Gem:addOwner(player)
 end
 
 function Gem:removeOwner(player)
-	if player == 1 or player == p1 then
+	if player == 1 or player.ID == "P1" then
 		if self.owner == 1 or self.owner == 3 then
 			self.owner = self.owner - 1
 		end
-	elseif player == 2 or player == p2 then
+	elseif player == 2 or player.ID == "P2" then
 		if self.owner == 2 or self.owner == 3 then
 			self.owner = self.owner - 2
 		end

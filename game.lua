@@ -19,14 +19,13 @@ function game:initialize()
 	self.input_method = mouse
 	self.rng = love.math.newRandomGenerator()
 	self.bgm = nil
-	self.engine = require "engine"
 	self.stage = require "stage"(self)	-- playing field area and grid
+	self.engine = require "engine"
 	self.particles = require "particles"(self.stage)
-	self.character = require "character"
+	self.AllGemPlatforms = {}
 
-	self.character.initialize(self.stage)
-	self.engine.initialize(self)
 	self:reset()
+	self.engine.initialize(self)
 end
 
 function game:players()

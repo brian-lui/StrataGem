@@ -60,7 +60,7 @@ function grid:getMatches(minimumLength)
 	local function getColor(row, column)
 		return self[row][column].gem and self[row][column].gem.color
 	end
-	
+
 	minimumLength = minimumLength or 3
 	local match_colors = {"RED", "BLUE", "GREEN", "YELLOW"}
 	local ret = {}
@@ -314,12 +314,11 @@ local function moveGem(gem, row, column)
 	gem.row, gem.column = row, column
 end
 
-local p1, p2 = _G.p1, _G.p2	-- TODO: Remove globals
 function grid:moveAllUp(player, rows_to_add)
 -- Moves all gems in the player's half up by rows_to_add.
 	local last_row = self.rows - rows_to_add
 	local start_col, end_col = 1, 4
-	if player == p2 then
+	if player.ID == "P2" then
 		start_col, end_col = 5, 8
 	end
 	for r = 1, last_row do
@@ -341,7 +340,9 @@ end
 function grid:addBottomRow(player)
 	self:moveAllUp(player, 1)
 	local start, finish, step = p1.start_col, p1.end_col, 1
-	if player == p2 then start, finish, step = p2.end_col, p2.start_col, -1 end
+	if player.ID == "P2" then
+		start, finish, step = p2.end_col, p2.start_col, -1
+	end
 	for col = start, finish, step do
 		local ban1, ban2 = false, false
 		if col > p1.start_col and col < p2.end_col then
@@ -428,7 +429,7 @@ end
 function grid:getPendingGems(player)
 	local ret = {}
 	local col_start, col_end = 1, 4
-	if player == p2 then col_start, col_end = 5, 8 end
+	if player.ID == "P2" then col_start, col_end = 5, 8 end
 	for gem, r, c in self:gems() do
 		if r <= 6 and c >= col_start and gem.column <= col_end then
 			ret[#ret+1] = gem

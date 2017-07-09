@@ -7,13 +7,17 @@ local pairs = pairs
 
 local particles = class("Particles")
 
+--particles.DAMAGE_SHAKE_FRAMES = 4
+
 function particles:initialize(_stage)
 	stage = _stage
 end
 
 function particles.update(dt)
 	for _, particle_tbl in pairs(AllParticles) do
-		for _, particle in pairs(particle_tbl) do particle:update(dt) end
+		for _, particle in pairs(particle_tbl) do
+			particle:update(dt)
+		end
 	end
 end
 
@@ -58,6 +62,7 @@ end
 -------------------------------------------------------------------------------
 -- Damage particles generated when a player makes a match
 local DamageParticle = class('DamageParticle', pic)
+DamageParticle.DAMAGE_DROP_SPEED = window.height / 192	-- pixels for damage particles after reaching platform
 function DamageParticle:initialize(gem)
 	local img = image.lookup.particle_freq.random(gem.color)
 	pic.initialize(self, {x = gem.x, y = gem.y, image = img})
@@ -99,15 +104,15 @@ function DamageParticle:generate(gem)
 
 		-- second part of movement once it hits the platform
 		local drop_y = player.hand[p.final_loc_idx].y
-		local drop_duration = (drop_y - player.hand[2].y) / SPEED.DAMAGE_DROP
+		local drop_duration = (drop_y - player.hand[2].y) / self.DAMAGE_DROP_SPEED
 		local drop_x = function() return stage.getx[player.ID](p.y) end
 		local exit_func = function()
 			--[[
-			player.damage_shake = SPEED.DAMAGE_SHAKE_FRAMES
+			player.damage_shake = self.DAMAGE_SHAKE_FRAMES
 			player.shaking_platform_idx = p.final_loc_idx
 			local particles_remaining = particles.getNumber("Damage", player) - 1
 			if particles_remaining % 3 == 0 then
-				player.damage_shake = SPEED.DAMAGE_SHAKE_FRAMES * 2
+				player.damage_shake = self.DAMAGE_SHAKE_FRAMES * 2
 			end
 			--]]
 			p:remove()
@@ -184,7 +189,7 @@ function SuperParticle:generate(gem, num_particles)
 	for i = 1, num_particles do
 		-- create bezier curve
 		local x1, y1 = gem.x, gem.y -- start
-		local x4, y4 = stage.super[player].frame.x, stage.super[player].frame.y -- end
+		local x4, y4 = stage.super[player.ID].frame.x, stage.super[player.ID].frame.y -- end
 		-- dist and angle vary the second point within a circle around the origin
 		local dist = ((x4 - x1) ^ 2 + (y4 - y1) ^ 2) ^ 0.5
 		local angle = math.random() * math.pi * 2
@@ -223,6 +228,8 @@ end
 -------------------------------------------------------------------------------
 -- When a match is made, this is the white/gray overlay for the gems
 local ExplodingGem = class('ExplodingGem', pic)
+ExplodingGem.GEM_EXPLODE_FRAMES = 20
+ExplodingGem.GEM_FADE_FRAMES = 10
 function ExplodingGem:initialize(gem)
 	local grey_gems = gem.owner == 3
 	local color = grey_gems and (gem.color .. "_GRAY") or gem.color
@@ -237,11 +244,11 @@ end
 
 function ExplodingGem:generate(gem)
 	local p = self:new(gem)
-	p:moveTo{duration = SPEED.GEM_EXPLODE_FRAMES, transparency = 255}
+	p:moveTo{duration = self.GEM_EXPLODE_FRAMES, transparency = 255}
 	if gem.owner == 3 then
-		p:moveTo{duration = SPEED.GEM_FADE_FRAMES, exit = true}
+		p:moveTo{duration = self.GEM_FADE_FRAMES, exit = true}
 	else
-		p:moveTo{duration = SPEED.GEM_FADE_FRAMES, transparency = 0, scaling = 2,
+		p:moveTo{duration = self.GEM_FADE_FRAMES, transparency = 0, scaling = 2,
 			exit = true}
 	end
 end
@@ -278,7 +285,7 @@ function PlatformStar:generate(player, star_type, left, right_min, right_max)
 	-- create bezier curve for bottom half movement
 	local curve_right_min = math.max(right_min * stage.width, x)
 	local curve_right = math.random(curve_right_min, right_max * stage.width)
-	if player == p2 then
+	if player.ID == "P2" then
 		curve_right_min = math.min(right_min * stage.width, x)
 		curve_right = math.random(right_max * stage.width, curve_right_min)
 	end
@@ -288,7 +295,7 @@ function PlatformStar:generate(player, star_type, left, right_min, right_max)
 	local duration = 360
 	local rotation = 0.03 * duration
 	if star_type == "TinyStar" then rotation = 0.06 * duration end
-	if player == p2 then rotation = -rotation end
+	if player.ID == "P2" then rotation = -rotation end
 	p:moveTo{duration = duration * 0.5, curve = curve, rotation = rotation * 0.5}
 	p:moveTo{duration = duration * 0.2, y = stage.height * 0.3, rotation = rotation * 0.7}
 	p:moveTo{duration = duration * 0.15, y = stage.height * 0.15, rotation = rotation * 0.85,
@@ -619,7 +626,7 @@ end
 
 local wordtypes = {
 	Doublecast = function(player)
-		local x = player == p1 and stage.width * 0.4 or stage.width * 0.6
+		local x = player.ID == "P1" and stage.width * 0.4 or stage.width * 0.6
 		local y = stage.height * 0.3
 		local todraw = image.words.doublecast
 		local in_curve = function(t)
@@ -640,10 +647,10 @@ local wordtypes = {
 	end,
 
 	Rush = function(player)
-		local x = player == p1 and stage.width * -0.1 or stage.width * 1.1
+		local x = player.ID == "P1" and stage.width * -0.1 or stage.width * 1.1
 		local y = stage.height * 0.3
 		local todraw = image.words.rush
-		local sign = player == p1 and 1 or -1
+		local sign = player.ID == "P1" and 1 or -1
 		local rotation = 1/4
 		local in_curve = function(t)
 			return x + t*0.7*sign*stage.width,
@@ -757,9 +764,9 @@ end
 function PieEffects:generateSegment(segment, todraw)
 	todraw = todraw or segment.image
 	local x_sign, y_sign
-	if segment.owner == p1 then
+	if segment.owner.ID == "P1" then
 		x_sign = (segment.segment_number == 1 or segment.segment_number == 2) and 1 or -1
-	elseif segment.owner == p2 then
+	elseif segment.owner.ID == "P2" then
 		x_sign = (segment.segment_number == 1 or segment.segment_number == 2) and -1 or 1
 	end
 	y_sign = (segment.segment_number == 1 or segment.segment_number == 4) and -1 or 1
@@ -840,7 +847,7 @@ particles.explodingGem = ExplodingGem
 particles.damageTrail = DamageTrailParticle
 particles.platformStar = PlatformStar
 particles.dust = Dust
-particles.overDust = OverDust
+--particles.overDust = OverDust
 particles.upGem = UpGem
 particles.words = Words
 particles.wordEffects = WordEffects

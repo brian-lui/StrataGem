@@ -7,6 +7,7 @@ local stage
 local particles
 local tween = require 'tween'
 local pic = require 'pic'
+local Gem = require "gem"
 
 local function updatePieceGems(self)
 	if self.horizontal then
@@ -32,7 +33,7 @@ local Piece = class('Piece')
 function Piece:initialize(tbl)
 	stage = game.stage
 	particles = game.particles
-	
+
 	ID.piece = ID.piece + 1
 	local tocopy = {"x", "y", "owner", "gem_table"}
 	for i = 1, #tocopy do

@@ -1,7 +1,7 @@
 local image = {
 	lookup = {},
 	dummy = love.graphics.newImage('images/dummy.png'),
-	
+
 	-- backgrounds
 	seasons_background = love.graphics.newImage('images/backgrounds/seasons/background.png'),
 	seasons_background2 = love.graphics.newImage('images/backgrounds/seasons/background2.png'),
@@ -96,7 +96,7 @@ image.background.starfall = {
 	star1 = love.graphics.newImage('images/backgrounds/starfall/star1.png'),
 	star2 = love.graphics.newImage('images/backgrounds/starfall/star2.png'),
 	star3 = love.graphics.newImage('images/backgrounds/starfall/star3.png'),
-	star4 = love.graphics.newImage('images/backgrounds/starfall/star4.png'),	
+	star4 = love.graphics.newImage('images/backgrounds/starfall/star4.png'),
 }
 image.background.cloud = {
 	background = love.graphics.newImage('images/backgrounds/cloud/Sky.png'),
@@ -140,8 +140,8 @@ image.title = {
 	logo = love.graphics.newImage('images/Title/logo.png'),
 	online = love.graphics.newImage('images/Title/online.png'),
 	onlinepush = love.graphics.newImage('images/Title/onlinepush.png'),
-	vscpu = love.graphics.newImage('images/Title/vscpu.png'), 
-	vscpupush = love.graphics.newImage('images/Title/vscpupush.png'), 
+	vscpu = love.graphics.newImage('images/Title/vscpu.png'),
+	vscpupush = love.graphics.newImage('images/Title/vscpupush.png'),
 }
 
 image.lobby = {
@@ -234,7 +234,7 @@ image.pie = {
 
 image.lookup.pie = function(player, damage)
 	local str = "p1"
-	if player == p2 then str = "p2" end
+	if player.ID == "P2" then str = "p2" end
 	local colors = {"green", "yellow", "red", "red"}
 	colors[0] = "green" -- sentinel
 	str = str .. colors[damage]
@@ -308,13 +308,13 @@ image.lookup.dust = {
 		if star_instead then
 			return image.lookup.dust.star(color)
 		else
-			if color == "RED" then 
+			if color == "RED" then
 				local tbl = {image.dust.red1, image.dust.red2, image.dust.red3}
 				return tbl[rand]
-			elseif color == "BLUE" then 
+			elseif color == "BLUE" then
 				local tbl = {image.dust.blue1, image.dust.blue2, image.dust.blue3}
 				return tbl[rand]
-			elseif color == "GREEN" then 
+			elseif color == "GREEN" then
 				local tbl = {image.dust.green1, image.dust.green2, image.dust.green3}
 				return tbl[rand]
 			elseif color == "YELLOW" then

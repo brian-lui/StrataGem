@@ -1,6 +1,6 @@
 --[[
   This module provides methods to calculate the UI images to draw onto the screen.
-  Uses piece and grid functions, which are required in main.lua 
+  Uses piece and grid functions, which are required in main.lua
 --]]
 
 require 'inits'
@@ -20,8 +20,8 @@ function anims.getPieDrawables(player, damage)
 They should appear whenever a star takes damage, next to the star. They should very briefly be
 full (like .25 of a second) before the first piece zooms in and fades.
 If hit multiple times they should do that animation in rapid succession BUT NOT AT THE SAME TIME.
-At 2 pies they turn yellow. At 1 pie, red. At zero, the entire meter should remain in place and 
-empty for about a second before fading out and the star turns red like normal. 
+At 2 pies they turn yellow. At 1 pie, red. At zero, the entire meter should remain in place and
+empty for about a second before fading out and the star turns red like normal.
 Heck, you can keep the star gradually changing colors like it does.
 
 P1 pies should move counter clockwise, P2 clockwise.
@@ -41,7 +41,7 @@ function anims.drawSuper(player)
 	local full_segs = math.min(draw_mp / segment_amount, 4)
 	local part_fill_percent = full_segs % 1
 	--local transparency = math.ceil(math.sin(frame / 30) * 127.5 + 127.5)
-	local flip = player == p2
+	local flip = player.ID == "P2"
 
 	-- recalculate partial fill block length
 	if part_fill_percent > 0 then
@@ -65,7 +65,7 @@ function anims.drawSuper(player)
 	if player.supering then
 		player.super_glow.full:draw()
 		player.super_glow.full.scaling = math.min(player.super_glow.full.scaling + 0.1, 1)
-		
+
 	elseif full_segs >= 1 then
 		player.super_glow[math.floor(full_segs)].transparency = math.ceil(math.sin(frame / 30) * 127.5 + 127.5)
 		player.super_glow[math.floor(full_segs)]:draw()
@@ -109,7 +109,7 @@ local function drawPlacementShadow(piece, shift)
 		if show[i].x and show[i].y then
 			piece.gems[i]:draw(show[i].x, show[i].y, {0, 0, 0, 128})
 		end
-	end  	
+	end
 end
 
 -- draws the gem shadows indicating where the piece will land.
@@ -156,7 +156,7 @@ function anims.showShadows(piece)
 	local valid = piece:isDropValid(shift)
 	-- TODO: somehow account for variable piece size
 	local pending_gems = stage.grid:getPendingGems(piece.owner)
-	local account_for_doublecast = #pending_gems == 2 
+	local account_for_doublecast = #pending_gems == 2
 	drawUnderGemShadow(piece)
 	if valid then
 		drawPlacementShadow(piece, shift)
@@ -257,7 +257,7 @@ function anims.update(dt)
 				local h = game.active_piece.horizontal
 				particles.wordEffects:generateRushCloud(gem1, gem2, h)
 			end
-		elseif not valid or place_type == "normal" then 
+		elseif not valid or place_type == "normal" then
 			particles.wordEffects:clear()
 		end
 	elseif cloud then -- remove glow effects if piece not active
@@ -267,7 +267,7 @@ function anims.update(dt)
 	-- tween gem particles
 	if #pending_gems == 2 and valid then
 		for i = 1, #pending_gems do	pending_gems[i].tweening:update(dt)	end
-	else		
+	else
 		for i = 1, #pending_gems do pending_gems[i].tweening:reset() end
 	end
 end

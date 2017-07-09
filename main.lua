@@ -8,8 +8,9 @@ local game = _G.game
 local stage = game.stage
 local particles = game.particles
 
-Gem = require 'gem'
+--local Gem = require "gem"
 --local settings = require 'settings'
+local Character = require "character"
 local draw = require 'draw'
 local music = require 'music'
 local title = require 'title'
@@ -76,7 +77,9 @@ end
 
 function love.draw()
 	if game.current_screen == "maingame" then
-		if frame % 2 == 0 then canvas[1]:renderTo(draw.drawBackground) end
+		if frame % 2 == 0 then
+			canvas[1]:renderTo(draw.drawBackground)
+		end
 		canvas[2]:renderTo(draw.drawScreenElements)
 		canvas[3]:renderTo(draw.drawGems)
 		--canvas[4]:renderTo(draw.drawAnimations)
@@ -86,7 +89,7 @@ function love.draw()
 		for i = 2, 4 do
 			draw.camera:set(1, 1)
 			if game.screenshake_frames > 0 then
-				draw.screenshake(screenshake_vel)
+				draw.screenshake(game.screenshake_vel)
 			else
 				draw.camera:setPosition(0, 0)
 			end
@@ -165,21 +168,20 @@ end
 
 function startGame(gametype, char1, char2, bkground, seed, side)
 	ID:reset()
+
 	game:reset()
 	stage.grid:reset()
 	particles.reset()
-	AllGemPlatforms = {}
-	if seed then rng.newSeed(seed) end
-	side = side or 1
-	local function setPlayerToCharacter(player, char)
-		local temp_defaults = deepcpy(game.character.defaults)
-		local temp_char = deepcpy(game.character[char])
-		for k, v in pairs(temp_defaults) do player[k] = v end
-		for k, v in pairs(temp_char) do player[k] = v end
+	if seed then
+		game.rng:setSeed(seed)
 	end
-	setPlayerToCharacter(p1, char1)
-	setPlayerToCharacter(p2, char2)
 
+	p1 = require("characters." .. char1):new(1, game.stage)
+	p2 = require("characters." .. char2):new(2, game.stage)
+	p1.enemy = p2
+	p2.enemy = p1
+
+	side = side or 1
 	if side == 1 then
 		game.me_player, game.them_player = p1, p2
 		print("You are PLAYER 1. This will be graphicalized soon")
@@ -194,8 +196,6 @@ function startGame(gametype, char1, char2, bkground, seed, side)
 	background.current.reset()
 
 	game.type = gametype
-	p1.cur_mp, p2.cur_mp = 0, 0
-	game.character.setup()
 	game.current_screen = "maingame"
 end
 

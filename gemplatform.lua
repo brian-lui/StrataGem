@@ -6,17 +6,20 @@ local pic = require 'pic'
 
 -- gem platforms are generated through the Hand class
 local GemPlatform = class('GemPlatform', pic)
+GemPlatform.PLATFORM_ROTATION_SPEED = 0.02
+GemPlatform.GEM_PLATFORM_TURN_RED_SPEED = 8
+--GemPlatform.PLATFORM_FADE = 8
+
 function GemPlatform:initialize(owner, location)
-	local img = owner == p1 and image.UI.platform_gold or image.UI.platform_silver
+	local img = owner.ID == "P1" and image.UI.platform_gold or image.UI.platform_silver
 	pic.initialize(self, {x = owner.hand[location].x, y = owner.hand[location].y, image = img})
 	self.hand_idx = location
 	self.x, self.y = owner.hand[location].x, owner.hand[location].y
 	self.owner = owner
 	self.getx = owner.hand.getx
 	self.transparency, self.redness, self.rotation = 255, 0, 0
-	self.rotation_speed = SPEED.PLATFORM_ROTATION
-	if player == p2 then self.rotation_speed = -self.rotation_speed end
-	AllGemPlatforms[ID.particle] = self
+	self.rotation_speed = owner.ID == "P1" and self.PLATFORM_ROTATION_SPEED or -self.PLATFORM_ROTATION_SPEED
+	game.AllGemPlatforms[ID.particle] = self
 end
 
 function GemPlatform:draw()
@@ -34,7 +37,7 @@ end
 
 function GemPlatform:removeAnim()
 	print("(Placeholder) remove Gem platform animation plays")
-	--self.transparency = math.max(self.transparency - SPEED.PLATFORM_FADE, 0)
+	--self.transparency = math.max(self.transparency - self.PLATFORM_FADE, 0)
 	--if self.transparency == 0 then remove_particle end
 end
 
@@ -46,17 +49,17 @@ function GemPlatform:update(dt)
 	if loc == 0 and self.y == player.hand[0].y then
 	-- fade out top gem platform
 		self:remove()
-		--instance.transparency = math.max(instance.transparency - SPEED.PLATFORM_FADE, 0)
+		--instance.transparency = math.max(instance.transparency - self.PLATFORM_FADE, 0)
 		--if instance.transparency == 0 then instance:remove() end
 	elseif loc <= 5 and (loc == 1 or player.pie[loc].damage == 4) and game.phase == "Action" then
-		self.redness = math.min(self.redness + SPEED.GEM_PLATFORM_TURN_RED, 255)
+		self.redness = math.min(self.redness + self.GEM_PLATFORM_TURN_RED_SPEED, 255)
 		if self.redness == 255 and not self.glow_startframe then
 			self.glow_startframe = frame
 		end
 	end
 	--]]
 	if loc <= 5 and (loc == 1 or player.pie[loc].damage == 4) and game.phase == "Action" then
-		self.redness = math.min(self.redness + SPEED.GEM_PLATFORM_TURN_RED, 255)
+		self.redness = math.min(self.redness + self.GEM_PLATFORM_TURN_RED_SPEED, 255)
 		if self.redness == 255 and not self.glow_startframe then
 			self.glow_startframe = frame
 		end

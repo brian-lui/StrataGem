@@ -25,7 +25,7 @@ local lamer = {
 	old_mp = 0,
 	hand_size = 5,
 	pieces_fallen = 0,
-	get_piece = false,
+	--get_piece = false,
 	dropped_piece = false,
 	super_clicked = false,
 	supering = false,
@@ -33,7 +33,7 @@ local lamer = {
 	current_rush_cost = 32, -- used for calculations
 	current_double_cost = 16, -- used for calculations
 	place_type = "normal",
-	piece_fx = false,
+	--piece_fx = false,
 	damage_shake = 0,
 	shaking_platform_idx = 2,
 }

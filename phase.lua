@@ -178,12 +178,19 @@ end
 function phase.resolvingMatches(dt)
 	local gem_table = stage.grid:getMatchedGems()
 	game.scoring_combo = game.scoring_combo + 1
-	for player in game:players() do player:duringMatch(gem_table) end
+	for player in game:players() do
+		player:duringMatch(gem_table)
+	end
 	local p1dmg, p2dmg, p1super, p2super = engine.calculateScore(gem_table)
 	local p1_matched, p2_matched = engine.checkMatchedThisTurn(gem_table)
-	if not p1_matched then stage.grid:removeAllGemOwners(p1) end
-	if not p2_matched then stage.grid:removeAllGemOwners(p2) end
-	game.character.addSuper(p1super, p2super)
+	if not p1_matched then
+		stage.grid:removeAllGemOwners(p1)
+	end
+	if not p2_matched then
+		stage.grid:removeAllGemOwners(p2)
+	end
+	p1:addSuper(p1super)
+	p2:addSuper(p2super)
 	stage.grid:removeMatchedGems()
 	p1.hand:addDamage(p2dmg)
 	p2.hand:addDamage(p1dmg)

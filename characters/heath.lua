@@ -1,53 +1,56 @@
+local love = _G.love
+local class = require "middleclass"
 local image = require 'image'
+local Character = require "character"
 --local pic = require 'pic'
 --local engine = game.engine
 --local hand = require 'hand'
 --local default = require 'characters/default'
 --local stage = game.stage
 
-local heath = {
-	full_size_image = love.graphics.newImage('images/Characters/heath.png'),
-	small_image = love.graphics.newImage('images/Characters/heathsmall.png'),
-	action_image = love.graphics.newImage('images/Characters/heathaction.png'),
-	shadow_image = love.graphics.newImage('images/Characters/heathshadow.png'),
+local heath = class("Heath", Character)
 
-	character_id = "Heath",
-	meter_gain = {RED = 8, BLUE = 4, GREEN = 4, YELLOW = 4},
-	super_images = {
-		word = image.UI.super.red_word,
-		partial = image.UI.super.red_partial,
-		full = image.UI.super.red_full,
-		glow = {image.UI.super.red_glow1, image.UI.super.red_glow2, image.UI.super.red_glow3, image.UI.super.red_glow4}
-	},
-	special_images = {
-		--fire1 = love.graphics.newImage('images/Specials/Heath/fire1.png'),
-		--fire2 = love.graphics.newImage('images/Specials/Heath/fire2.png'),
-		--fire3 = love.graphics.newImage('images/Specials/Heath/fire3.png'),
-		testfire1 = love.graphics.newImage('images/Specials/Heath/testfire1.png'),
-		testfire2 = love.graphics.newImage('images/Specials/Heath/testfire2.png'),
-		testfire3 = love.graphics.newImage('images/Specials/Heath/testfire3.png'),
-		testfire4 = love.graphics.newImage('images/Specials/Heath/testfire4.png'),
-		testfire5 = love.graphics.newImage('images/Specials/Heath/testfire5.png'),
-		--glow1 = love.graphics.newImage('images/Specials/Heath/glow1.png'),
-		--glow2 = love.graphics.newImage('images/Specials/Heath/glow2.png'),
-		fire_particle = love.graphics.newImage('images/Specials/Heath/fireparticle.png'),
-		boom1 = love.graphics.newImage('images/Specials/Heath/boom1.png'),
-		boom2 = love.graphics.newImage('images/Specials/Heath/boom2.png'),
-		boom3 = love.graphics.newImage('images/Specials/Heath/boom3.png'),
-		boom4 = love.graphics.newImage('images/Specials/Heath/boom4.png'),
-		boom5 = love.graphics.newImage('images/Specials/Heath/boom5.png'),
-		boomparticle1 = love.graphics.newImage('images/Specials/Heath/boomparticle1.png'),
-		boomparticle2 = love.graphics.newImage('images/Specials/Heath/boomparticle2.png'),
-		boomparticle3 = love.graphics.newImage('images/Specials/Heath/boomparticle3.png'),
-	},
-	fire_columns = {},
-	pending_fires = {},
-	super_clears = {},
-	supering = false,
-	super_this_turn = false,
-	current_rush_cost = nil,
-	current_double_cost = nil,
+heath.full_size_image = love.graphics.newImage('images/Characters/heath.png')
+heath.small_image = love.graphics.newImage('images/Characters/heathsmall.png')
+heath.action_image = love.graphics.newImage('images/Characters/heathaction.png')
+heath.shadow_image = love.graphics.newImage('images/Characters/heathshadow.png')
+
+heath.character_id = "Heath"
+heath.meter_gain = {RED = 8, BLUE = 4, GREEN = 4, YELLOW = 4}
+heath.super_images = {
+	word = image.UI.super.red_word,
+	partial = image.UI.super.red_partial,
+	full = image.UI.super.red_full,
+	glow = {image.UI.super.red_glow1, image.UI.super.red_glow2, image.UI.super.red_glow3, image.UI.super.red_glow4}
 }
+heath.special_images = {
+	--fire1 = love.graphics.newImage('images/Specials/Heath/fire1.png'),
+	--fire2 = love.graphics.newImage('images/Specials/Heath/fire2.png'),
+	--fire3 = love.graphics.newImage('images/Specials/Heath/fire3.png'),
+	testfire1 = love.graphics.newImage('images/Specials/Heath/testfire1.png'),
+	testfire2 = love.graphics.newImage('images/Specials/Heath/testfire2.png'),
+	testfire3 = love.graphics.newImage('images/Specials/Heath/testfire3.png'),
+	testfire4 = love.graphics.newImage('images/Specials/Heath/testfire4.png'),
+	testfire5 = love.graphics.newImage('images/Specials/Heath/testfire5.png'),
+	--glow1 = love.graphics.newImage('images/Specials/Heath/glow1.png'),
+	--glow2 = love.graphics.newImage('images/Specials/Heath/glow2.png'),
+	fire_particle = love.graphics.newImage('images/Specials/Heath/fireparticle.png'),
+	boom1 = love.graphics.newImage('images/Specials/Heath/boom1.png'),
+	boom2 = love.graphics.newImage('images/Specials/Heath/boom2.png'),
+	boom3 = love.graphics.newImage('images/Specials/Heath/boom3.png'),
+	boom4 = love.graphics.newImage('images/Specials/Heath/boom4.png'),
+	boom5 = love.graphics.newImage('images/Specials/Heath/boom5.png'),
+	boomparticle1 = love.graphics.newImage('images/Specials/Heath/boomparticle1.png'),
+	boomparticle2 = love.graphics.newImage('images/Specials/Heath/boomparticle2.png'),
+	boomparticle3 = love.graphics.newImage('images/Specials/Heath/boomparticle3.png'),
+}
+
+function heath:initialize(...)
+	Character.initialize(self, ...)
+	self.fire_columns = {}
+	self.pending_fires = {}
+	self.super_clears = {}
+end
 
 local particle_effects = {}
 function particle_effects.FireParticle(fire)
@@ -477,11 +480,11 @@ function heath:cleanup()
 	self.super_this_turn = false
 end
 
+--[[
 function heath:super()
 	if self.cur_mp >= self.SUPER_COST then
-		self.super_glow.full.scaling = 0
-		self.supering = not self.supering
 	end
 end
+--]]
 
 return heath

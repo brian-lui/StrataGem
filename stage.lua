@@ -42,23 +42,23 @@ function stage:initialize(game)
 		P2 = {self.width * 0.8, 0, self.width * 0.2, self.height * 0.3},
 	}
 
-	self.super = {[p1] = {}, [p2] = {}}
-	self.super[p1].frame = {x = self.x_mid - (8.5 * self.gem_width), y = self.y_mid - (3 * self.gem_height)}
-	self.super[p2].frame = {x = self.x_mid + (8.5 * self.gem_width), y = self.y_mid - (3 * self.gem_height)}
+	self.super = {P1 = {}, P2 = {}}
+	self.super.P1.frame = {x = self.x_mid - (8.5 * self.gem_width), y = self.y_mid - (3 * self.gem_height)}
+	self.super.P2.frame = {x = self.x_mid + (8.5 * self.gem_width), y = self.y_mid - (3 * self.gem_height)}
 	local super_width = image.UI.super.red_partial:getWidth()
 
 	for i = 1, 4 do
-		self.super[p1][i] = {
-			x = self.super[p1].frame.x + ((i - 2.5) * super_width),
-			y = self.super[p1].frame.y,
-			glow_x = self.super[p1].frame.x + ((i * 0.5 - 2) * super_width),
-			glow_y = self.super[p1].frame.y,
+		self.super.P1[i] = {
+			x = self.super.P1.frame.x + ((i - 2.5) * super_width),
+			y = self.super.P1.frame.y,
+			glow_x = self.super.P1.frame.x + ((i * 0.5 - 2) * super_width),
+			glow_y = self.super.P1.frame.y,
 		}
-		self.super[p2][i] = {
-			x = self.super[p2].frame.x + ((2.5 - i) * super_width),
-			y = self.super[p2].frame.y,
-			glow_x = self.super[p2].frame.x + ((2 - i * 0.5) * super_width),
-			glow_y = self.super[p2].frame.y,
+		self.super.P2[i] = {
+			x = self.super.P2.frame.x + ((2.5 - i) * super_width),
+			y = self.super.P2.frame.y,
+			glow_x = self.super.P2.frame.x + ((2 - i * 0.5) * super_width),
+			glow_y = self.super.P2.frame.y,
 		}
 	end
 

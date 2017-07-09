@@ -24,8 +24,8 @@ end
 
 -----------------------------------UPDATES-------------------------------------
 local locations = { -- put into stage.lua later
-	[p1] = {x = 150, y = 150},
-	[p2] = {x = 876, y = 150},
+	P1 = {x = 150, y = 150},
+	P2 = {x = 876, y = 150},
 }
 
 local AllAnimations = {}
@@ -92,13 +92,13 @@ local function updateThis(self, dt)
   self.x = self.parent.x + absolute_offset_x
   self.y = self.parent.y + absolute_offset_y
   self.angle = self.parent.angle + self.final.angle + self.rotation.angle
-	
+
 	-- remove function
 	self:remove_func()
 end
 
 local function drawThis(self)
-	local h_flip = self.owner == p2
+	local h_flip = self.owner.ID == "P2"
 	pic.draw(self, h_flip, self.x, self.y, self.angle)
 end
 
@@ -119,7 +119,7 @@ function Animations:initialize(tbl, player)
 		owner = player,
 		is_child = false,
 		children = {},
-		parent = {x = locations[player].x, y = locations[player].y, angle = 0, rotation = {angle = 0}}, -- put x y spin here lol
+		parent = {x = locations[player.ID].x, y = locations[player.ID].y, angle = 0, rotation = {angle = 0}}, -- put x y spin here lol
 		rotation = {pivot_x = 0, pivot_y = 0, angle = 0},
 		final = {x = 0, y = 0, angle = 0},
 		remove_func = function(self) end,
@@ -142,7 +142,7 @@ function Animations:swapImage(img)
 	self.image = img
 	self.width = self.image:getWidth()
 	self.height = self.image:getHeight()
-	self.quad = love.graphics.newQuad(0, 0, self.width, self.height, self.width, self.height)	
+	self.quad = love.graphics.newQuad(0, 0, self.width, self.height, self.width, self.height)
 end
 
 -- push this image to the bottom of the display stack
@@ -198,7 +198,7 @@ end
 --]]
 function Animations:rotate(angle, duration, easing)
 	assert(type(angle) == "number", "Angle is not a number")
-	assert(type(duration) == "number", "Duration is not a number")	
+	assert(type(duration) == "number", "Duration is not a number")
 	--[[
 	This is to explain to myself what I am doing here for when I forget later.
 	1. Translate the pivot point to become the origin
@@ -213,9 +213,9 @@ end
 
 -- Move an image by x, y, relative to its angle.
 function Animations:move(x, y, duration, easing)
-	assert(type(x) == "number", "x is not a number")	
+	assert(type(x) == "number", "x is not a number")
 	assert(type(y) == "number", "y is not a number")
-	assert(type(duration) == "number", "Duration is not a number")	
+	assert(type(duration) == "number", "Duration is not a number")
 	local dist, angle = polar(x, y)
 	local abs_x, abs_y = xy(dist, angle - self.parent.angle)
 	newTween(self, duration, "x_from_parent", self.x_from_parent + abs_x, easing, "MoveX")

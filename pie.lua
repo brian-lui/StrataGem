@@ -11,9 +11,9 @@ function Segment:initialize(pie, segment_number)
 	local v_adjust = todraw:getHeight() * 0.5
 	if segment_number == 1 or segment_number == 4 then v_adjust = -v_adjust end
 
-	if pie.owner == p1 and (segment_number == 3 or segment_number == 4) then
+	if pie.owner.ID == "P1" and (segment_number == 3 or segment_number == 4) then
 		h_adjust = -h_adjust
-	elseif pie.owner == p2 and (segment_number == 1 or segment_number == 2) then
+	elseif pie.owner.ID == "P2" and (segment_number == 1 or segment_number == 2) then
 		h_adjust = -h_adjust
 	end
 
@@ -25,7 +25,7 @@ function Segment:initialize(pie, segment_number)
 	self.owner = pie.owner
 	self.segment_number = segment_number
 	self.rotation = math.pi * segment_number * 0.5
-	if pie.owner == p2 then	self.rotation = math.pi * (5 - segment_number) * 0.5 end
+	if pie.owner.ID == "P2" then	self.rotation = math.pi * (5 - segment_number) * 0.5 end
 	self.t = 0
 	pic.initialize(self, {x = self.x, y = self.y, rotation = self.rotation, image = todraw})
 end
@@ -45,13 +45,10 @@ end
 local Pie = class('Pie', pic)
 function Pie:initialize(player, loc)
 	particles = game.particles
-	
-	local todraw = player == p1 and image.pie.p1 or image.pie.p2
-	local x_shift = image.UI.platform_gold:getWidth() * 0.5
+
+	local todraw = player.ID == "P1" and image.pie.p1 or image.pie.p2
+	local x_shift = player.ID == "P1" and -image.UI.platform_gold:getWidth() * 0.5 or image.UI.platform_gold:getWidth() * 0.5
 	local y_shift = image.UI.platform_gold:getHeight() * 0.15
-	if player == p1 then
-		x_shift = x_shift * -1
-	end
 
 	self.x = player.hand[loc].x + x_shift
 	self.y = player.hand[loc].y + y_shift

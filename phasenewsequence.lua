@@ -38,7 +38,8 @@ function instantCalculateGamestate()
 	local p1_matched, p2_matched = engine.checkMatchedThisTurn(gem_table) -- pure function
 	if not p1_matched then stage.grid:removeAllGemOwners(p1) end -- pure state, removes ownership flags. prob should run this before p1/p2 specific abilities
 	if not p2_matched then stage.grid:removeAllGemOwners(p2) end -- pure state, removes ownership flags. prob should run this before p1/p2 specific abilities
-	game.character.addSuper(p1super, p2super) -- pure state
+	p1:addSuper(p1super) -- pure state
+	p2:addSuper(p2super) -- pure state
 	engine.generateMatchParticles() -- pure animations
 	stage.grid:removeMatchedGems() -- pure state
 	hand.addDamage(p1, p2dmg) -- pure state

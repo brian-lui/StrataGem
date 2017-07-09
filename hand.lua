@@ -5,34 +5,14 @@ local Piece = require 'piece'
 local GemPlatform = require 'gemplatform'
 local stage
 
-local function destroyTopPieceAnim(hand)
-	print("Check top piece: ", hand[0].piece, hand.owner.ID)
-	for i = 1, #hand[0].piece.gems do
-		local this_gem = hand[0].piece.gems[i]
-		local x_dist = this_gem.x - hand[0].x
-		local y_dist = this_gem.y - hand[0].y
-		local dist = (x_dist^2 + y_dist^2)^0.5
-		local angle = math.atan2(y_dist, x_dist)
-		local duration = math.abs(dist / SPEED.PLATFORM)
-		this_gem:moveTo{x = hand[0].x, y = hand[0].y, duration = duration}
-	end
-end
-
-local function destroyTopPiece(hand)
-	for i = 1, #hand[0].piece.gems do
-		local this_gem = hand[0].piece.gems[i]
-		--hand.garbage[#hand.garbage+1] = this_gem -- do this alter
-	end
-	hand[0].piece:breakUp()
-	stage.grid:addBottomRow(hand.owner) -- add a penalty row TODO: callback function this later
-	hand.owner.pieces_fallen = hand.owner.pieces_fallen + 1 -- to determine garbage ownership
-end
-
 local Hand = class('Hand')
+
+Hand.PLATFORM_SPEED = window.height / 192 -- pixels per second for pieces to shuffle
+
 function Hand:initialize(player)
 	stage = game.stage
 
-	assert((player == p1 or player == p2), "Invalid player given!")
+	--assert((player == p1 or player == p2), "Invalid player given!")
 	self.owner = player
 	for i = 0, 10 do
 		self[i] = {}
@@ -66,7 +46,7 @@ end
 
 -- this describes the shape of the curve for the hands.
 function Hand:getx(y)
-	local sign = self.owner == p1 and -1 or 1
+	local sign = self.owner.ID == "P1" and -1 or 1
 	if y == nil then print("Invalid y provided to getx!") return nil end
 	if y <= stage.height * 0.6 then
 		return stage.x_mid + (5.5 * stage.gem_width) * sign
@@ -77,12 +57,35 @@ function Hand:getx(y)
 	end
 end
 
+local function destroyTopPieceAnim(hand)
+	print("Check top piece: ", hand[0].piece, hand.owner.ID)
+	for i = 1, #hand[0].piece.gems do
+		local this_gem = hand[0].piece.gems[i]
+		local x_dist = this_gem.x - hand[0].x
+		local y_dist = this_gem.y - hand[0].y
+		local dist = (x_dist^2 + y_dist^2)^0.5
+		local angle = math.atan2(y_dist, x_dist)
+		local duration = math.abs(dist / hand.PLATFORM_SPEED)
+		this_gem:moveTo{x = hand[0].x, y = hand[0].y, duration = duration}
+	end
+end
+
+local function destroyTopPiece(hand)
+	for i = 1, #hand[0].piece.gems do
+		local this_gem = hand[0].piece.gems[i]
+		--hand.garbage[#hand.garbage+1] = this_gem -- do this alter
+	end
+	hand[0].piece:breakUp()
+	stage.grid:addBottomRow(hand.owner) -- add a penalty row TODO: callback function this later
+	hand.owner.pieces_fallen = hand.owner.pieces_fallen + 1 -- to determine garbage ownership
+end
+
 -- moves a piece from location to location, as integers
 function Hand:movePiece(start_pos, end_pos)
 	print("Moving piece from, to: ", start_pos, end_pos)
 	-- anims
 	local dist = stage.height * 0.1375 * (end_pos - start_pos)
-	local duration = math.abs(dist / SPEED.PLATFORM)
+	local duration = math.abs(dist / self.PLATFORM_SPEED)
 	local to_move = self[start_pos].piece
 	to_move:moveTo{
 		x = function() return self:getx(to_move.y) end,
@@ -106,7 +109,7 @@ end
 function Hand:movePlatform(start_pos, end_pos)
 	-- anims
 	local dist = stage.height * 0.1375 * (end_pos - start_pos)
-	local duration = math.abs(dist / SPEED.PLATFORM)
+	local duration = math.abs(dist / self.PLATFORM_SPEED)
 	self[start_pos].platform:moveTo{
 		x = function() return self:getx(self[end_pos].platform.y) end,
 		y = self[end_pos].y,
@@ -129,7 +132,7 @@ end
 function Hand:getNewTurnPieces(gem_table)
 	local player = self.owner
 	local distance = stage.height * 0.1375 * player.pieces_to_get
-	local duration = math.abs(distance / SPEED.PLATFORM)
+	local duration = math.abs(distance / self.PLATFORM_SPEED)
 	for i = 6, player.pieces_to_get + 5 do
 		self[i].piece = Piece:new{
 			location = self[i],
@@ -190,7 +193,7 @@ function Hand:update(dt)
 	for i = #garbage, 1, -1 do
 
 		-- no need for these three lines after moveTo
-		--[[garbage[i].y = math.max(garbage[i].y - SPEED.PLATFORM, player.hand[0].y)
+		--[[garbage[i].y = math.max(garbage[i].y - self.PLATFORM_SPEED, player.hand[0].y)
 		local to_check_y = garbage[i].y - garbage[i].y_diff
 		garbage[i].x = stage.getx[player.ID](to_check_y) + garbage[i].x_diff--]]
 

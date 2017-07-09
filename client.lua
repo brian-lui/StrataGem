@@ -351,10 +351,10 @@ function client.sendState(delay)
 		-- checksum
 	}
 	if game.turn > 1 then
-		if game.me_player == p1 then
+		if game.me_player.ID == "P1" then
 			state.p1_prev_place_type = client.our_delta[game.turn - 1].place_type
 			state.p2_prev_place_type = client.their_delta[game.turn - 1].place_type
-		elseif game.me_player == p2 then
+		elseif game.me_player.ID == "P2" then
 			state.p1_prev_place_type = client.their_delta[game.turn - 1].place_type
 			state.p2_prev_place_type = client.our_delta[game.turn - 1].place_type
 		end
