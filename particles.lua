@@ -625,7 +625,7 @@ function Words:remove()
 end
 
 function Words:generateDoublecast(player)
-	local x = player == p1 and stage.width * 0.4 or stage.width * 0.6
+	local x = player.ID == "P1" and stage.width * 0.4 or stage.width * 0.6
 	local y = stage.height * 0.3
 	local todraw = image.words.doublecast
 	local in_curve = function(t)
@@ -647,10 +647,10 @@ function Words:generateDoublecast(player)
 end
 
 function Words:generateRush(player)
-	local x = player == p1 and stage.width * -0.1 or stage.width * 1.1
+	local x = player.ID == "P1" and stage.width * -0.1 or stage.width * 1.1
 	local y = stage.height * 0.3
 	local todraw = image.words.rush
-	local sign = player == p1 and 1 or -1
+	local sign = player.ID == "P1" and 1 or -1
 	local rotation = 1/4
 	local in_curve = function(t)
 		return x + t*0.7*sign*stage.width,
