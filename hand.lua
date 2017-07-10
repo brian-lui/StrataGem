@@ -191,12 +191,6 @@ function Hand:update(dt)
 	-- move garbage gems
 	local garbage = self.garbage
 	for i = #garbage, 1, -1 do
-
-		-- no need for these three lines after moveTo
-		--[[garbage[i].y = math.max(garbage[i].y - self.PLATFORM_SPEED, player.hand[0].y)
-		local to_check_y = garbage[i].y - garbage[i].y_diff
-		garbage[i].x = stage.getx[player.ID](to_check_y) + garbage[i].x_diff--]]
-
 		-- remove garbage gems if arrived at top
 		if garbage[i].y == self[0].y then
 			table.remove(garbage, i) -- later split this into a function for destroy top piece particle effects

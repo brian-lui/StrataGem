@@ -14,29 +14,6 @@ function stage:initialize(game)
 	self.x_mid = self.width / 2
 	self.y_mid = self.height / 2
 	self.grid = Grid(self, game)
-
-	-- this describes the shape of the curve for the hands.
-	self.getx = {
-		P1 = function(y)
-			if y <= self.height * 0.6 then
-				return self.x_mid - (5.5 * self.gem_width)
-			else
-				local start_x = self.x_mid + (5.5 * self.gem_width) * -1
-				local additional = (((y - self.height * 0.6) / self.height) ^ 2) * self.height
-				return start_x + additional * -1
-			end
-		end,
-		P2 = function(y)
-			if y <= self.height * 0.6 then
-				return self.x_mid + (5.5 * self.gem_width)
-			else
-				local start_x = self.x_mid + (5.5 * self.gem_width) * 1
-				local additional = (((y - self.height * 0.6) / self.height) ^ 2) * self.height
-				return start_x + additional * 1
-			end
-		end,
-	}
-
 	self.super_click = {
 		P1 = {0, 0, self.width * 0.2, self.height * 0.3}, -- rx, ry, rw, rh
 		P2 = {self.width * 0.8, 0, self.width * 0.2, self.height * 0.3},
