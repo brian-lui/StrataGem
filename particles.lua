@@ -105,7 +105,7 @@ function DamageParticle:generate(gem)
 		-- second part of movement once it hits the platform
 		local drop_y = player.hand[p.final_loc_idx].y
 		local drop_duration = (drop_y - player.hand[2].y) / self.DAMAGE_DROP_SPEED
-		local drop_x = function() return player.ID.hand.getx(p.y) end
+		local drop_x = function() return player.hand:getx(p.y) end
 		local exit_func = function()
 			--[[
 			player.damage_shake = self.DAMAGE_SHAKE_FRAMES

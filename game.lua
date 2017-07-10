@@ -22,7 +22,6 @@ function game:initialize()
 	self.stage = require "stage"(self)	-- playing field area and grid
 	self.engine = require "engine"
 	self.particles = require "particles"(self.stage)
-	self.AllGemPlatforms = {}
 
 	self:reset()
 	self.engine.initialize(self)

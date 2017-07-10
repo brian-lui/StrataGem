@@ -1,4 +1,3 @@
-require 'inits' -- for AllGemPlatforms. SPEED
 local image = require 'image'
 local class = require 'middleclass' -- class support
 local pic = require 'pic'

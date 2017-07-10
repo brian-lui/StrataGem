@@ -119,15 +119,13 @@ function draw.drawGems()
 	love.graphics.clear()
 
 	-- gem platforms
-	for _, instance in pairs(game.AllGemPlatforms) do
-		local player = instance.owner
-		if player.damage_shake > 0 and instance.hand_idx == player.shaking_platform_idx then
-			drawObjectShake(instance)
-		else
-			instance:draw()
+	for player in game:players() do
+		for i = 0, #player.hand do
+			if player.hand[i].platform then
+				player.hand[i].platform:draw()
+			end
 		end
 	end
-
 	-- pies
 	for player in game:players() do
 		for i = 2, 5 do

@@ -1,4 +1,3 @@
---require 'inits' -- for AllGemPlatforms. SPEED
 require 'utilities' -- move
 local image = require 'image'
 local class = require 'middleclass' -- class support
@@ -19,7 +18,7 @@ function GemPlatform:initialize(owner, location)
 	self.getx = owner.hand.getx
 	self.transparency, self.redness, self.rotation = 255, 0, 0
 	self.rotation_speed = owner.ID == "P1" and self.PLATFORM_ROTATION_SPEED or -self.PLATFORM_ROTATION_SPEED
-	game.AllGemPlatforms[ID.particle] = self
+	--game.AllGemPlatforms[ID.particle] = self
 end
 
 function GemPlatform:draw()
