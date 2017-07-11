@@ -121,6 +121,7 @@ function Hand:movePlatform(start_pos, end_pos)
 		print("warning: moved a platform to location " .. end_pos .. " already with a platform!")
 	end
 	self[end_pos].platform = self[start_pos].platform
+	self[end_pos].platform.hand_idx = end_pos
 	self[start_pos].platform = nil
 	if self[0].platform then
 		self[0].platform:removeAnim()

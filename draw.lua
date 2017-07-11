@@ -76,6 +76,7 @@ end
 -- draw all the non-gem screen elements: super bar, sprite
 function draw.drawScreenElements()
 	love.graphics.clear()
+	
 	-- under-platform trails
 	for _, v in pairs(AllParticles.PlatformTinyStar) do v:draw() end
 	for _, v in pairs(AllParticles.PlatformStar) do v:draw() end
@@ -98,20 +99,6 @@ local function blockBottomGemRow()
 	local width = stage.grid.x[stage.grid.columns] - stage.grid.x[0]
 	local height = stage.gem_width
 	love.graphics.rectangle("fill", x, y, width, height)
-end
-
--- shakes an object
-local function drawObjectShake(instance)
-	local player = instance.owner
-	local h_shake, v_shake, scale = 0, 0, 1
-	h_shake = math.floor(player.damage_shake * (frame % 7 / 2 + frame % 13 / 4 + frame % 23 / 6 - 5))
-	v_shake = math.floor(player.damage_shake * (frame % 5 * 2/3 + frame % 11 / 4 + frame % 17 / 6 - 5))
-	scale = scale + (player.damage_shake * 0.1)
-
-	love.graphics.push("all")
-		love.graphics.translate(h_shake, v_shake)
-		instance:draw()
-	love.graphics.pop()
 end
 
 -- draw gems and related objects (platforms, particles)
@@ -144,12 +131,7 @@ function draw.drawGems()
 		for i = 1, player.hand_size do
 			if player.hand[i].piece and player.hand[i].piece ~= game.active_piece then
 				for j = 1, player.hand[i].piece.size do
-					if player.damage_shake > 0 and i == player.shaking_platform_idx then
-						drawObjectShake(player.hand[i].piece)
-						player.damage_shake = math.max(player.damage_shake - 0.5, 0)
-					else
 						player.hand[i].piece:draw()
-					end
 				end
 			end
 		end
