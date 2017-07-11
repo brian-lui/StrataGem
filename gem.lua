@@ -118,9 +118,12 @@ end
 
 -- these can take either the player object or the number
 function Gem:setOwner(player)
-	if player == 1 or player.ID == "P1" then
+	if type(player) == "table" then
+		player = player.ID
+	end
+	if player == 1 or player == "P1" then
 		self.owner = 1
-	elseif player == 2 or player.ID == "P2" then
+	elseif player == 2 or player == "P2" then
 		self.owner = 2
 	elseif player == 3 then
 		self.owner = 3
@@ -130,27 +133,31 @@ function Gem:setOwner(player)
 end
 
 function Gem:addOwner(player)
-	if player == 1 or player.ID == "P1" then
+	if type(player) == "table" then
+		player = player.ID
+	end
+	if player == 1 or player == "P1" then
 		if self.owner == 0 or self.owner == 2 then
 			self.owner = self.owner + 1
 		end
-	elseif player == 2 or player.ID == "P2" then
+	elseif player == 2 or player == "P2" then
 		if self.owner == 0 or self.owner == 1 then
 			self.owner = self.owner + 2
 		end
-	elseif player == 3 then
-		-- no need to add owner
-	else
+	elseif player ~= 3 then	-- if player == 3, nothing needs to be added
 		print("Error: tried to add invalid gem owner")
 	end
 end
 
 function Gem:removeOwner(player)
-	if player == 1 or player.ID == "P1" then
+	if type(player) == "table" then
+		player = player.ID
+	end
+	if player == 1 or player == "P1" then
 		if self.owner == 1 or self.owner == 3 then
 			self.owner = self.owner - 1
 		end
-	elseif player == 2 or player.ID == "P2" then
+	elseif player == 2 or player == "P2" then
 		if self.owner == 2 or self.owner == 3 then
 			self.owner = self.owner - 2
 		end
@@ -162,8 +169,12 @@ end
 -- returns how many frames it will take to completely animate
 function Gem:getAnimFrames()
 	local f = 0
-	if self.tweening then f = f + self.tweening.duration end
-	for i = 1, #self.queued_moves do f = f + self.queued_moves[i].duration end
+	if self.tweening then
+		f = f + self.tweening.duration
+	end
+	for i = 1, #self.queued_moves do
+		f = f + self.queued_moves[i].duration
+	end
 	return f
 end
 

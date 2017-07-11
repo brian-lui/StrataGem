@@ -180,9 +180,11 @@ function ai.placeholder(player)
 			local h_adj = (rot+1) % 2
 			for pc = 1, #matrices[rot] do
 				for col = player.start_col, player.end_col - h_adj do
-					if matrices[rot][pc][col] > maximum_score then	-- Make a fresh table
+					local score = matrices[rot][pc][col]
+					if score > maximum_score then	-- Make a fresh table
+						maximum_score = score
 						possible_moves = {{rotation = rot, piece_idx = pc, column = col}}
-					elseif matrices[rot][pc][col] == maximum_score then	-- Add to the current table
+					elseif score == maximum_score then	-- Add to the current table
 						possible_moves[#possible_moves+1] = {rotation = rot, piece_idx = pc, column = col}
 					end
 				end
