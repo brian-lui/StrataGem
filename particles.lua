@@ -7,8 +7,6 @@ local pairs = pairs
 
 local particles = class("Particles")
 
---particles.DAMAGE_SHAKE_FRAMES = 4
-
 function particles:initialize(_stage)
 	stage = _stage
 end
@@ -106,23 +104,17 @@ function DamageParticle:generate(gem)
 		local drop_y = player.hand[p.final_loc_idx].y
 		local drop_duration = (drop_y - player.hand[2].y) / self.DAMAGE_DROP_SPEED
 		local drop_x = function() return player.hand:getx(p.y) end
-		local exit_func = function()
-			--[[
-			player.damage_shake = self.DAMAGE_SHAKE_FRAMES
-			player.shaking_platform_idx = p.final_loc_idx
-			local particles_remaining = particles.getNumber("Damage", player) - 1
-			if particles_remaining % 3 == 0 then
-				player.damage_shake = self.DAMAGE_SHAKE_FRAMES * 2
-			end
-			--]]
+		local exit_1 = function() player.hand[2].platform:screenshake(4) end
+		local exit_2 = function()
+			player.hand[p.final_loc_idx].platform:screenshake(6)
 			p:remove()
 		end
 		if drop_duration == 0 then
 			p:moveTo{duration = duration, rotation = rotation, curve = curve,
-				exit = {exit_func}}
+				exit = {exit_2}}
 		else
-			p:moveTo{duration = duration, rotation = rotation, curve = curve}
-			p:moveTo{duration = drop_duration, x = drop_x, y = drop_y, exit = {exit_func}}
+			p:moveTo{duration = duration, rotation = rotation, curve = curve, exit = {exit_1}}
+			p:moveTo{duration = drop_duration, x = drop_x, y = drop_y, exit = {exit_2}}
 		end
 
 		-- create damage trails
@@ -143,7 +135,6 @@ function DamageParticle:generate(gem)
 	end
 end
 
--- NOT WORKING: SHAKE PLATFORM/GEMS
 -------------------------------------------------------------------------------
 
 local DamageTrailParticle = class('DamageTrailParticle', pic)
@@ -643,23 +634,18 @@ function Words:generateReady()
 	local todraw = image.words.ready
 	local h, w = todraw:getHeight(), todraw:getWidth()
 	local p = self:new(x, y, todraw, nil, nil, nil, nil, nil, true)
-	p.particle_counter = 0
-	local generate_particles = function()
-		p.particle_counter = p.particle_counter + 1
+	local generate_big = function()
+		particles.wordEffects:generateReadyParticle("large",
+				p.x + (math.random()-0.5)*w, stage.height*0.3 + (math.random()-0.5)*h)
+	end
+	local generate_small = function()
 		particles.wordEffects:generateReadyParticle("small",
-			p.x + (math.random()-0.5)*w,
-			stage.height*0.3 + (math.random()-0.5)*h)
-		if p.particle_counter >= 2.5 then
-			p.particle_counter = p.particle_counter - 2.5
-			particles.wordEffects:generateReadyParticle("large",
-				p.x + (math.random()-0.5)*w,
-				stage.height*0.3 + (math.random()-0.5)*h)
-		end			
+			p.x + (math.random()-0.5)*w, stage.height*0.3 + (math.random()-0.5)*h)
 	end
 	p:moveTo{duration = 60, x = 0.5 * stage.width, transparency = 510, 
-		during = {2, 0, generate_particles}, easing = "outQuart"}
+		during = {{5, 0, generate_big}, {2, 0, generate_small}}, easing = "outQuart"}
 	p:moveTo{duration = 60, x = 1.4 * stage.width, transparency = 0,
-		during = {2, 0, generate_particles}, easing = "inQuad", exit = true}
+		during = {{5, 0, generate_big}, {2, 0, generate_small}}, easing = "inQuad", exit = true}
 end
 
 function Words:generateGo()

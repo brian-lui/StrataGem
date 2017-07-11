@@ -41,8 +41,6 @@ character.super_clicked = false
 character.supering = false
 character.super_this_turn = false
 character.place_type = "normal"
-character.damage_shake = 0
-character.shaking_platform_idx = 2
 
 function character:initialize(playerNum, _stage)
 	stage = _stage

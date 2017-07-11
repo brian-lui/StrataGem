@@ -57,6 +57,10 @@ function Piece:initialize(tbl)
 	self.getx = self.owner.hand.getx
 end
 
+function Piece:screenshake(frames)
+	self.shake = frames or 6
+end
+
 function Piece:addGems(gem_table)
 	for i = 1, self.size do
 		local gem = Gem:random(gem_table)
@@ -77,6 +81,10 @@ end
 
 function Piece:update(dt)
 	pic.update(self, dt)
+	if self.shake then
+		self.shake = self.shake - 1
+		if self.shake == 0 then self.shake = nil end
+	end
 end
 
 function Piece:isStationary()
@@ -111,15 +119,25 @@ end
 
 -- draw gems with displacement depending on piece horizontal/vertical
 function Piece:draw()
-	for i = 1, self.size do
-		local displace_x, displace_y = 0, 0
-		if self.horizontal then
-			displace_x = stage.gem_width * (i - (1 + self.size) * 0.5)
-		else
-			displace_y = stage.gem_height * (i - (1 + self.size) * 0.5)
-		end
-		self.gems[i]:draw(self.x, self.y, nil, self.rotation, displace_x, displace_y)
+	--screen shake translation
+	local h_shake, v_shake = 0, 0
+	if self.shake then
+		h_shake = math.floor(self.shake * (frame % 7 / 2 + frame % 13 / 4 + frame % 23 / 6 - 5))
+		v_shake = math.floor(self.shake * (frame % 5 * 2/3 + frame % 11 / 4 + frame % 17 / 6 - 5))
 	end
+
+	love.graphics.push("all")
+		love.graphics.translate(h_shake, v_shake)
+		for i = 1, self.size do
+			local displace_x, displace_y = 0, 0
+			if self.horizontal then
+				displace_x = stage.gem_width * (i - (1 + self.size) * 0.5)
+			else
+				displace_y = stage.gem_height * (i - (1 + self.size) * 0.5)
+			end
+			self.gems[i]:draw(self.x, self.y, nil, self.rotation, displace_x, displace_y)
+		end
+	love.graphics.pop()
 end
 
 function Piece:getRect()

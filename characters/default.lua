@@ -34,8 +34,6 @@ local lamer = {
 	current_double_cost = 16, -- used for calculations
 	place_type = "normal",
 	--piece_fx = false,
-	damage_shake = 0,
-	shaking_platform_idx = 2,
 }
 
 function lamer:actionPhase(dt)
