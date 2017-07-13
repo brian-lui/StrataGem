@@ -13,11 +13,11 @@ local character = class("Character")
 --character.walter = require 'characters/walter'
 --character.gail = require 'characters/gail'
 
-character.full_size_image = love.graphics.newImage('images/Characters/heath.png')
-character.small_image = love.graphics.newImage('images/Characters/heathsmall.png')
-character.action_image = love.graphics.newImage('images/Characters/heathaction.png')
-character.shadow_image = love.graphics.newImage('images/Characters/heathshadow.png')
-character.super_fuzz_image = love.graphics.newImage('images/UI/superfuzzred.png')
+character.full_size_image = love.graphics.newImage('images/characters/heath.png')
+character.small_image = love.graphics.newImage('images/characters/heathsmall.png')
+character.action_image = love.graphics.newImage('images/characters/heathaction.png')
+character.shadow_image = love.graphics.newImage('images/characters/heathshadow.png')
+character.super_fuzz_image = love.graphics.newImage('images/ui/superfuzzred.png')
 
 character.character_id = "Lamer"
 character.meter_gain = {RED = 4, BLUE = 4, GREEN = 4, YELLOW = 4}

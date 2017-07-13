@@ -18,61 +18,61 @@ local image = {
 	seasons_snow4 = love.graphics.newImage('images/backgrounds/seasons/snow4.png'),
 
 	-- Gems
-	red_gem = love.graphics.newImage('images/Gems/redgem.png'),
-	blue_gem = love.graphics.newImage('images/Gems/bluegem.png'),
-	green_gem = love.graphics.newImage('images/Gems/greengem.png'),
-	yellow_gem = love.graphics.newImage('images/Gems/yellowgem.png'),
+	red_gem = love.graphics.newImage('images/gems/redgem.png'),
+	blue_gem = love.graphics.newImage('images/gems/bluegem.png'),
+	green_gem = love.graphics.newImage('images/gems/greengem.png'),
+	yellow_gem = love.graphics.newImage('images/gems/yellowgem.png'),
 
-	red_explode = love.graphics.newImage('images/Gems/redgemexplode.png'),
-	blue_explode = love.graphics.newImage('images/Gems/bluegemexplode.png'),
-	green_explode = love.graphics.newImage('images/Gems/greengemexplode.png'),
-	yellow_explode = love.graphics.newImage('images/Gems/yellowgemexplode.png'),
+	red_explode = love.graphics.newImage('images/gems/redgemexplode.png'),
+	blue_explode = love.graphics.newImage('images/gems/bluegemexplode.png'),
+	green_explode = love.graphics.newImage('images/gems/greengemexplode.png'),
+	yellow_explode = love.graphics.newImage('images/gems/yellowgemexplode.png'),
 
-	red_grey = love.graphics.newImage('images/Gems/redgrey.png'),
-	blue_grey = love.graphics.newImage('images/Gems/bluegrey.png'),
-	green_grey = love.graphics.newImage('images/Gems/greengrey.png'),
-	yellow_grey = love.graphics.newImage('images/Gems/yellowgrey.png'),
+	red_grey = love.graphics.newImage('images/gems/redgrey.png'),
+	blue_grey = love.graphics.newImage('images/gems/bluegrey.png'),
+	green_grey = love.graphics.newImage('images/gems/greengrey.png'),
+	yellow_grey = love.graphics.newImage('images/gems/yellowgrey.png'),
 
-	red_particle1 = love.graphics.newImage('images/Particles/redparticle1.png'),
-	red_particle2 = love.graphics.newImage('images/Particles/redparticle2.png'),
-	red_particle3 = love.graphics.newImage('images/Particles/redparticle3.png'),
-	blue_particle1 = love.graphics.newImage('images/Particles/blueparticle1.png'),
-	blue_particle2 = love.graphics.newImage('images/Particles/blueparticle2.png'),
-	blue_particle3 = love.graphics.newImage('images/Particles/blueparticle3.png'),
-	green_particle1 = love.graphics.newImage('images/Particles/greenparticle1.png'),
-	green_particle2 = love.graphics.newImage('images/Particles/greenparticle2.png'),
-	green_particle3 = love.graphics.newImage('images/Particles/greenparticle3.png'),
-	yellow_particle1 = love.graphics.newImage('images/Particles/yellowparticle1.png'),
-	yellow_particle2 = love.graphics.newImage('images/Particles/yellowparticle2.png'),
-	yellow_particle3 = love.graphics.newImage('images/Particles/yellowparticle3.png'),
+	red_particle1 = love.graphics.newImage('images/particles/redparticle1.png'),
+	red_particle2 = love.graphics.newImage('images/particles/redparticle2.png'),
+	red_particle3 = love.graphics.newImage('images/particles/redparticle3.png'),
+	blue_particle1 = love.graphics.newImage('images/particles/blueparticle1.png'),
+	blue_particle2 = love.graphics.newImage('images/particles/blueparticle2.png'),
+	blue_particle3 = love.graphics.newImage('images/particles/blueparticle3.png'),
+	green_particle1 = love.graphics.newImage('images/particles/greenparticle1.png'),
+	green_particle2 = love.graphics.newImage('images/particles/greenparticle2.png'),
+	green_particle3 = love.graphics.newImage('images/particles/greenparticle3.png'),
+	yellow_particle1 = love.graphics.newImage('images/particles/yellowparticle1.png'),
+	yellow_particle2 = love.graphics.newImage('images/particles/yellowparticle2.png'),
+	yellow_particle3 = love.graphics.newImage('images/particles/yellowparticle3.png'),
 
-	super_particle_red = love.graphics.newImage('images/Particles/superparticlered.png'),
-	super_particle_blue = love.graphics.newImage('images/Particles/superparticleblue.png'),
-	super_particle_green = love.graphics.newImage('images/Particles/superparticlegreen.png'),
-	super_particle_yellow = love.graphics.newImage('images/Particles/superparticleyellow.png'),
+	super_particle_red = love.graphics.newImage('images/particles/superparticlered.png'),
+	super_particle_blue = love.graphics.newImage('images/particles/superparticleblue.png'),
+	super_particle_green = love.graphics.newImage('images/particles/superparticlegreen.png'),
+	super_particle_yellow = love.graphics.newImage('images/particles/superparticleyellow.png'),
 
-	trail_particle_red = love.graphics.newImage('images/Particles/trailred.png'),
-	trail_particle_blue = love.graphics.newImage('images/Particles/trailblue.png'),
-	trail_particle_green = love.graphics.newImage('images/Particles/trailgreen.png'),
-	trail_particle_yellow = love.graphics.newImage('images/Particles/trailyellow.png'),
+	trail_particle_red = love.graphics.newImage('images/particles/trailred.png'),
+	trail_particle_blue = love.graphics.newImage('images/particles/trailblue.png'),
+	trail_particle_green = love.graphics.newImage('images/particles/trailgreen.png'),
+	trail_particle_yellow = love.graphics.newImage('images/particles/trailyellow.png'),
 
-	pop_particle_red = love.graphics.newImage('images/Gems/popred.png'),
-	pop_particle_blue = love.graphics.newImage('images/Gems/popblue.png'),
-	pop_particle_green = love.graphics.newImage('images/Gems/popgreen.png'),
-	pop_particle_yellow = love.graphics.newImage('images/Gems/popyellow.png'),
+	pop_particle_red = love.graphics.newImage('images/gems/popred.png'),
+	pop_particle_blue = love.graphics.newImage('images/gems/popblue.png'),
+	pop_particle_green = love.graphics.newImage('images/gems/popgreen.png'),
+	pop_particle_yellow = love.graphics.newImage('images/gems/popyellow.png'),
 
-	star_particle_silver1 = love.graphics.newImage('images/Particles/star1silver.png'),
-	star_particle_silver2 = love.graphics.newImage('images/Particles/star2silver.png'),
-	star_particle_silver3 = love.graphics.newImage('images/Particles/star3silver.png'),
-	star_particle_gold1 = love.graphics.newImage('images/Particles/star1gold.png'),
-	star_particle_gold2 = love.graphics.newImage('images/Particles/star2gold.png'),
-	star_particle_gold3 = love.graphics.newImage('images/Particles/star3gold.png'),
-	tinystar_particle_silver1 = love.graphics.newImage('images/Particles/tinystar1silver.png'),
-	tinystar_particle_silver2 = love.graphics.newImage('images/Particles/tinystar2silver.png'),
-	tinystar_particle_silver3 = love.graphics.newImage('images/Particles/tinystar3silver.png'),
-	tinystar_particle_gold1 = love.graphics.newImage('images/Particles/tinystar1gold.png'),
-	tinystar_particle_gold2 = love.graphics.newImage('images/Particles/tinystar2gold.png'),
-	tinystar_particle_gold3 = love.graphics.newImage('images/Particles/tinystar3gold.png'),
+	star_particle_silver1 = love.graphics.newImage('images/particles/star1silver.png'),
+	star_particle_silver2 = love.graphics.newImage('images/particles/star2silver.png'),
+	star_particle_silver3 = love.graphics.newImage('images/particles/star3silver.png'),
+	star_particle_gold1 = love.graphics.newImage('images/particles/star1gold.png'),
+	star_particle_gold2 = love.graphics.newImage('images/particles/star2gold.png'),
+	star_particle_gold3 = love.graphics.newImage('images/particles/star3gold.png'),
+	tinystar_particle_silver1 = love.graphics.newImage('images/particles/tinystar1silver.png'),
+	tinystar_particle_silver2 = love.graphics.newImage('images/particles/tinystar2silver.png'),
+	tinystar_particle_silver3 = love.graphics.newImage('images/particles/tinystar3silver.png'),
+	tinystar_particle_gold1 = love.graphics.newImage('images/particles/tinystar1gold.png'),
+	tinystar_particle_gold2 = love.graphics.newImage('images/particles/tinystar2gold.png'),
+	tinystar_particle_gold3 = love.graphics.newImage('images/particles/tinystar3gold.png'),
 }
 image.GEM_WIDTH = image.red_gem:getWidth()
 image.GEM_HEIGHT = image.red_gem:getHeight()
@@ -99,8 +99,8 @@ image.background.starfall = {
 	star4 = love.graphics.newImage('images/backgrounds/starfall/star4.png'),
 }
 image.background.cloud = {
-	background = love.graphics.newImage('images/backgrounds/cloud/Sky.png'),
-	thumbnail = love.graphics.newImage('images/charselect/Skythumbnail.png'),
+	background = love.graphics.newImage('images/backgrounds/cloud/sky.png'),
+	thumbnail = love.graphics.newImage('images/charselect/skythumbnail.png'),
 }
 for i = 1, 6 do
 	image.background.cloud["bigcloud"..i] =	love.graphics.newImage('images/backgrounds/cloud/bigcloud'..i..'.png')
@@ -109,50 +109,50 @@ for i = 1, 6 do
 end
 
 image.UI = {
-	tub = love.graphics.newImage('images/UI/tub.png'),
-	platform_gold = love.graphics.newImage('images/UI/platgold.png'),
-	platform_silver = love.graphics.newImage('images/UI/platsilver.png'),
-	platform_red = love.graphics.newImage('images/UI/platred.png'),
-	platform_red_glow = love.graphics.newImage('images/UI/platredglow.png'),
-	redX = love.graphics.newImage('images/UI/redX.png'),
-	timer_bar = love.graphics.newImage('images/UI/timerbar.png'),
-	timer_bar_full = love.graphics.newImage('images/UI/timerbarfull.png'),
-	gauge_silver = love.graphics.newImage('images/UI/gaugesilver.png'),
-	gauge_gold = love.graphics.newImage('images/UI/gaugegold.png'),
-	damage_bar = love.graphics.newImage('images/UI/redbarplaceholder.jpg'),
+	tub = love.graphics.newImage('images/ui/tub.png'),
+	platform_gold = love.graphics.newImage('images/ui/platgold.png'),
+	platform_silver = love.graphics.newImage('images/ui/platsilver.png'),
+	platform_red = love.graphics.newImage('images/ui/platred.png'),
+	platform_red_glow = love.graphics.newImage('images/ui/platredglow.png'),
+	redX = love.graphics.newImage('images/ui/redx.png'),
+	timer_bar = love.graphics.newImage('images/ui/timerbar.png'),
+	timer_bar_full = love.graphics.newImage('images/ui/timerbarfull.png'),
+	gauge_silver = love.graphics.newImage('images/ui/gaugesilver.png'),
+	gauge_gold = love.graphics.newImage('images/ui/gaugegold.png'),
+	damage_bar = love.graphics.newImage('images/ui/redbarplaceholder.jpg'),
 }
 
 image.UI.timer = {}
 for i = 0, 9 do
-	image.UI.timer[i] = love.graphics.newImage('images/Numbers/timer '..i..'.png')
+	image.UI.timer[i] = love.graphics.newImage('images/numbers/timer '..i..'.png')
 end
 
 image.UI.super = {}
 for _, c in pairs(super_colors) do
-	image.UI.super[c.."_word"] = love.graphics.newImage('images/UI/'..c..'super.png')
-	image.UI.super[c.."_partial"] = love.graphics.newImage('images/UI/'..c..'segmentpartial.png')
-	image.UI.super[c.."_full"] = love.graphics.newImage('images/UI/'..c..'segmentfull.png')
+	image.UI.super[c.."_word"] = love.graphics.newImage('images/ui/'..c..'super.png')
+	image.UI.super[c.."_partial"] = love.graphics.newImage('images/ui/'..c..'segmentpartial.png')
+	image.UI.super[c.."_full"] = love.graphics.newImage('images/ui/'..c..'segmentfull.png')
 	for i = 1, 4 do
-		image.UI.super[c.."_glow"..i] = love.graphics.newImage('images/UI/'..c..'glow'..i..'.png')
+		image.UI.super[c.."_glow"..i] = love.graphics.newImage('images/ui/'..c..'glow'..i..'.png')
 	end
 end
 
 image.title = {
-	logo = love.graphics.newImage('images/Title/logo.png'),
-	online = love.graphics.newImage('images/Title/online.png'),
-	onlinepush = love.graphics.newImage('images/Title/onlinepush.png'),
-	vscpu = love.graphics.newImage('images/Title/vscpu.png'),
-	vscpupush = love.graphics.newImage('images/Title/vscpupush.png'),
+	logo = love.graphics.newImage('images/title/logo.png'),
+	online = love.graphics.newImage('images/title/online.png'),
+	onlinepush = love.graphics.newImage('images/title/onlinepush.png'),
+	vscpu = love.graphics.newImage('images/title/vscpu.png'),
+	vscpupush = love.graphics.newImage('images/title/vscpupush.png'),
 }
 
 image.lobby = {
-	create = love.graphics.newImage('images/Lobby/CreateLobbyButton.png'),
-	ranked_match = love.graphics.newImage('images/Lobby/RankedMatchButton.png'),
-	game_background = love.graphics.newImage('images/Lobby/LobbyGameBackground.png'),
-	search_ranked = love.graphics.newImage('images/Lobby/SearchingRanked.png'),
-	search_none = love.graphics.newImage('images/Lobby/SearchingNone.png'),
-	cancel_search = love.graphics.newImage('images/Lobby/CancelSearchButton.png'),
-	back = love.graphics.newImage('images/Lobby/BackButton.png'),
+	create = love.graphics.newImage('images/lobby/createlobbybutton.png'),
+	ranked_match = love.graphics.newImage('images/lobby/rankedmatchbutton.png'),
+	game_background = love.graphics.newImage('images/lobby/lobbygamebackground.png'),
+	search_ranked = love.graphics.newImage('images/lobby/searchingranked.png'),
+	search_none = love.graphics.newImage('images/lobby/searchingnone.png'),
+	cancel_search = love.graphics.newImage('images/lobby/cancelsearchbutton.png'),
+	back = love.graphics.newImage('images/lobby/backbutton.png'),
 }
 
 image.charselect = {
@@ -179,8 +179,8 @@ end
 image.dust = {}
 for _, c in pairs(gem_colors) do
 	for i = 1, 3 do
-		-- e.g. image.dust.red1 = love.graphics.newImage('images/Particles/reddust1.png')
-		image.dust[c..i] = love.graphics.newImage('images/Particles/'..c..'dust'..i..'.png')
+		-- e.g. image.dust.red1 = love.graphics.newImage('images/particles/reddust1.png')
+		image.dust[c..i] = love.graphics.newImage('images/particles/'..c..'dust'..i..'.png')
 	end
 end
 

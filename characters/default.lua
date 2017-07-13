@@ -2,11 +2,11 @@ local image = require 'image'
 local tween = require 'tween'
 
 local lamer = {
-	full_size_image = love.graphics.newImage('images/Characters/heath.png'),
-	small_image = love.graphics.newImage('images/Characters/heathsmall.png'),
-	action_image = love.graphics.newImage('images/Characters/heathaction.png'),
-	shadow_image = love.graphics.newImage('images/Characters/heathshadow.png'),
-	super_fuzz_image = love.graphics.newImage('images/UI/superfuzzred.png'),
+	full_size_image = love.graphics.newImage('images/characters/heath.png'),
+	small_image = love.graphics.newImage('images/characters/heathsmall.png'),
+	action_image = love.graphics.newImage('images/characters/heathaction.png'),
+	shadow_image = love.graphics.newImage('images/characters/heathshadow.png'),
+	super_fuzz_image = love.graphics.newImage('images/ui/superfuzzred.png'),
 
 	character_id = "Lamer",
 	meter_gain = {RED = 4, BLUE = 4, GREEN = 4, YELLOW = 4},

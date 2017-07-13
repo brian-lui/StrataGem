@@ -5,8 +5,8 @@ local image = require 'image'
 
 local walter = class("Walter", Character)
 
-walter.full_size_image = love.graphics.newImage('images/Characters/walter.png')
-walter.small_image = love.graphics.newImage('images/Characters/waltersmall.png')
+walter.full_size_image = love.graphics.newImage('images/characters/walter.png')
+walter.small_image = love.graphics.newImage('images/characters/waltersmall.png')
 walter.character_id = "Walter"
 walter.meter_gain = {RED = 4, BLUE = 8, GREEN = 4, YELLOW = 4}
 walter.super_images = {
