@@ -116,7 +116,7 @@ function phase.resolve(dt)
 		print("PLACE TYPE BUG")
 	end
 	for player in game:players() do
-		player.hand:endOfTurnUpdate()
+		player.hand:afterActionPhaseUpdate()
 	end
 	anims.putPendingAtTop()
 	particles.upGem:removeAll() -- animation
@@ -258,6 +258,10 @@ function phase.cleanup(dt)
 	p1.played_pieces, p2.played_pieces = {}, {}
 	game.finished_getting_pieces = false
 	stage.grid:setAllGemOwners(0)
+
+	for player in game:players() do
+		player.hand:endOfTurnUpdate()
+	end
 
 	if engine.checkLoser() then
 		game.phase = "GameOver"

@@ -94,17 +94,13 @@ end
 function Piece:rotate()
 	self.horizontal = not self.horizontal
 	if self.horizontal then self.gems = reverseTable(self.gems) end
-	--for i = 1, #self.gems do
-		--self.gems[i].horizontal = self.horizontal
-		--self.gems[i].vertical = not self.horizontal
-	--end
 	self.rotation_index = (self.rotation_index + 1) % 4
 	updatePieceGems(self)
 
 	--[[ piece has already rotated pi/2 clockwise. But we show
 		the piece from its original starting location --]]
-	--self.rotation = math.pi * -0.5
-	self:moveTo{rotation = math.pi * -0.5, duration = 20}
+	local new_rotation = (self.rotation - math.pi * 0.5) % (2 * math.pi)
+	self:moveTo{rotation = new_rotation, duration = 60, debug = true}
 end
 
 function Piece:breakUp()
