@@ -119,6 +119,7 @@ image.UI = {
 	timer_bar_full = love.graphics.newImage('images/UI/timerbarfull.png'),
 	gauge_silver = love.graphics.newImage('images/UI/gaugesilver.png'),
 	gauge_gold = love.graphics.newImage('images/UI/gaugegold.png'),
+	damage_bar = love.graphics.newImage('images/UI/redbarplaceholder.jpg'),
 }
 
 image.UI.timer = {}
@@ -220,27 +221,6 @@ image.lookup.words_ready = function(size)
 	local rand = math.random(#choice)
 	return choice[rand]
 end
-
-image.pie = {
-	p1 = love.graphics.newImage('images/Pies/p1pie.png'),
-	p1red = love.graphics.newImage('images/Pies/p1piered.png'),
-	p1green = love.graphics.newImage('images/Pies/p1piegreen.png'),
-	p1yellow = love.graphics.newImage('images/Pies/p1pieyellow.png'),
-	p2 = love.graphics.newImage('images/Pies/p2pie.png'),
-	p2red = love.graphics.newImage('images/Pies/p2piered.png'),
-	p2green = love.graphics.newImage('images/Pies/p2piegreen.png'),
-	p2yellow = love.graphics.newImage('images/Pies/p2pieyellow.png'),
-}
-
-image.lookup.pie = function(player, damage)
-	local str = "p1"
-	if player.ID == "P2" then str = "p2" end
-	local colors = {"green", "yellow", "red", "red"}
-	colors[0] = "green" -- sentinel
-	str = str .. colors[damage]
-	return image.pie[str]
-end
-
 
 image.lookup.gem_explode = {
 	BLUE = image.blue_explode,

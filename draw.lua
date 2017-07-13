@@ -113,12 +113,6 @@ function draw.drawGems()
 			end
 		end
 	end
-	-- pies
-	for player in game:players() do
-		for i = 2, 5 do
-			player.pie[i]:draw()
-		end
-	end
 
 	-- under-gem particles
 	for _, instance in pairs(AllParticles.WordEffects) do instance:draw() end
@@ -152,6 +146,10 @@ function draw.drawGems()
 		love.graphics.setStencilTest()
 	love.graphics.pop()
 
+	-- damage bar
+	for player in game:players() do
+		player.hand.damage_bar:draw()
+	end
 	-- over-gem particles
 	for _, v in pairs(AllParticles.Super) do v:draw() end
 	for _, v in pairs(AllParticles.DamageTrail) do v:draw() end

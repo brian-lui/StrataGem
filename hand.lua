@@ -1,12 +1,17 @@
 require 'utilities' -- helper functions
 local class = require 'middleclass' -- class support
---local Pie = require 'pie'
 local Piece = require 'piece'
 local GemPlatform = require 'gemplatform'
+local pic = require 'pic'
+local image = require 'image'
 local stage
 
-local Hand = class('Hand')
+local DamageBar = class('DamageBar', pic)
+function DamageBar:initialize(player)
+	pic.initialize(self, {x = 0, y = 0, image = image.UI.damage_bar})
+end
 
+local Hand = class('Hand')
 Hand.PLATFORM_SPEED = window.height / 192 -- pixels per second for pieces to shuffle
 
 function Hand:initialize(player)
@@ -23,6 +28,9 @@ function Hand:initialize(player)
 	end
 	self[0].y = stage.height / 8 -- discard place is higher up
 	self.garbage = {} -- pending-garbage gems
+	self.damage = 4 -- each 4 damage is one more platform movement
+	self.damage_bar = DamageBar:new(player)
+	self:moveDamageBar()
 end
 
 -- make pieces at start of round. They are all then moved up 5 spaces
@@ -198,44 +206,29 @@ function Hand:update(dt)
 		end
 	end
 
-	-- update pies
-	for i = 2, 5 do self.owner.pie[i]:update(dt) end
-
+	self.damage_bar:update(dt)
 end
 
--- Assigns damage to individual pies
+-- meh. Just in case damage goes over 20
 function Hand:addDamage(damage)
-	local player = self.owner
- 	local i = 2
- 	while damage > 0 and i <= 5 do
-		local amt_to_add = math.min(damage, 4 - player.pie[i].damage)
- 		player.pie[i]:addDamage(amt_to_add)
-		damage = damage - amt_to_add
-		if amt_to_add > 0 then player.pie[i].damage_changed = true end
-		i = i + 1
-  	end
+	self.damage = math.min(self.damage + damage, 20)
+end
+
+function Hand:moveDamageBar()
+	local y = stage.height * 0.1375 * ((self.damage + 2) / 4) + stage.height * 0.1875
+	local x = function() return self:getx(self.damage_bar.y) end
+	self.damage_bar:moveTo{duration = 90, x = x, y = y, easing = "outBounce"}
+end
+
+-- Update function only called after action phase
+function Hand:afterActionPhaseUpdate()
+	self.owner.pieces_to_get = math.floor(self.damage / 4)
+	self.damage = (self.damage % 4) + 4
 end
 
 -- Update function only called at end of turn
 function Hand:endOfTurnUpdate()
-	local player = self.owner
-	player.pieces_to_get = 1
-	-- full pies add an extra piece to get
-	for i = 2, 5 do
-		if player.pie[i].damage == 4 then
-			player.pieces_to_get = player.pieces_to_get + 1
-			player.pie[i]:reset()
-		end
-	end
-
-	-- Then sort pies so that highest damage pies are at the top
-	local damage_arr = {}
-	for i = 2, 5 do	damage_arr[i-1] = player.pie[i].damage end
-	table.sort(damage_arr, function(a, b) return a > b end)
-	for i = 2, 5 do
-		player.pie[i].damage = damage_arr[i-1]
-		player.pie[i].damage_changed = true
-	end
+	self:moveDamageBar()
 end
 
 return Hand

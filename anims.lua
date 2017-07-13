@@ -10,25 +10,6 @@ local tween = require 'tween'
 local UI = require 'uielements'
 local anims = {}
 
--- return the pie drawables for a player at hand position [loc].
-function anims.getPieDrawables(player, damage)
-	assert(damage >= 0 and damage <= 4, "wrong damage number given lol")
-	local segment_image = image.lookup.pie(player, damage)
-	local segments = 4 - damage
-	return segment_image, segments
-	--[[
-They should appear whenever a star takes damage, next to the star. They should very briefly be
-full (like .25 of a second) before the first piece zooms in and fades.
-If hit multiple times they should do that animation in rapid succession BUT NOT AT THE SAME TIME.
-At 2 pies they turn yellow. At 1 pie, red. At zero, the entire meter should remain in place and
-empty for about a second before fading out and the star turns red like normal.
-Heck, you can keep the star gradually changing colors like it does.
-
-P1 pies should move counter clockwise, P2 clockwise.
-	--]]
-end
-
-
 -- returns the super drawables for player based on player MP, called every dt
 -- shown super meter is less than the actual super meter when super particles are on screen
 -- as particles disappear, they visually go into the super meter

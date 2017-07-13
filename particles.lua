@@ -74,8 +74,7 @@ end
 function DamageParticle:generate(gem)
 	local owner_lookup = {p2, p1, nil} -- send to enemy
 	local player = owner_lookup[gem.owner]
-	local full_segments = 0
-	for i = 2, 5 do full_segments = full_segments + player.pie[i].damage end
+	local full_segments = math.floor(player.hand.damage / 4)
 
 	-- TODO: bug: for multi-match, it calculates full_segments incorrectly because it's based on the damage after the first match
 	local already_particles = particles.getNumber("Damage", player)
@@ -358,7 +357,7 @@ function Dust:generateFountain(gem, n)
 
  		local p = self:new(gem.x, gem.y, todraw, p_type)
  		local x1 = x + x_vel
- 		local x2 = x_vel * 1.2
+ 		local x2 = x + x_vel * 1.2
  		local y_func = function() return y + p.t * y_vel + p.t^2 * acc end
  		local y_func2 = function() return y + y_vel * (1 + p.t * 0.2) + acc * (1 + p.t * 0.2)^2 end
 

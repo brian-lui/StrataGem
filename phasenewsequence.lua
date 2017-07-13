@@ -50,7 +50,7 @@ function instantCalculateGamestate()
 	stage.grid:setAllGemOwners(0) -- pure state
 	hand.update(dt) -- VERY BAD!
 		-- state: destroy garbage if it moved to hand[0].y
-		-- anims: player.hand[i].piece:gradualMove, gem platforms gradualmove, player.hand.garbage.move, pie:update, gemplatform:update
+		-- anims: player.hand[i].piece:gradualMove, gem platforms gradualmove, player.hand.garbage.move, gemplatform:update
 	p1.place_type, p2.place_type = "normal", "normal" -- pure state
 	stage.grid:dropColumns()
 	stage.grid:updateGravity(dt) -- call this after resolving matches because ???

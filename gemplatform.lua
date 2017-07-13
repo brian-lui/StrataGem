@@ -68,14 +68,14 @@ function GemPlatform:update(dt)
 		self:remove()
 		--instance.transparency = math.max(instance.transparency - self.PLATFORM_FADE, 0)
 		--if instance.transparency == 0 then instance:remove() end
-	elseif loc <= 5 and (loc == 1 or player.pie[loc].damage == 4) and game.phase == "Action" then
+	elseif loc <= 5 and (loc <= player.hand.damage / 4) and game.phase == "Action" then
 		self.redness = math.min(self.redness + self.GEM_PLATFORM_TURN_RED_SPEED, 255)
 		if self.redness == 255 and not self.glow_startframe then
 			self.glow_startframe = frame
 		end
 	end
 	--]]
-	if loc <= 5 and (loc == 1 or player.pie[loc].damage == 4) and game.phase == "Action" then
+	if loc <= player.hand.damage / 4 and game.phase == "Action" then
 		self.redness = math.min(self.redness + self.GEM_PLATFORM_TURN_RED_SPEED, 255)
 		if self.redness == 255 and not self.glow_startframe then
 			self.glow_startframe = frame

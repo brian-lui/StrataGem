@@ -4,7 +4,6 @@ local class = require "middleclass"
 local image = require 'image'
 local stage
 --local Piece = require 'piece'
-local Pie = require 'pie'
 local pic = require 'pic'
 local hand = require 'hand'
 
@@ -96,14 +95,6 @@ local function setupPieces(player)
 	player.pieces_to_get = 1
 end
 
-local function setupPies(player)
-	player.pie = {}
-	for i = 0, 6 do -- 0 and 6 are just sentinels
-		player.pie[i] = Pie:new(player, i)
-	end
-	player.pie[1].damage = 4
-end
-
 -- TODO: Make player and/or character into classes and put this in there
 function character:addSuper(amt)
 	self.old_mp = self.cur_mp
@@ -118,7 +109,6 @@ function character:setup()
 	setupSuperMeter(self)
 	createCharacterAnimation(self)
 	setupPieces(self)
-	setupPies(self)
 end
 
 function character:actionPhase(dt)
