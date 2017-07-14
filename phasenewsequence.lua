@@ -3,7 +3,6 @@
 require 'inits'
 local hand = require 'hand'
 local ai = require 'ai'
-local engine = game.engine
 local inputs = require 'inputs'
 local stage = game.stage
 local particles = game.particles
@@ -28,19 +27,19 @@ function instantCalculateGamestate()
 		for i = 1, #anims do queue.add(anims[i][1] + thisturnframesintothefuture, anims[i][2], unpack(anims[i], 3)) end -- pure anims
 	end
 	stage.grid:flagMatchedGems() -- pure state, changes gem flags
-	engine.generateMatchExplodingGems() -- pure animations
+	stage.grid:generateMatchExplodingGems() -- pure animations
 
 	for player in game:players() do player:beforeMatch(gem_table) end -- BAD! Need to separate into two functions probably
 	local gem_table = stage.grid:getMatchedGems() -- BAD! adds this_gem.vertical/horizontal. Otherwise pure function. Definitely need to separate this out into "addGemHorizontalityAndVerticality"
 	game.scoring_combo = game.scoring_combo + 1 -- pure state
 	for player in game:players() do player:duringMatch(gem_table) end -- BAD! Need to separate into two functions probably
-	local p1dmg, p2dmg, p1super, p2super = engine.calculateScore(gem_table) -- pure function
-	local p1_matched, p2_matched = engine.checkMatchedThisTurn(gem_table) -- pure function
+	local p1dmg, p2dmg, p1super, p2super = stage.grid:calculateScore() -- pure function
+	local p1_matched, p2_matched = stage.grid:checkMatchedThisTurn() -- pure function
 	if not p1_matched then stage.grid:removeAllGemOwners(p1) end -- pure state, removes ownership flags. prob should run this before p1/p2 specific abilities
 	if not p2_matched then stage.grid:removeAllGemOwners(p2) end -- pure state, removes ownership flags. prob should run this before p1/p2 specific abilities
 	p1:addSuper(p1super) -- pure state
 	p2:addSuper(p2super) -- pure state
-	engine.generateMatchParticles() -- pure animations
+	stage.grid:generateMatchParticles() -- pure animations
 	stage.grid:removeMatchedGems() -- pure state
 	hand.addDamage(p1, p2dmg) -- pure state
 	hand.addDamage(p2, p1dmg) -- pure state
@@ -70,7 +69,7 @@ function instantCalculateGamestate()
 	p1.played_pieces, p2.played_pieces = {}, {} -- pure state
 	game.finished_getting_pieces = false -- pure state
 	stage.grid:setAllGemOwners(0) -- pure state
-	if engine.checkLoser() then gameover fuckers -- ok
+	if stage.grid:getLoser() then gameover fuckers -- ok
 	game:newTurn() -- pure state
 
 	return gamestate, {all the instructions for the client to play}

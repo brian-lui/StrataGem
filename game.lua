@@ -20,11 +20,9 @@ function game:initialize()
 	self.rng = love.math.newRandomGenerator()
 	self.bgm = nil
 	self.stage = require "stage"(self)	-- playing field area and grid
-	self.engine = require "engine"
 	self.particles = require "particles"(self.stage)
 
 	self:reset()
-	self.engine.initialize(self)
 end
 
 function game:players()

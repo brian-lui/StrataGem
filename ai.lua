@@ -3,7 +3,6 @@
 --]]
 require 'utilities'
 local stage = game.stage
-local engine = game.engine
 
 local ai = {
 	finished = false,

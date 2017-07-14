@@ -3,7 +3,6 @@ local class = require "middleclass"
 local image = require 'image'
 local Character = require "character"
 --local pic = require 'pic'
---local engine = game.engine
 --local hand = require 'hand'
 --local default = require 'characters/default'
 --local stage = game.stage
