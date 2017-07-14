@@ -3,7 +3,6 @@
 require 'inits'
 --local hand = require 'hand'
 local ai = require 'ai'
-local engine = game.engine
 local inputs = require 'inputs'
 local stage = game.stage
 local particles = game.particles
@@ -161,13 +160,13 @@ end
 local match_anim_phase, match_anim_count = "start", 0
 function phase.matchAnimations(dt)
 	if match_anim_phase == "start" then
-		engine.generateMatchExplodingGems() -- animation
+		stage.grid:generateMatchExplodingGems() -- animation
 		match_anim_phase, match_anim_count = "explode", 20
 	elseif match_anim_phase == "explode" then
 		match_anim_count = math.max(match_anim_count - 1, 0)
 		if match_anim_count == 0 then
 			local matches = stage.grid:getMatchedGems()
-			engine.generateMatchParticles() -- animation
+			stage.grid:generateMatchParticles() -- animation
 			anims.screenshake(#matches) -- animation
 			match_anim_phase, match_anim_count = "start", 0
 			game.phase = "ResolvingMatches"
@@ -181,8 +180,8 @@ function phase.resolvingMatches(dt)
 	for player in game:players() do
 		player:duringMatch(gem_table)
 	end
-	local p1dmg, p2dmg, p1super, p2super = engine.calculateScore(gem_table)
-	local p1_matched, p2_matched = engine.checkMatchedThisTurn(gem_table)
+	local p1dmg, p2dmg, p1super, p2super = stage.grid:calculateScore()
+	local p1_matched, p2_matched = stage.grid:checkMatchedThisTurn()
 	if not p1_matched then
 		stage.grid:removeAllGemOwners(p1)
 	end
@@ -236,7 +235,7 @@ function phase.getPiece(dt)
 		-- garbage can possibly push gems up, creating matches.
 			local _, matches = stage.grid:getMatchedGems()
 			if matches > 0 then
-				engine.setGarbageMatchFlags()
+				stage.grid:setGarbageMatchFlags()
 				game.phase = "Gravity"
 			else
 				game.phase = "Cleanup"
@@ -263,7 +262,7 @@ function phase.cleanup(dt)
 		player.hand:endOfTurnUpdate()
 	end
 
-	if engine.checkLoser() then
+	if stage.grid:getLoser() then
 		game.phase = "GameOver"
 	elseif game.type == "Netplay" then
 		game.phase = "Sync"
@@ -284,7 +283,7 @@ function phase.sync(dt)
 end
 
 function phase.gameOver(dt)
-	local loser = engine.checkLoser()
+	local loser = stage.grid:getLoser()
 	if loser == "P1" then
 		print("P2 wins gg")
 	elseif loser == "P2" then

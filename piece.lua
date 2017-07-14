@@ -361,8 +361,9 @@ function Piece:dropIntoBasin(coords, received_from_opponent)
 	end
 
 	-- set ownership. gem ownership is used to calculate damage and meter gain
-	--for i = 1, #self.gems do engine.setGemOwner(self.gems[i], player) end
-	for i = 1, #self.gems do self.gems[i]:setOwner(player) end
+	for i = 1, #self.gems do
+		self.gems[i]:setOwner(player)
+	end
 
 	local this_played_pieces = {}
 	if self.horizontal then

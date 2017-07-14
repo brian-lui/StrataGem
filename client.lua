@@ -278,7 +278,7 @@ local function receiveQueue(recv)
 	end
 end
 
--- called from mainengine.lua, packages our delta so we don't have to send so much stuff
+-- called from phase.lua, packages our delta so we don't have to send so much stuff
 function client.prepareDelta(...)
 	local args = {...}
 	if client.our_delta[game.turn] == nil then
