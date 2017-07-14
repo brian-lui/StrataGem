@@ -55,6 +55,7 @@ function Piece:initialize(tbl)
 	self.gems = {}
 	self:addGems(self.gem_table)
 	self.getx = self.owner.hand.getx
+	self.hand_idx = tbl.hand_idx
 end
 
 function Piece:screenshake(frames)
@@ -73,6 +74,10 @@ function Piece:moveTo(target)
 	self.queued_moves = self.queued_moves or {}
 	pic.moveTo(self, target)
 	updatePieceGems(self)
+end
+
+function Piece:resolve()
+	pic.resolve(self)
 end
 
 function Piece:wait(frames)
@@ -96,18 +101,20 @@ function Piece:rotate()
 	if self.horizontal then self.gems = reverseTable(self.gems) end
 	self.rotation_index = (self.rotation_index + 1) % 4
 	updatePieceGems(self)
+	self.rotation = self.rotation % (2 * math.pi)
 
 	--[[ piece has already rotated pi/2 clockwise. But we show
 		the piece from its original starting location --]]
-	local new_rotation = (self.rotation - math.pi * 0.5) % (2 * math.pi)
-	self:moveTo{rotation = new_rotation, duration = 60, debug = true}
+	local new_rotation = self.rotation
+	self.rotation = self.rotation - (0.5 * math.pi)
+	self:moveTo{rotation = new_rotation, duration = 60, here = true, easing = "outExpo"}
 end
 
 function Piece:breakUp()
 	local player = self.owner
 	for i = 0, player.hand_size do
 		if self == player.hand[i].piece then
-			pic.clear(player.hand[i].piece)
+			pic.clear(self)
 			player.hand[i].piece = nil
 		end
 	end
@@ -279,12 +286,9 @@ end
 
 -- When player picks up a piece. Called from inputs.lua.
 function Piece:select()
-	game.piece_origin.x = self.x
-	game.piece_origin.y = self.y
-
 	game.active_piece = self
-	-- generate some particles!
-	for i = 1, self.size do
+	self:resolve()
+	for i = 1, self.size do -- generate some particles!
 		particles.dust:generateFountain(self.gems[i], math.random(2, 6))
 	end
 end
@@ -306,8 +310,8 @@ function Piece:deselect()
 	if valid and not game.frozen and go_ahead and char_ability_ok then
 		player.place_type = place_type
 		self:dropIntoBasin(cols)
-	else -- snap back to original place
-		self:moveTo{x = game.piece_origin.x, y = game.piece_origin.y}
+	else -- snap back to original place. Can't use moveTo because it interferes with rotate tween
+		self.x, self.y = player.hand[self.hand_idx].x, player.hand[self.hand_idx].y
 	end
 end
 

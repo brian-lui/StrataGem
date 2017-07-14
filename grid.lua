@@ -5,8 +5,8 @@ local Gem = require "gem"
 local grid = class("Grid")
 
 local window = _G.window -- TODO: Remove global
-grid.DROP_SPEED = window.height / 120 -- pixels per frame for loose gems to drop
-grid.DROP_MULTIPLE_SPEED = window.height / 240 -- multiplier for scoring_combo
+grid.DROP_SPEED = window.height / 90 -- pixels per frame for loose gems to drop
+grid.DROP_MULTIPLE_SPEED = window.height / 180 -- multiplier for scoring_combo
 
 function grid:initialize(stage, game)
 	self.game = game
@@ -300,7 +300,6 @@ function grid:generate1by1(column, banned_color1, banned_color2)
 	local distance = self.y[row+1] - self.y[row]
 	local speed = self.DROP_SPEED + self.DROP_MULTIPLE_SPEED * self.game.scoring_combo
 	local duration = distance / speed
-	print("garbage distaces, duration", distance, duration)
 	local make_gem = function(r, c)
 		self[r][c].gem = make_color:new(self.x[c], self.y[r+1], true)
 		self[r][c].gem:moveTo{x = self.x[c], y = self.y[r], duration = duration}

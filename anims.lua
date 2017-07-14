@@ -196,7 +196,7 @@ function anims.putPendingAtTop()
 				exit = {gem.landedInStagingArea, gem, "rush", own_tbl[piece.foe]}
 			end
 			gem:moveTo{y = stage.height * -0.1}
-			gem:moveTo{y = target_y, duration = 42, easing = "outQuart", exit = exit}
+			gem:moveTo{y = target_y, duration = 24, easing = "outQuart", exit = exit}
 		end
 		if #effect > 0 then
 			local h = effect[1].row == effect[2].row
