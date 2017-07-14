@@ -39,8 +39,8 @@ function mouseHandler.maingameRelease(x, y)
 			local quickclick = frame - mouse.last_clicked_frame < mouse.QUICKCLICK_FRAMES
 			local nomove = math.abs(x - mouse.last_clicked_x) < stage.width * mouse.QUICKCLICK_MAX_MOVE and
 				math.abs(y - mouse.last_clicked_y) < stage.height * mouse.QUICKCLICK_MAX_MOVE
-			game.active_piece:deselect()
 			if quickclick and nomove then game.active_piece:rotate() end
+			game.active_piece:deselect()
 
 		elseif player.super_clicked and pointIsInRect(x, y, unpack(stage.super_click[player.ID])) then
 			player:super()

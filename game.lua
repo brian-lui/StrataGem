@@ -56,6 +56,7 @@ function game:reset()
 	self.them_player = false
 	self.active_piece = false
 	self.finished_getting_pieces = false
+	self.piece_origin = {x = 0, y = 0}
 	self.grid_wait = 0
 	self.screenshake_frames = 0
 	self.screenshake_vel = 0

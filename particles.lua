@@ -80,109 +80,6 @@ function DamageParticle:generate(gem)
 	local already_particles = particles.getNumber("Damage", player)
 	local final_loc = math.min(2 + (full_segments/4) + (already_particles/12), 6)
 
-	for i = 1, 3 do
-		-- create damage particle
-		local p = self:new(gem)
-		local rotation = math.random() * 5
-		p.final_loc_idx = math.floor(final_loc)
-		p.owner = player
-
-		-- second part of movement once it hits the platform
-		local drop_y = player.hand[p.final_loc_idx].y
-		local drop_duration = (drop_y - player.hand[2].y) / self.DAMAGE_DROP_SPEED
-		local drop_x = function() return player.hand:getx(p.y) end
-		local exit_1 = function() player.hand[2].platform:screenshake(4) end
-		local exit_2 = function()
-			player.hand[p.final_loc_idx].platform:screenshake(6)
-			p:remove()
-		end
-
-		-- burst outwards
-		local burst_angle = math.random() * math.pi * 2
-		local burst_dist = gem.width * 2
-		local burst_x = gem.x + burst_dist * math.cos(burst_angle)
-		local burst_y = gem.y + burst_dist * math.cos(burst_angle)
-
-		-- waiting func
-		local wave_x = function() return burst_x + math.sin(p.t * math.pi * 15) * stage.width * 0.001 end
-		local wave_y = function() return burst_y + math.sin(p.t * math.pi * -30) * stage.height * 0.001 end
-		local wave_scaling = function() return (math.sin(p.t * math.pi * 5) * 0.06) + 1 end
-		p:moveTo{duration = 24, x = burst_x, y = burst_y, easing = "outQuart"}
-		p:moveTo{duration = 90, x = wave_x, y = wave_y, scaling = wave_scaling}
-		p:moveTo{duration = 1, scaling = 1}
-
-		local burst_to_star_dist = ((burst_x - player.hand[2].x)^2 + (burst_y - player.hand[2].y)^2)^0.5
-		local duration = ((burst_to_star_dist / (stage.width^2 + stage.height^2)^0.5) * 120) * (math.random() * 0.2 + 0.9)
-		if drop_duration == 0 then
-			p:moveTo{duration = duration, rotation = rotation, x = player.hand[2].x,
-				y = player.hand[2].y, exit = {exit_2}, easing = "inOutQuad"}
-		else
-			p:moveTo{duration = duration, rotation = rotation, x = player.hand[2].x,
-				y = player.hand[2].y, exit = {exit_1}}
-			p:moveTo{duration = drop_duration, x = drop_x, y = drop_y, exit = {exit_2}}
-		end
-
-		-- create damage trails
-		for j = 1, 3 do
-			local trail = {
-				duration = duration,
-				gem = gem,
-				rotation = rotation,
-				scaling = 1.25 - 0.25 * j,
-				burst_x = burst_x,
-				burst_y = burst_y,
-				hand_x = player.hand[2].x,
-				hand_y = player.hand[2].y
-			}
-			if drop_duration > 0 then
-				trail.drop_duration, trail.drop_x, trail.drop_y = drop_duration, drop_x, drop_y
-			end
-
-			queue.add(j * 2, particles.damageTrail.generate, particles.damageTrail, trail)
-		end
-	end
-end
-
-local DamageTrailParticle = class('DamageTrailParticle', pic)
-function DamageTrailParticle:initialize(gem)
-	pic.initialize(self, {x = gem.x, y = gem.y, image = image.lookup.trail_particle[gem.color]})
-	AllParticles.DamageTrail[ID.particle] = self
-end
-
-function DamageTrailParticle:remove()
-	AllParticles.DamageTrail[self.ID] = nil
-end
-
-function DamageTrailParticle:generate(trail)
-	local p = self:new(trail.gem)
-	p.particle_type = "DamageTrail"
-	p.transparency = 64
-	p:moveTo{duration = 24, x = trail.burst_x, y = trail.burst_y, easing = "outQuart"}
-	p:wait(90)
-	p:moveTo{duration = 1, transparency = 255}
-	
-	if trail.drop_duration then
-		p:moveTo{duration = trail.duration, rotation = trail.rotation, x = trail.hand_x,
-			y = trail.hand_y, easing = "inOutQuad"}
-		p:moveTo{duration = trail.drop_duration, x = trail.drop_x, y = trail.drop_y,
-			exit = true}
-	else
-		p:moveTo{duration = trail.duration, rotation = trail.rotation, x = trail.hand_x,
-			y = trail.hand_y, easing = "inOutQuad", exit = true}
-	end
-end
-
-
---[[
-function DamageParticle:generate(gem)
-	local owner_lookup = {p2, p1, nil} -- send to enemy
-	local player = owner_lookup[gem.owner]
-	local full_segments = math.floor(player.hand.damage / 4)
-
-	-- TODO: bug: for multi-match, it calculates full_segments incorrectly because it's based on the damage after the first match
-	local already_particles = particles.getNumber("Damage", player)
-	local final_loc = math.min(2 + (full_segments/4) + (already_particles/12), 6)
-
 	-- calculate bezier curve
 	local x1, y1 = gem.x, gem.y -- start
 	local x4, y4 = player.hand[2].x, player.hand[2].y
@@ -211,7 +108,6 @@ function DamageParticle:generate(gem)
 			player.hand[p.final_loc_idx].platform:screenshake(6)
 			p:remove()
 		end
-
 		if drop_duration == 0 then
 			p:moveTo{duration = duration, rotation = rotation, curve = curve,
 				exit = {exit_2}}
@@ -237,10 +133,9 @@ function DamageParticle:generate(gem)
 		end
 	end
 end
---]]
+
 -------------------------------------------------------------------------------
 
---[[
 local DamageTrailParticle = class('DamageTrailParticle', pic)
 function DamageTrailParticle:initialize(gem)
 	pic.initialize(self, {x = gem.x, y = gem.y, image = image.lookup.trail_particle[gem.color]})
@@ -254,7 +149,6 @@ end
 function DamageTrailParticle:generate(trail)
 	local p = self:new(trail.gem)
 	p.particle_type = "DamageTrail"
-
 	if trail.drop_duration then
 		p:moveTo{duration = trail.duration, rotation = trail.rotation, curve = trail.curve}
 		p:moveTo{duration = trail.drop_duration, x = trail.drop_x, y = trail.drop_y,
@@ -264,7 +158,7 @@ function DamageTrailParticle:generate(trail)
 			curve = trail.curve, exit = true}
 	end
 end
---]]
+
 -------------------------------------------------------------------------------
 -- particles for super meter generated when a gem is matched
 local SuperParticle = class('SuperParticle', pic)

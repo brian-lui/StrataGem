@@ -419,6 +419,7 @@ function heath:duringMatch(gem_table)
 			local in_match_table = false
 			for _, tblgem in pairs(gem_table) do
 				if gem == tblgem then
+					print("gem is in match table!")
 					in_match_table = true
 					break
 				end
@@ -445,6 +446,7 @@ function heath:afterMatch()
 
 	-- horizontal match fires
 	local makeFire = function(row, col, owner)
+		print("making fire in column", col, "row", row)
 		self.fire_columns[col] = 1
 		local fire_object = particle_effects.SmallFire(row, col, owner)
 		particles.charEffects:new(fire_object)
@@ -469,9 +471,9 @@ function heath:cleanup()
 		self.fire_columns[col] = turns - 1
 		if self.fire_columns[col] < 0 then self.fire_columns[col] = nil end
 	end
-
+	print(self.ID .. " active fire in columns: ")
 	for k, v in pairs(self.fire_columns) do
-		--print("column " .. k .. ", " .. v .. " turns left")
+		print("column " .. k .. ", " .. v .. " turns left")
 	end
 	self.current_rush_cost, self.current_double_cost = self.RUSH_COST, self.DOUBLE_COST
 	self.supering = false

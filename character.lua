@@ -104,6 +104,7 @@ end
 -- do those things to set up the character. Called at start of match
 function character:setup()
 	self.hand = hand:new(self)
+	print("character:setup()", self == self.hand.owner)
 	self.hand:makeInitialPieces()
 	setupSuperMeter(self)
 	createCharacterAnimation(self)
@@ -135,6 +136,7 @@ function character:super()
 	if self.cur_mp >= self.SUPER_COST then
 		self.super_glow.full.scaling = 0
 		self.supering = not self.supering
+		print("Is " .. self.character_id .. "'s super active?", self.supering)
 	end
 end
 

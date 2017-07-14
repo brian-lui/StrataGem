@@ -61,6 +61,7 @@ function lamer:super()
 	if self.cur_mp >= self.SUPER_COST then
 		self.super_glow.full.scaling = 0
 		self.supering = not self.supering
+		print("Is super active?", self.supering)
 	end
 end
 

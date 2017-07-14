@@ -238,6 +238,7 @@ function love.keypressed(key)
 		local temp = pic:new{x = stage.width * 0.5, y = stage.height * 0.5, image = image.red_gem}
 		AllParticles.PieEffects[ID.particle] = temp
 		temp.update = temp.greatupdate
+		local asdf = {{function(a) print(a) end, "a"}, {function(b) print(b) end, "b"}}
 		local newbluegem = function()
 			local x, y = temp.x, temp.y
 			local blue = pic:new{x = x, y = y, image = image.blue_gem}
@@ -245,7 +246,7 @@ function love.keypressed(key)
 			AllParticles.PieEffects[ID.particle] = blue
 		end
 		local during = {10, 5, newbluegem}
-		temp:moveTo{x = 300, y = 200, duration = 120, during = during}
+		temp:moveTo{x = 300, y = 200, duration = 120, exit = asdf, during = during}
 		queue.add(10, temp.moveTo, temp, {x = 600, y = 450, duration = 60, easing = "outQuart"})
 	elseif key == "v" then
 		debugTool.printSummaryState(stage.grid, p1, p2)
