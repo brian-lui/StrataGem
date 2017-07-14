@@ -81,7 +81,6 @@ end
 
 -- landed in the staging area above the grid
 function Gem:landedInStagingArea(place_type, owner)
-	print("gem landed in staging area!")
 	for player in game:players() do
 		if player.place_type == "double" then
 			particles.words:generateDoublecast(player)

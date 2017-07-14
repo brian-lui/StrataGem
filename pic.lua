@@ -177,7 +177,7 @@ end
 		tween_target: variables to tween, default is {t = 1}
 		curve: bezier curve, provided as a love.math.newBezierCurve() object
 		queue: if true, will queue this move after the previous one is finished. default is true
-		here: if true, will move from current position; false to move from end of previous position
+		here: if true, will instantly move from current position; false to move from end of previous position. only if queue is false
 		during: {frame_step, frame_start, func, args}, if any, to execute every dt_step while tweening.
 		exit: {func, args}, if any, to execute when the move finishes. Optional "true" to delete
 		debug: print some unhelpful debug info
@@ -231,6 +231,16 @@ function pic:wait(frames)
 	self:moveTo{duration = frames}
 end
 
+function pic:resolve()
+	while self.move_func do
+		self:move_func(math.huge)
+		clearMove(self)
+		if #self.queued_moves > 0 then
+			local new_target = table.remove(self.queued_moves, 1)
+			self.move_func = createMoveFunc(self, new_target)
+		end
+	end
+end
 -- clears all moves
 function pic:clear()
 	self.t, self.tweening, self.curve, self.move_func = nil, nil, nil, nil

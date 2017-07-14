@@ -90,11 +90,12 @@ end
 
 -- moves a piece from location to location, as integers
 function Hand:movePiece(start_pos, end_pos)
-	print("Moving piece from, to: ", start_pos, end_pos)
 	-- anims
 	local dist = stage.height * 0.1375 * (end_pos - start_pos)
 	local duration = math.abs(dist / self.PLATFORM_SPEED)
 	local to_move = self[start_pos].piece
+	to_move.hand_idx = end_pos
+	to_move:resolve()
 	to_move:moveTo{
 		x = function() return self:getx(to_move.y) end,
 		y = self[end_pos].y,
@@ -224,6 +225,9 @@ end
 function Hand:afterActionPhaseUpdate()
 	self.owner.pieces_to_get = math.floor(self.damage / 4)
 	self.damage = (self.damage % 4) + 4
+	for i = 0, 10 do
+		if self[i].piece then self[i].piece:resolve() end
+	end
 end
 
 -- Update function only called at end of turn
