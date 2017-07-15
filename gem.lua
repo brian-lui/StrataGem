@@ -2,8 +2,8 @@
 local image = require 'image'
 require 'utilities' -- helper functions
 local class = require 'middleclass' -- class support
-local GemPlatform = require 'gemplatform'
-local tween = require 'tween'
+--local GemPlatform = require 'gemplatform'
+--local tween = require 'tween'
 local pic = require 'pic'
 local particles	-- Set in initializer
 local stage	-- Set in initializer

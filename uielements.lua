@@ -1,5 +1,5 @@
 local image = require 'image'
-local class = require 'middleclass' -- class support
+--local class = require 'middleclass' -- class support
 local pic = require 'pic'
 local stage = game.stage
 

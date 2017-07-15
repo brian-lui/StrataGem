@@ -1,8 +1,8 @@
 local image = require 'image'
 local stage = game.stage
-local character = require 'character'
-local class = require 'middleclass'
-local socket = require 'socket'
+--local character = require 'character'
+--local class = require 'middleclass'
+--local socket = require 'socket'
 local Background = require 'background'
 local client = require 'client'
 local pic = require 'pic'
@@ -52,7 +52,7 @@ function lobby.goBack()
 			end
 		end
 	end
-	
+
 	client.disconnect()
 	local disc_time = os.time()
 	while client.connected do
@@ -113,7 +113,7 @@ end
 
 function lobby.handleRelease(x, y)
 	for i = 1, #screen_buttons do
-		if pointIsInRect(x, y, screen_buttons[i].item:getRect()) and 
+		if pointIsInRect(x, y, screen_buttons[i].item:getRect()) and
 		screen_buttons[i] == clicked then
 			screen_buttons[i].action()
 			break
@@ -148,7 +148,7 @@ function lobby.drawCurrentUsers()
 		local y_step = 50
 		love.graphics.print("Users", x, y-50)
 		love.graphics.print("Playing", x+150, y-50)
-		
+
 		for i = 1, #dude do
 			if dude[i].queuing then
 				love.graphics.setColor(0, 255, 0)

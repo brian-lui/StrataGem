@@ -1,9 +1,9 @@
 require 'socket'
 local json = require 'dkjson'
-local inspect = require 'inspect'
-local character = require 'character' -- temp
+--local inspect = require 'inspect'
+--local character = require 'character' -- temp
 local settings = require 'settings'
-local hand = require 'hand'
+--local hand = require 'hand'
 
 client = {}
 local client_socket = socket.tcp()
@@ -229,7 +229,7 @@ local function startMatch(recv)
 	client.match_start_time = love.timer.getTime()
 	local char1 = "heath" -- need to lookup the character name
 	local char2 = "walter" -- need to lookup the character name
-	local bkground = Background.Seasons
+	local bkground = Background.Seasons	-- TODO: Deglobalize Background, also why is this here
 	client.queuing = false
 	client.playing = true
 	startGame("Netplay", char1, char2, bkground, recv.seed, recv.side)

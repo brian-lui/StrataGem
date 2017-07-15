@@ -11,7 +11,7 @@ local data = {
 	logo = {
 		x = stage.width * 0.5,
 		start_y = stage.height * -0.5,
-		y = stage.height * 0.35, 
+		y = stage.height * 0.35,
 		start_transparency = 0,
 		transparency = 255,
 		image = image.title.logo,
@@ -63,6 +63,7 @@ local buttons = {
 	},
 }
 
+-- TODO: Deglobalize Background
 function title.drawBackground()
 	love.graphics.clear()
 	Background.Seasons.drawImages()
@@ -110,7 +111,7 @@ end
 function title.update(dt)
 	Background.Seasons.update()
 	for _, v in pairs(objects) do
-		if v.tweening then 
+		if v.tweening then
 			if v.tweening:update(dt) then v.tweening = nil end
 		end
 	end

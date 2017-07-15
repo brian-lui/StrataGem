@@ -1,6 +1,6 @@
 -- require backgrounds
 local charselect = require 'charselect'
-local character = require 'character'
+--local character = require 'character'
 local stage = game.stage
 local title = require 'title'
 
@@ -32,7 +32,7 @@ end
 
 function mouseHandler.maingameRelease(x, y)
 	local player = game.me_player
-	if mouse.down then 
+	if mouse.down then
 		mouse.down = false
 
 		if game.active_piece then
@@ -44,7 +44,7 @@ function mouseHandler.maingameRelease(x, y)
 
 		elseif player.super_clicked and pointIsInRect(x, y, unpack(stage.super_click[player.ID])) then
 			player:super()
-		end  
+		end
 	end
 	player.super_clicked = false
 	game.active_piece = false

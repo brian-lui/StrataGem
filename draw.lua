@@ -63,6 +63,7 @@ function draw.screenshake(shake)
 	draw.camera:setPosition(h_displacement, v_displacement)
 end
 
+-- TODO: De-globalize Background
 -- background and background effects
 function draw.drawBackground()
 	love.graphics.clear()
@@ -76,7 +77,7 @@ end
 -- draw all the non-gem screen elements: super bar, sprite
 function draw.drawScreenElements()
 	love.graphics.clear()
-	
+
 	-- under-platform trails
 	for _, v in pairs(AllParticles.PlatformTinyStar) do v:draw() end
 	for _, v in pairs(AllParticles.PlatformStar) do v:draw() end

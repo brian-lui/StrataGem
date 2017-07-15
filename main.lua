@@ -10,7 +10,7 @@ local particles = game.particles
 
 --local Gem = require "gem"
 --local settings = require 'settings'
-local Character = require "character"
+--local Character = require "character"
 local draw = require 'draw'
 local music = require 'music'
 local title = require 'title'
@@ -216,8 +216,8 @@ function love.keypressed(key)
 		end
 	elseif key == "q" then reallyprint(love.filesystem.getSaveDirectory())
 	elseif key == "a" then game.time_to_next = 1
-	elseif key == "s" then local hand = require 'hand' p1.hand:addDamage(1)
-	elseif key == "d" then local hand = require 'hand' p2.hand:addDamage(1)
+	elseif key == "s" then p1.hand:addDamage(1)
+	elseif key == "d" then p2.hand:addDamage(1)
 	elseif key == "f" then
 		p1.cur_mp = math.min(p1.cur_mp + 20, p1.MAX_MP)
 		p2.cur_mp = math.min(p2.cur_mp + 20, p2.MAX_MP)
@@ -333,6 +333,7 @@ n = function(row, column, color, owner)
 	stage.grid[row][column].gem:addOwner(1)
 end
 
+-- TODO: Remove this bit and animationsandbox.lua
 --game.current_screen = "animation_testing"
 --sandbox.g()
 

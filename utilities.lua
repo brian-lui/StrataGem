@@ -1,6 +1,6 @@
 local love = _G.love
-local image = require 'image'
-local json = require 'dkjson'
+--local image = require 'image'
+--local json = require 'dkjson'
 
 -- all prints go to debug.txt file. achtung!
 love.filesystem.remove("debug.txt")

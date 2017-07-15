@@ -1,3 +1,5 @@
+-- TODO: Remove this whole file?
+
 local image = require 'image'
 local tween = require 'tween'
 
