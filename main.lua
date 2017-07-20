@@ -266,7 +266,10 @@ function love.keypressed(key)
 		n(8, 6, "R")
 	elseif key == "m" then
 		p1.hand[3].platform:screenshake(30)
+	elseif key == "," then
+		debugTool.setOverlay(function() return particles.getNumber("Damage", p2) end)
 	end
+
 end
 
 function love.mousepressed(x, y, button, istouch)

@@ -56,6 +56,14 @@ function debugTool.printSummaryState(grid, p1, p2)
 	for i = 1, #toprint do print(toprint[i]) end
 end
 
+function debugTool.setOverlay(func)
+	if type(func) ~= "function" then
+		print("Please pass function to setOverlay!")
+	else
+		debugTool.overlay = func
+	end
+end
+
 function math.clamp(_in, low, high)
 	if (_in < low ) then return low end
 	if (_in > high ) then return high end

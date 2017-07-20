@@ -191,32 +191,20 @@ function draw.drawText()
 			love.graphics.print(c, stage.grid.x[c], 200)
 		end
 	love.graphics.pop()
+
+	-- debug overlay
+	love.graphics.push("all")
+		love.graphics.setColor(255, 255, 255)
+		if debugTool.overlay then
+			local toprint = debugTool.overlay()
+			love.graphics.printf(toprint, 0, 40, 1000, "right")
+		end
+	love.graphics.pop()
 end
 
 function draw.drawAnimations()
 	love.graphics.clear(255, 255, 255)
 	animations:drawAll()
-
-	-- debug display
-	love.graphics.push("all")
-		love.graphics.setColor(255, 0, 255)
-		love.graphics.print("Thanks for trying things out!", 600, 100)
-		love.graphics.print("You can edit animationsandbox.lua to change what they do.", 600, 280)
-		love.graphics.print("Thanks.", 600, 310)
-
-	love.graphics.pop()
-	--[[
-	love.graphics.push("all")
-		love.graphics.setLineWidth(1)
-		love.graphics.setColor(0, 255, 0)
-		for i = 0, 400, 20 do
-			love.graphics.line(0, i, stage.width, i)
-			love.graphics.line(i, 0, i, stage.height)
-			love.graphics.print(i, 0, i)
-			love.graphics.print(i, i, 0)
-		end
-	love.graphics.pop()
-	--]]
 end
 
 function draw.drawAnimationTracers()
