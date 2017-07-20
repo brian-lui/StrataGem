@@ -46,10 +46,10 @@ local image = {
 	yellow_particle2 = love.graphics.newImage('images/particles/yellowparticle2.png'),
 	yellow_particle3 = love.graphics.newImage('images/particles/yellowparticle3.png'),
 
-	super_particle_red = love.graphics.newImage('images/particles/superparticlered.png'),
-	super_particle_blue = love.graphics.newImage('images/particles/superparticleblue.png'),
-	super_particle_green = love.graphics.newImage('images/particles/superparticlegreen.png'),
-	super_particle_yellow = love.graphics.newImage('images/particles/superparticleyellow.png'),
+	super_particle_red = love.graphics.newImage('images/particles/redsuperparticle.png'),
+	super_particle_blue = love.graphics.newImage('images/particles/bluesuperparticle.png'),
+	super_particle_green = love.graphics.newImage('images/particles/greensuperparticle.png'),
+	super_particle_yellow = love.graphics.newImage('images/particles/yellowsuperparticle.png'),
 
 	trail_particle_red = love.graphics.newImage('images/particles/trailred.png'),
 	trail_particle_blue = love.graphics.newImage('images/particles/trailblue.png'),
@@ -61,18 +61,15 @@ local image = {
 	pop_particle_green = love.graphics.newImage('images/gems/popgreen.png'),
 	pop_particle_yellow = love.graphics.newImage('images/gems/popyellow.png'),
 
-	star_particle_silver1 = love.graphics.newImage('images/particles/star1silver.png'),
-	star_particle_silver2 = love.graphics.newImage('images/particles/star2silver.png'),
-	star_particle_silver3 = love.graphics.newImage('images/particles/star3silver.png'),
-	star_particle_gold1 = love.graphics.newImage('images/particles/star1gold.png'),
-	star_particle_gold2 = love.graphics.newImage('images/particles/star2gold.png'),
-	star_particle_gold3 = love.graphics.newImage('images/particles/star3gold.png'),
-	tinystar_particle_silver1 = love.graphics.newImage('images/particles/tinystar1silver.png'),
-	tinystar_particle_silver2 = love.graphics.newImage('images/particles/tinystar2silver.png'),
-	tinystar_particle_silver3 = love.graphics.newImage('images/particles/tinystar3silver.png'),
-	tinystar_particle_gold1 = love.graphics.newImage('images/particles/tinystar1gold.png'),
-	tinystar_particle_gold2 = love.graphics.newImage('images/particles/tinystar2gold.png'),
-	tinystar_particle_gold3 = love.graphics.newImage('images/particles/tinystar3gold.png'),
+	star_particle_silver1 = love.graphics.newImage('images/particles/silverstar1.png'),
+	star_particle_gold1 = love.graphics.newImage('images/particles/goldstar1.png'),
+	star_particle_gold2 = love.graphics.newImage('images/particles/goldstar2.png'),
+	tinystar_particle_silver1 = love.graphics.newImage('images/particles/silvertinystar1.png'),
+	tinystar_particle_silver2 = love.graphics.newImage('images/particles/silvertinystar2.png'),
+	tinystar_particle_silver3 = love.graphics.newImage('images/particles/silvertinystar3.png'),
+	tinystar_particle_gold1 = love.graphics.newImage('images/particles/goldtinystar1.png'),
+	tinystar_particle_gold2 = love.graphics.newImage('images/particles/goldtinystar2.png'),
+	tinystar_particle_gold3 = love.graphics.newImage('images/particles/goldtinystar3.png'),
 }
 image.GEM_WIDTH = image.red_gem:getWidth()
 image.GEM_HEIGHT = image.red_gem:getHeight()
@@ -109,11 +106,11 @@ for i = 1, 6 do
 end
 
 image.UI = {
-	tub = love.graphics.newImage('images/ui/tub.png'),
+	tub = love.graphics.newImage('images/ui/basin.png'),
 	platform_gold = love.graphics.newImage('images/ui/platgold.png'),
 	platform_silver = love.graphics.newImage('images/ui/platsilver.png'),
 	platform_red = love.graphics.newImage('images/ui/platred.png'),
-	platform_red_glow = love.graphics.newImage('images/ui/platredglow.png'),
+	platform_red_glow = love.graphics.newImage('images/ui/platglow.png'),
 	redX = love.graphics.newImage('images/ui/redx.png'),
 	timer_bar = love.graphics.newImage('images/ui/timerbar.png'),
 	timer_bar_full = love.graphics.newImage('images/ui/timerbarfull.png'),
@@ -128,13 +125,13 @@ image.UI = {
 }
 
 image.UI.timer = {}
-for i = 0, 9 do
-	image.UI.timer[i] = love.graphics.newImage('images/numbers/timer '..i..'.png')
+for i = 0, 3 do
+	image.UI.timer[i] = love.graphics.newImage('images/numbers/'..i..'.png')
 end
 
 image.UI.super = {}
 for _, c in pairs(super_colors) do
-	image.UI.super[c.."_word"] = love.graphics.newImage('images/ui/'..c..'super.png')
+	image.UI.super[c.."_word"] = love.graphics.newImage('images/ui/super'..c..'.png')
 	image.UI.super[c.."_partial"] = love.graphics.newImage('images/ui/'..c..'segmentpartial.png')
 	image.UI.super[c.."_full"] = love.graphics.newImage('images/ui/'..c..'segmentfull.png')
 	for i = 1, 4 do
@@ -144,8 +141,8 @@ end
 
 image.title = {
 	logo = love.graphics.newImage('images/title/logo.png'),
-	online = love.graphics.newImage('images/title/online.png'),
-	onlinepush = love.graphics.newImage('images/title/onlinepush.png'),
+	online = love.graphics.newImage('images/title/netplay.png'),
+	onlinepush = love.graphics.newImage('images/title/netplaypush.png'),
 	vscpu = love.graphics.newImage('images/title/vscpu.png'),
 	vscpupush = love.graphics.newImage('images/title/vscpupush.png'),
 }
@@ -195,9 +192,10 @@ image.words = {
 	ready = love.graphics.newImage('images/words/ready.png'),
 	go = love.graphics.newImage('images/words/go.png'),
 
-	doublecast_cloud = love.graphics.newImage('images/words/doublecastcloud.png'),
-	rush_cloud_h = love.graphics.newImage('images/words/rushcloudhori.png'),
-	rush_cloud_v = love.graphics.newImage('images/words/rushcloudvert.png'),
+	doublecast_cloud_h = love.graphics.newImage('images/words/doublecasthori.png'),
+	doublecast_cloud_v = love.graphics.newImage('images/words/doublecastvert.png'),
+	rush_cloud_h = love.graphics.newImage('images/words/rushhori.png'),
+	rush_cloud_v = love.graphics.newImage('images/words/rushvert.png'),
 	rush_particle = love.graphics.newImage('images/words/rushparticle.png'),
 	go_star = love.graphics.newImage('images/words/gostar.png'),
 	ready_star1 = love.graphics.newImage('images/words/readystar1.png'),
@@ -279,8 +277,8 @@ image.lookup.trail_particle = {
 }
 
 image.lookup.platform_star = {
-	StarP2 = {image.star_particle_silver1, image.star_particle_silver2, image.star_particle_silver3},
-	StarP1 = {image.star_particle_gold1, image.star_particle_gold2, image.star_particle_gold3},
+	StarP2 = {image.star_particle_silver1},
+	StarP1 = {image.star_particle_gold1, image.star_particle_gold2},
 	TinyStarP2 = {image.tinystar_particle_silver1, image.tinystar_particle_silver2, image.tinystar_particle_silver3},
 	TinyStarP1 = {image.tinystar_particle_gold1, image.tinystar_particle_gold2, image.tinystar_particle_gold3},
 }

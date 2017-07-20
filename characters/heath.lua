@@ -23,22 +23,19 @@ heath.super_images = {
 	glow = {image.UI.super.red_glow1, image.UI.super.red_glow2, image.UI.super.red_glow3, image.UI.super.red_glow4}
 }
 heath.special_images = {
-	--fire1 = love.graphics.newImage('images/specials/heath/fire1.png'),
-	--fire2 = love.graphics.newImage('images/specials/heath/fire2.png'),
-	--fire3 = love.graphics.newImage('images/specials/heath/fire3.png'),
-	testfire1 = love.graphics.newImage('images/specials/heath/testfire1.png'),
-	testfire2 = love.graphics.newImage('images/specials/heath/testfire2.png'),
-	testfire3 = love.graphics.newImage('images/specials/heath/testfire3.png'),
-	testfire4 = love.graphics.newImage('images/specials/heath/testfire4.png'),
-	testfire5 = love.graphics.newImage('images/specials/heath/testfire5.png'),
+	fire1 = love.graphics.newImage('images/specials/heath/fire1.png'),
+	fire2 = love.graphics.newImage('images/specials/heath/fire2.png'),
+	fire3 = love.graphics.newImage('images/specials/heath/fire3.png'),
+	fire4 = love.graphics.newImage('images/specials/heath/fire4.png'),
+	fire5 = love.graphics.newImage('images/specials/heath/fire5.png'),
 	--glow1 = love.graphics.newImage('images/specials/heath/glow1.png'),
 	--glow2 = love.graphics.newImage('images/specials/heath/glow2.png'),
 	fire_particle = love.graphics.newImage('images/specials/heath/fireparticle.png'),
-	boom1 = love.graphics.newImage('images/specials/heath/boom1.png'),
-	boom2 = love.graphics.newImage('images/specials/heath/boom2.png'),
-	boom3 = love.graphics.newImage('images/specials/heath/boom3.png'),
-	boom4 = love.graphics.newImage('images/specials/heath/boom4.png'),
-	boom5 = love.graphics.newImage('images/specials/heath/boom5.png'),
+	boom1 = love.graphics.newImage('images/specials/heath/explode1.png'),
+	boom2 = love.graphics.newImage('images/specials/heath/explode2.png'),
+	boom3 = love.graphics.newImage('images/specials/heath/explode3.png'),
+	boom4 = love.graphics.newImage('images/specials/heath/explode4.png'),
+	boom5 = love.graphics.newImage('images/specials/heath/explode5.png'),
 	boomparticle1 = love.graphics.newImage('images/specials/heath/boomparticle1.png'),
 	boomparticle2 = love.graphics.newImage('images/specials/heath/boomparticle2.png'),
 	boomparticle3 = love.graphics.newImage('images/specials/heath/boomparticle3.png'),
@@ -114,7 +111,7 @@ function particle_effects.SmallFire(row, col, owner)
 			draw_img = draw_img % #draw_order + 1
 			--self.old_image = self.image
 			--self.old_image_transparency = 255
-			self.image = heath.special_images["testfire" .. draw_order[draw_img] ]
+			self.image = heath.special_images["fire" .. draw_order[draw_img] ]
 		end
 
 		self.x = stage.grid.x[col]
@@ -160,7 +157,7 @@ function particle_effects.SmallFire(row, col, owner)
 		x = stage.grid.x[col],
 		y = stage.grid.y[row],
 		rotation = 0,
-		image = heath.special_images.testfire1,
+		image = heath.special_images.fire1,
 		t = 0,
 		update = update_func,
 		turns_remaining = 1,

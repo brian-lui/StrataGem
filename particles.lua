@@ -276,7 +276,6 @@ function ExplodingPlatform:generate(platform)
 
 	for i = 1, #todraw do
 		local p = self:new(x, y, todraw[i])
-		p.scaling = 0.25
 		p.transparency = 510
 		local y_func = function() return y + p.t * moves[i].y + p.t^2 * acc end
 
@@ -286,7 +285,7 @@ function ExplodingPlatform:generate(platform)
 			x = x + moves[i].x,
 			y = y_func,
 			transparency = 0,
-			scaling = 0.375,
+			scaling = 1.5,
 			exit = true}
 	end
 end
@@ -563,9 +562,8 @@ end
 -- the glow cloud behind a doublecast piece.
 -- called from anims.putPendingOnTop, and from anims.update
 function WordEffects:generateDoublecastCloud(gem1, gem2, horizontal)
-	local todraw = image.words.doublecast_cloud
+	local todraw = horizontal and image.words.doublecast_cloud_h or image.words.doublecast_cloud_v
 	local p = self:new((gem1.x + gem2.x) * 0.5, (gem1.y + gem2.y) * 0.5, todraw)
-	p.rotation = horizontal and 0 or math.pi * 0.5
 	p.transparency = 0
 	p:moveTo{duration = 20, transparency = 255, easing = "inCubic"}
 	p.update = function(self, dt)
