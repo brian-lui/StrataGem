@@ -125,6 +125,7 @@ end
 
 function phase.applyGemTween(dt)
 	stage.grid:updateGravity(dt) -- animation
+	for player in game:players() do	player.hand:update(dt) end	
 	local animation_done = stage.grid:isSettled() -- function
 	if animation_done then
 		stage.grid:dropColumns() -- state
@@ -134,6 +135,7 @@ end
 
 function phase.applyGravity(dt)
 	stage.grid:updateGravity(dt) -- animation
+	for player in game:players() do	player.hand:update(dt) end
 	local animation_done = stage.grid:isSettled() -- function
 	if animation_done then
 		for player in game:players() do player:afterGravity() end
@@ -159,6 +161,7 @@ end
 
 local match_anim_phase, match_anim_count = "start", 0
 function phase.matchAnimations(dt)
+	for player in game:players() do	player.hand:update(dt) end
 	if match_anim_phase == "start" then
 		stage.grid:generateMatchExplodingGems() -- animation
 		match_anim_phase, match_anim_count = "explode", 20
@@ -199,17 +202,38 @@ function phase.resolvingMatches(dt)
 end
 
 function phase.resolvedMatches(dt)
-	for player in game:players() do
-		player:afterMatch()
-		player.hand:update(dt)
-		player.place_type = "normal"
+	-- wait for damage particles to arrive first
+	if particles.getNumber("Damage") > 0 then
+		for player in game:players() do
+			player.hand:update(dt)
+		end
+	else -- all damage particles finished
+		for player in game:players() do
+			player:afterMatch()
+			player.hand:update(dt)
+			player.place_type = "normal"
+		end
+		game.scoring_combo = 0
+		stage.grid:setAllGemOwners(0)
+		game.phase = "GetPiece"
 	end
-	game.scoring_combo = 0
-	stage.grid:setAllGemOwners(0)
-	game.phase = "GetPiece"
 end
 
 function phase.getPiece(dt)
+	for player in game:players() do 
+		player.hand:destroyPlatformsAnim()
+		player.hand:getNewTurnPieces()
+	end
+	game.phase = "PlatformsExploding"
+end
+
+function phase.platformsExploding(dt)
+	if particles.getNumber("ExplodingPlatform") == 0 then
+		game.phase = "PlatformsMoving"
+	end
+end
+
+function phase.platformsMovingUp(dt)
 	local handsettled = true
 	for player in game:players() do
 		player.hand:update(dt)
@@ -219,16 +243,9 @@ function phase.getPiece(dt)
 	end
 
 	stage.grid:updateGravity(dt)
-
-	if not game.finished_getting_pieces then
-		for player in game:players() do
-			player.hand:getNewTurnPieces()
-		end
-		game.finished_getting_pieces = true
-	end
-
+	
 	if handsettled then
-		for player in game:players() do player.hand:update(dt) end
+		for player in game:players() do player.hand:update(dt) end -- TODO: check if we can delete this
 		-- ignore garbage pushing gems up, creating matches, for now
 
 		if stage.grid:isSettled() then
@@ -255,7 +272,6 @@ function phase.cleanup(dt)
 	p1.pieces_fallen, p2.pieces_fallen = 0, 0
 	p1.dropped_piece, p2.dropped_piece = false, false
 	p1.played_pieces, p2.played_pieces = {}, {}
-	game.finished_getting_pieces = false
 	stage.grid:setAllGemOwners(0)
 
 	for player in game:players() do
@@ -317,6 +333,8 @@ phase.lookup = {
 	ResolvingMatches = phase.resolvingMatches,
 	ResolvedMatches = phase.resolvedMatches,
 	GetPiece = phase.getPiece,
+	PlatformsExploding = phase.platformsExploding,
+	PlatformsMoving = phase.platformsMovingUp,
 	Cleanup = phase.cleanup,
 	Sync = phase.sync,
 	GameOver = phase.gameOver

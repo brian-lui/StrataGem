@@ -3,8 +3,6 @@ require 'utilities'
 local anims = require 'anims'
 local image = require 'image'
 local stage = game.stage
---local pic = require 'pic'
---local particles = game.particles
 local animations = require 'animations'
 local UI = require 'uielements'
 
@@ -147,10 +145,6 @@ function draw.drawGems()
 		love.graphics.setStencilTest()
 	love.graphics.pop()
 
-	-- damage bar
-	for player in game:players() do
-		player.hand.damage_bar:draw()
-	end
 	-- over-gem particles
 	for _, v in pairs(AllParticles.Super) do v:draw() end
 	for _, v in pairs(AllParticles.DamageTrail) do v:draw() end
@@ -172,6 +166,9 @@ function draw.drawGems()
 	-- over-dust
 	for _, v in pairs(AllParticles.OverDust) do v:draw() end
 
+	-- exploded platform pieces
+	for _, v in pairs(AllParticles.ExplodingPlatform) do v:draw() end
+	
 	-- uptween gems
 	for _, v in pairs(AllParticles.UpGem) do v:draw() end
 

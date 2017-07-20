@@ -6,7 +6,6 @@
 require 'inits'
 local stage = game.stage
 local particles = game.particles
---local tween = require 'tween'
 local UI = require 'uielements'
 local anims = {}
 

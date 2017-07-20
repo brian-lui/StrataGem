@@ -1,6 +1,4 @@
--- require backgrounds
 local charselect = require 'charselect'
---local character = require 'character'
 local stage = game.stage
 local title = require 'title'
 

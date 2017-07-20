@@ -1,6 +1,7 @@
 require 'utilities' -- move
 local image = require 'image'
 local class = require 'middleclass' -- class support
+local particles = game.particles
 local pic = require 'pic'
 
 -- gem platforms are generated through the Hand class
@@ -17,8 +18,8 @@ function GemPlatform:initialize(owner, location)
 	self.owner = owner
 	self.getx = owner.hand.getx
 	self.transparency, self.redness, self.rotation = 255, 0, 0
+	self.spin = 0 -- radians per frame
 	self.rotation_speed = owner.ID == "P1" and self.PLATFORM_ROTATION_SPEED or -self.PLATFORM_ROTATION_SPEED
-	--game.AllGemPlatforms[ID.particle] = self
 end
 
 function GemPlatform:draw()
@@ -58,10 +59,44 @@ function GemPlatform:screenshake(frames)
 	end
 end
 
+function GemPlatform:setSpin(angle)
+	local direction = self.owner.ID == "P1" and 1 or -1
+	self.spin = angle * direction
+end
+
+function GemPlatform:setFastSpin(bool)
+	self.fastspin = bool
+end
+
 function GemPlatform:update(dt)
 	pic.update(self, dt)
 	local player = self.owner
 	local loc = self.hand_idx
+
+	-- set spin and redness
+	local particle_delayed_damage = particles.getNumber("Damage", player) / 3
+	local displayed_damage = (player.hand.damage - particle_delayed_damage) / 4
+
+	if displayed_damage >= loc then -- fully red, full spin
+		self.redness = math.min(self.redness + self.GEM_PLATFORM_TURN_RED_SPEED, 255)
+		if self.redness == 255 and not self.glow_startframe then
+			self.glow_startframe = frame
+		end
+		self:setSpin(0.02)
+	elseif displayed_damage > (loc - 1) and displayed_damage < loc then
+		self.redness = math.min(self.redness + self.GEM_PLATFORM_TURN_RED_SPEED, 200 * (displayed_damage % 1))
+		self:setSpin((displayed_damage % 1) * 0.02) -- partial spin
+	end
+
+	-- generate particles regularly during spin
+	local current_spin = self.fastspin and self.spin * 10 or self.spin
+	if math.floor((self.rotation + current_spin) * 5) - math.floor(self.rotation * 5) ~= 0 then
+		local x_adj = (math.random() - 0.5) * self.width * 0.2
+		local y_adj = (math.random() - 0.5) * self.height * 0.2
+		particles.dust:generatePlatformSpin(self.x + x_adj, self.y + y_adj, math.abs(current_spin))
+	end
+	self.rotation = self.rotation + current_spin
+
 	--[[
 	if loc == 0 and self.y == player.hand[0].y then
 	-- fade out top gem platform
@@ -75,12 +110,6 @@ function GemPlatform:update(dt)
 		end
 	end
 	--]]
-	if loc <= player.hand.damage / 4 and game.phase == "Action" then
-		self.redness = math.min(self.redness + self.GEM_PLATFORM_TURN_RED_SPEED, 255)
-		if self.redness == 255 and not self.glow_startframe then
-			self.glow_startframe = frame
-		end
-	end
 
 	if self.shake then
 		self.shake = self.shake - 1

@@ -3,9 +3,7 @@
 	of the game field.
 --]]
 
---local image = require 'image'
 local class = require 'middleclass'
---local stage = game.stage
 local pic = require 'pic'
 local tween = require 'tween'
 local pairs = pairs

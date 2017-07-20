@@ -18,7 +18,7 @@ local inspect = require 'inspect'
 local phase = {}
 
 function instantCalculateGamestate()
-	hand.endOfTurnUpdate() -- pure state. sets new player.pieces_to_get, assigns pie damage
+	hand.endOfTurnUpdate() -- pure animations
 	anims.putPendingAtTop() -- pure animations
 	stage.grid:dropColumns() -- pure state
 	stage.grid:updateGravity(dt) -- pure anims: gem:landedInStagingArea, gem:landedInGrid (also sets self.no_yoshi_particle which is part of animations)

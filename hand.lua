@@ -4,12 +4,9 @@ local Piece = require 'piece'
 local GemPlatform = require 'gemplatform'
 local pic = require 'pic'
 local image = require 'image'
+local particles = game.particles
 local stage
 
-local DamageBar = class('DamageBar', pic)
-function DamageBar:initialize(player)
-	pic.initialize(self, {x = 0, y = 0, image = image.UI.damage_bar})
-end
 
 local Hand = class('Hand')
 Hand.PLATFORM_SPEED = window.height / 192 -- pixels per second for pieces to shuffle
@@ -29,8 +26,6 @@ function Hand:initialize(player)
 	self[0].y = stage.height / 8 -- discard place is higher up
 	self.garbage = {} -- pending-garbage gems
 	self.damage = 4 -- each 4 damage is one more platform movement
-	self.damage_bar = DamageBar:new(player)
-	self:moveDamageBar()
 end
 
 -- make pieces at start of round. They are all then moved up 5 spaces
@@ -50,6 +45,7 @@ function Hand:makeInitialPieces(gem_table)
 		self[i].platform = GemPlatform:new(self.owner, i)
 		self:movePlatform(i, i-5)
 	end
+	self[1].platform:setSpin(0.02)
 end
 
 -- this describes the shape of the curve for the hands.
@@ -90,6 +86,8 @@ end
 
 -- moves a piece from location to location, as integers
 function Hand:movePiece(start_pos, end_pos)
+	if start_pos == end_pos then return end
+
 	-- anims
 	local dist = stage.height * 0.1375 * (end_pos - start_pos)
 	local duration = math.abs(dist / self.PLATFORM_SPEED)
@@ -116,6 +114,8 @@ end
 
 -- moves a gem platform from location to location, as integers
 function Hand:movePlatform(start_pos, end_pos)
+	if start_pos == end_pos then return end
+
 	-- anims
 	local dist = stage.height * 0.1375 * (end_pos - start_pos)
 	local duration = math.abs(dist / self.PLATFORM_SPEED)
@@ -138,12 +138,16 @@ function Hand:movePlatform(start_pos, end_pos)
 	end
 end
 
--- creates the new pieces for the turn. Takes optional gem_table for gem frequencies
+-- creates the new pieces for the turn and clears damage.
+-- Takes optional gem_table for gem frequencies
 function Hand:getNewTurnPieces(gem_table)
-	local player = self.owner
-	local distance = stage.height * 0.1375 * player.pieces_to_get
+	local pieces_to_get = math.floor(self.damage / 4)
+	self.damage = self.damage % 4
+	if pieces_to_get == 0 then return end
+
+	local distance = stage.height * 0.1375 * pieces_to_get
 	local duration = math.abs(distance / self.PLATFORM_SPEED)
-	for i = 6, player.pieces_to_get + 5 do
+	for i = 6, pieces_to_get + 5 do
 		self[i].piece = Piece:new{
 			location = self[i],
 			hand_idx = i,
@@ -155,9 +159,19 @@ function Hand:getNewTurnPieces(gem_table)
 		self[i].platform = GemPlatform:new(self.owner, i)
 	end
 	for i = 1, 10 do -- move up all the pieces
-		local end_pos = math.max(i - player.pieces_to_get, 0)
+		local end_pos = math.max(i - pieces_to_get, 0)
 		if self[i].piece then self:movePiece(i, end_pos) end
 		if self[i].platform then self:movePlatform(i, end_pos) end
+	end
+end
+
+-- creates exploding platform animations for gem platforms that go away this turn
+-- TODO: also the garbage-gem-doing animations 
+function Hand:destroyPlatformsAnim()
+	for i = 1, 5 do
+		if (self.damage / 4) >= i then
+			particles.explodingPlatform:generate(self[i].platform)
+		end
 	end
 end
 
@@ -206,8 +220,6 @@ function Hand:update(dt)
 			table.remove(garbage, i) -- later split this into a function for destroy top piece particle effects
 		end
 	end
-
-	self.damage_bar:update(dt)
 end
 
 -- meh. Just in case damage goes over 20
@@ -215,24 +227,20 @@ function Hand:addDamage(damage)
 	self.damage = math.min(self.damage + damage, 20)
 end
 
-function Hand:moveDamageBar()
-	local y = stage.height * 0.1375 * ((self.damage + 2) / 4) + stage.height * 0.1875
-	local x = function() return self:getx(self.damage_bar.y) end
-	self.damage_bar:moveTo{duration = 90, x = x, y = y, easing = "outBounce"}
-end
-
 -- Update function only called after action phase
 function Hand:afterActionPhaseUpdate()
-	self.owner.pieces_to_get = math.floor(self.damage / 4)
-	self.damage = (self.damage % 4) + 4
-	for i = 0, 10 do
-		if self[i].piece then self[i].piece:resolve() end
+	for i = 1, 5 do
+		if self[i].piece then self[i].piece:resolve() end -- instantly resolve animations
+		self[i].platform:setFastSpin(true)
 	end
 end
 
 -- Update function only called at end of turn
 function Hand:endOfTurnUpdate()
-	self:moveDamageBar()
+	for i = 1, 5 do
+		self[i].platform:setFastSpin(false)
+	end
+	self.damage = self.damage + 4
 end
 
 return Hand

@@ -3,7 +3,6 @@ require 'inits'
 local class = require "middleclass"
 local image = require 'image'
 local stage
---local Piece = require 'piece'
 local pic = require 'pic'
 local hand = require 'hand'
 
@@ -89,12 +88,6 @@ local function createCharacterAnimation(player)
 end
 
 
-local function setupPieces(player)
-	player.pieces_per_turn_init = player.pieces_per_turn_init or 1
-	player.pieces_per_turn = player.pieces_per_turn_init
-	player.pieces_to_get = 1
-end
-
 -- TODO: Make player and/or character into classes and put this in there
 function character:addSuper(amt)
 	self.old_mp = self.cur_mp
@@ -107,7 +100,6 @@ function character:setup()
 	self.hand:makeInitialPieces()
 	setupSuperMeter(self)
 	createCharacterAnimation(self)
-	setupPieces(self)
 end
 
 function character:actionPhase(dt)

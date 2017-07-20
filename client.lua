@@ -3,7 +3,6 @@ local json = require 'dkjson'
 --local inspect = require 'inspect'
 --local character = require 'character' -- temp
 local settings = require 'settings'
---local hand = require 'hand'
 
 client = {}
 local client_socket = socket.tcp()

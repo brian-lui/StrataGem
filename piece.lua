@@ -1,6 +1,4 @@
 require 'inits' -- ID
---local GemPlatform = require 'gemplatform'
---local image = require 'image'
 require 'utilities' -- helper functions
 local class = require 'middleclass' -- class support
 local stage

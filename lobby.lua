@@ -1,8 +1,5 @@
 local image = require 'image'
 local stage = game.stage
---local character = require 'character'
---local class = require 'middleclass'
---local socket = require 'socket'
 local Background = require 'background'
 local client = require 'client'
 local pic = require 'pic'

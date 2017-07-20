@@ -9,7 +9,6 @@
 local class = require 'middleclass'
 require 'inits'
 local image = require 'image'
---local particles = game.particles
 local pic = require 'pic'
 local stage = game.stage
 

@@ -1,4 +1,3 @@
---require 'inits'
 require 'utilities'
 local class = require "middleclass"
 local image = require 'image'

@@ -23,8 +23,12 @@ end
 function particles.getNumber(particle_tbl, player)
 	local num = 0
 	if AllParticles[particle_tbl] then
-		for _, particle in pairs(AllParticles[particle_tbl]) do
-			if particle.owner == player then num = num + 1 end
+		if player then
+			for _, particle in pairs(AllParticles[particle_tbl]) do
+				if particle.owner == player then num = num + 1 end
+			end
+		else
+			for _, particle in pairs(AllParticles[particle_tbl]) do	num = num + 1	end
 		end
 	else
 		print("Erreur, invalid particle table requested")
@@ -42,6 +46,7 @@ function particles.reset()
 		Super = {},
 		Pop = {},
 		ExplodingGem = {},
+		ExplodingPlatform = {},
 		PlatformTinyStar = {},
 		PlatformStar = {},
 		Dust = {},
@@ -239,6 +244,49 @@ function ExplodingGem:generate(gem)
 		p:moveTo{duration = self.GEM_FADE_FRAMES, exit = true}
 	else
 		p:moveTo{duration = self.GEM_FADE_FRAMES, transparency = 0, scaling = 2,
+			exit = true}
+	end
+end
+
+-------------------------------------------------------------------------------
+-- When a gem platform disappears, this is the explody parts 
+local ExplodingPlatform = class('ExplodingPlatform', pic)
+function ExplodingPlatform:initialize(x, y, image)
+	pic.initialize(self, {x = x, y = y, image = image})
+	AllParticles.ExplodingPlatform[ID.particle] = self
+end
+
+function ExplodingPlatform:remove()
+	AllParticles.ExplodingPlatform[self.ID] = nil
+end
+
+function ExplodingPlatform:generate(platform)
+	local x, y = platform.x, platform.y
+	local todraw = image.UI.starpiece
+	local rotation = 6
+	local duration = 60
+ 	local acc = stage.height
+
+	local moves = {
+		{x = stage.width * -0.2, y = stage.height * -0.5, rotation = -6},
+		{x = stage.width * 0.2, y = stage.height * -0.5, rotation = 6},
+		{x = stage.width * -0.2, y = stage.height * -0.05, rotation = -6},
+		{x = stage.width * 0.2, y = stage.height * -0.05, rotation = 6},
+	}
+
+	for i = 1, #todraw do
+		local p = self:new(x, y, todraw[i])
+		p.scaling = 0.25
+		p.transparency = 510
+		local y_func = function() return y + p.t * moves[i].y + p.t^2 * acc end
+
+		p:moveTo{
+			duration = duration,
+			rotation = moves[i].rotation,
+			x = x + moves[i].x,
+			y = y_func,
+			transparency = 0,
+			scaling = 0.375,
 			exit = true}
 	end
 end
@@ -465,6 +513,20 @@ function Dust:generateFalling(gem, x_drift, y_drift)
  		y = y + 1.3 * (0.13 * stage.height), exit = true}
 end
 
+-- generate the spinning dust from platforms
+function Dust:generatePlatformSpin(x, y, speed)
+	local todraw = image.lookup.dust.small("RED", true)
+	local rotation = 6
+	local duration = 60
+
+ 	local x_vel = (math.random() - 0.5) * 2 * stage.width * (speed + 0.2)
+ 	local y_vel = (math.random() - 0.75) * 3 * stage.height * (speed + 0.2)
+ 	local acc = stage.height * (speed + 0.2) * 3
+
+	local p = self:new(x, y, todraw, "Dust")
+	local y_func = function() return y + p.t * y_vel + p.t^2 * acc end
+ 	p:moveTo{duration = duration, rotation = rotation, x = x + x_vel, y = y_func, transparency = 0, exit = true}
+end
 -------------------------------------------------------------------------------
 -- When a gem is placed in basin, make the gem effects for tweening offscreen.
 local UpGem = class('UpGem', pic)
@@ -761,6 +823,7 @@ particles.damage = DamageParticle
 particles.super_ = SuperParticle	-- If this is just called "super" it interferes with middleclass
 particles.pop = PopParticle
 particles.explodingGem = ExplodingGem
+particles.explodingPlatform = ExplodingPlatform
 particles.damageTrail = DamageTrailParticle
 particles.platformStar = PlatformStar
 particles.dust = Dust

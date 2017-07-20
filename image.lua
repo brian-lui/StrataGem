@@ -119,7 +119,12 @@ image.UI = {
 	timer_bar_full = love.graphics.newImage('images/ui/timerbarfull.png'),
 	gauge_silver = love.graphics.newImage('images/ui/gaugesilver.png'),
 	gauge_gold = love.graphics.newImage('images/ui/gaugegold.png'),
-	damage_bar = love.graphics.newImage('images/ui/redbarplaceholder.jpg'),
+	starpiece = {
+		love.graphics.newImage('images/ui/starpiece1.png'),
+		love.graphics.newImage('images/ui/starpiece2.png'),
+		love.graphics.newImage('images/ui/starpiece3.png'),
+		love.graphics.newImage('images/ui/starpiece4.png'),
+	}
 }
 
 image.UI.timer = {}

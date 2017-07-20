@@ -1,5 +1,6 @@
+-- graphics for UI elements such as the timer bar.
+
 local image = require 'image'
---local class = require 'middleclass' -- class support
 local pic = require 'pic'
 local stage = game.stage
 
