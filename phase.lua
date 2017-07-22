@@ -138,6 +138,7 @@ function phase.applyGravity(dt)
 	for player in game:players() do	player.hand:update(dt) end
 	local animation_done = stage.grid:isSettled() -- function
 	if animation_done then
+		particles.wordEffects:clear()
 		for player in game:players() do player:afterGravity() end
 		game.phase = "CheckMatches"
 	end
