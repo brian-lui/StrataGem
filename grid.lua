@@ -505,6 +505,7 @@ function grid:generateMatchExplodingGems()
 	end
 end
 
+-- TODO: refactor this to remove the embarrassing duplication
 function grid:generateMatchParticles()
 	local own_tbl = {p1, p2, false}
 	local gem_table = self:getMatchedGems()
@@ -522,6 +523,22 @@ function grid:generateMatchParticles()
 			particles.damage:generate(gem)
 			particles.pop:generate(gem)
 			particles.dust:generateBigFountain(gem, 24, player)
+		end
+	end
+	local extra_particles = game.scoring_combo -- extra particles for bonus matches
+	for _, gem in pairs(gem_table) do
+		if extra_particles == 0 then break end
+		local player = own_tbl[gem.owner]
+		if player then
+			local num_super_particles = player.meter_gain[gem.color]
+			if player.supering then
+				num_super_particles = 0
+			elseif player.place_type == "rush" or player.place_type == "double" then
+				num_super_particles = num_super_particles * 0.25
+			end
+			particles.super_:generate(gem, num_super_particles)
+			particles.damage:generate(gem)
+			extra_particles = extra_particles - 1
 		end
 	end
 end
