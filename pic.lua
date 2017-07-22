@@ -250,7 +250,7 @@ function pic:clear()
 end
 
 function pic:update(dt)
-	dt = 1  -- we update in frames, not dt. Sucka MC!
+	dt = dt / time.step  -- convert dt to frames
 	if self.move_func then
 		if self.during then -- takes {frame_step, frame_start, func, args}
 			self.during_frame = self.during_frame + 1

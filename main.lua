@@ -221,12 +221,6 @@ function love.keypressed(key)
 	elseif key == "f" then
 		p1.cur_mp = math.min(p1.cur_mp + 20, p1.MAX_MP)
 		p2.cur_mp = math.min(p2.cur_mp + 20, p2.MAX_MP)
-	--if key == "g" then sandbox.g() end
-	--if key == "b" then sandbox.b() end
-	--if key == "h" then sandbox.h() end
-	--if key == "n" then sandbox.n() end
-	--if key == "j" then sandbox.j() end
-	--if key == "m" then sandbox.m() end
 	elseif key == "k" then canvas[6]:renderTo(function() love.graphics.clear() end)
 	elseif key == "z" then startGame("1P", "heath", "walter", Background.Starfall, nil, 1)
 	elseif key == "x" then
@@ -268,6 +262,8 @@ function love.keypressed(key)
 		p1.hand[3].platform:screenshake(30)
 	elseif key == "," then
 		debugTool.setOverlay(function() return particles.getNumber("Damage", p2) end)
+	elseif key == "." then
+		debugTool.toggleSlowdown()
 	end
 
 end

@@ -64,6 +64,14 @@ function debugTool.setOverlay(func)
 	end
 end
 
+function debugTool.toggleSlowdown()
+	if time.step == 0.1 then
+		time.step = 1/60
+	else
+		time.step = 0.1
+	end
+end
+
 function math.clamp(_in, low, high)
 	if (_in < low ) then return low end
 	if (_in > high ) then return high end
