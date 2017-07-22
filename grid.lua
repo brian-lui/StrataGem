@@ -570,7 +570,7 @@ function grid:calculateScore()
 
 	for i = 1, 2 do
 		local player = own_tbl[i]
-		dmg[i] = dmg[i] + game.scoring_combo - 1
+		if dmg[i] > 0 then dmg[i] = dmg[i] + game.scoring_combo - 1 end
 		if player.supering then
 			super[i] = 0
 		elseif player.place_type == "rush" or player.place_type == "double" then
