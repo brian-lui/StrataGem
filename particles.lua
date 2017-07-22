@@ -81,10 +81,6 @@ function DamageParticle:generate(gem)
 	local player = owner_lookup[gem.owner]
 	local full_segments = math.floor(player.hand.damage / 4)
 
-	-- TODO: bug: for multi-match, it calculates full_segments incorrectly because it's based on the damage after the first match
-	local already_particles = particles.getNumber("Damage", player)
-	local final_loc = math.min(2 + (full_segments/4) + (already_particles/12), 6)
-
 	-- calculate bezier curve
 	local x1, y1 = gem.x, gem.y -- start
 	local x4, y4 = player.hand[2].x, player.hand[2].y
@@ -92,6 +88,7 @@ function DamageParticle:generate(gem)
 	local x3, y3 = 0.5 * (x1 + x4), 0.5 * (y1 + y4)
 
 	for i = 1, 3 do
+		local final_loc = (player.hand.damage * 0.25) + 1 + i * 0.25
 		local angle = math.random() * math.pi * 2
 		local x2 = x1 + math.cos(angle) * dist * 0.5
 		local y2 = y1 + math.sin(angle) * dist * 0.5
