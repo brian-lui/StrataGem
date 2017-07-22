@@ -375,7 +375,12 @@ function grid:moveGemAnim(gem, row, column)
 	--local angle = math.atan2(target_y - gem.y, target_x - gem.x)
 	local speed = self.DROP_SPEED + self.DROP_MULTIPLE_SPEED * self.game.scoring_combo
 	local duration = math.abs(dist / speed)
-	gem:moveTo{x = target_x, y = target_y, duration = duration, exit = {gem.landedInGrid, gem}}
+
+	if target_y > gem.y then -- only call landing function if it was moving downwards
+		gem:moveTo{x = target_x, y = target_y, duration = duration, exit = {gem.landedInGrid, gem}}
+	else
+		gem:moveTo{x = target_x, y = target_y, duration = duration}
+	end
 end
 
 -- instructions to animate the falling gems
