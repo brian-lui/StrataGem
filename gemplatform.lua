@@ -84,7 +84,10 @@ function GemPlatform:update(dt)
 	end
 
 	-- generate particles regularly during spin, except for top platform
-	local current_spin = self.fastspin and self.spin * 5 or self.spin
+	local current_spin = self.spin
+	if self.fastspin and displayed_damage >= loc then
+		current_spin = self.spin * 5
+	end
 	local make_a_dust = math.floor((self.rotation + current_spin) * 5) - math.floor(self.rotation * 5) ~= 0
 	if make_a_dust and loc ~= 1 then
 		local x_adj = (math.random() - 0.5) * self.width * 0.2

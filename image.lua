@@ -62,8 +62,11 @@ local image = {
 	pop_particle_yellow = love.graphics.newImage('images/gems/popyellow.png'),
 
 	star_particle_silver1 = love.graphics.newImage('images/particles/silverstar1.png'),
+	star_particle_silver2 = love.graphics.newImage('images/particles/silverstar2.png'),
+	star_particle_silver3 = love.graphics.newImage('images/particles/silverstar3.png'),
 	star_particle_gold1 = love.graphics.newImage('images/particles/goldstar1.png'),
 	star_particle_gold2 = love.graphics.newImage('images/particles/goldstar2.png'),
+	star_particle_gold3 = love.graphics.newImage('images/particles/goldstar3.png'),
 	tinystar_particle_silver1 = love.graphics.newImage('images/particles/silvertinystar1.png'),
 	tinystar_particle_silver2 = love.graphics.newImage('images/particles/silvertinystar2.png'),
 	tinystar_particle_silver3 = love.graphics.newImage('images/particles/silvertinystar3.png'),
@@ -282,8 +285,8 @@ image.lookup.trail_particle = {
 }
 
 image.lookup.platform_star = {
-	StarP2 = {image.star_particle_silver1},
-	StarP1 = {image.star_particle_gold1, image.star_particle_gold2},
+	StarP2 = {image.star_particle_silver1, image.star_particle_silver2, image.star_particle_silver3},
+	StarP1 = {image.star_particle_gold1, image.star_particle_gold2, image.star_particle_gold3},
 	TinyStarP2 = {image.tinystar_particle_silver1, image.tinystar_particle_silver2, image.tinystar_particle_silver3},
 	TinyStarP1 = {image.tinystar_particle_gold1, image.tinystar_particle_gold2, image.tinystar_particle_gold3},
 }
