@@ -519,7 +519,7 @@ function grid:generateMatchParticles()
 			elseif player.place_type == "rush" or player.place_type == "double" then
 				num_super_particles = num_super_particles * 0.25
 			end
-			particles.super_:generate(gem, num_super_particles)
+			particles.superParticles:generate(gem, num_super_particles)
 			particles.damage:generate(gem)
 			particles.pop:generate(gem)
 			particles.dust:generateBigFountain(gem, 24, player)
@@ -536,7 +536,7 @@ function grid:generateMatchParticles()
 			elseif player.place_type == "rush" or player.place_type == "double" then
 				num_super_particles = num_super_particles * 0.25
 			end
-			particles.super_:generate(gem, num_super_particles)
+			particles.superParticles:generate(gem, num_super_particles)
 			particles.damage:generate(gem)
 			extra_particles = extra_particles - 1
 		end

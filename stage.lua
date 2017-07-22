@@ -37,9 +37,18 @@ function stage:initialize(game)
 		}
 	end
 
-	self.super = {P1 = {}, P2 = {}}
-	self.super.P1.frame = {x = self.x_mid - (8.5 * self.gem_width), y = self.y_mid - (3 * self.gem_height)}
-	self.super.P2.frame = {x = self.x_mid + (8.5 * self.gem_width), y = self.y_mid - (3 * self.gem_height)}
+	self.super = {
+		P1 = {
+			x = self.x_mid - (8.5 * self.gem_width),
+			y = self.y_mid - self.gem_height,
+		},
+		P2 = {
+			x = self.x_mid + (8.5 * self.gem_width),
+			y = self.y_mid - self.gem_height,
+		}
+	}
+
+
 --[[
 	local super_width = image.UI.super.red_partial:getWidth()
 

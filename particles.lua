@@ -43,7 +43,7 @@ function particles.reset()
 	AllParticles = {
 		Damage = {},
 		DamageTrail = {},
-		Super = {},
+		SuperParticles = {},
 		Pop = {},
 		ExplodingGem = {},
 		ExplodingPlatform = {},
@@ -167,11 +167,11 @@ local SuperParticle = class('SuperParticle', pic)
 function SuperParticle:initialize(gem)
 	local img = image.lookup.super_particle[gem.color]
 	pic.initialize(self, {x = gem.x, y = gem.y, image = img})
-	AllParticles.Super[ID.particle] = self
+	AllParticles.SuperParticles[ID.particle] = self
 end
 
 function SuperParticle:remove()
-	AllParticles.Super[self.ID] = nil
+	AllParticles.SuperParticles[self.ID] = nil
 end
 
 function SuperParticle:generate(gem, num_particles)
@@ -181,7 +181,7 @@ function SuperParticle:generate(gem, num_particles)
 	for i = 1, num_particles do
 		-- create bezier curve
 		local x1, y1 = gem.x, gem.y -- start
-		local x4, y4 = stage.super[player.ID].frame.x, stage.super[player.ID].frame.y -- end
+		local x4, y4 = stage.super[player.ID].x, stage.super[player.ID].y -- end
 		-- dist and angle vary the second point within a circle around the origin
 		local dist = ((x4 - x1) ^ 2 + (y4 - y1) ^ 2) ^ 0.5
 		local angle = math.random() * math.pi * 2
@@ -192,7 +192,8 @@ function SuperParticle:generate(gem, num_particles)
 
 		-- create particle
 		local p = self:new(gem)
-
+		p.owner = player
+		
 		-- move particle
 		local duration = (0.9 + 0.2 * math.random()) * 90
 		p:moveTo{duration = duration, curve = curve, easing = "inQuad", exit = true}
@@ -425,7 +426,7 @@ function Dust:generateBigFountain(gem, n, owner)
 
  		local p = self:new(gem.x, gem.y, todraw, p_type)
  		local x1 = x + x_vel
- 		local x2 = x_vel * 1.2
+ 		local x2 = x + x_vel * 1.2
  		local y_func = function() return y + p.t * y_vel + p.t^2 * acc end
  		local y_func2 = function() return y + y_vel * (1 + p.t * 0.5) + acc * (1 + p.t * 0.5)^2 end
 
@@ -815,7 +816,7 @@ end
 -------------------------------------------------------------------------------
 
 particles.damage = DamageParticle
-particles.super_ = SuperParticle	-- If this is just called "super" it interferes with middleclass
+particles.superParticles = SuperParticle
 particles.pop = PopParticle
 particles.explodingGem = ExplodingGem
 particles.explodingPlatform = ExplodingPlatform

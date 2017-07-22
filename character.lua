@@ -20,14 +20,14 @@ character.super_fuzz_image = love.graphics.newImage('images/ui/superfuzzred.png'
 
 character.character_id = "Lamer"
 character.meter_gain = {RED = 4, BLUE = 4, GREEN = 4, YELLOW = 4}
---[[
+
 character.super_images = {
 	word = image.UI.super.red_word,
-	partial = image.UI.super.red_partial,
-	full = image.UI.super.red_full,
-	glow = {image.UI.super.red_glow1, image.UI.super.red_glow2, image.UI.super.red_glow3, image.UI.super.red_glow4}
+	empty = love.graphics.newImage('images/characters/emptyheath.png'),
+	full = love.graphics.newImage('images/characters/fullheath.png'),
+	glow = love.graphics.newImage('images/characters/fullheathglow.png'),
 }
---]]
+
 character.burst_images = {
 	partial = image.UI.burst.red_partial,
 	full = image.UI.burst.red_full,
@@ -68,26 +68,12 @@ end
 
 -- initialize super meter graphics
 local function setupSuperMeter(player)
-	local super_frame = player.ID == "P1" and image.UI.gauge_gold or image.UI.gauge_silver
-	player.super_frame = pic:new{x = stage.super[player.ID].frame.x,
-		y = stage.super[player.ID].frame.y, image = super_frame}
-	player.super_word = pic:new{x = stage.super[player.ID].frame.x,
-		y = stage.super[player.ID].frame.y, image = player.super_images.word}
-	player.super_block = {}
-	player.super_partial = {}
-	player.super_glow = {}
-	for i = 1, 4 do
-		player.super_block[i] = pic:new{x = stage.super[player.ID][i].x,
-			y = stage.super[player.ID][i].y, image = player.super_images.full}
-		player.super_partial[i] = pic:new{x = stage.super[player.ID][i].x,
-			y = stage.super[player.ID][i].y, image = player.super_images.partial}
-		player.super_glow[i] = pic:new{x = stage.super[player.ID][i].glow_x,
-			y = stage.super[player.ID][i].glow_y, image = player.super_images.glow[i]}
-
-	end
-	player.super_glow.full = pic:new{x = stage.super[player.ID][4].glow_x,
-		y = stage.super[player.ID][4].glow_y, image = player.super_images.glow[4]}
-	player.super_glow.full.scaling = 0
+	player.super_frame = pic:new{x = stage.super[player.ID].x,
+		y = stage.super[player.ID].y, image = player.super_images.empty}
+	--player.super_word = pic:new{x = stage.super[player.ID].frame.x,
+	--	y = stage.super[player.ID].frame.y, image = player.super_images.word}
+	player.super_meter_image = pic:new{x = stage.super[player.ID].x,
+		y = stage.super[player.ID].y, image = player.super_images.full}
 end
 
 -- initialize burst meter graphics
@@ -130,6 +116,7 @@ function character:setup()
 	self.hand = hand:new(self)
 	self.hand:makeInitialPieces()
 	setupBurstMeter(self)
+	setupSuperMeter(self)
 	createCharacterAnimation(self)
 end
 

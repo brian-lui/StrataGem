@@ -14,34 +14,23 @@ local anims = {}
 -- as particles disappear, they visually go into the super meter
 -- TODO: maybe can refactor this to remove old_mp
 function anims.drawSuper(player)
-	local segment_amount = player.MAX_MP / 4
-	local original_mp = math.max(player.cur_mp, 0)
-	local super = particles.getNumber("Super", player)
-	local draw_mp = math.max(original_mp - super, 0)
-	if player.old_mp + super > player.MAX_MP then draw_mp = math.max(draw_mp, player.old_mp) end
-	local full_segs = math.min(draw_mp / segment_amount, 4)
-	local part_fill_percent = full_segs % 1
-	--local transparency = math.ceil(math.sin(frame / 30) * 127.5 + 127.5)
-	local flip = player.ID == "P2"
+	---[[
+	local super_particles = particles.getNumber("SuperParticles", player)
 
-	-- recalculate partial fill block length
-	if part_fill_percent > 0 then
-		local part_fill_block = player.super_partial[math.floor(full_segs) + 1]
-		local width = math.floor(part_fill_block.width * part_fill_percent)
-		part_fill_block:changeQuad(0, 0, width, part_fill_block.height)
+	local actual_mp = math.max(player.cur_mp, 0)
+	local displayed_mp = math.max(actual_mp - super_particles, 0)
+	if player.old_mp + super_particles > player.MAX_MP then 
+		displayed_mp = math.max(displayed_mp, player.old_mp)
 	end
+	local fill_percent = displayed_mp / player.MAX_MP
+	local img = player.super_meter_image
+	img:changeQuad(0, img.height * (1 - fill_percent), img.width, img.height * fill_percent)
+	img.y = stage.super[player.ID].y + img.height * (1 - fill_percent)
 
 	player.super_frame:draw() -- super frame
-
-	-- super meter
-	for i = 1, 4 do
-		if full_segs >= i then
-			player.super_block[i]:draw(flip)
-		elseif full_segs + 1 > i then -- partial fill
-			player.super_partial[i]:draw(flip, player.super_block[i].quad_x, player.super_block[i].quad_y)
-		end
-	end
-
+	img:draw() -- super meter
+	--]]
+	--[[
 	-- glow
 	if player.supering then
 		player.super_glow.full:draw()
@@ -51,12 +40,13 @@ function anims.drawSuper(player)
 		player.super_glow[math.floor(full_segs)].transparency = math.ceil(math.sin(frame / 30) * 127.5 + 127.5)
 		player.super_glow[math.floor(full_segs)]:draw()
 	end
-
+	--]]
 	-- super word, if active
+	--[[
 	if player.supering then
 		player.super_word:draw()
 	end
-
+	--]]
 end
 
 -- returns the burst drawables for player based on player burst, called every dt

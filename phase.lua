@@ -311,7 +311,7 @@ function phase.gameOver(dt)
 		print("Match ended unexpectedly, whopps!")
 	end
 	local damage_particles = particles.getNumber("Damage", p1) + particles.getNumber("Damage", p2)
-	local super_particles = particles.getNumber("Super", p1) + particles.getNumber("Super", p2)
+	local super_particles = particles.getNumber("SuperParticles", p1) + particles.getNumber("SuperParticles", p2)
 	local anims_done = (damage_particles == 0) and (super_particles == 0)
 	if anims_done and game.type == "Netplay" then
 		client:endMatch()

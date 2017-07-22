@@ -85,7 +85,7 @@ function draw.drawScreenElements()
 
 	for player in game:players() do
 		anims.drawBurst(player) -- burst meter
-		--anims.drawSuper(player) -- super meter
+		anims.drawSuper(player) -- super meter
 		player.animation:draw(flip) -- sprite
 	end
 
@@ -147,7 +147,7 @@ function draw.drawGems()
 	love.graphics.pop()
 
 	-- over-gem particles
-	for _, v in pairs(AllParticles.Super) do v:draw() end
+	for _, v in pairs(AllParticles.SuperParticles) do v:draw() end
 	for _, v in pairs(AllParticles.DamageTrail) do v:draw() end
 	for _, v in pairs(AllParticles.Damage) do v:draw() end
 	for _, v in pairs(AllParticles.ExplodingGem) do v:draw() end

@@ -262,9 +262,7 @@ function love.keypressed(key)
 		p1.hand[3].platform:screenshake(30)
 	elseif key == "," then
 		debugTool.setOverlay(function() return
-			tostring(particles.getNumber("Damage", p2) / 3) .. "/" ..
-			tostring(p2.hand.damage) .. "/" .. 
-			tostring((p2.hand.damage - particles.getNumber("Damage", p2)/ 3) / 4)
+			particles.getNumber("SuperParticles", p1) + particles.getNumber("SuperParticles", p2)
 		end)
 	elseif key == "." then
 		debugTool.toggleSlowdown()

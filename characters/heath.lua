@@ -16,14 +16,13 @@ heath.shadow_image = love.graphics.newImage('images/characters/heathshadow.png')
 
 heath.character_id = "Heath"
 heath.meter_gain = {RED = 8, BLUE = 4, GREEN = 4, YELLOW = 4}
---[[
 heath.super_images = {
 	word = image.UI.super.red_word,
-	partial = image.UI.super.red_partial,
-	full = image.UI.super.red_full,
-	glow = {image.UI.super.red_glow1, image.UI.super.red_glow2, image.UI.super.red_glow3, image.UI.super.red_glow4}
+	empty = love.graphics.newImage('images/characters/emptyheath.png'),
+	full = love.graphics.newImage('images/characters/fullheath.png'),
+	glow = love.graphics.newImage('images/characters/fullheathglow.png'),
 }
---]]
+
 heath.burst_images = {
 	word = image.UI.burst.red_word,
 	partial = image.UI.burst.red_partial,

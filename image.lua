@@ -75,7 +75,7 @@ image.GEM_WIDTH = image.red_gem:getWidth()
 image.GEM_HEIGHT = image.red_gem:getHeight()
 
 local gem_colors = {"red", "blue", "green", "yellow"}
-local super_colors = {"red", "blue", "green", "yellow", "purple", "parch"}
+local super_colors = {"red", "blue", "green", "yellow"}
 local burst_colors = {"red", "blue", "green", "yellow"}
 local char_list = {"heath", "walter", "gail"}
 
@@ -129,17 +129,12 @@ image.UI.timer = {}
 for i = 0, 3 do
 	image.UI.timer[i] = love.graphics.newImage('images/numbers/'..i..'.png')
 end
---[[
+
 image.UI.super = {}
 for _, c in pairs(super_colors) do
 	image.UI.super[c.."_word"] = love.graphics.newImage('images/ui/super'..c..'.png')
-	image.UI.super[c.."_partial"] = love.graphics.newImage('images/ui/'..c..'segmentpartial.png')
-	image.UI.super[c.."_full"] = love.graphics.newImage('images/ui/'..c..'segmentfull.png')
-	for i = 1, 4 do
-		image.UI.super[c.."_glow"..i] = love.graphics.newImage('images/ui/'..c..'glow'..i..'.png')
-	end
 end
---]]
+
 image.UI.burst = {}
 for _, c in pairs(burst_colors) do
 	image.UI.burst[c.."_partial"] = love.graphics.newImage('images/ui/'..c..'segmentpartial.png')
