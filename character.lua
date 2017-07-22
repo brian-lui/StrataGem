@@ -20,18 +20,27 @@ character.super_fuzz_image = love.graphics.newImage('images/ui/superfuzzred.png'
 
 character.character_id = "Lamer"
 character.meter_gain = {RED = 4, BLUE = 4, GREEN = 4, YELLOW = 4}
+--[[
 character.super_images = {
 	word = image.UI.super.red_word,
 	partial = image.UI.super.red_partial,
 	full = image.UI.super.red_full,
 	glow = {image.UI.super.red_glow1, image.UI.super.red_glow2, image.UI.super.red_glow3, image.UI.super.red_glow4}
 }
+--]]
+character.burst_images = {
+	partial = image.UI.burst.red_partial,
+	full = image.UI.burst.red_full,
+	glow = {image.UI.burst.red_glow1, image.UI.burst.red_glow2}
+}
 character.SUPER_COST = 64
-character.RUSH_COST = 32
-character.DOUBLE_COST = 16
+character.RUSH_COST = 8
+character.DOUBLE_COST = 4
 character.MAX_MP = 64
+character.MAX_BURST = 8
 character.cur_mp = 0
 character.old_mp = 0
+character.cur_burst = 0
 character.hand_size = 5
 character.pieces_fallen = 0
 character.dropped_piece = false
@@ -81,6 +90,28 @@ local function setupSuperMeter(player)
 	player.super_glow.full.scaling = 0
 end
 
+-- initialize burst meter graphics
+local function setupBurstMeter(player)
+	local burst_frame = player.ID == "P1" and image.UI.gauge_gold or image.UI.gauge_silver
+	player.burst_frame = pic:new{x = stage.burst[player.ID].frame.x,
+		y = stage.burst[player.ID].frame.y, image = burst_frame}
+	player.burst_block = {}
+	player.burst_partial = {}
+	player.burst_glow = {}
+	for i = 1, 2 do
+		player.burst_block[i] = pic:new{x = stage.burst[player.ID][i].x,
+			y = stage.burst[player.ID][i].y, image = player.burst_images.full}
+		player.burst_partial[i] = pic:new{x = stage.burst[player.ID][i].x,
+			y = stage.burst[player.ID][i].y, image = player.burst_images.partial}
+		player.burst_glow[i] = pic:new{x = stage.burst[player.ID][i].glow_x,
+			y = stage.burst[player.ID][i].glow_y, image = player.burst_images.glow[i]}
+
+	end
+	player.burst_glow.full = pic:new{x = stage.burst[player.ID][2].glow_x,
+		y = stage.burst[player.ID][2].glow_y, image = player.burst_images.glow[2]}
+	player.burst_glow.full.scaling = 0
+end
+
 -- placeholder, waiting for animations
 local function createCharacterAnimation(player)
 	player.animation = pic:new{x = stage.character[player.ID].x,
@@ -98,7 +129,7 @@ end
 function character:setup()
 	self.hand = hand:new(self)
 	self.hand:makeInitialPieces()
-	setupSuperMeter(self)
+	setupBurstMeter(self)
 	createCharacterAnimation(self)
 end
 
@@ -135,9 +166,9 @@ function character:pieceDroppedOK(piece, shift)
 	if place_type == "normal" then
 		return true
 	elseif place_type == "rush" then
-		return self.cur_mp >= (self.current_rush_cost) and not self.supering
+		return self.cur_burst >= (self.current_rush_cost) and not self.supering
 	elseif place_type == "double" then
-		return self.cur_mp >= (self.current_double_cost) and not self.supering
+		return self.cur_burst >= (self.current_double_cost) and not self.supering
 	end
 end
 

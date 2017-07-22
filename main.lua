@@ -219,8 +219,8 @@ function love.keypressed(key)
 	elseif key == "s" then p1.hand:addDamage(1)
 	elseif key == "d" then p2.hand:addDamage(1)
 	elseif key == "f" then
-		p1.cur_mp = math.min(p1.cur_mp + 20, p1.MAX_MP)
-		p2.cur_mp = math.min(p2.cur_mp + 20, p2.MAX_MP)
+		p1.cur_burst = math.min(p1.cur_burst + 1, p1.MAX_BURST)
+		p2.cur_burst = math.min(p2.cur_burst + 1, p2.MAX_BURST)
 	elseif key == "k" then canvas[6]:renderTo(function() love.graphics.clear() end)
 	elseif key == "z" then startGame("1P", "heath", "walter", Background.Starfall, nil, 1)
 	elseif key == "x" then

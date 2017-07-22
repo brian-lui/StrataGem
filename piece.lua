@@ -227,7 +227,7 @@ function Piece:isDropValid(shift)
 		else
 			return false
 		end
-	elseif gems_in_my_tub == self.size and player.cur_mp >= player.current_double_cost and
+	elseif gems_in_my_tub == self.size and player.cur_burst >= player.current_double_cost and
 		not player.supering and player.dropped_piece == "normal" then
 			place_type = "double"
 	else
@@ -261,13 +261,13 @@ end
 function Piece:isValidRush()
 	local player = self.owner
 	local cols = self:getColumns()
-	local enough_mp = player.cur_mp >= player.current_rush_cost
+	local enough_burst = player.cur_burst >= player.current_rush_cost
 	local row_ok = true
 	for i = 1, self.size do
 		local empty_row = stage.grid:getFirstEmptyRow(cols[i])
 		if empty_row < game.RUSH_ROW then row_ok = false end
 	end
-	return enough_mp and row_ok
+	return enough_burst and row_ok
 end
 
 -- Generates dust when playing is holding the piece.
@@ -303,8 +303,9 @@ function Piece:deselect()
 	local cols = self:getColumns(shift)
 	local go_ahead = (place_type == "normal") or
 		(place_type == "rush" and self:isValidRush() and not player.supering) or
-		(place_type == "double" and player.cur_mp >= player.current_double_cost and not player.supering)
+		(place_type == "double" and player.cur_burst >= player.current_double_cost and not player.supering)
 	local char_ability_ok = player:pieceDroppedOK(self, shift)
+	print(valid, game.frozen, go_ahead, char_ability_ok)
 	if valid and not game.frozen and go_ahead and char_ability_ok then
 		player.place_type = place_type
 		self:dropIntoBasin(cols)
@@ -333,7 +334,7 @@ function Piece:dropIntoBasin(coords, received_from_opponent)
 	local row_adj = 0 -- how many rows down from the top to place the gem
 	if player.place_type == "rush" then
 		row_adj = 2
-		player.cur_mp = player.cur_mp - player.current_rush_cost
+		player.cur_burst = player.cur_burst - player.current_rush_cost
 		player.dropped_piece = "rushed"
 	elseif player.place_type == "double" then
 		-- move existing pending piece down, if it's a normal piece
@@ -348,7 +349,7 @@ function Piece:dropIntoBasin(coords, received_from_opponent)
 				-- a nil tween since we are showing the new location now
 			end
 		end
-		player.cur_mp = player.cur_mp - player.current_double_cost
+		player.cur_burst = player.cur_burst - player.current_double_cost
 		player.dropped_piece = "doubled"
 	elseif player.place_type == "normal" then
 		player.dropped_piece = "normal"

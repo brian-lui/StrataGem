@@ -241,6 +241,7 @@ function Hand:endOfTurnUpdate()
 		self[i].platform:setFastSpin(false)
 	end
 	self.damage = self.damage + 4
+	self.owner.cur_burst = math.min(self.owner.cur_burst + 1, self.owner.MAX_BURST)
 end
 
 return Hand

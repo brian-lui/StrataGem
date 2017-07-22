@@ -199,7 +199,7 @@ function ai.placeholder(player)
 			end
 
 			placePiece(piece, getCoords(selected.column))
-		elseif player.cur_mp >= player.RUSH_COST then
+		elseif player.cur_burst >= player.RUSH_COST then
 			local piece = selectRandomPiece(player)
 			if piece.horizontal then	-- Always do vertical rushes.
 				piece:rotate()

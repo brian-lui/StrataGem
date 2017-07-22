@@ -12,6 +12,7 @@ local anims = {}
 -- returns the super drawables for player based on player MP, called every dt
 -- shown super meter is less than the actual super meter when super particles are on screen
 -- as particles disappear, they visually go into the super meter
+-- TODO: maybe can refactor this to remove old_mp
 function anims.drawSuper(player)
 	local segment_amount = player.MAX_MP / 4
 	local original_mp = math.max(player.cur_mp, 0)
@@ -56,6 +57,38 @@ function anims.drawSuper(player)
 		player.super_word:draw()
 	end
 
+end
+
+-- returns the burst drawables for player based on player burst, called every dt
+function anims.drawBurst(player)
+	local segment_width, max_segs = 4, 2
+	local full_segs = math.min(player.cur_burst / segment_width, max_segs)
+	local part_fill_percent = full_segs % 1
+
+	local flip = player.ID == "P2"
+	-- update partial fill block length
+	if part_fill_percent > 0 then
+		local part_fill_block = player.burst_partial[math.floor(full_segs) + 1]
+		local width = math.floor(part_fill_block.width * part_fill_percent)
+		part_fill_block:changeQuad(0, 0, width, part_fill_block.height)
+	end
+
+	player.burst_frame:draw() -- frame
+
+	-- super meter
+	for i = 1, max_segs do
+		if full_segs >= i then
+			player.burst_block[i]:draw(flip)
+		elseif full_segs + 1 > i then -- partial fill
+			player.burst_partial[i]:draw(flip, player.burst_block[i].quad_x, player.burst_block[i].quad_y)
+		end
+	end
+
+	-- glow
+	if full_segs >= 1 then
+		player.burst_glow[math.floor(full_segs)].transparency = math.ceil(math.sin(frame / 30) * 127.5 + 127.5)
+		player.burst_glow[math.floor(full_segs)]:draw()
+	end
 end
 
 -- draws the shadow underneath the player's gem piece, called if gem is picked up

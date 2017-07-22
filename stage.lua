@@ -17,10 +17,30 @@ function stage:initialize(game)
 		P1 = {0, 0, self.width * 0.2, self.height * 0.3}, -- rx, ry, rw, rh
 		P2 = {self.width * 0.8, 0, self.width * 0.2, self.height * 0.3},
 	}
+	self.burst = {P1 = {}, P2 = {}}
+	self.burst.P1.frame = {x = self.x_mid - (8.5 * self.gem_width), y = self.y_mid - (3 * self.gem_height)}
+	self.burst.P2.frame = {x = self.x_mid + (8.5 * self.gem_width), y = self.y_mid - (3 * self.gem_height)}
+	local burst_width = image.UI.burst.red_partial:getWidth() * 2
+
+	for i = 1, 2 do
+		self.burst.P1[i] = {
+			x = self.burst.P1.frame.x + ((i - 1.5) * burst_width),
+			y = self.burst.P1.frame.y,
+			glow_x = self.burst.P1.frame.x + ((i * 0.5 - 1) * burst_width),
+			glow_y = self.burst.P1.frame.y,
+		}
+		self.burst.P2[i] = {
+			x = self.burst.P2.frame.x + ((1.5 - i) * burst_width),
+			y = self.burst.P2.frame.y,
+			glow_x = self.burst.P2.frame.x + ((1 - i * 0.5) * burst_width),
+			glow_y = self.burst.P2.frame.y,
+		}
+	end
 
 	self.super = {P1 = {}, P2 = {}}
 	self.super.P1.frame = {x = self.x_mid - (8.5 * self.gem_width), y = self.y_mid - (3 * self.gem_height)}
 	self.super.P2.frame = {x = self.x_mid + (8.5 * self.gem_width), y = self.y_mid - (3 * self.gem_height)}
+--[[
 	local super_width = image.UI.super.red_partial:getWidth()
 
 	for i = 1, 4 do
@@ -37,7 +57,7 @@ function stage:initialize(game)
 			glow_y = self.super.P2.frame.y,
 		}
 	end
-
+--]]
 	self.character = {
 		P1 = {x = self.x_mid - (8 * self.gem_width), y = self.y_mid - (5.5 * self.gem_height)},
 		P2 = {x = self.x_mid + (8 * self.gem_width), y = self.y_mid - (5.5 * self.gem_height)}

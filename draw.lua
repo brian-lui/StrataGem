@@ -84,7 +84,8 @@ function draw.drawScreenElements()
 	UI.timer:draw()	-- timer bar
 
 	for player in game:players() do
-		anims.drawSuper(player) -- super meter
+		anims.drawBurst(player) -- burst meter
+		--anims.drawSuper(player) -- super meter
 		player.animation:draw(flip) -- sprite
 	end
 
