@@ -48,7 +48,8 @@ end
 
 -- returns the burst drawables for player based on player burst, called every dt
 function anims.drawBurst(player)
-	local segment_width, max_segs = 4, 2
+	local max_segs = 2
+	local segment_width = player.MAX_BURST / max_segs
 	local full_segs = math.min(player.cur_burst / segment_width, max_segs)
 	local part_fill_percent = full_segs % 1
 
