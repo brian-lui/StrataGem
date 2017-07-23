@@ -132,6 +132,7 @@ local function superPlays()
 end
 local super_play, super_pause = nil, 0
 
+-- TODO: refactor this lame stuff
 function phase.superFreeze(dt)
 	if not super_play then super_play = superPlays() end
 

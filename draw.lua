@@ -153,9 +153,11 @@ function draw.drawGems()
 	for _, v in pairs(AllParticles.ExplodingGem) do v:draw() end
 	for _, v in pairs(AllParticles.PieEffects) do v:draw() end
 	for _, v in pairs(AllParticles.CharEffects) do v:draw() end
-	for _, v in pairs(AllParticles.SuperEffects1) do v:draw() end
-	for _, v in pairs(AllParticles.SuperEffects2) do v:draw() end
-	for _, v in pairs(AllParticles.SuperEffects3) do v:draw() end
+	for i = 1, 3 do
+		for _, v in pairs(AllParticles.SuperFreezeEffects) do
+			if v.draw_order == i then v:draw() end
+		end
+	end
 
 	-- draw the gem when it's been grabbed by the player
 	if game.active_piece then

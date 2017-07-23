@@ -56,9 +56,7 @@ function particles.reset()
 		WordEffects = {},
 		PieEffects = {},
 		CharEffects = {},
-		SuperEffects1 = {},
-		SuperEffects2 = {},
-		SuperEffects3 = {},
+		SuperFreezeEffects = {},
 	}
 end
 
@@ -764,7 +762,7 @@ end
 -------------------------------------------------------------------------------
 
 local CharEffects = class ('CharEffects', pic)
--- required stuff in table: x, y, rotation, image
+-- required stuff in table: x, y, image
 function CharEffects:initialize(tbl)
 	pic.initialize(self, tbl)
 	AllParticles.CharEffects[ID.particle] = self
@@ -776,41 +774,16 @@ end
 
 -------------------------------------------------------------------------------
 
-local SuperEffects1 = class ('SuperEffects1', pic)
--- required stuff in table: x, y, rotation, image
-function SuperEffects1:initialize(tbl)
+local SuperFreezeEffects = class ('SuperFreezeEffects', pic)
+-- required stuff in table: x, y, image, draw_order
+function SuperFreezeEffects:initialize(tbl)
 	pic.initialize(self, tbl)
-	AllParticles.SuperEffects1[ID.particle] = self
+	pic.draw_order = tbl.draw_order or 1
+	AllParticles.SuperFreezeEffects[ID.particle] = self
 end
 
-function SuperEffects1:remove()
-	AllParticles.SuperEffects1[self.ID] = nil
-end
-
--------------------------------------------------------------------------------
-
-local SuperEffects2 = class ('SuperEffects2', pic)
--- required stuff in table: x, y, rotation, image
-function SuperEffects2:initialize(tbl)
-	pic.initialize(self, tbl)
-	AllParticles.SuperEffects2[ID.particle] = self
-end
-
-function SuperEffects2:remove()
-	AllParticles.SuperEffects2[self.ID] = nil
-end
-
--------------------------------------------------------------------------------
-
-local SuperEffects3 = class ('SuperEffects3', pic)
--- required stuff in table: x, y, rotation, image
-function SuperEffects3:initialize(tbl)
-	pic.initialize(self, tbl)
-	AllParticles.SuperEffects3[ID.particle] = self
-end
-
-function SuperEffects3:remove()
-	AllParticles.SuperEffects3[self.ID] = nil
+function SuperFreezeEffects:remove()
+	AllParticles.SuperFreezeEffects[self.ID] = nil
 end
 
 -------------------------------------------------------------------------------
@@ -829,8 +802,6 @@ particles.words = Words
 particles.wordEffects = WordEffects
 particles.pieEffects = PieEffects
 particles.charEffects = CharEffects
-particles.superEffects1 = SuperEffects1
-particles.superEffects2 = SuperEffects2
-particles.superEffects3 = SuperEffects3
+particles.superFreezeEffects = SuperFreezeEffects
 
 return particles

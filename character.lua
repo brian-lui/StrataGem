@@ -5,7 +5,6 @@ local image = require 'image'
 local stage
 local pic = require 'pic'
 local hand = require 'hand'
-local tween = require 'tween'
 
 local character = class("Character")
 --character.defaults = require 'characters/default' -- called from charselect
@@ -160,82 +159,52 @@ function character:pieceDroppedOK(piece, shift)
 	end
 end
 
-
 function character:superSlideIn()
-	local x_pos = self.ID == "P1" and stage.width * -0.2 or stage.width * 1.2
-
 	local particles = game.particles
+	local sign = self.ID == "P2" and -1 or 1
 
-	local shadow = particles.superEffects2:new{
+	local shadow = particles.superFreezeEffects:new{
 		image = self.shadow_image,
-		x = x_pos,
+		draw_order = 2,
+		x = stage.width * (0.5 - sign * 0.7),
 		y = stage.height * 0.5,
-		update = function(self, dt)
-			if self.tweening then
-				local complete = self.tweening:update(dt)
-				if complete then
-					queue.add(25, self.remove, self)
-					self.tweening = nil
-				end
-			end
-		end
+		flip = sign == -1,
 	}
-	local action = particles.superEffects3:new{
-		image = self.action_image,
-		x = x_pos,
-		y = stage.height * 0.5,
-		update = function(self, dt)
-			if self.tweening then
-				local complete = self.tweening:update(dt)
-				if complete then
-					queue.add(25, self.remove, self)
-					self.tweening = nil
-				end
-			end
-		end
-	}
+	shadow:moveTo{duration = 30, x = stage.width * (0.5 + 0.025 * sign), easing = "outQuart"}
+	shadow:wait(25)
+	shadow:moveTo{duration = 5, transparency = 0, exit = true}
 
-	local fuzz1 = particles.superEffects1:new{
+	local portrait = particles.superFreezeEffects:new{
+		image = self.action_image,
+		draw_order = 3,
+		x = stage.width * (0.5 - sign * 0.7),
+		y = stage.height * 0.5,
+		flip = sign == -1,
+	}
+	portrait:moveTo{duration = 30, x = stage.width * (0.5 - 0.025 * sign), easing = "outQuart"}
+	portrait:wait(25)
+	portrait:moveTo{duration = 5, transparency = 0, exit = true}
+
+	local top_fuzz = particles.superFreezeEffects:new{
 		image = self.super_fuzz_image,
+		draw_order = 1,
 		x = stage.width * 0.5,
 		y = self.super_fuzz_image:getHeight() * -0.5,
-		update = function(self, dt)
-			if self.tweening then
-				local complete = self.tweening:update(dt)
-				if complete then
-					queue.add(40, self.remove, self)
-					self.tweening = nil
-				end
-			end
-		end
 	}
+	top_fuzz:moveTo{duration = 21, y = 0, easing = "outQuart"}
+	top_fuzz:wait(40)
+	top_fuzz:moveTo{duration = 5, transparency = 0, exit = true}
 
-	local fuzz2 = particles.superEffects1:new{
+	local bottom_fuzz = particles.superFreezeEffects:new{
 		image = self.super_fuzz_image,
+		draw_order = 1,
 		x = stage.width * 0.5,
 		y = self.super_fuzz_image:getHeight() * 0.5 + stage.height,
-		update = function(self, dt)
-			if self.tweening then
-				local complete = self.tweening:update(dt)
-				if complete then
-					queue.add(40, self.remove, self)
-					self.tweening = nil
-				end
-			end
-		end
 	}
+	bottom_fuzz:moveTo{duration = 21, y = stage.height, easing = "outQuart"}
+	bottom_fuzz:wait(40)
+	bottom_fuzz:moveTo{duration = 5, transparency = 0, exit = true}
 
-	fuzz1.tweening = tween.new(0.35, fuzz1, {y = 0}, "outQuart")
-	fuzz2.tweening = tween.new(0.35, fuzz2, {y = stage.height}, "outQuart")
-
-	if self.ID == "P1" then
-		action.tweening = tween.new(0.5, action, {x = stage.width * 0.475}, "outQuart")
-		shadow.tweening = tween.new(0.5, shadow, {x = stage.width * 0.525}, "outQuart")
-	else
-		action.tweening = tween.new(0.5, action, {x = stage.width * 0.525}, "outQuart")
-		shadow.tweening = tween.new(0.5, shadow, {x = stage.width * 0.475}, "outQuart")
-		shadow.flip, action.flip = true, true
-	end
 end
 
 return character
