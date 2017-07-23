@@ -32,18 +32,7 @@ function GemPlatform:draw()
 			local redRGB = {255, 255, 255, math.min(self.redness, self.transparency)}
 			pic.draw(self, nil, nil, nil, nil, nil, redRGB, image.UI.platform_red)
 		end
-		if self.redness == 255 and self.owner.hand[self.hand_idx].piece then
-			local fr = frame - self.glow_startframe
-			local glowRGB = {255, 255, 255, math.sin(fr/20) * 255}
-			pic.draw(self, nil, nil, nil, nil, nil, glowRGB, image.UI.platform_red_glow)
-		end
 	love.graphics.pop()
-end
-
-function GemPlatform:removeAnim()
-	print("(Placeholder) remove Gem platform animation plays")
-	--self.transparency = math.max(self.transparency - self.PLATFORM_FADE, 0)
-	--if self.transparency == 0 then remove_particle end
 end
 
 function GemPlatform:screenshake(frames)

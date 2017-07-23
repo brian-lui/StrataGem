@@ -132,10 +132,7 @@ function Hand:movePlatform(start_pos, end_pos)
 	self[end_pos].platform = self[start_pos].platform
 	self[end_pos].platform.hand_idx = end_pos
 	self[start_pos].platform = nil
-	if self[0].platform then
-		self[0].platform:removeAnim()
-		self[0].platform = nil
-	end
+	if self[0].platform then self[0].platform = nil end
 end
 
 -- creates the new pieces for the turn and clears damage.
