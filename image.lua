@@ -204,14 +204,15 @@ image.words = {
 	rush_cloud_h = love.graphics.newImage('images/words/rushhori.png'),
 	rush_cloud_v = love.graphics.newImage('images/words/rushvert.png'),
 	rush_particle = love.graphics.newImage('images/words/rushparticle.png'),
-	go_star = love.graphics.newImage('images/words/gostar.png'),
-	ready_star1 = love.graphics.newImage('images/words/readystar1.png'),
-	ready_star2 = love.graphics.newImage('images/words/readystar2.png'),
-	ready_star3 = love.graphics.newImage('images/words/readystar3.png'),
-	ready_tinystar1 = love.graphics.newImage('images/words/readytinystar1.png'),
-	ready_tinystar2 = love.graphics.newImage('images/words/readytinystar2.png'),
-	ready_tinystar3 = love.graphics.newImage('images/words/readytinystar3.png'),
+	go_star = image.UI.platform_gold,
+	ready_star1 = image.star_particle_silver1,
+	ready_star2 = image.star_particle_silver2,
+	ready_star3 = image.star_particle_silver3,
+	ready_tinystar1 = image.tinystar_particle_silver1,
+	ready_tinystar2 = image.tinystar_particle_silver2,
+	ready_tinystar3 = image.tinystar_particle_silver3,
 }
+
 
 image.lookup.words_ready = function(size)
 	local choice
