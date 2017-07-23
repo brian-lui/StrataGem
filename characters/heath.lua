@@ -436,7 +436,7 @@ function heath:duringMatch(gem_table)
 end
 
 
--- take away super meter
+-- take away super meter, make fires
 function heath:afterMatch()
 	local particles = game.particles
 
@@ -482,11 +482,11 @@ function heath:cleanup()
 	self.super_this_turn = false
 end
 
---[[
 function heath:activateSuper()
 	if self.cur_mp >= self.SUPER_COST then
+		self.supering = not self.supering
 	end
 end
---]]
+
 
 return heath

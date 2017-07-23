@@ -120,7 +120,31 @@ function phase.resolve(dt)
 	anims.putPendingAtTop()
 	particles.upGem:removeAll() -- animation
 	game.frozen = true
-	game.phase = "GemTween"
+	game.phase = "SuperFreeze"
+end
+
+local function superPlays()
+	local ret = {}
+	for player in game:players() do
+		if player.supering then ret[#ret+1] = player end
+	end
+	return ret
+end
+local super_play, super_pause = nil, 0
+
+function phase.superFreeze(dt)
+	if not super_play then super_play = superPlays() end
+
+	if super_pause > 0 then
+		super_pause = super_pause - 1
+	elseif super_play[1] then
+		super_play[1]:superSlideIn()
+		super_pause = 90
+		table.remove(super_play, 1)
+	else
+		super_play = nil
+		game.phase = "GemTween"
+	end
 end
 
 function phase.applyGemTween(dt)

@@ -5,6 +5,7 @@ local image = require 'image'
 local stage
 local pic = require 'pic'
 local hand = require 'hand'
+local tween = require 'tween'
 
 local character = class("Character")
 --character.defaults = require 'characters/default' -- called from charselect
