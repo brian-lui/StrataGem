@@ -190,32 +190,9 @@ function grid:getScore(matching_number)
 end
 
 function grid:removeMatchedGems(minimumLength)
-
-	local function getAboveGems(column, start_row)
-		start_row = start_row or 1
-		local above = {}
-		for i = start_row, 1, -1 do
-			if self[i][column].gem then
-				above[#above + 1] = self[i][column].gem
-			end
-		end
-		return above
-	end
-
-	local function propogateFlagsUp(gem_table)
-		for _, gem in pairs(gem_table) do
-			local ownership = gem.owner
-			local above_gems = getAboveGems(gem.column, gem.row)
-			for _, v in pairs(above_gems) do
-				v:setOwner(ownership)
-			end
-		end
-	end
-
 	local gem_table = self:getMatchedGems(minimumLength or 3)
-	propogateFlagsUp(gem_table)
 	for _, gem in pairs(gem_table) do
-		self:removeGem(gem)
+		self:removeGem(gem, true)
 	end
 end
 
@@ -479,7 +456,26 @@ function grid:reset()
 end
 
 -- remove a gem
-function grid:removeGem(g)
+function grid:removeGem(g, propogate_flags_up)
+	local function getAboveGems(column, start_row)
+		start_row = start_row or 1
+		local above = {}
+		for i = start_row, 1, -1 do
+			if self[i][column].gem then
+				above[#above + 1] = self[i][column].gem
+			end
+		end
+		return above
+	end
+
+	local function propogateFlagsUp(gem)
+		local above_gems = getAboveGems(gem.column, gem.row)
+		for _, v in pairs(above_gems) do
+			v:setOwner(gem.owner)
+		end
+	end
+
+	if propogate_flags_up then propogateFlagsUp(g) end
 	self[g.row][g.column].gem = false
 end
 
@@ -571,11 +567,7 @@ function grid:calculateScore()
 	for i = 1, 2 do
 		local player = own_tbl[i]
 		if dmg[i] > 0 then dmg[i] = dmg[i] + game.scoring_combo - 1 end
-		if player.supering then
-			super[i] = 0
-		elseif player.place_type == "rush" or player.place_type == "double" then
-			super[i] = super[i] * 0.25
-		end
+		if player.supering then	super[i] = 0 end
 	end
 
 	return dmg[1], dmg[2], super[1], super[2]
