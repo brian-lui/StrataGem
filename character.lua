@@ -70,10 +70,12 @@ end
 local function setupSuperMeter(player)
 	player.super_frame = pic:new{x = stage.super[player.ID].x,
 		y = stage.super[player.ID].y, image = player.super_images.empty}
-	--player.super_word = pic:new{x = stage.super[player.ID].frame.x,
-	--	y = stage.super[player.ID].frame.y, image = player.super_images.word}
+	player.super_word = pic:new{x = stage.super[player.ID].x,
+		y = stage.super[player.ID].word_y, image = player.super_images.word}
 	player.super_meter_image = pic:new{x = stage.super[player.ID].x,
 		y = stage.super[player.ID].y, image = player.super_images.full}
+	player.super_glow = pic:new{x = stage.super[player.ID].x,
+		y = stage.super[player.ID].y, image = player.super_images.glow}
 end
 
 -- initialize burst meter graphics
@@ -95,7 +97,6 @@ local function setupBurstMeter(player)
 	end
 	player.burst_glow.full = pic:new{x = stage.burst[player.ID][2].glow_x,
 		y = stage.burst[player.ID][2].glow_y, image = player.burst_images.glow[2]}
-	player.burst_glow.full.scaling = 0
 end
 
 -- placeholder, waiting for animations
@@ -141,9 +142,8 @@ end
 function character:cleanup()
 end
 
-function character:super()
+function character:activateSuper()
 	if self.cur_mp >= self.SUPER_COST then
-		self.super_glow.full.scaling = 0
 		self.supering = not self.supering
 	end
 end

@@ -14,9 +14,7 @@ local anims = {}
 -- as particles disappear, they visually go into the super meter
 -- TODO: maybe can refactor this to remove old_mp
 function anims.drawSuper(player)
-	---[[
 	local super_particles = particles.getNumber("SuperParticles", player)
-
 	local actual_mp = math.max(player.cur_mp, 0)
 	local displayed_mp = math.max(actual_mp - super_particles, 0)
 	if player.old_mp + super_particles > player.MAX_MP then 
@@ -29,16 +27,15 @@ function anims.drawSuper(player)
 
 	player.super_frame:draw() -- super frame
 	img:draw() -- super meter
-	--]]
-	--[[
+	---[[
 	-- glow
 	if player.supering then
-		player.super_glow.full:draw()
-		player.super_glow.full.scaling = math.min(player.super_glow.full.scaling + 0.1, 1)
-
-	elseif full_segs >= 1 then
-		player.super_glow[math.floor(full_segs)].transparency = math.ceil(math.sin(frame / 30) * 127.5 + 127.5)
-		player.super_glow[math.floor(full_segs)]:draw()
+		player.super_glow.transparency = 255
+		player.super_glow:draw()
+		player.super_word:draw()
+	elseif player.cur_mp >= player.SUPER_COST then
+		player.super_glow.transparency = math.ceil(math.sin(frame / 30) * 127.5 + 127.5)
+		player.super_glow:draw()
 	end
 	--]]
 	-- super word, if active

@@ -483,7 +483,7 @@ function heath:cleanup()
 end
 
 --[[
-function heath:super()
+function heath:activateSuper()
 	if self.cur_mp >= self.SUPER_COST then
 	end
 end

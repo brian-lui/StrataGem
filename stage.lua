@@ -5,6 +5,9 @@ local Grid = require "grid"
 
 local stage = class("Stage")
 
+local HALF_SUPER_WIDTH = 0.07 * 1024
+local HALF_SUPER_HEIGHT = 0.09 * 768
+
 function stage:initialize(game)
 	self.width = 1024
 	self.height = 768
@@ -20,7 +23,7 @@ function stage:initialize(game)
 	self.burst = {P1 = {}, P2 = {}}
 	self.burst.P1.frame = {x = self.x_mid - (8.5 * self.gem_width), y = self.y_mid - (3 * self.gem_height)}
 	self.burst.P2.frame = {x = self.x_mid + (8.5 * self.gem_width), y = self.y_mid - (3 * self.gem_height)}
-	local burst_width = image.UI.burst.red_partial:getWidth() * 2
+	local burst_width = image.UI.burst.red_partial:getWidth()
 
 	for i = 1, 2 do
 		self.burst.P1[i] = {
@@ -41,11 +44,26 @@ function stage:initialize(game)
 		P1 = {
 			x = self.x_mid - (8.5 * self.gem_width),
 			y = self.y_mid - self.gem_height,
+			word_y = self.y_mid + 0.5 * self.gem_height,
 		},
 		P2 = {
 			x = self.x_mid + (8.5 * self.gem_width),
 			y = self.y_mid - self.gem_height,
+			word_y = self.y_mid + 0.5 * self.gem_height,
 		}
+	}
+	self.super.P1.rect = { 
+		self.super.P1.x - HALF_SUPER_WIDTH,
+		self.super.P1.y - HALF_SUPER_HEIGHT,
+		2 * HALF_SUPER_WIDTH,
+		2 * HALF_SUPER_HEIGHT
+	}
+
+	self.super.P2.rect = { 
+		self.super.P2.x - HALF_SUPER_WIDTH,
+		self.super.P2.y - HALF_SUPER_HEIGHT,
+		2 * HALF_SUPER_WIDTH,
+		2 * HALF_SUPER_HEIGHT
 	}
 
 

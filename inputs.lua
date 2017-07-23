@@ -22,7 +22,7 @@ function mouseHandler.maingameClick(x, y)
 			end
 		end
 
-		if pointIsInRect(x, y, unpack(stage.super_click[player.ID])) then
+		if pointIsInRect(x, y, unpack(stage.super[player.ID].rect)) then
 			player.super_clicked = true
 		end
 	end
@@ -40,8 +40,8 @@ function mouseHandler.maingameRelease(x, y)
 			game.active_piece:deselect()
 			if quickclick and nomove then game.active_piece:rotate() end
 
-		elseif player.super_clicked and pointIsInRect(x, y, unpack(stage.super_click[player.ID])) then
-			player:super()
+		elseif player.super_clicked and pointIsInRect(x, y, unpack(stage.super[player.ID].rect)) then
+			player:activateSuper()
 		end
 	end
 	player.super_clicked = false

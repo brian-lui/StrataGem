@@ -114,7 +114,6 @@ image.UI = {
 	platform_gold = love.graphics.newImage('images/ui/platgold.png'),
 	platform_silver = love.graphics.newImage('images/ui/platsilver.png'),
 	platform_red = love.graphics.newImage('images/ui/platred.png'),
-	platform_red_glow = love.graphics.newImage('images/ui/platglow.png'),
 	redX = love.graphics.newImage('images/ui/redx.png'),
 	timer_bar = love.graphics.newImage('images/ui/timerbar.png'),
 	timer_bar_full = love.graphics.newImage('images/ui/timerbarfull.png'),
