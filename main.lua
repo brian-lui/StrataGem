@@ -261,7 +261,7 @@ function love.keypressed(key)
 		n(7, 5, "G")
 		n(8, 6, "R")
 	elseif key == "m" then
-		p1.hand[3].platform:screenshake(30)
+		debugTool.drawGemOwners = not debugTool.drawGemOwners
 	elseif key == "," then
 		debugTool.setOverlay(function() return
 			particles.getNumber("SuperParticles", p1) + particles.getNumber("SuperParticles", p2)

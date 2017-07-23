@@ -66,25 +66,6 @@ function stage:initialize(game)
 		2 * HALF_SUPER_HEIGHT
 	}
 
-
---[[
-	local super_width = image.UI.super.red_partial:getWidth()
-
-	for i = 1, 4 do
-		self.super.P1[i] = {
-			x = self.super.P1.frame.x + ((i - 2.5) * super_width),
-			y = self.super.P1.frame.y,
-			glow_x = self.super.P1.frame.x + ((i * 0.5 - 2) * super_width),
-			glow_y = self.super.P1.frame.y,
-		}
-		self.super.P2[i] = {
-			x = self.super.P2.frame.x + ((2.5 - i) * super_width),
-			y = self.super.P2.frame.y,
-			glow_x = self.super.P2.frame.x + ((2 - i * 0.5) * super_width),
-			glow_y = self.super.P2.frame.y,
-		}
-	end
---]]
 	self.character = {
 		P1 = {x = self.x_mid - (8 * self.gem_width), y = self.y_mid - (5.5 * self.gem_height)},
 		P2 = {x = self.x_mid + (8 * self.gem_width), y = self.y_mid - (5.5 * self.gem_height)}

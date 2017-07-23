@@ -28,34 +28,6 @@ function sprint(...)
 end
 
 debugTool = {}
-function debugTool.printDamageAndScore(num_matches, p1dmg, p2dmg, p1super, p2super)
-	local toprint = {
-		{"----------------------------------------"},
-		{"Combo hit:", game.scoring_combo, "Matches done:", num_matches},
-		{"P1 damage:", p1dmg, "P2 damage:", p2dmg},
-		{"P1 super gain:", p1super, "P2 super gain:", p2super},
-		{}
-	}
-
-	for i = 1, #toprint do print(unpack(toprint[i])) end
-end
-
-function debugTool.printSummaryState(grid, p1, p2)
-	local toprint = {"", "", "", "", "", "", "", "", ""}
-	for row = 7, 14 do
-		for col = 1, 8 do
-			if grid[row][col].gem then
-				local colors = {RED = "R", BLUE = "B", GREEN = "G", YELLOW = "Y"}
-				toprint[row-6] = toprint[row-6] .. colors[ grid[row][col].gem.color ]
-			else
-				toprint[row-6] = toprint[row-6] .. "."
-			end
-		end
-	end
-	toprint[9] = p1.cur_mp .. "|" .. p2.cur_mp
-	for i = 1, #toprint do print(toprint[i]) end
-end
-
 function debugTool.setOverlay(func)
 	if type(func) ~= "function" then
 		print("Please pass function to setOverlay!")
@@ -71,6 +43,9 @@ function debugTool.toggleSlowdown()
 		time.step = 0.1
 	end
 end
+
+debugTool.drawGemOwners = false
+
 
 function math.clamp(_in, low, high)
 	if (_in < low ) then return low end

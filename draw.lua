@@ -203,6 +203,17 @@ function draw.drawText()
 			love.graphics.printf(toprint, 0, 40, 1000, "right")
 		end
 	love.graphics.pop()
+
+	-- gem owner overlays
+	love.graphics.push("all")
+		love.graphics.setColor(0, 0, 0)
+		if debugTool.drawGemOwners then
+			for gem in stage.grid:gems() do
+				local toprint = gem.owner
+				love.graphics.print(gem.owner, gem.x, gem.y)
+			end
+		end
+	love.graphics.pop()
 end
 
 function draw.drawAnimations()
