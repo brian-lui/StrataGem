@@ -243,24 +243,16 @@ function love.keypressed(key)
 		local during = {10, 5, newbluegem}
 		temp:moveTo{x = 300, y = 200, duration = 120, during = during}
 		queue.add(10, temp.moveTo, temp, {x = 600, y = 450, duration = 60, easing = "outQuart"})
-	elseif key == "v" then
-		debugTool.printSummaryState(stage.grid, p1, p2)
-	elseif key == "b" then
-		n(8, 7, "G")
-		n(8, 6, "G")
-		n(7, 5, "G")
-		n(8, 5)
-		n(8, 4)
-		n(7, 3)
-		n(8, 3, "Y")
-		n(8, 2, "Y")
-	elseif key == "n" then
-		n(8, 1, "G")
-		n(8, 2, "R")
-		n(7, 1, "Y")
-		n(7, 2, "Y")
-		n(8, 3, "G")
-		n(6, 1, "B")
+	elseif key == "v" then -- garbage move up match
+		n(7,3,"B") n(7,4,"B") n(7,5,"R") n(7,6,"R") n(7,7,"G")
+		n(8,3,"R") n(8,4,"R") n(8,5,"B") n(8,6,"B") n(8,7,"Y")
+	elseif key == "b" then -- multimatch
+		           n(7,3,"R")            n(7,5,"G")              
+		n(8,2,"Y") n(8,3,"Y") n(8,4,"R") n(8,5,"R") n(8,6,"G") n(8,7,"G")
+	elseif key == "n" then -- heath super test
+		n(6,1,"B")
+		n(7,1,"Y") n(7,2,"Y")
+		n(8,1,"G") n(8,2,"R") n(8,3,"G")
 	elseif key == "m" then
 		debugTool.drawGemOwners = not debugTool.drawGemOwners
 	elseif key == "," then
@@ -320,7 +312,6 @@ n = function(row, column, color, owner)
 		print("row or column not an integer!")
 		return
 	end
-
 	if row < 1 or row > 8 then
 		print("row out of bounds! 1 = bottom, 8 = top")
 		return
@@ -334,7 +325,7 @@ n = function(row, column, color, owner)
 	local x, y = stage.grid.x[column], stage.grid.y[row]
 	local gem_color = gem[color.."Gem"]
 	stage.grid[row][column].gem = gem_color:new(x, y)
-	stage.grid[row][column].gem:addOwner(1)
+	if owner > 0 then stage.grid[row][column].gem:addOwner(owner) end
 end
 
 -- TODO: Remove this bit and animationsandbox.lua
