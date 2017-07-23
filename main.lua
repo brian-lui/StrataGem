@@ -255,11 +255,12 @@ function love.keypressed(key)
 		n(8, 3, "Y")
 		n(8, 2, "Y")
 	elseif key == "n" then
-		n(8, 2, "G")
-		n(8, 4, "G")
-		n(8, 5, "G")
-		n(7, 5, "G")
-		n(8, 6, "R")
+		n(8, 1, "G")
+		n(8, 2, "R")
+		n(7, 1, "Y")
+		n(7, 2, "Y")
+		n(8, 3, "G")
+		n(6, 1, "B")
 	elseif key == "m" then
 		debugTool.drawGemOwners = not debugTool.drawGemOwners
 	elseif key == "," then

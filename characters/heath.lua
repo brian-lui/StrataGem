@@ -340,16 +340,18 @@ function heath:beforeMatch(gem_table)
 	-- super
 	if self.supering then
 		self.super_this_turn = true
-		local rows_to_clear = {}
+		--local rows_to_clear = {}
 		-- find out which rows to clear, add to a set
 		for _, gem in pairs(gem_table) do
 			local owned = own_tbl[gem.owner] == self
 			if owned and gem.horizontal then
-				rows_to_clear[gem.row] = true
-				rows_to_clear[gem.row+1] = true
-				rows_to_clear[gem.row-1] = true
+				self.super_clears[#self.super_clears+1] = gem
+				--rows_to_clear[gem.row] = true
+				--rows_to_clear[gem.row+1] = true
+				--rows_to_clear[gem.row-1] = true
 			end
 		end
+		--[[
 		-- add clear-gems to gem_table for processing
 		for gem in stage.grid:gems() do
 			-- flag gems to clear
@@ -360,6 +362,7 @@ function heath:beforeMatch(gem_table)
 			-- add to super_clears list
 			if toclear then	self.super_clears[#self.super_clears+1] = gem end
 		end
+		--]]
 	end
 end
 
@@ -374,18 +377,103 @@ function heath:duringMatch(gem_table)
 
 	if self.supering then
 		-- update the grid and add the ownership to the super-clear gems
+		local function processGemGamestate(gem)
+			local r, c = gem.row, gem.column
+			gem:addOwner(self)
+			if gem.owner ~= 3 then
+				self.enemy.hand:addDamage(1)
+				particles.damage:generate(gem)
+				stage.grid:removeGem(gem)
+			end
+		end
+
+		stage.grid:updateGrid()
+		for i = 1, #self.super_clears do
+			local current_gem = self.super_clears[i]
+			local r, c = current_gem.row, current_gem.column
+			if stage.grid[r-1][c].gem then
+				print("current gem", r, c)
+				print("remove gem at", r-1, c)
+				processGemGamestate(stage.grid[r-1][c].gem)
+			end
+			if stage.grid[r+1][c].gem then
+				print("current gem", r, c)
+				print("remove gem at", r+1, c)
+				processGemGamestate(stage.grid[r+1][c].gem)
+			end
+		end
+
+		--[[
+		-- first queue the super particles
+		local own_tbl = {p1, p2}
+		local current_columns, check_columns = {}, {} -- use these as sets
+
+		for i = 1, stage.grid.columns do check_columns[i] = true end
+		for _, gem in pairs(gem_table) do
+			if gem.horizontal and self == own_tbl[gem.owner] then
+				current_columns[gem.column] = true
+			end
+		end
+
+		local explode_round = 1 -- do the matched columns first, then expand outwards
+		--while still_need_checks() do
+		while next(check_columns) do
+			for i = 1, #self.super_clears do -- make booms
+				local gem = self.super_clears[i]
+				if gem.owner ~= 3 and current_columns[gem.column] and check_columns[gem.column] then
+					local boom_object = particle_effects.Boom(gem.row, gem.column, gem.owner)
+					local delay = 3 + explode_round * 4
+					queue.add(delay, particles.charEffects.new, particles.charEffects, boom_object)
+					queue.add(delay, stage.grid.removeGem, stage.grid, gem) -- this is state-affecting!
+				end
+			end
+			local add_columns = {} -- columns to check for next round
+			for k in pairs(current_columns) do
+				check_columns[k] = nil
+				if k ~= 1 and k ~= stage.grid.columns then
+					add_columns[k-1], add_columns[k+1] = true, true
+				end
+			end
+			for k in pairs(add_columns) do current_columns[k] = true end
+			explode_round = explode_round + 1
+		end
+
+		-- then process the gamestate and generate other particles
+		-- TODO: don't generate damage if it was part of the gem_table match
+		for i = 1, #self.super_clears do
+			local gem = self.super_clears[i]
+			local in_match_table = false
+			for _, tblgem in pairs(gem_table) do
+				if gem == tblgem then
+					in_match_table = true
+					break
+				end
+			end
+			if gem.owner ~= 3 and not in_match_table then
+				self.enemy.hand:addDamage(1)
+				particles.damage:generate(gem)
+			end
+		end
+		--]]
+	end
+end
+--[[
+function heath:duringMatch(gem_table)
+	local particles = game.particles
+	local stage = game.stage
+
+	if self.supering then
+		-- update the grid and add the ownership to the super-clear gems
 		stage.grid:updateGrid()
 		for i = 1, #self.super_clears do self.super_clears[i]:addOwner(self) end
 
 		-- first queue the super particles
 		local own_tbl = {p1, p2}
 		local current_columns, check_columns = {}, {} -- use these as sets
-		--[[
 		local still_need_checks = function()
 			for k in pairs(check_columns) do return true end
 			return false
 		end
-		--]]
 		for i = 1, stage.grid.columns do check_columns[i] = true end
 		for _, gem in pairs(gem_table) do
 			if gem.horizontal and self == own_tbl[gem.owner] then
@@ -434,7 +522,7 @@ function heath:duringMatch(gem_table)
 		end
 	end
 end
-
+--]]
 
 -- take away super meter, make fires
 function heath:afterMatch()

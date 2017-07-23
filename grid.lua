@@ -456,6 +456,7 @@ function grid:reset()
 end
 
 -- remove a gem
+-- propogates flags upwards by default
 function grid:removeGem(g, propogate_flags_up)
 	local function getAboveGems(column, start_row)
 		start_row = start_row or 1
@@ -475,7 +476,7 @@ function grid:removeGem(g, propogate_flags_up)
 		end
 	end
 
-	if propogate_flags_up then propogateFlagsUp(g) end
+	if propogate_flags_up ~= false then propogateFlagsUp(g) end
 	self[g.row][g.column].gem = false
 end
 

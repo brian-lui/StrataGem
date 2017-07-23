@@ -44,7 +44,7 @@ function debugTool.toggleSlowdown()
 	end
 end
 
-debugTool.drawGemOwners = false
+debugTool.drawGemOwners = true
 
 
 function math.clamp(_in, low, high)
