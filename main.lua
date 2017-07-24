@@ -220,29 +220,28 @@ function love.keypressed(key)
 	elseif key == "d" then p2.hand:addDamage(1)
 	elseif key == "f" then
 		p1.cur_burst = math.min(p1.cur_burst + 1, p1.MAX_BURST)
-		p1.cur_mp = math.min(p1.cur_mp + 12, p1.MAX_MP)
+		p1.cur_mp = math.min(10000, p1.MAX_MP)
 		p2.cur_burst = math.min(p2.cur_burst + 1, p2.MAX_BURST)
-		p2.cur_mp = math.min(p2.cur_mp + 12, p2.MAX_MP)
+		p2.cur_mp = math.min(10000, p2.MAX_MP)
 	elseif key == "k" then canvas[6]:renderTo(function() love.graphics.clear() end)
 	elseif key == "z" then startGame("1P", "heath", "walter", Background.Starfall, nil, 1)
-	elseif key == "x" then
-		p1.cur_mp = 64
-		--p2.cur_mp = 20
-	elseif key == "c" then
-		local pic = require 'pic'
-		local image = require 'image'
-		local temp = pic:new{x = stage.width * 0.5, y = stage.height * 0.5, image = image.red_gem}
-		AllParticles.PieEffects[ID.particle] = temp
-		temp.update = temp.greatupdate
-		local newbluegem = function()
-			local x, y = temp.x, temp.y
-			local blue = pic:new{x = x, y = y, image = image.blue_gem}
-			blue.update = blue.greatupdate
-			AllParticles.PieEffects[ID.particle] = blue
-		end
-		local during = {10, 5, newbluegem}
-		temp:moveTo{x = 300, y = 200, duration = 120, during = during}
-		queue.add(10, temp.moveTo, temp, {x = 600, y = 450, duration = 60, easing = "outQuart"})
+	elseif key == "x" then -- double match
+		n(7,1,"R") n(7,2,"G") n(7,3,"B") n(7,4,"Y")
+		n(8,1,"R") n(8,2,"G") n(8,3,"B") n(8,4,"Y")
+	elseif key == "c" then -- heath big damage super with a R/Y piece
+		n(1,1,"B")
+		n(2,1,"B")
+		n(3,1,"R") n(3,2,"G")
+		n(4,1,"Y") n(4,2,"Y")
+		n(5,1,"R") n(5,2,"R") n(5,3,"G")
+		n(6,1,"B") n(6,2,"G") n(6,3,"B")
+		n(7,1,"B") n(7,2,"R") n(7,3,"R")
+		n(8,1,"R") n(8,2,"G") n(8,3,"G") n(8,4,"Y")
+		debugTool.setOverlay(function() 
+			local parts = math.floor(particles.getNumber("Damage", p2)/3)
+			return tostring(parts) .. " " .. tostring(math.floor((p2.hand.damage - (parts/3))/4))
+		end)
+
 	elseif key == "v" then -- garbage move up match
 		n(7,3,"B") n(7,4,"B") n(7,5,"R") n(7,6,"R") n(7,7,"G")
 		n(8,3,"R") n(8,4,"R") n(8,5,"B") n(8,6,"B") n(8,7,"Y")
@@ -255,6 +254,8 @@ function love.keypressed(key)
 		n(8,1,"G") n(8,2,"R") n(8,3,"G")
 	elseif key == "m" then
 		debugTool.drawGemOwners = not debugTool.drawGemOwners
+		debugTool.drawParticleDestinations = not debugTool.drawParticleDestinations
+		debugTool.drawGamestate = not debugTool.drawGamestate
 	elseif key == "," then
 		debugTool.setOverlay(function() return
 			particles.getNumber("SuperParticles", p1) + particles.getNumber("SuperParticles", p2)
@@ -264,6 +265,10 @@ function love.keypressed(key)
 	end
 
 end
+
+-- lol at this placement here
+debugTool.setOverlay(function() return game.phase end)
+
 
 function love.mousepressed(x, y, button, istouch)
 	if button == 1 and not mouse.down then -- the primary button

@@ -14,9 +14,9 @@ ID:reset()
 
 AllParticles = {}
 
---[[
+---[[
 FONT = {
-	TITLE = love.graphics.newFont('/fonts/Comic.otf', 30)
+	REGULAR = love.graphics.newFont('/fonts/anonymous.ttf', 20)
 }
 --]]
 --[[

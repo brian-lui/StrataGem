@@ -195,25 +195,46 @@ function draw.drawText()
 		end
 	love.graphics.pop()
 
-	-- debug overlay
-	love.graphics.push("all")
-		love.graphics.setColor(255, 255, 255)
-		if debugTool.overlay then
+	-- debug: top right HUD
+	if debugTool.overlay then
+		love.graphics.push("all")
+			love.graphics.setColor(255, 255, 255)
 			local toprint = debugTool.overlay()
 			love.graphics.printf(toprint, 0, 40, 1000, "right")
-		end
-	love.graphics.pop()
+		love.graphics.pop()
+	end
 
-	-- gem owner overlays
-	love.graphics.push("all")
-		love.graphics.setColor(0, 0, 0)
-		if debugTool.drawGemOwners then
+	-- debug: gem owner overlays
+	if debugTool.drawGemOwners then
+		love.graphics.push("all")
+			love.graphics.setColor(0, 0, 0)
+			love.graphics.setFont(FONT.REGULAR)
 			for gem in stage.grid:gems() do
-				local toprint = gem.owner
 				love.graphics.print(gem.owner, gem.x, gem.y)
 			end
-		end
-	love.graphics.pop()
+		love.graphics.pop()
+	end
+
+	-- debug: particle destination overlays
+	if debugTool.drawParticleDestinations then
+		love.graphics.push("all")
+			love.graphics.setColor(0, 0, 0)
+			love.graphics.setFont(FONT.REGULAR)
+			for _, p in pairs(AllParticles.Damage) do
+				love.graphics.print(p.final_loc_idx, p.x, p.y)
+			end
+		love.graphics.pop()
+	end
+
+	-- debug: grid gamestate
+	if debugTool.drawGamestate then
+		local toprint = debugTool.drawGamestateFunc(stage.grid)
+		love.graphics.push("all")
+			love.graphics.setColor(0, 0, 0)
+			love.graphics.setFont(FONT.REGULAR)
+			love.graphics.print(toprint, 50, 400)
+		love.graphics.pop()
+	end
 end
 
 function draw.drawAnimations()
