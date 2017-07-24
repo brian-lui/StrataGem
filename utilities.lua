@@ -44,7 +44,25 @@ function debugTool.toggleSlowdown()
 	end
 end
 
+function debugTool.drawGamestateFunc(use_grid)
+	local toprint = ""
+	local colors = {RED = "R", BLUE = "B", GREEN = "G", YELLOW = "Y"}
+	for row = 0, 14 do
+		for col = 1, 8 do
+			if use_grid[row][col].gem then
+				toprint = toprint .. colors[use_grid[row][col].gem.color]
+			else
+				toprint = toprint .. " "
+			end
+		end
+		toprint = toprint .. "\n"
+	end
+	return toprint
+end
+
 debugTool.drawGemOwners = true
+debugTool.drawParticleDestinations = true
+debugTool.drawGamestate = true
 
 
 function math.clamp(_in, low, high)

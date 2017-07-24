@@ -153,9 +153,9 @@ function character:pieceDroppedOK(piece, shift)
 	if place_type == "normal" then
 		return true
 	elseif place_type == "rush" then
-		return self.cur_burst >= (self.current_rush_cost) and not self.supering
+		return self.cur_burst >= self.current_rush_cost
 	elseif place_type == "double" then
-		return self.cur_burst >= (self.current_double_cost) and not self.supering
+		return self.cur_burst >= self.current_double_cost
 	end
 end
 

@@ -15,7 +15,7 @@ function grid:initialize(stage, game)
 	self.x = {}
 	self.y = {}
 	self.active_rect = {}
-
+	
 	for i = 0, self.columns + 1 do
 		self.x[i] = stage.x_mid + (i - (self.columns / 2) - 0.5) * stage.gem_width
 		self.active_rect[i] = {self.x[i] - 0.5 * stage.gem_width, 0, stage.gem_width, stage.height}
@@ -502,6 +502,7 @@ function grid:generateMatchExplodingGems()
 	end
 end
 
+
 -- TODO: refactor this to remove the embarrassing duplication
 function grid:generateMatchParticles()
 	local own_tbl = {p1, p2, false}
@@ -511,11 +512,7 @@ function grid:generateMatchParticles()
 		local player = own_tbl[gem.owner]
 		if player then
 			local num_super_particles = player.meter_gain[gem.color]
-			if player.supering then
-				num_super_particles = 0
-			elseif player.place_type == "rush" or player.place_type == "double" then
-				num_super_particles = num_super_particles * 0.25
-			end
+			if player.supering then	num_super_particles = 0 end
 			particles.superParticles:generate(gem, num_super_particles)
 			particles.damage:generate(gem)
 			particles.pop:generate(gem)
@@ -528,11 +525,7 @@ function grid:generateMatchParticles()
 		local player = own_tbl[gem.owner]
 		if player then
 			local num_super_particles = player.meter_gain[gem.color]
-			if player.supering then
-				num_super_particles = 0
-			elseif player.place_type == "rush" or player.place_type == "double" then
-				num_super_particles = num_super_particles * 0.25
-			end
+			if player.supering then	num_super_particles = 0 end
 			particles.superParticles:generate(gem, num_super_particles)
 			particles.damage:generate(gem)
 			extra_particles = extra_particles - 1

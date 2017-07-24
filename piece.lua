@@ -222,13 +222,13 @@ function Piece:isDropValid(shift)
 	if not player.dropped_piece then
 		if gems_in_my_tub == self.size then
 			place_type = "normal"
-		elseif gems_in_my_tub == 0 and self:isValidRush() and not player.supering then
+		elseif gems_in_my_tub == 0 and self:isValidRush() then
 			place_type = "rush"
 		else
 			return false
 		end
 	elseif gems_in_my_tub == self.size and player.cur_burst >= player.current_double_cost and
-		not player.supering and player.dropped_piece == "normal" then
+		player.dropped_piece == "normal" then
 			place_type = "double"
 	else
 		return false
@@ -302,8 +302,8 @@ function Piece:deselect()
 	local valid, place_type = self:isDropValid(shift)
 	local cols = self:getColumns(shift)
 	local go_ahead = (place_type == "normal") or
-		(place_type == "rush" and self:isValidRush() and not player.supering) or
-		(place_type == "double" and player.cur_burst >= player.current_double_cost and not player.supering)
+		(place_type == "rush" and self:isValidRush()) or
+		(place_type == "double" and player.cur_burst >= player.current_double_cost)
 	local char_ability_ok = player:pieceDroppedOK(self, shift)
 	print(valid, game.frozen, go_ahead, char_ability_ok)
 	if valid and not game.frozen and go_ahead and char_ability_ok then

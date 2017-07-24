@@ -224,6 +224,8 @@ function phase.resolvingMatches(dt)
 	p2.hand:addDamage(p1dmg)
 	stage.grid:dropColumnsAnim()
 	stage.grid:dropColumns()
+	stage.grid:updateGrid()
+	particles.clearCount()
 	game.phase = "Gravity"
 end
 
@@ -241,6 +243,20 @@ function phase.resolvedMatches(dt)
 		end
 		game.scoring_combo = 0
 		stage.grid:setAllGemOwners(0)
+		game.phase = "PlatformSpinDelay"
+	end
+end
+
+local platform_spin_delay_counter = 15
+-- wait a few frames for excitement, before exploding the platforms and getting new pieces
+function phase.platformSpinDelay(dt)
+	if platform_spin_delay_counter > 0 then
+		for player in game:players() do
+			player.hand:update(dt)
+		end
+		platform_spin_delay_counter = platform_spin_delay_counter - 1
+	else
+		platform_spin_delay_counter = 30
 		game.phase = "GetPiece"
 	end
 end
@@ -358,6 +374,7 @@ phase.lookup = {
 	MatchAnimations = phase.matchAnimations,
 	ResolvingMatches = phase.resolvingMatches,
 	ResolvedMatches = phase.resolvedMatches,
+	PlatformSpinDelay = phase.platformSpinDelay,
 	GetPiece = phase.getPiece,
 	PlatformsExploding = phase.platformsExploding,
 	PlatformsMoving = phase.platformsMovingUp,

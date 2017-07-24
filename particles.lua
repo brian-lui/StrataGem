@@ -38,7 +38,13 @@ function particles.getNumber(particle_tbl, player)
 	return num
 end
 
+-- called at end of turn
+function particles.clearCount()
+	DamageParticlesCreatedThisRound = {0, 0}
+end
+
 -- initialize the global "AllParticles" and empty it
+-- Please refactor this especially DamageParticlesCount
 function particles.reset()
 	AllParticles = {
 		Damage = {},
@@ -58,6 +64,7 @@ function particles.reset()
 		CharEffects = {},
 		SuperFreezeEffects = {},
 	}
+	DamageParticlesCreatedThisRound = {0, 0}
 end
 
 -------------------------------------------------------------------------------
@@ -67,6 +74,7 @@ DamageParticle.DAMAGE_DROP_SPEED = window.height / 192	-- pixels for damage part
 function DamageParticle:initialize(gem)
 	local img = image.lookup.particle_freq.random(gem.color)
 	pic.initialize(self, {x = gem.x, y = gem.y, image = img})
+	self.damage_created_this_turn = {0, 0}
 	AllParticles.Damage[ID.particle] = self
 end
 
@@ -74,6 +82,7 @@ function DamageParticle:remove()
 	AllParticles.Damage[self.ID] = nil
 end
 
+-- player.hand.damage is the damage before this round's match(es) is scored
 function DamageParticle:generate(gem)
 	local owner_lookup = {p2, p1, nil} -- send to enemy
 	local player = owner_lookup[gem.owner]
@@ -86,7 +95,7 @@ function DamageParticle:generate(gem)
 	local x3, y3 = 0.5 * (x1 + x4), 0.5 * (y1 + y4)
 
 	for i = 1, 3 do
-		local final_loc = (player.hand.damage * 0.25) + 1 + i * 0.25
+		local final_loc = (player.hand.damage + DamageParticlesCreatedThisRound[gem.owner]) * 0.25 + 1
 		local angle = math.random() * math.pi * 2
 		local x2 = x1 + math.cos(angle) * dist * 0.5
 		local y2 = y1 + math.sin(angle) * dist * 0.5
@@ -105,7 +114,9 @@ function DamageParticle:generate(gem)
 		local drop_x = function() return player.hand:getx(p.y) end
 		local exit_1 = function() player.hand[2].platform:screenshake(4) end
 		local exit_2 = function()
-			player.hand[p.final_loc_idx].platform:screenshake(6)
+			if player.hand[p.final_loc_idx].platform then
+				player.hand[p.final_loc_idx].platform:screenshake(6)
+			end
 			p:remove()
 		end
 		if drop_duration == 0 then
@@ -132,6 +143,8 @@ function DamageParticle:generate(gem)
 			queue.add(i * 2, particles.damageTrail.generate, particles.damageTrail, trail)
 		end
 	end
+
+	DamageParticlesCreatedThisRound[gem.owner] = DamageParticlesCreatedThisRound[gem.owner] + 1
 end
 
 -------------------------------------------------------------------------------
