@@ -9,9 +9,13 @@ local particles = class("Particles")
 
 function particles:initialize(_stage)
 	stage = _stage
+	self.count = {
+		created = {MP = {0, 0}, Damage = {0, 0}},
+		destroyed = {MP = {0, 0}, Damage = {0, 0}},
+	}
 end
 
-function particles.update(dt)
+function particles:update(dt)
 	for _, particle_tbl in pairs(AllParticles) do
 		for _, particle in pairs(particle_tbl) do
 			particle:update(dt)
@@ -20,7 +24,7 @@ function particles.update(dt)
 end
 
 -- returns the number of particles in a specificed AllParticles table.
-function particles.getNumber(particle_tbl, player)
+function particles:getNumber(particle_tbl, player)
 	local num = 0
 	if AllParticles[particle_tbl] then
 		if player then
@@ -38,14 +42,32 @@ function particles.getNumber(particle_tbl, player)
 	return num
 end
 
+-- increments the count: c_d is "created" or "destroyed", 
+-- p_type is "MP" or "Damage", player_num is 1 or 2
+function particles:incrementCount(c_d, p_type, player_num)
+	self.count[c_d][p_type][player_num] = self.count[c_d][p_type][player_num] + 1
+end
+
+-- takes "created", "destroyed" or "onscreen"
+function particles:getCount(count_type, p_type, player_num)
+	if count_type == "onscreen" then
+		return self.count.created[p_type][player_num] - self.count.destroyed[p_type][player_num]
+	else
+		return self.count[count_type][p_type][player_num]
+	end
+end
+
 -- called at end of turn
-function particles.clearCount()
-	DamageParticlesCreatedThisRound = {0, 0}
+function particles:clearCount()
+	self.count.created.MP = {0, 0}
+	self.count.created.Damage = {0, 0}
+	self.count.destroyed.MP = {0, 0}
+	self.count.destroyed.Damage = {0, 0}
 end
 
 -- initialize the global "AllParticles" and empty it
 -- Please refactor this especially DamageParticlesCount
-function particles.reset()
+function particles:reset()
 	AllParticles = {
 		Damage = {},
 		DamageTrail = {},
@@ -64,7 +86,6 @@ function particles.reset()
 		CharEffects = {},
 		SuperFreezeEffects = {},
 	}
-	DamageParticlesCreatedThisRound = {0, 0}
 end
 
 -------------------------------------------------------------------------------
@@ -74,11 +95,12 @@ DamageParticle.DAMAGE_DROP_SPEED = window.height / 192	-- pixels for damage part
 function DamageParticle:initialize(gem)
 	local img = image.lookup.particle_freq.random(gem.color)
 	pic.initialize(self, {x = gem.x, y = gem.y, image = img})
-	self.damage_created_this_turn = {0, 0}
+	self.owner = gem.owner
 	AllParticles.Damage[ID.particle] = self
 end
 
 function DamageParticle:remove()
+	game.particles:incrementCount("destroyed", "Damage", self.owner)
 	AllParticles.Damage[self.ID] = nil
 end
 
@@ -95,7 +117,8 @@ function DamageParticle:generate(gem)
 	local x3, y3 = 0.5 * (x1 + x4), 0.5 * (y1 + y4)
 
 	for i = 1, 3 do
-		local final_loc = (player.hand.damage + DamageParticlesCreatedThisRound[gem.owner]) * 0.25 + 1
+		local created_particles = game.particles:getCount("created", "Damage", gem.owner)
+		local final_loc = (player.hand.turn_start_damage + created_particles/3) * 0.25 + 1
 		local angle = math.random() * math.pi * 2
 		local x2 = x1 + math.cos(angle) * dist * 0.5
 		local y2 = y1 + math.sin(angle) * dist * 0.5
@@ -106,7 +129,6 @@ function DamageParticle:generate(gem)
 		local duration = 54 + math.random() * 12
 		local rotation = math.random() * 5
 		p.final_loc_idx = math.floor(final_loc)
-		p.owner = player
 
 		-- second part of movement once it hits the platform
 		local drop_y = player.hand[p.final_loc_idx].y
@@ -139,12 +161,12 @@ function DamageParticle:generate(gem)
 			if drop_duration > 0 then
 				trail.drop_duration, trail.drop_x, trail.drop_y = drop_duration, drop_x, drop_y
 			end
-
 			queue.add(i * 2, particles.damageTrail.generate, particles.damageTrail, trail)
 		end
+
+		game.particles:incrementCount("created", "Damage", gem.owner)
 	end
 
-	DamageParticlesCreatedThisRound[gem.owner] = DamageParticlesCreatedThisRound[gem.owner] + 1
 end
 
 -------------------------------------------------------------------------------
@@ -178,10 +200,12 @@ local SuperParticle = class('SuperParticle', pic)
 function SuperParticle:initialize(gem)
 	local img = image.lookup.super_particle[gem.color]
 	pic.initialize(self, {x = gem.x, y = gem.y, image = img})
+	self.owner = gem.owner
 	AllParticles.SuperParticles[ID.particle] = self
 end
 
 function SuperParticle:remove()
+	game.particles:incrementCount("destroyed", "MP", self.owner)	
 	AllParticles.SuperParticles[self.ID] = nil
 end
 
@@ -203,8 +227,8 @@ function SuperParticle:generate(gem, num_particles)
 
 		-- create particle
 		local p = self:new(gem)
-		p.owner = player
-		
+		game.particles:incrementCount("created", "MP", gem.owner)
+
 		-- move particle
 		local duration = (0.9 + 0.2 * math.random()) * 90
 		p:moveTo{duration = duration, curve = curve, easing = "inQuad", exit = true}

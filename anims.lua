@@ -12,14 +12,12 @@ local anims = {}
 -- returns the super drawables for player based on player MP, called every dt
 -- shown super meter is less than the actual super meter when super particles are on screen
 -- as particles disappear, they visually go into the super meter
--- TODO: maybe can refactor this to remove old_mp
 function anims.drawSuper(player)
-	local super_particles = particles.getNumber("SuperParticles", player)
-	local actual_mp = math.max(player.cur_mp, 0)
-	local displayed_mp = math.max(actual_mp - super_particles, 0)
-	if player.old_mp + super_particles > player.MAX_MP then 
-		displayed_mp = math.max(displayed_mp, player.old_mp)
-	end
+	local own_tbl = {[p1] = 1, [p2] = 2}
+	local player_idx = own_tbl[player]
+	local destroyed_particles = particles:getCount("destroyed", "MP", player_idx)
+	
+	local displayed_mp = math.min(player.turn_start_mp + destroyed_particles, player.MAX_MP)
 	local fill_percent = displayed_mp / player.MAX_MP
 	local img = player.super_meter_image
 	img:changeQuad(0, img.height * (1 - fill_percent), img.width, img.height * fill_percent)
@@ -27,23 +25,15 @@ function anims.drawSuper(player)
 
 	player.super_frame:draw() -- super frame
 	img:draw() -- super meter
-	---[[
-	-- glow
+
 	if player.supering then
 		player.super_glow.transparency = 255
 		player.super_glow:draw()
 		player.super_word:draw()
-	elseif player.cur_mp >= player.SUPER_COST then
+	elseif player.mp >= player.SUPER_COST then
 		player.super_glow.transparency = math.ceil(math.sin(frame / 30) * 127.5 + 127.5)
 		player.super_glow:draw()
 	end
-	--]]
-	-- super word, if active
-	--[[
-	if player.supering then
-		player.super_word:draw()
-	end
-	--]]
 end
 
 -- returns the burst drawables for player based on player burst, called every dt

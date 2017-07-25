@@ -185,15 +185,17 @@ function draw.drawText()
 	for _, v in pairs(AllParticles.Words) do v:draw() end
 
 	-- debug row/column display
-	love.graphics.push("all")
-		love.graphics.setColor(0, 255, 0)
-		for r = 0, stage.grid.rows + 1 do
-			love.graphics.print(r, 200, stage.grid.y[r])
-		end
-		for c = 0, stage.grid.columns + 1 do
-			love.graphics.print(c, stage.grid.x[c], 200)
-		end
-	love.graphics.pop()
+	if debugTool.drawGrid then
+		love.graphics.push("all")
+			love.graphics.setColor(0, 255, 0)
+			for r = 0, stage.grid.rows + 1 do
+				love.graphics.print(r, 200, stage.grid.y[r])
+			end
+			for c = 0, stage.grid.columns + 1 do
+				love.graphics.print(c, stage.grid.x[c], 200)
+			end
+		love.graphics.pop()
+	end
 
 	-- debug: top right HUD
 	if debugTool.overlay then
@@ -204,37 +206,28 @@ function draw.drawText()
 		love.graphics.pop()
 	end
 
-	-- debug: gem owner overlays
-	if debugTool.drawGemOwners then
-		love.graphics.push("all")
-			love.graphics.setColor(0, 0, 0)
-			love.graphics.setFont(FONT.REGULAR)
+	-- debug overlays
+	love.graphics.push("all")
+		love.graphics.setColor(0, 0, 0)
+		love.graphics.setFont(FONT.REGULAR)
+		if debugTool.drawGemOwners then
 			for gem in stage.grid:gems() do
 				love.graphics.print(gem.owner, gem.x, gem.y)
 			end
-		love.graphics.pop()
-	end
-
-	-- debug: particle destination overlays
-	if debugTool.drawParticleDestinations then
-		love.graphics.push("all")
-			love.graphics.setColor(0, 0, 0)
-			love.graphics.setFont(FONT.REGULAR)
+		end
+		if debugTool.drawParticleDestinations then
 			for _, p in pairs(AllParticles.Damage) do
 				love.graphics.print(p.final_loc_idx, p.x, p.y)
 			end
-		love.graphics.pop()
-	end
-
-	-- debug: grid gamestate
-	if debugTool.drawGamestate then
-		local toprint = debugTool.drawGamestateFunc(stage.grid)
-		love.graphics.push("all")
-			love.graphics.setColor(0, 0, 0)
-			love.graphics.setFont(FONT.REGULAR)
-			love.graphics.print(toprint, 50, 400)
-		love.graphics.pop()
-	end
+		end
+		if debugTool.drawGamestate then
+			love.graphics.print(debugTool.drawGamestateFunc(stage.grid), 50, 400)
+		end
+		if debugTool.drawDamage then
+			love.graphics.print(p1.hand.damage, p1.hand[2].x - 60, p1.hand[2].y)
+			love.graphics.print(p2.hand.damage, p2.hand[2].x + 60, p2.hand[2].y)
+		end
+	love.graphics.pop()
 end
 
 function draw.drawAnimations()

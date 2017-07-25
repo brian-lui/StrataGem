@@ -1,7 +1,5 @@
 -- handles the main game phases
-
 require 'inits'
---local hand = require 'hand'
 local ai = require 'ai'
 local inputs = require 'inputs'
 local stage = game.stage
@@ -82,7 +80,7 @@ function phase.action(dt)
 
 			if client.compareStates() then
 				print("Frame: " .. frame, "Time: " .. love.timer.getTime() - client.match_start_time, "States match!")
-				print("Player 1 meter: " .. p1.cur_mp, "Player 2 meter: " .. p2.cur_mp)
+				print("Player 1 meter: " .. p1.mp, "Player 2 meter: " .. p2.mp)
 				client.synced = true
 			else
 				print("Frame: " .. frame, "Time: " .. love.timer.getTime() - client.match_start_time, "Desync.")
@@ -225,13 +223,12 @@ function phase.resolvingMatches(dt)
 	stage.grid:dropColumnsAnim()
 	stage.grid:dropColumns()
 	stage.grid:updateGrid()
-	particles.clearCount()
 	game.phase = "Gravity"
 end
 
 function phase.resolvedMatches(dt)
 	-- wait for damage particles to arrive first
-	if particles.getNumber("Damage") > 0 then
+	if particles:getCount("onscreen", "Damage", 1) + particles:getCount("onscreen", "Damage", 2) > 0 then
 		for player in game:players() do
 			player.hand:update(dt)
 		end
@@ -270,7 +267,7 @@ function phase.getPiece(dt)
 end
 
 function phase.platformsExploding(dt)
-	if particles.getNumber("ExplodingPlatform") == 0 then
+	if particles:getNumber("ExplodingPlatform") == 0 then
 		game.phase = "PlatformsMoving"
 	end
 end
@@ -305,6 +302,7 @@ end
 
 function phase.cleanup(dt)
 	stage.grid:updateGrid()
+	particles:clearCount()
 	for player in game:players() do
 		player:cleanup()
 	end
@@ -351,9 +349,9 @@ function phase.gameOver(dt)
 	else
 		print("Match ended unexpectedly, whopps!")
 	end
-	local damage_particles = particles.getNumber("Damage", p1) + particles.getNumber("Damage", p2)
-	local super_particles = particles.getNumber("SuperParticles", p1) + particles.getNumber("SuperParticles", p2)
-	local anims_done = (damage_particles == 0) and (super_particles == 0)
+	local damage_particles = particles:getCount("onscreen", "Damage", 1) + particles:getCount("onscreen", "Damage", 2)
+	local super_particles = particles:getCount("onscreen", "MP", 1) + particles:getCount("onscreen", "MP", 2)
+	local anims_done = damage_particles + super_particles == 0
 	if anims_done and game.type == "Netplay" then
 		client:endMatch()
 		game.current_screen = "lobby"

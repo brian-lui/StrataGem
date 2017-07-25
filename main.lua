@@ -128,7 +128,7 @@ function love.update(dt)
 	client.update()
 	if game.current_screen == "maingame" then
 		time.dip(function() phase:run(time.step) end)
-		particles.update(dt) -- variable fps
+		particles:update(dt) -- variable fps
 		background.current.update() -- variable fps
 		UI.timer:update()
 		animations:updateAll(dt)
@@ -171,7 +171,7 @@ function startGame(gametype, char1, char2, bkground, seed, side)
 
 	game:reset()
 	stage.grid:reset()
-	particles.reset()
+	particles:reset()
 	if seed then
 		game.rng:setSeed(seed)
 	end
@@ -220,9 +220,9 @@ function love.keypressed(key)
 	elseif key == "d" then p2.hand:addDamage(1)
 	elseif key == "f" then
 		p1.cur_burst = math.min(p1.cur_burst + 1, p1.MAX_BURST)
-		p1.cur_mp = math.min(10000, p1.MAX_MP)
+		p1.mp = math.min(10000, p1.MAX_MP)
 		p2.cur_burst = math.min(p2.cur_burst + 1, p2.MAX_BURST)
-		p2.cur_mp = math.min(10000, p2.MAX_MP)
+		p2.mp = math.min(10000, p2.MAX_MP)
 	elseif key == "k" then canvas[6]:renderTo(function() love.graphics.clear() end)
 	elseif key == "z" then startGame("1P", "heath", "walter", Background.Starfall, nil, 1)
 	elseif key == "x" then -- double match
@@ -237,10 +237,6 @@ function love.keypressed(key)
 		n(6,1,"B") n(6,2,"G") n(6,3,"B")
 		n(7,1,"B") n(7,2,"R") n(7,3,"R")
 		n(8,1,"R") n(8,2,"G") n(8,3,"G") n(8,4,"Y")
-		debugTool.setOverlay(function() 
-			local parts = math.floor(particles.getNumber("Damage", p2)/3)
-			return tostring(parts) .. " " .. tostring(math.floor((p2.hand.damage - (parts/3))/4))
-		end)
 
 	elseif key == "v" then -- garbage move up match
 		n(7,3,"B") n(7,4,"B") n(7,5,"R") n(7,6,"R") n(7,7,"G")
@@ -256,10 +252,8 @@ function love.keypressed(key)
 		debugTool.drawGemOwners = not debugTool.drawGemOwners
 		debugTool.drawParticleDestinations = not debugTool.drawParticleDestinations
 		debugTool.drawGamestate = not debugTool.drawGamestate
-	elseif key == "," then
-		debugTool.setOverlay(function() return
-			particles.getNumber("SuperParticles", p1) + particles.getNumber("SuperParticles", p2)
-		end)
+		debugTool.drawDamage = not debugTool.drawDamage
+		debugTool.drawGrid = not debugTool.drawGrid
 	elseif key == "." then
 		debugTool.toggleSlowdown()
 	end

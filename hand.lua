@@ -26,6 +26,7 @@ function Hand:initialize(player)
 	self[0].y = stage.height / 8 -- discard place is higher up
 	self.garbage = {} -- pending-garbage gems
 	self.damage = 4 -- each 4 damage is one more platform movement
+	self.turn_start_damage = 4 -- damage at the start of the turn, used in particles calcs
 end
 
 -- make pieces at start of round. They are all then moved up 5 spaces
@@ -238,6 +239,7 @@ function Hand:endOfTurnUpdate()
 		self[i].platform:setFastSpin(false)
 	end
 	self.damage = self.damage + 4
+	self.turn_start_damage = self.damage
 	self.owner.cur_burst = math.min(self.owner.cur_burst + 1, self.owner.MAX_BURST)
 end
 

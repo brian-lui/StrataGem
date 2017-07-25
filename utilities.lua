@@ -63,7 +63,8 @@ end
 debugTool.drawGemOwners = true
 debugTool.drawParticleDestinations = true
 debugTool.drawGamestate = true
-
+debugTool.drawDamage = true
+debugTool.drawGrid = true
 
 function math.clamp(_in, low, high)
 	if (_in < low ) then return low end

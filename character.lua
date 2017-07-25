@@ -35,8 +35,8 @@ character.burst_images = {
 }
 character.MAX_MP = 64
 character.SUPER_COST = 64
-character.cur_mp = 0
-character.old_mp = 0
+character.mp = 0
+character.turn_start_mp = 0
 character.MAX_BURST = 6
 character.RUSH_COST = 6
 character.DOUBLE_COST = 3
@@ -108,8 +108,8 @@ end
 
 -- TODO: Make player and/or character into classes and put this in there
 function character:addSuper(amt)
-	self.old_mp = self.cur_mp
-	self.cur_mp = math.min(self.cur_mp + amt, self.MAX_MP)
+	self.old_mp = self.mp
+	self.mp = math.min(self.mp + amt, self.MAX_MP)
 end
 
 -- do those things to set up the character. Called at start of match
@@ -140,10 +140,11 @@ function character:afterMatch()
 end
 
 function character:cleanup()
+	self.turn_start_mp = self.mp
 end
 
 function character:activateSuper()
-	if self.cur_mp >= self.SUPER_COST then
+	if self.mp >= self.SUPER_COST then
 		self.supering = not self.supering
 	end
 end

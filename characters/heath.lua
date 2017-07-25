@@ -395,7 +395,7 @@ function heath:afterMatch()
 
 	-- super
 	if self.supering then
-		self.cur_mp = 0
+		self.mp = 0
 		self.super_clears = {}
 		self.supering = false
 	end
@@ -433,10 +433,11 @@ function heath:cleanup()
 	self.current_rush_cost, self.current_double_cost = self.RUSH_COST, self.DOUBLE_COST
 	self.supering = false
 	self.super_this_turn = false
+	Character.cleanup(self)
 end
 
 function heath:activateSuper()
-	if self.cur_mp >= self.SUPER_COST then
+	if self.mp >= self.SUPER_COST then
 		self.supering = not self.supering
 	end
 end

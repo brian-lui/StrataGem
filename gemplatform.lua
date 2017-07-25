@@ -52,14 +52,17 @@ function GemPlatform:setFastSpin(bool)
 	self.fastspin = bool
 end
 
+-- TODO: refactor so it only does the calculationey-stuff if needed
 function GemPlatform:update(dt)
 	pic.update(self, dt)
 	local player = self.owner
 	local loc = self.hand_idx
+	local enemy_tbl = {[p1] = 2, [p2] = 1}
+	local enemy_idx = enemy_tbl[player]
 
 	-- set spin and redness
-	local particle_delayed_damage = particles.getNumber("Damage", player) / 3
-	local displayed_damage = (player.hand.damage - particle_delayed_damage) / 4
+	local destroyed_particles = particles:getCount("destroyed", "Damage", enemy_idx)
+	local displayed_damage = (player.hand.turn_start_damage + destroyed_particles/3) * 0.25
 
 	if displayed_damage >= loc then -- fully red, full spin
 		self.redness = math.min(self.redness + 16, 255)
