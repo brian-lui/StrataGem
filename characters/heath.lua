@@ -324,6 +324,7 @@ end
 -- Make fire for horizontal matches
 -- Super-clear if super was active
 function heath:beforeMatch(gem_table)
+	local particles = game.particles
 	local stage = game.stage
 
 	local own_tbl = {p1, p2}
@@ -346,7 +347,21 @@ function heath:beforeMatch(gem_table)
 				self.super_clears[#self.super_clears+1] = gem
 			end
 		end
+
+		-- generate match exploding gems for super clears
+		for i = 1, #self.super_clears do
+			local current_gem = self.super_clears[i]
+			local r, c = current_gem.row, current_gem.column
+			if stage.grid[r-1][c].gem then
+				stage.grid:generateExplodingGem(stage.grid[r-1][c].gem)
+			end
+			if stage.grid[r+1][c].gem then
+				stage.grid:generateExplodingGem(stage.grid[r+1][c].gem)
+			end
+		end		
 	end
+
+
 end
 
 -- process the super_clears list

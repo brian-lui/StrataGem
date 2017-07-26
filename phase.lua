@@ -268,11 +268,12 @@ end
 
 function phase.platformsExploding(dt)
 	if particles:getNumber("ExplodingPlatform") == 0 then
+		particles:clearCount() -- clear here so the platforms display redness/spin correctly
 		game.phase = "PlatformsMoving"
 	end
 end
 
-function phase.platformsMovingUp(dt)
+function phase.platformsMoving(dt)
 	local handsettled = true
 	for player in game:players() do
 		player.hand:update(dt)
@@ -285,7 +286,6 @@ function phase.platformsMovingUp(dt)
 	
 	if handsettled then
 		for player in game:players() do player.hand:update(dt) end -- TODO: check if we can delete this
-		-- ignore garbage pushing gems up, creating matches, for now
 
 		if stage.grid:isSettled() then
 		-- garbage can possibly push gems up, creating matches.
@@ -375,7 +375,7 @@ phase.lookup = {
 	PlatformSpinDelay = phase.platformSpinDelay,
 	GetPiece = phase.getPiece,
 	PlatformsExploding = phase.platformsExploding,
-	PlatformsMoving = phase.platformsMovingUp,
+	PlatformsMoving = phase.platformsMoving,
 	Cleanup = phase.cleanup,
 	Sync = phase.sync,
 	GameOver = phase.gameOver

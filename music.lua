@@ -1,7 +1,7 @@
 local music = {}
 
 local bgm = {}
-bgm[1] = love.audio.newSource("sounds/dummy.ogg")
+bgm[1] = love.audio.newSource("sound/dummy.ogg")
 
 function music.setBGM(filename, n)
 	n = n or 1
@@ -37,7 +37,7 @@ function music.setBGMspeed(speed, n)
 end
 
 function music.playSFX(filename)
-	local sfx = love.audio.newSource("sounds/" .. filename)
+	local sfx = love.audio.newSource("sound/" .. filename)
 	sfx:setVolume(0.0001)
 	sfx:play()
 end

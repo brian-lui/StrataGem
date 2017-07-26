@@ -7,7 +7,7 @@ _G.game = require "game"()	-- TODO: de-globalize
 local game = _G.game
 local stage = game.stage
 local particles = game.particles
-
+local sound = require 'sound'
 --local Gem = require "gem"
 --local settings = require 'settings'
 --local Character = require "character"
@@ -70,8 +70,8 @@ function time.dip(logic_function)
 end
 
 function love.load()
-		music.setBGM("bgm.mp3", 1)
-		frame = 0 -- framecount
+	music.setBGM("buzz.ogg", 1)
+	frame = 0 -- framecount
 end
 
 
@@ -170,6 +170,7 @@ function startGame(gametype, char1, char2, bkground, seed, side)
 	ID:reset()
 
 	game:reset()
+	sound:reset()
 	stage.grid:reset()
 	particles:reset()
 	if seed then
@@ -254,6 +255,8 @@ function love.keypressed(key)
 		debugTool.drawGamestate = not debugTool.drawGamestate
 		debugTool.drawDamage = not debugTool.drawDamage
 		debugTool.drawGrid = not debugTool.drawGrid
+	elseif key == "," then
+		sound.play("gembreak1")
 	elseif key == "." then
 		debugTool.toggleSlowdown()
 	end

@@ -1,7 +1,7 @@
 local class = require "middleclass"
 
 local Gem = require "gem"
-
+local sound = require 'sound'
 local grid = class("Grid")
 
 local window = _G.window -- TODO: Remove global
@@ -498,10 +498,17 @@ end
 function grid:generateMatchExplodingGems()
 	local particles = self.game.particles
 	for _, gem in pairs(self:getMatchedGems()) do
-		particles.explodingGem:generate(gem)
+		self:generateExplodingGem(gem)
 	end
 end
 
+function grid:generateExplodingGem(gem)
+	local particles = self.game.particles
+	local break_sound = game.scoring_combo + 1
+
+	particles.explodingGem:generate(gem)
+	sound:play("gembreak"..break_sound)
+end
 
 -- TODO: refactor this to remove the embarrassing duplication
 function grid:generateMatchParticles()

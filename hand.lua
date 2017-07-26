@@ -141,6 +141,7 @@ end
 function Hand:getNewTurnPieces(gem_table)
 	local pieces_to_get = math.floor(self.damage / 4)
 	self.damage = self.damage % 4
+	self.turn_start_damage = self.damage
 	if pieces_to_get == 0 then return end
 
 	local distance = stage.height * 0.1375 * pieces_to_get

@@ -73,6 +73,9 @@ function GemPlatform:update(dt)
 	elseif displayed_damage > (loc - 1) and displayed_damage < loc then
 		self.redness = math.min(self.redness + 16, 200 * (displayed_damage % 1))
 		self:setSpin((displayed_damage % 1) * 0.02) -- partial spin
+	else
+		self.redness = 0
+		self:setSpin(0)
 	end
 
 	-- generate particles regularly during spin, except for top platform
