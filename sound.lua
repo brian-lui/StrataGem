@@ -39,6 +39,7 @@ end
 
 function sound:reset()
 	last_played_frame = {}
+	setmetatable(last_played_frame, {__index = function() return -1 end})
 end
 
 return sound

@@ -504,7 +504,7 @@ end
 
 function grid:generateExplodingGem(gem)
 	local particles = self.game.particles
-	local break_sound = game.scoring_combo + 1
+	local break_sound = math.min(game.scoring_combo + 1, 5)
 
 	particles.explodingGem:generate(gem)
 	sound:play("gembreak"..break_sound)
