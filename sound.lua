@@ -23,7 +23,6 @@ end
 function sound:play(s)
 	if sound[s] then
 		local previous = last_played_frame[s]
-		print("frame, prev", frame, previous)
 		if frame <= previous then -- queue
 			local queue_frame = 2 + previous - frame
 			queue.add(queue_frame, sound._playImmediately, s)
@@ -36,6 +35,7 @@ function sound:play(s)
 		print("invalid sound requested ", s)
 	end
 end
+
 
 function sound:reset()
 	last_played_frame = {}

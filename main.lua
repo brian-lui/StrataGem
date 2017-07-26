@@ -70,6 +70,7 @@ function time.dip(logic_function)
 end
 
 function love.load()
+	love.audio.setPosition(0, 1, 0)
 	music.setBGM("buzz.ogg", 1)
 	frame = 0 -- framecount
 end
