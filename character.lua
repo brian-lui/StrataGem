@@ -139,8 +139,12 @@ end
 function character:afterMatch()
 end
 
-function character:cleanup()
+function character:resetMP()
 	self.turn_start_mp = self.mp
+end
+
+function character:cleanup()
+	self:resetMP()
 end
 
 function character:activateSuper()

@@ -509,7 +509,7 @@ function grid:generateExplodingGem(gem)
 
 	particles.explodingGem:generate(gem)
 	local sfx = sound:play("gembreak"..break_sound)
-	sfx:setPosition(x, 0, 0)
+	--sfx:setPosition(x, 0, 0)
 end
 
 -- TODO: refactor this to remove the embarrassing duplication

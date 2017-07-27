@@ -18,7 +18,7 @@ function anims.drawSuper(player)
 	local destroyed_particles = particles:getCount("destroyed", "MP", player_idx)
 	
 	local displayed_mp = math.min(player.turn_start_mp + destroyed_particles, player.MAX_MP)
-	local fill_percent = displayed_mp / player.MAX_MP
+	local fill_percent = 0.12 + (displayed_mp / player.MAX_MP) * 0.76
 	local img = player.super_meter_image
 	img:changeQuad(0, img.height * (1 - fill_percent), img.width, img.height * fill_percent)
 	img.y = stage.super[player.ID].y + img.height * (1 - fill_percent)
@@ -30,7 +30,7 @@ function anims.drawSuper(player)
 		player.super_glow.transparency = 255
 		player.super_glow:draw()
 		player.super_word:draw()
-	elseif player.mp >= player.SUPER_COST then
+	elseif displayed_mp == player.MAX_MP then
 		player.super_glow.transparency = math.ceil(math.sin(frame / 30) * 127.5 + 127.5)
 		player.super_glow:draw()
 	end

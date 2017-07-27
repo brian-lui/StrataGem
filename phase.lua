@@ -269,6 +269,7 @@ end
 function phase.platformsExploding(dt)
 	if particles:getNumber("ExplodingPlatform") == 0 then
 		particles:clearCount() -- clear here so the platforms display redness/spin correctly
+		for player in game:players() do player:resetMP() end
 		game.phase = "PlatformsMoving"
 	end
 end

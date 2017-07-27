@@ -193,7 +193,7 @@ function startGame(gametype, char1, char2, bkground, seed, side)
 	else
 		print("Sh*t")
 	end
-
+	for player in game:players() do player:cleanup() end
 	background.current = bkground
 	background.current.reset()
 
@@ -221,10 +221,11 @@ function love.keypressed(key)
 	elseif key == "s" then p1.hand:addDamage(1)
 	elseif key == "d" then p2.hand:addDamage(1)
 	elseif key == "f" then
-		p1.cur_burst = math.min(p1.cur_burst + 1, p1.MAX_BURST)
-		p1.mp = math.min(10000, p1.MAX_MP)
-		p2.cur_burst = math.min(p2.cur_burst + 1, p2.MAX_BURST)
-		p2.mp = math.min(10000, p2.MAX_MP)
+		for player in game:players() do
+			player.cur_burst = math.min(player.cur_burst + 1, player.MAX_BURST)
+			player:addSuper(10000)
+			player:resetMP()
+		end
 	elseif key == "k" then canvas[6]:renderTo(function() love.graphics.clear() end)
 	elseif key == "z" then startGame("1P", "heath", "walter", Background.Starfall, nil, 1)
 	elseif key == "x" then -- double match
@@ -244,8 +245,11 @@ function love.keypressed(key)
 		n(7,3,"B") n(7,4,"B") n(7,5,"R") n(7,6,"R") n(7,7,"G")
 		n(8,3,"R") n(8,4,"R") n(8,5,"B") n(8,6,"B") n(8,7,"Y")
 	elseif key == "b" then -- multimatch
-		           n(7,3,"R")            n(7,5,"G")              
-		n(8,2,"Y") n(8,3,"Y") n(8,4,"R") n(8,5,"R") n(8,6,"G") n(8,7,"G")
+		                                            n(4,6,"R")            n(4,8,"G")
+		                                 n(5,5,"R") n(5,6,"B") n(5,7,"B") n(5,8,"R")
+		           n(6,3,"G") n(6,4,"R") n(6,5,"B") n(6,6,"Y") n(6,7,"Y") n(6,8,"R")
+		n(7,2,"R") n(7,3,"R") n(7,4,"G") n(7,5,"B") n(7,6,"G") n(7,7,"G") n(7,8,"Y")
+		n(8,2,"Y") n(8,3,"Y") n(8,4,"R") n(8,5,"G") n(8,6,"B") n(8,7,"B") n(8,8,"R")
 	elseif key == "n" then -- heath super test
 		n(6,1,"B")
 		n(7,1,"Y") n(7,2,"Y")
@@ -257,7 +261,7 @@ function love.keypressed(key)
 		debugTool.drawDamage = not debugTool.drawDamage
 		debugTool.drawGrid = not debugTool.drawGrid
 	elseif key == "," then
-		sound.play("gembreak1")
+		debugTool.setOverlay(function() return p1.super_meter_image.transparency end)
 	elseif key == "." then
 		debugTool.toggleSlowdown()
 	end
