@@ -139,10 +139,6 @@ end
 function character:afterMatch()
 end
 
-function character:resetMP()
-	self.turn_start_mp = self.mp
-end
-
 function character:cleanup()
 	self:resetMP()
 end
@@ -211,5 +207,10 @@ function character:superSlideIn()
 	bottom_fuzz:moveTo{duration = 5, transparency = 0, exit = true}
 
 end
+
+function character:resetMP()
+	self.turn_start_mp = self.mp
+end
+
 
 return character

@@ -112,10 +112,7 @@ function phase.resolve(dt)
 	if game.me_player.place_type == nil then
 		print("PLACE TYPE BUG")
 	end
-	for player in game:players() do
-		player.hand:afterActionPhaseUpdate()
-	end
-	anims.putPendingAtTop()
+	for player in game:players() do player.hand:afterActionPhaseUpdate() end
 	particles.upGem:removeAll() -- animation
 	game.frozen = true
 	game.phase = "SuperFreeze"
@@ -142,6 +139,7 @@ function phase.superFreeze(dt)
 		table.remove(super_play, 1)
 	else
 		super_play = nil
+		anims.putPendingAtTop()
 		game.phase = "GemTween"
 	end
 end
@@ -149,7 +147,7 @@ end
 function phase.applyGemTween(dt)
 	stage.grid:updateGravity(dt) -- animation
 	for player in game:players() do	player.hand:update(dt) end	
-	local animation_done = stage.grid:isSettled() -- function
+	local animation_done = stage.grid:isSettled() -- tween-from-top is done
 	if animation_done then
 		stage.grid:dropColumns() -- state
 		game.phase = "Gravity"
@@ -303,7 +301,6 @@ end
 
 function phase.cleanup(dt)
 	stage.grid:updateGrid()
-	particles:clearCount()
 	for player in game:players() do
 		player:cleanup()
 	end
