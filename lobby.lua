@@ -1,14 +1,11 @@
+local love = _G.love
+
 local image = require 'image'
-local stage = game.stage
---local character = require 'character'
---local class = require 'middleclass'
---local socket = require 'socket'
 local Background = require 'background'
-local client = require 'client'
 local pic = require 'pic'
 require 'utilities'
 
-lobby = {}
+local lobby = {}
 lobby.connected = false
 local clicked = false
 
@@ -29,18 +26,19 @@ function lobby.spectateGame()
 end
 
 function lobby.joinRankedQueue()
-	client.queue("join")
+	self.client.queue("join")
 	print("Joining queue...")
 end
 
 function lobby.cancelRankedQueue()
-	client.queue("leave")
+	game.client.queue("leave")
 	print("Leaving queue...")
 end
 
-function lobby.goBack()
+function lobby:goBack()
+	local client = self.client
 	if client.queuing then
-		client.queue("leave")
+		client:queue("leave")
 
 		local queue_time = os.time()
 		while client.queuing do
@@ -53,7 +51,7 @@ function lobby.goBack()
 		end
 	end
 
-	client.disconnect()
+	client:disconnect()
 	local disc_time = os.time()
 	while client.connected do
 		client.update()
@@ -64,7 +62,7 @@ function lobby.goBack()
 		end
 	end
 
-	game.current_screen = "title"
+	self.current_screen = "title"
 end
 
 local locations = {
@@ -78,20 +76,20 @@ local locations = {
 }
 
 local screen_elements = {
-	create = pic:new{x = locations.create.x,
-		y = locations.create.y, image = image.lobby.create},
-	ranked_match = pic:new{x = locations.ranked_match.x,
-		y = locations.ranked_match.y, image = image.lobby.ranked_match},
-	game_background = pic:new{x = locations.game_background.x,
-		y = locations.game_background.y, image = image.lobby.game_background},
-	search_ranked = pic:new{x = locations.search_ranked.x,
-		y = locations.search_ranked.y, image = image.lobby.search_ranked},
-	search_none = pic:new{x = locations.search_none.x,
-		y = locations.search_none.y, image = image.lobby.search_none},
-	cancel_search = pic:new{x = locations.cancel_search.x,
-		y = locations.cancel_search.y, image = image.lobby.cancel_search},
-	back = pic:new{x = locations.back.x,
-		y = locations.back.y, image = image.lobby.back},
+	create = common.instance(pic, {x = locations.create.x,
+		y = locations.create.y, image = image.lobby.create}),
+	ranked_match = common.instance(pic, {x = locations.ranked_match.x,
+		y = locations.ranked_match.y, image = image.lobby.ranked_match}),
+	game_background = common.instance(pic, {x = locations.game_background.x,
+		y = locations.game_background.y, image = image.lobby.game_background}),
+	search_ranked = common.instance(pic, {x = locations.search_ranked.x,
+		y = locations.search_ranked.y, image = image.lobby.search_ranked}),
+	search_none = common.instance(pic, {x = locations.search_none.x,
+		y = locations.search_none.y, image = image.lobby.search_none}),
+	cancel_search = common.instance(pic, {x = locations.cancel_search.x,
+		y = locations.cancel_search.y, image = image.lobby.cancel_search}),
+	back = common.instance(pic, {x = locations.back.x,
+		y = locations.back.y, image = image.lobby.back}),
 }
 local screen_buttons = {
 	{item = screen_elements.create, action = lobby.createCustomGame},

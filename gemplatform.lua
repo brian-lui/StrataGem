@@ -1,17 +1,17 @@
 require 'utilities' -- move
 local image = require 'image'
-local class = require 'middleclass' -- class support
+local common = require "class.commons" -- class support
 local pic = require 'pic'
 
 -- gem platforms are generated through the Hand class
-local GemPlatform = class('GemPlatform', pic)
+local GemPlatform = {}
 GemPlatform.PLATFORM_ROTATION_SPEED = 0.02
 GemPlatform.GEM_PLATFORM_TURN_RED_SPEED = 8
 --GemPlatform.PLATFORM_FADE = 8
 
-function GemPlatform:initialize(owner, location)
+function GemPlatform:init(owner, location)
 	local img = owner.ID == "P1" and image.UI.platform_gold or image.UI.platform_silver
-	pic.initialize(self, {x = owner.hand[location].x, y = owner.hand[location].y, image = img})
+	pic.init(self, {x = owner.hand[location].x, y = owner.hand[location].y, image = img})
 	self.hand_idx = location
 	self.x, self.y = owner.hand[location].x, owner.hand[location].y
 	self.owner = owner
@@ -88,4 +88,4 @@ function GemPlatform:update(dt)
 	end
 end
 
-return GemPlatform
+return common.class("GemPlatform", GemPlatform, pic)

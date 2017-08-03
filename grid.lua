@@ -1,14 +1,16 @@
-local class = require "middleclass"
+local common = require "class.commons"
 
 local Gem = require "gem"
 
-local grid = class("Grid")
+local deepcpy = require("utilities").deepcpy
+
+local Grid = {}
 
 local window = _G.window -- TODO: Remove global
-grid.DROP_SPEED = window.height / 90 -- pixels per frame for loose gems to drop
-grid.DROP_MULTIPLE_SPEED = window.height / 180 -- multiplier for scoring_combo
+Grid.DROP_SPEED = window.height / 90 -- pixels per frame for loose gems to drop
+Grid.DROP_MULTIPLE_SPEED = window.height / 180 -- multiplier for scoring_combo
 
-function grid:initialize(stage, game)
+function Grid:init(stage, game)
 	self.game = game
 	self.columns = 8
 	self.rows = 14	-- 7-14 basin, 1-6 for rush/double/normal, 0 and 15 sentinels
@@ -34,7 +36,7 @@ function grid:initialize(stage, game)
 	end
 end
 
-function grid:gems()
+function Grid:gems()
 	--if not grd then print(debug.traceback()) assert(grd, "wrong grid") end
 	local gems, rows, columns, index = {}, {}, {}, 0
 
@@ -53,9 +55,47 @@ function grid:gems()
 	end
 end
 
+-- sends all gems to the bottom immediately
+function Grid:simulateGravity()
+	for j = 1, self.columns do
+		local sorted_column = self:columnSort(j)
+		for i = 1, self.rows do
+			self[i][j].gem = sorted_column[i]
+		end
+	end
+end
+
+-- place piece into simulated grid
+function Grid:simulatePlacePiece(piece, coords) -- only works with 2-gem piece
+	if piece.horizontal then
+		for i = 1, #piece.gems do
+			local column = coords[i]
+			self[1][column].gem = piece.gems[i]
+		end
+
+	elseif not piece.horizontal then
+		for i = 1, #piece.gems do
+			local column = coords[1]
+			self[i][column].gem = piece.gems[i]
+		end
+	end
+end
+
+-- return score for simulated grid + piece placement
+function Grid:simulateScore(piece, coords)
+	local orig_grid = deepcpy(self)
+	orig_grid:simulatePlacePiece(piece, coords)
+	orig_grid:simulateGravity()
+
+	if not orig_grid:getScore() then
+		print ("nil score")
+	end
+	return orig_grid:getScore()
+end
+
 -- Returns a list of matches, where each match is listed as the row and column
 -- of its topmost/leftmost gem, a length, and whether it's horizontal.
-function grid:getMatches(minimumLength)
+function Grid:getMatches(minimumLength)
 
 	local function getColor(row, column)
 		return self[row][column].gem and self[row][column].gem.color
@@ -96,7 +136,7 @@ end
 
 -- Returns a list of gems which are part of matches, and the total number of
 -- matches (not number of matched gems).
-function grid:getMatchedGems(minimumLength)
+function Grid:getMatchedGems(minimumLength)
 	local matches = self:getMatches(minimumLength or 3)
 	local gem_set = {}
 
@@ -132,7 +172,7 @@ end
 
 -- If any gem in a set is owned by a player, make all other gems in its match
 -- also owned by that player (may be owned by both players).
-function grid:flagMatchedGems()
+function Grid:flagMatchedGems()
 	local matches = self:getMatches()
 
 	for i = 1, #matches do
@@ -156,10 +196,10 @@ function grid:flagMatchedGems()
 				local row = matches[i].row
 				local column = matches[i].column + (j-1)
 				if p1flag then
-					self[row][column].gem:addOwner(p1)
+					self[row][column].gem:addOwner(self.game.p1)
 				end
 				if p2flag then
-					self[row][column].gem:addOwner(p2)
+					self[row][column].gem:addOwner(self.game.p2)
 				end
 			end
 		else
@@ -175,21 +215,21 @@ function grid:flagMatchedGems()
 			for j = 1, matches[i].length do
 				local row = matches[i].row + (j-1)
 				local column = matches[i].column
-				if p1flag then self[row][column].gem:addOwner(p1) end
-				if p2flag then self[row][column].gem:addOwner(p2) end
+				if p1flag then self[row][column].gem:addOwner(self.game.p1) end
+				if p2flag then self[row][column].gem:addOwner(self.game.p2) end
 			end
 		end
 	end
 end
 
 -- get score of simulated piece placements
-function grid:getScore(matching_number)
+function Grid:getScore(matching_number)
 	matching_number = matching_number or 3
 	local gems_removed = self:getMatchedGems(matching_number)
 	return #gems_removed
 end
 
-function grid:removeMatchedGems(minimumLength)
+function Grid:removeMatchedGems(minimumLength)
 
 	local function getAboveGems(column, start_row)
 		start_row = start_row or 1
@@ -220,13 +260,13 @@ function grid:removeMatchedGems(minimumLength)
 end
 
 -- remove all gem flags claimed by a specific player
-function grid:removeAllGemOwners(player)
+function Grid:removeAllGemOwners(player)
 	for gem in self:gems() do
 		gem:removeOwner(player)
 	end
 end
 
-function grid:setAllGemOwners(flag_num)
+function Grid:setAllGemOwners(flag_num)
 	for gem in self:gems() do
 		gem.owner = flag_num
 	end
@@ -236,7 +276,7 @@ end
 -- for the gem landing location. The starting row is 3, because rows 1 and 2 are the
 -- pending gem drop locations, and row 0 is a sentinel row
 -- Returns nil if column is invalid.
-function grid:getFirstEmptyRow(column)
+function Grid:getFirstEmptyRow(column)
 	if column then
 		local empty_spaces = 2 -- rows 1 and 2 are always considered empty
 		for i = 3, self.rows do
@@ -249,7 +289,7 @@ end
 -- Returns a piece's landing locations as a table of {{column, row}, {c,r}}.
 -- optional_shift is +1/-1, used if the gem is over midline and column needs to be
 -- corrected.
-function grid:getDropLocations(piece, optional_shift)
+function Grid:getDropLocations(piece, optional_shift)
 	local column = piece:getColumns(optional_shift)
 	local row, ret = {}, {}
 	for i = 1, piece.size do
@@ -262,7 +302,7 @@ function grid:getDropLocations(piece, optional_shift)
 	return ret
 end
 
-function grid:getPermittedColors(column, banned_color1, banned_color2)
+function Grid:getPermittedColors(column, banned_color1, banned_color2)
 	local avail_color = {"RED", "BLUE", "GREEN", "YELLOW"}
 	local ban1 = false
 	local ret = {}
@@ -279,7 +319,7 @@ function grid:getPermittedColors(column, banned_color1, banned_color2)
 	return ret
 end
 
-function grid:generate1by1(column, banned_color1, banned_color2)
+function Grid:generate1by1(column, banned_color1, banned_color2)
 	local row = self.rows -- grid.rows is the row underneath the bottom row
 	local avail_colors = self:getPermittedColors(column, banned_color1, banned_color2)
 	local all_gems = {
@@ -296,12 +336,12 @@ function grid:generate1by1(column, banned_color1, banned_color2)
 			end
 		end
 	end
-	local make_color = Gem:random(legal_gems)
+	local make_color = Gem.random(self.game, legal_gems)
 	local distance = self.y[row+1] - self.y[row]
 	local speed = self.DROP_SPEED + self.DROP_MULTIPLE_SPEED * self.game.scoring_combo
 	local duration = distance / speed
 	local make_gem = function(r, c)
-		self[r][c].gem = make_color:new(self.x[c], self.y[r+1], true)
+		self[r][c].gem = common.instance(make_color, self.game, self.x[c], self.y[r+1], true)
 		self[r][c].gem:moveTo{x = self.x[c], y = self.y[r], duration = duration}
 	end
 	make_gem(row, column)
@@ -313,7 +353,7 @@ local function moveGem(gem, row, column)
 	gem.row, gem.column = row, column
 end
 
-function grid:moveAllUp(player, rows_to_add)
+function Grid:moveAllUp(player, rows_to_add)
 -- Moves all gems in the player's half up by rows_to_add.
 	local last_row = self.rows - rows_to_add
 	local start_col, end_col = 1, 4
@@ -336,15 +376,15 @@ function grid:moveAllUp(player, rows_to_add)
 	end
 end
 
-function grid:addBottomRow(player)
+function Grid:addBottomRow(player)
 	self:moveAllUp(player, 1)
-	local start, finish, step = p1.start_col, p1.end_col, 1
+	local start, finish, step = self.game.p1.start_col, self.game.p1.end_col, 1
 	if player.ID == "P2" then
-		start, finish, step = p2.end_col, p2.start_col, -1
+		start, finish, step = self.game.p2.end_col, self.game.p2.start_col, -1
 	end
 	for col = start, finish, step do
 		local ban1, ban2 = false, false
-		if col > p1.start_col and col < p2.end_col then
+		if col > self.game.p1.start_col and col < self.game.p2.end_col then
 			local prev_col = (col - step)
 			local next_col = (col + step)
 			ban1 = self[self.rows][prev_col].gem.color
@@ -357,7 +397,7 @@ function grid:addBottomRow(player)
 
 end
 
-function grid:isSettled()
+function Grid:isSettled()
 	local all_unmoved = true
 	for gem in self:gems() do
 		if not gem:isStationary() then all_unmoved = false end
@@ -369,7 +409,7 @@ end
 
 -- animation part of moving gem to a row/column
 -- can call this from player functions
-function grid:moveGemAnim(gem, row, column)
+function Grid:moveGemAnim(gem, row, column)
 	local target_x, target_y = self.x[column], self.y[row]
 	local dist = ((target_x - gem.x) ^ 2 + (target_y - gem.y) ^ 2) ^ 0.5
 	--local angle = math.atan2(target_y - gem.y, target_x - gem.x)
@@ -379,7 +419,7 @@ function grid:moveGemAnim(gem, row, column)
 end
 
 -- instructions to animate the falling gems
-function grid:dropColumnsAnim()
+function Grid:dropColumnsAnim()
 	for gem, r, c in self:gems() do
 		if gem and (gem.y ~= self.y[r] or gem.x ~= self.x[c]) then
 			self:moveGemAnim(gem, r, c)
@@ -387,7 +427,7 @@ function grid:dropColumnsAnim()
 	end
 end
 
-function grid:columnSort(column_num)
+function Grid:columnSort(column_num)
 	local column = {}
 	for i = 1, self.rows do
 		column[i] = self[i][column_num].gem
@@ -404,7 +444,7 @@ function grid:columnSort(column_num)
 end
 
 -- creates the grid after gems have fallen
-function grid:dropColumns()
+function Grid:dropColumns()
 	for c = 1, self.columns do
 		local sorted_column = self:columnSort(c)
 		for r = 1, self.rows do
@@ -416,7 +456,7 @@ function grid:dropColumns()
 	self:dropColumnsAnim() -- easy to split out later
 end
 
-function grid:updateGravity(dt)
+function Grid:updateGravity(dt)
 	if self.game.grid_wait == 0 then
 		-- move gems to new positions
 		for gem in self:gems() do
@@ -425,7 +465,7 @@ function grid:updateGravity(dt)
 	end
 end
 
-function grid:getPendingGems(player)
+function Grid:getPendingGems(player)
 	local ret = {}
 	local col_start, col_end = 1, 4
 	if player.ID == "P2" then col_start, col_end = 5, 8 end
@@ -437,7 +477,7 @@ function grid:getPendingGems(player)
 	return ret
 end
 
-function grid:getIDs()
+function Grid:getIDs()
 -- returns the ID, column, row of all gems in the tub
 	local ret = {}
 	for gem in self:gems() do
@@ -450,7 +490,7 @@ function grid:getIDs()
 	return ret
 end
 
-function grid:updateGrid()
+function Grid:updateGrid()
 	for row = 0, self.rows + 1 do
 		for col = 0, self.columns + 1 do
 			-- update the gem row/column information after columnSort
@@ -464,7 +504,7 @@ function grid:updateGrid()
 	end
 end
 
-function grid:reset()
+function Grid:reset()
 	for row = 0, self.rows + 1 do
 		self[row] = {}
 		for col = 0, self.columns + 1 do
@@ -474,11 +514,11 @@ function grid:reset()
 end
 
 -- remove a gem
-function grid:removeGem(g)
+function Grid:removeGem(g)
 	self[g.row][g.column].gem = false
 end
 
-function grid:checkMatchedThisTurn()
+function Grid:checkMatchedThisTurn()
 	local gem_table = self:getMatchedGems()
 	local p1_matched, p2_matched = false, false
 	for i = 1, #gem_table do
@@ -493,19 +533,18 @@ function grid:checkMatchedThisTurn()
 	return p1_matched, p2_matched
 end
 
-function grid:generateMatchExplodingGems()
+function Grid:generateMatchExplodingGems()
 	local particles = self.game.particles
 	for _, gem in pairs(self:getMatchedGems()) do
 		particles.explodingGem:generate(gem)
 	end
 end
 
-function grid:generateMatchParticles()
-	local own_tbl = {p1, p2, false}
+function Grid:generateMatchParticles()
 	local gem_table = self:getMatchedGems()
 	local particles = self.game.particles
 	for _, gem in pairs(gem_table) do
-		local player = own_tbl[gem.owner]
+		local player = self.game:playerByIndex(gem.owner)
 		if player then
 			local num_super_particles = player.meter_gain[gem.color]
 			if player.supering then
@@ -521,8 +560,8 @@ function grid:generateMatchParticles()
 	end
 end
 
-function grid:setGarbageMatchFlags()
-	local garbage_diff = p1.pieces_fallen - p2.pieces_fallen
+function Grid:setGarbageMatchFlags()
+	local garbage_diff = self.game.p1.pieces_fallen - self.game.p2.pieces_fallen
 
 	if garbage_diff == 0 then
 		self:setAllGemOwners(0)
@@ -533,22 +572,21 @@ function grid:setGarbageMatchFlags()
 	end
 end
 
-function grid:calculateScore()
+function Grid:calculateScore()
 	local gem_table = self:getMatchedGems()
-	local own_tbl = {p1, p2}
 	local dmg, super = {0, 0}, {0, 0}
 	for i = 1, #gem_table do
 		if gem_table[i].owner ~= 3 then
 			local gem, own_idx = gem_table[i], gem_table[i].owner
-			local owner = own_tbl[own_idx]
+			local owner = self.game:playerByIndex(own_idx)
 			dmg[own_idx] = dmg[own_idx] + 1
 			super[own_idx] = super[own_idx] + owner.meter_gain[gem.color]
 		end
 	end
 
-	for i = 1, 2 do
-		local player = own_tbl[i]
-		dmg[i] = dmg[i] + game.scoring_combo - 1
+	for player in self.game:players() do
+		local i = player.playerNum
+		dmg[i] = dmg[i] + self.game.scoring_combo - 1
 		if player.supering then
 			super[i] = 0
 		elseif player.place_type == "rush" or player.place_type == "double" then
@@ -575,11 +613,11 @@ local function getFirstEmptyRow(self, column)
 	end
 end
 
-function grid:getLoser()
+function Grid:getLoser()
 	local p1loss, p2loss = false, false
 	for i = 1, self.columns do
 		local empty_row = getFirstEmptyRow(self, i)
-		if empty_row < game.LOSE_ROW then
+		if empty_row < self.game.LOSE_ROW then
 			if i <= 4 then
 				p1loss = true
 			else
@@ -653,4 +691,4 @@ function grid.debug.getGridOwnership(self)
 end
 --]]
 
-return grid
+return common.class("Grid", Grid)

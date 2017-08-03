@@ -142,7 +142,7 @@ local function attemptedConnection(data, conn)
 		print("New connection added from", conn)
 		sendDudes()
 	end
-	server.send(blob, conn)    
+	server.send(blob, conn)
 end
 
 local function getConnFromID(id)
@@ -217,7 +217,7 @@ server.lookup = {
 
 function server:processData(data_str, conn)
 	local data = json.decode(data_str)
-	if self.lookup[data.type] then 
+	if self.lookup[data.type] then
 		self.lookup[data.type](data, conn)
 	else
 		print("Invalid data type received from client")
@@ -296,7 +296,7 @@ while true do
 	end
 
 	local queuers = getQueuers()
-	if #queuers == 2 then startGame(queuers[1], queuers[2]) end
+	if #queuers == 2 then game:start(queuers[1], queuers[2]) end
 
 	if os.time() > cur_time + check_frequency then
 		cur_time = os.time()

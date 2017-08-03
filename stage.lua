@@ -1,19 +1,19 @@
---require 'inits'
+local love = _G.love
 require 'utilities'
-local class = require "middleclass"
+local common = require "class.commons"
 local image = require 'image'
 local Grid = require "grid"
 
-local stage = class("Stage")
+local stage = {}
 
-function stage:initialize(game)
+function stage:init(game)
 	self.width = 1024
 	self.height = 768
 	self.gem_width = image.red_gem:getWidth()
 	self.gem_height = image.red_gem:getHeight()
 	self.x_mid = self.width / 2
 	self.y_mid = self.height / 2
-	self.grid = Grid(self, game)
+	self.grid = common.instance(Grid, self, game)
 	self.super_click = {
 		P1 = {0, 0, self.width * 0.2, self.height * 0.3}, -- rx, ry, rw, rh
 		P2 = {self.width * 0.8, 0, self.width * 0.2, self.height * 0.3},
@@ -47,4 +47,8 @@ function stage:initialize(game)
 	self.timer = {x = self.x_mid, y = self.height * 0.1}
 end
 
-return stage
+function stage:isOnLeft()
+	return love.mouse.getX() < self.x_mid
+end
+
+return common.class("Stage", stage)

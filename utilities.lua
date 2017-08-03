@@ -37,7 +37,9 @@ function debugTool.printDamageAndScore(num_matches, p1dmg, p2dmg, p1super, p2sup
 		{}
 	}
 
-	for i = 1, #toprint do print(unpack(toprint[i])) end
+	for i = 1, #toprint do
+		print(unpack(toprint[i]))
+	end
 end
 
 function debugTool.printSummaryState(grid, p1, p2)
@@ -134,3 +136,5 @@ function deepcpy(tab)
   deepcpy_mapping = {}
   return ret
 end
+
+return {deepcpy = deepcpy, pointIsInRect = pointIsInRect, reverseTable = reverseTable, spairs = spairs, sprint = sprint}

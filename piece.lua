@@ -1,10 +1,6 @@
 require 'inits' -- ID
---local GemPlatform = require 'gemplatform'
---local image = require 'image'
 require 'utilities' -- helper functions
-local class = require 'middleclass' -- class support
-local stage
-local particles
+local common = require "class.commons"
 local tween = require 'tween'
 local pic = require 'pic'
 local Gem = require "gem"
@@ -29,10 +25,9 @@ local function updatePieceGems(self)
 	end
 end
 
-local Piece = class('Piece')
-function Piece:initialize(tbl)
-	stage = game.stage
-	particles = game.particles
+local Piece = {}
+function Piece:init(game, tbl)
+	self.game = game
 
 	ID.piece = ID.piece + 1
 	local tocopy = {"x", "y", "owner", "gem_table"}
@@ -64,8 +59,8 @@ end
 
 function Piece:addGems(gem_table)
 	for i = 1, self.size do
-		local gem = Gem:random(gem_table)
-		self.gems[i] = gem:new(self.x, self.y)
+		local gem = Gem.random(self.game, gem_table)
+		self.gems[i] = common.instance(gem, self.game, self.x, self.y)
 	end
 	updatePieceGems(self)
 end
@@ -164,7 +159,7 @@ function Piece:getColumns(shift)
 			ret[i] = false
 			for j = 1, stage.grid.columns do
 				local in_this_column = pointIsInRect(self.gems[i].x + shift, self.gems[i].y,
-					unpack(stage.grid.active_rect[j]))
+					table.unpack(stage.grid.active_rect[j]))
 				if in_this_column then ret[i] = j end
 			end
 		end
@@ -173,7 +168,7 @@ function Piece:getColumns(shift)
 		for i = 1, self.size do ret[i] = false	end -- set array length
 		for j = 1, stage.grid.columns do
 			local in_this_column = pointIsInRect(self.gems[1].x + shift, self.gems[1].y,
-				unpack(stage.grid.active_rect[j]))
+				table.unpack(stage.grid.active_rect[j]))
 			if in_this_column then
 				for k = 1, #ret do ret[k] = j end
 			end
@@ -213,7 +208,7 @@ function Piece:isDropValid(shift)
 	local place_type
 	local cols = self:getColumns(shift)
 	local gems_in_my_tub = 0
-	if game.phase ~= "Action" then return false end
+	if self.game.phase ~= "Action" then return false end
 	for i = 1, self.size do
 		if not cols[i] then
 			return false
@@ -252,7 +247,7 @@ function Piece:isOnMidline()
 	end
 
 	if (my_col and enemy_col) then
-		return true, game.input_method.isOnLeft()
+		return true, self.game.stage:isOnLeft()
 	else
 		return false, nil
 	end
@@ -267,14 +262,14 @@ function Piece:isValidRush()
 	local row_ok = true
 	for i = 1, self.size do
 		local empty_row = stage.grid:getFirstEmptyRow(cols[i])
-		if empty_row < game.RUSH_ROW then row_ok = false end
+		if empty_row < self.game.RUSH_ROW then row_ok = false end
 	end
 	return enough_mp and row_ok
 end
 
 -- Generates dust when playing is holding the piece.
 function Piece:generateDust()
-	if frame % 12 == 0 then
+	if self.game.frame % 12 == 0 then
 		for i = 1, self.size do
 			local gem = self.gems[i]
 			local x_drift = (math.random() - 0.5) * gem.width
@@ -284,16 +279,16 @@ function Piece:generateDust()
 	end
 end
 
--- When player picks up a piece. Called from inputs.lua.
+-- When player picks up a piece. Called from gs_main.lua.
 function Piece:select()
-	game.active_piece = self
+	self.game.active_piece = self
 	self:resolve()
 	for i = 1, self.size do -- generate some particles!
 		particles.dust:generateFountain(self.gems[i], math.random(2, 6))
 	end
 end
 
--- When player releases a piece. Called from inputs.lua.
+-- When player releases a piece. Called from gs_main.lua.
 function Piece:deselect()
 	local player = self.owner
 	local shift = 0
@@ -307,7 +302,7 @@ function Piece:deselect()
 		(place_type == "rush" and self:isValidRush() and not player.supering) or
 		(place_type == "double" and player.cur_mp >= player.current_double_cost and not player.supering)
 	local char_ability_ok = player:pieceDroppedOK(self, shift)
-	if valid and not game.frozen and go_ahead and char_ability_ok then
+	if valid and not self.game.frozen and go_ahead and char_ability_ok then
 		player.place_type = place_type
 		self:dropIntoBasin(cols)
 	else -- snap back to original place. Can't use moveTo because it interferes with rotate tween
@@ -322,8 +317,8 @@ function Piece:dropIntoBasin(coords, received_from_opponent)
 
 	-- not received_from_opponent means it's our piece placing,
 	-- so we need to send it to them
-	if game.type == "Netplay" and not received_from_opponent then
-		client.prepareDelta(self, coords, player.place_type)
+	if self.game.type == "Netplay" and not received_from_opponent then
+		self.game.client.prepareDelta(self, coords, player.place_type)
 	end
 
 	-- Generate uptweening gems
@@ -396,4 +391,4 @@ function Piece:dropIntoBasin(coords, received_from_opponent)
 	self:breakUp()
 end
 
-return Piece
+return common.class("Piece", Piece)

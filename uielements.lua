@@ -1,24 +1,48 @@
+local love = _G.love
+
 local image = require 'image'
---local class = require 'middleclass' -- class support
+local common = require 'class.commons'
 local pic = require 'pic'
-local stage = game.stage
 
--- Red X shown on gems in invalid placement spots
-local redX = pic:new{x = 0, y = 0, image = image.UI.redX}
+--[==================[
+TIMER COMPONENT
+--]==================]
 
--- Base tub image
-local tub_img = pic:new{x = stage.x_mid, y = stage.height * 0.95 - 189, image = image.UI.tub}
+local timer = {}
 
--- Timer text displayed when time is running out
-local timertext = {
-	scaling = function(t) return math.max(1 / (t * 2 + 0.4), 1) end,
-	transparency = function(t) return math.min(255 * 2.5 * t, 255) end,
-	x = stage.x_mid,
-	y = stage.height * 0.33,
-}
+timer.FADE_SPEED = 15
 
-function timertext:draw()
-	local time_remaining = (game.time_to_next * time.step)
+function timer:init(game)
+	local stage = game.stage
+	self.game = game
+
+	self.text_scaling = function(t) return math.max(1 / (t * 2 + 0.4), 1) end
+	self.text_transparency = function(t) return math.min(255 * 2.5 * t, 255) end
+	self.text_x = stage.x_mid
+	self.text_y = stage.height * 0.33
+
+	self.timerbase = common.instance(pic, {x = stage.x_mid, y = stage.height * 0.5 - 80, image = image.UI.timer_bar})
+	self.timerbar = common.instance(pic, {x = stage.x_mid, y = stage.height * 0.5 - 80, image = image.UI.timer_bar_full, transparency = 255})
+end
+
+function timer:update()
+	-- set percentage of timer to show
+	local percent = (self.game.time_to_next / self.game.INIT_TIME_TO_NEXT)
+	local bar_width = percent * self.width
+	self.draw_offset = (1 - percent) * 0.5 * self.width
+	self.quad = love.graphics.newQuad(0, 0, bar_width, self.height, self.width, self.height)
+
+	-- fade in/out
+	if percent == 0 then
+		self.timerbar.transparency = math.max(self.timerbar.transparency - self.FADE_SPEED, 0)
+	else
+		self.timerbar.transparency = math.min(self.timerbar.transparency + self.FADE_SPEED, 255)
+	end
+	self.timerbase.transparency = self.transparency
+end
+
+local function drawTimerText(self)
+	local time_remaining = (self.game.time_to_next * self.game.timeStep)
 
 	if time_remaining <= 3 and time_remaining > 0 then
 		local time_int = math.ceil(time_remaining)
@@ -34,41 +58,277 @@ function timertext:draw()
 	end
 end
 
--- Base timer bar image
-local timerbase = pic:new{x = stage.x_mid, y = stage.height * 0.5 - 80, image = image.UI.timer_bar}
+function timer:draw()
+	self.timerbase:draw()
+	self.timerbar:draw(nil, self.draw_offset + self.x) -- centered timer bar
+	drawTimerText(self)
+end
 
--- Timer class but I'm not using classes yolo
--- It pulls from timertext and timerbase
-local Timer = pic:new{x = stage.x_mid, y = stage.height * 0.5 - 80, image = image.UI.timer_bar_full}
-Timer.FADE_SPEED = 15
-Timer.transparency = 255
+local Timer = common.class("Timer", timer)
 
-function Timer:update()
-	-- set percentage of timer to show
-	local percent = (game.time_to_next / game.INIT_TIME_TO_NEXT)
-	local bar_width = percent * self.width
-	self.draw_offset = (1 - percent) * 0.5 * self.width
-	self.quad = love.graphics.newQuad(0, 0, bar_width, self.height, self.width, self.height)
+--[==================[
+END TIMER COMPONENT
+--]==================]
 
-	-- fade in/out
-	if percent == 0 then
-		self.transparency = math.max(self.transparency - self.FADE_SPEED, 0)
-	else
-		self.transparency = math.min(self.transparency + self.FADE_SPEED, 255)
+local ui = {}
+
+function ui:init(game)
+	self.game = game
+
+	self.timer = common.instance(Timer, game)
+
+	-- Red X shown on gems in invalid placement spots
+	self.redX = common.instance(pic, {x = 0, y = 0, image = image.UI.redX})
+
+	-- Base tub image
+	self.tub_img = common.instance(pic, {x = game.stage.x_mid, y = game.stage.height * 0.95 - 189, image = image.UI.tub})
+end
+
+-- returns the super drawables for player based on player MP, called every dt
+-- shown super meter is less than the actual super meter when super particles are on screen
+-- as particles disappear, they visually go into the super meter
+function ui:drawSuper(player)
+	local segment_amount = player.MAX_MP / 4
+	local original_mp = math.max(player.cur_mp, 0)
+	local super = self.game.particles:getNumber("Super", player)
+	local draw_mp = math.max(original_mp - super, 0)
+	if player.old_mp + super > player.MAX_MP then draw_mp = math.max(draw_mp, player.old_mp) end
+	local full_segs = math.min(draw_mp / segment_amount, 4)
+	local part_fill_percent = full_segs % 1
+	--local transparency = math.ceil(math.sin(frame / 30) * 127.5 + 127.5)
+	local flip = player.ID == "P2"
+
+	-- recalculate partial fill block length
+	if part_fill_percent > 0 then
+		local part_fill_block = player.super_partial[math.floor(full_segs) + 1]
+		local width = math.floor(part_fill_block.width * part_fill_percent)
+		part_fill_block:changeQuad(0, 0, width, part_fill_block.height)
 	end
-	timerbase.transparency = self.transparency
+
+	player.super_frame:draw() -- super frame
+
+	-- super meter
+	for i = 1, 4 do
+		if full_segs >= i then
+			player.super_block[i]:draw(flip)
+		elseif full_segs + 1 > i then -- partial fill
+			player.super_partial[i]:draw(flip, player.super_block[i].quad_x, player.super_block[i].quad_y)
+		end
+	end
+
+	-- glow
+	if player.supering then
+		player.super_glow.full:draw()
+		player.super_glow.full.scaling = math.min(player.super_glow.full.scaling + 0.1, 1)
+
+	elseif full_segs >= 1 then
+		player.super_glow[math.floor(full_segs)].transparency = math.ceil(math.sin(self.game.frame / 30) * 127.5 + 127.5)
+		player.super_glow[math.floor(full_segs)]:draw()
+	end
+
+	-- super word, if active
+	if player.supering then
+		player.super_word:draw()
+	end
+
 end
 
-function Timer:draw()
-	timerbase:draw()
-	pic.draw(self, nil, self.draw_offset + self.x) -- centered timer bar
-	timertext:draw()
+-- draws the shadow underneath the player's gem piece, called if gem is picked up
+local function drawUnderGemShadow(self, piece)
+	local stage = self.game.stage
+	for i = 1, piece.size do
+		local gem_shadow_x = piece.gems[i].x + 0.1 * stage.gem_width
+		local gem_shadow_y = piece.gems[i].y + 0.1 * stage.gem_height
+		piece.gems[i]:draw(gem_shadow_x, gem_shadow_y, {0, 0, 0, 24})
+	end
 end
 
-local UI = {
-	timer = Timer,
-	redX = redX,
-	tub_img = tub_img,
-}
+-- show the shadow at the top that indicates where the piece will be placed
+local function drawPlacementShadow(self, piece, shift)
+	local stage = self.game.stage
+	local _, place_type = piece:isDropValid(shift)
+	local row_adj = false
+	if place_type == "normal" then row_adj = 0
+	elseif place_type == "rush" then row_adj = 2
+	elseif place_type == "double" then row_adj = 0
+	end
 
-return UI
+	local show = {}
+	local drop_cols = piece:getColumns(shift)
+	for i = 1, piece.size do
+		show[i] = {}
+		show[i].x = stage.grid.x[ drop_cols[i] ]
+		if piece.horizontal then
+			show[i].y = stage.grid.y[1 + row_adj]
+		else
+			show[i].y = stage.grid.y[i + row_adj]
+		end
+		if show[i].x and show[i].y then
+			piece.gems[i]:draw(show[i].x, show[i].y, {0, 0, 0, 128})
+		end
+	end
+end
+
+-- draws the gem shadows indicating where the piece will land.
+local function drawDoublecastGemShadow(self, gem)
+	local dropped_row = self.game.stage.grid:getFirstEmptyRow(gem.column)
+	-- gem:draw takes a y value relative to the gem's y-value
+	local dropped_y = self.game.stage.grid.y[dropped_row] - gem.y
+	gem:draw(nil, nil, {255, 255, 255, 160}, nil, 0, dropped_y)
+end
+
+-- draws the gem shadows indicating where the piece will land.
+local function drawDestinationShadow(self, piece, shift, account_for_doublecast)
+	local stage = self.game.stage
+	local toshow = {}
+	local drop_locs = stage.grid:getDropLocations(piece, shift)
+	if account_for_doublecast then
+		local pending_gems = stage.grid:getPendingGems(piece.owner)
+		for i = 1, piece.size do
+			for _, gem in pairs(pending_gems) do
+				if drop_locs[i][1] == gem.column then
+					drop_locs[i][2] = drop_locs[i][2] - 1
+				end
+			end
+		end
+	end
+
+	for i = 1, piece.size do
+		-- shadow at bottom
+		toshow[i] = {}
+		toshow[i].x = stage.grid.x[ drop_locs[i][1] ] -- tub c column
+		toshow[i].y = stage.grid.y[ drop_locs[i][2] ] -- tub r row
+		if toshow[i].x and toshow[i].y then
+			piece.gems[i]:draw(toshow[i].x, toshow[i].y, {255, 255, 255, 160})
+		end
+	end
+end
+
+-- show all the possible shadows!
+function ui:showShadows(piece)
+	local midline, on_left = piece:isOnMidline()
+	local shift = 0
+	if midline then
+		if on_left then shift = -1 else shift = 1 end
+	end
+	local valid = piece:isDropValid(shift)
+	-- TODO: somehow account for variable piece size
+	local pending_gems = self.game.stage.grid:getPendingGems(piece.owner)
+	local account_for_doublecast = #pending_gems == 2
+	drawUnderGemShadow(self, piece)
+	if valid then
+		drawPlacementShadow(self, piece, shift)
+		if account_for_doublecast then
+			drawDoublecastGemShadow(self, pending_gems[1])
+			drawDoublecastGemShadow(self, pending_gems[2])
+		end
+		drawDestinationShadow(self, piece, shift, account_for_doublecast)
+	end
+end
+
+-- This is the red X shown on top of the active gem
+function ui:showX(piece)
+	local legal = piece:isDropLegal()
+	local midline, on_left = piece:isOnMidline()
+	local shift = midline and (on_left and -1 or 1) or 0
+	local valid = piece:isDropValid(shift)
+
+	for i = piece.size, 1, -1 do
+		if (legal or midline) and not valid then
+			self.redX:draw(nil, piece.gems[i].x, piece.gems[i].y)
+		end
+	end
+end
+
+-- sends screenshake data depending on how many gems matched, called on match
+function ui:screenshake(damage)
+	self.game.screenshake_frames = self.game.screenshake_frames + math.max(0, damage * 5)
+	self.game.screenshake_vel = math.max(0, damage)
+end
+
+-- at turn end, move the gems to the top of the screen so they fall down nicely
+function ui:putPendingAtTop()
+	local pending = {
+		{gems = self.game.stage.grid:getPendingGems(self.game.p1), me = 1, foe = 2},
+		{gems = self.game.stage.grid:getPendingGems(self.game.p2), me = 2, foe = 1},
+	}
+	for _, piece in pairs(pending) do
+		local effect = {}
+		for i = 1, #piece.gems do
+			local gem = piece.gems[i]
+			local owner = self.game:playerByIndex(piece.me)
+			local exit
+			local target_y = gem.y
+			if owner.place_type == "double" and (gem.row == 1 or gem.row == 2) then
+				effect[#effect+1] = gem
+				effect.func = self.game.particles.wordEffects.generateDoublecastCloud
+				exit = {gem.landedInStagingArea, gem, "double", owner}
+			elseif gem.row == 3 or gem.row == 4 and gem.owner == piece.foe then
+				effect[#effect+1] = gem
+				effect.func = self.game.particles.wordEffects.generateRushCloud
+				exit = {gem.landedInStagingArea, gem, "rush", self.game:playerByIndex(piece.foe)}
+			end
+			gem:moveTo{y = self.game.stage.height * -0.1}
+			gem:moveTo{y = target_y, duration = 24, easing = "outQuart", exit = exit}
+		end
+		if #effect > 0 then
+			local h = effect[1].row == effect[2].row
+			effect.func(self.game.particles.wordEffects, effect[1], effect[2], h)
+		end
+	end
+end
+
+
+-- generates dust for active piece, and calculates tweens for gem shadows
+-- only called during active phase
+function ui:update(dt)
+	local game = self.game
+	local player = game.me_player
+	local pending_gems = game.stage.grid:getPendingGems(player)
+	local valid = false
+	local place_type
+	local cloud = game.particles.wordEffects:cloudExists()
+
+	-- if piece is held, generate effects and check if it's valid
+	if game.active_piece then
+		game.active_piece:generateDust()
+		--local legal = game.active_piece:isDropLegal()
+		local midline, on_left = game.active_piece:isOnMidline()
+		local shift = 0
+		if midline then
+			if on_left then shift = -1 else shift = 1 end
+		end
+		valid, place_type = game.active_piece:isDropValid(shift)
+
+		-- glow effects
+		if not cloud then
+			if valid and place_type == "double" then
+				--TODO: support variable number of gems
+				local gem1, gem2 = game.active_piece.gems[1], game.active_piece.gems[2]
+				local h = game.active_piece.horizontal
+				game.particles.wordEffects:generateDoublecastCloud(gem1, gem2, h)
+			elseif valid and place_type == "rush" then
+				local gem1, gem2 = game.active_piece.gems[1], game.active_piece.gems[2]
+				local h = game.active_piece.horizontal
+				game.particles.wordEffects:generateRushCloud(gem1, gem2, h)
+			end
+		elseif not valid or place_type == "normal" then
+			game.particles.wordEffects:clear()
+		end
+	elseif cloud then -- remove glow effects if piece not active
+		game.particles.wordEffects:clear()
+	end
+
+	-- tween gem particles
+	if #pending_gems == 2 and valid then
+		for i = 1, #pending_gems do
+			pending_gems[i].tweening:update(dt)
+		end
+	else
+		for i = 1, #pending_gems do
+			pending_gems[i].tweening:reset()
+		end
+	end
+end
+
+return common.class("UI", ui)

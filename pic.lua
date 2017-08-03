@@ -1,11 +1,12 @@
---require 'inits'
-local class = require 'middleclass'
+local love = _G.love
+
+local common = require 'class.commons'
 local tween = require 'tween'
 
-local pic = class('pic')
+local pic = {}
 
 -- required: x, y, image
-function pic:initialize(tbl)
+function pic:init(tbl)
 	ID.particle = ID.particle + 1
 	self.queued_moves = {}
 	self.speed_x = 0
@@ -15,7 +16,9 @@ function pic:initialize(tbl)
 	self.scaling = 1
 	self.transparency = 255
 
-	for k, v in pairs(tbl) do self[k] = v end
+	for k, v in pairs(tbl) do
+		self[k] = v
+	end
 	if tbl.x == nil then print("No x-value received!") end
 	if tbl.y == nil then print("No y-value received!") end
 	if tbl.image == nil then print("No image received!") end
@@ -258,13 +261,13 @@ function pic:update(dt)
 				for i = 1, #self.during do
 					local step, start = self.during[i][1], self.during[i][2]
 					if (self.during_frame + start) % step == 0 then
-						self.during[i][3](unpack(self.during, 4))
+						self.during[i][3](table.unpack(self.during, 4))
 					end
 				end
 			else -- single func
 				local step, start = self.during[1], self.during[2]
 				if (self.during_frame + start) % step == 0 then
-					self.during[3](unpack(self.during, 4))
+					self.during[3](table.unpack(self.during, 4))
 				end
 			end
 		end
@@ -280,4 +283,4 @@ function pic:update(dt)
 	end
 end
 
-return pic
+return common.class("Pic", pic)

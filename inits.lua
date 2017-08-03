@@ -1,4 +1,5 @@
-local love = _G.love
+-- For compatibility; Lua 5.3 moved unpack to table.unpack
+_G.table.unpack = _G.table.unpack or _G.unpack
 
 window = {
 	width = 1024,
@@ -11,8 +12,6 @@ ID = {
 	end
 }
 ID:reset()
-
-AllParticles = {}
 
 --[[
 FONT = {
@@ -30,14 +29,3 @@ SPEED = {
 	ROTATE = math.pi / 25,
 }
 --]]
-
-mouse = {
-	x = 0,
-	y = 0,
-	last_clicked_frame = 0,
-	last_clicked_x = 0,
-	last_clicked_y = 0,
-	down = false,
-	QUICKCLICK_FRAMES = 15,
-	QUICKCLICK_MAX_MOVE = 0.05,
-}

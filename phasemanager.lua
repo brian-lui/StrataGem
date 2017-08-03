@@ -1,47 +1,53 @@
+local love = _G.love
 -- handles the main game phases
 
 require 'inits'
---local hand = require 'hand'
-local ai = require 'ai'
-local inputs = require 'inputs'
-local stage = game.stage
-local particles = game.particles
-local anims = require 'anims'
+local common = require "class.commons"
 local inspect = require 'inspect'
 
 local phase = {}
 
-function phase.intro(dt)
+function phase:init(game)
+	self.game = game
+	self.ai = common.instance(require "ai", game)
+end
+
+function phase:intro(dt)
+	local game = self.game
 	for player in game:players() do
 		player.hand:update(dt)
 	end
-	if frame == 30 then
-		particles.words:generateReady()
+	if game.frame == 30 then
+		game.particles.words:generateReady()
 	end
-	if frame == 120 then
-		particles.words:generateGo()
+	if game.frame == 120 then
+		game.particles.words:generateGo()
 		game.phase = "Action"
 	end
 end
 
-function phase.action(dt)
+function phase:action(dt)
+	local game = self.game
+	local client = game.client
+	local ai = self.ai
+
 	for player in game:players() do
 		player.hand:update(dt)
 		if player.actionPhase then
 			player:actionPhase(dt)
 		end
 	end
-	anims.update(dt)
+	self.game.ui:update(dt)
 
 	game.time_to_next = game.time_to_next - 1
 	if game.type == "1P" then
 		if not ai.finished then
-			ai.placeholder(game.them_player)
+			ai:placeholder(game.them_player)
 		end
 	end
 	if game.time_to_next == 0 then
-		inputs.maingameRelease(mouse.x, mouse.y)
-		particles.wordEffects:clear()
+		love.mousereleased(love.mouse.getPosition())
+		game.particles.wordEffects:clear()
 		game.phase = "Resolve"
 		if game.type == "Netplay" then
 			if not client.our_delta[game.turn] then
@@ -49,7 +55,7 @@ function phase.action(dt)
 			end
 		elseif game.type == "1P" then
 			if ai.queued_action then
-				ai.queued_action.func(unpack(ai.queued_action.args))
+				ai.queued_action.func(table.unpack(ai.queued_action.args))
 				ai.queued_action = false
 			end
 		end
@@ -67,11 +73,11 @@ function phase.action(dt)
 
 		if client.received_state and client.opponent_received_state then
 			-- all state sending is done, now compare them and raise an error if different
-			print("Frame: " .. frame, "Time: " .. love.timer.getTime() - client.match_start_time,"States successfully exchanged")
+			print("Frame: " .. game.frame, "Time: " .. love.timer.getTime() - client.match_start_time,"States successfully exchanged")
 
 			-- time adjustment for lag
 			local our_frames_behind = client.their_state[game.turn].frame - client.our_state[game.turn].frame
-			print("Frame: " .. frame, "Time: " .. love.timer.getTime() - client.match_start_time,"Our frames behind:", our_frames_behind)
+			print("Frame: " .. game.frame, "Time: " .. love.timer.getTime() - client.match_start_time,"Our frames behind:", our_frames_behind)
 			-- If we are behind in frames, it means we processed state more slowly
 			-- We need to catch up (our_frames_behind) frames.
 			-- Therefore, we add to time bucket (our_frames_behind * timestep).
@@ -81,11 +87,11 @@ function phase.action(dt)
 			end
 
 			if client.compareStates() then
-				print("Frame: " .. frame, "Time: " .. love.timer.getTime() - client.match_start_time, "States match!")
-				print("Player 1 meter: " .. p1.cur_mp, "Player 2 meter: " .. p2.cur_mp)
+				print("Frame: " .. game.frame, "Time: " .. love.timer.getTime() - client.match_start_time, "States match!")
+				print("Player 1 meter: " .. game.p1.cur_mp, "Player 2 meter: " .. game.p2.cur_mp)
 				client.synced = true
 			else
-				print("Frame: " .. frame, "Time: " .. love.timer.getTime() - client.match_start_time, "Desync.")
+				print("Frame: " .. game.frame, "Time: " .. love.timer.getTime() - client.match_start_time, "Desync.")
 				print("Game turn: " .. game.turn)
 				print("Our state:")
 				for k, v in spairs(client.our_state[game.turn]) do print(k, v) end
@@ -110,106 +116,124 @@ function phase.action(dt)
 	end
 end
 
-function phase.resolve(dt)
+function phase:resolve(dt)
+	local game = self.game
+
 	if game.me_player.place_type == nil then
 		print("PLACE TYPE BUG")
 	end
 	for player in game:players() do
 		player.hand:afterActionPhaseUpdate()
 	end
-	anims.putPendingAtTop()
-	particles.upGem:removeAll() -- animation
+	self.game.ui:putPendingAtTop(game)
+	game.particles.upGem:removeAll() -- animation
 	game.frozen = true
 	game.phase = "GemTween"
 end
 
-function phase.applyGemTween(dt)
-	stage.grid:updateGravity(dt) -- animation
-	local animation_done = stage.grid:isSettled() -- function
+function phase:applyGemTween(dt)
+	local game = self.game
+	local grid = game.stage.grid
+	grid:updateGravity(dt) -- animation
+	local animation_done = grid:isSettled() -- function
 	if animation_done then
-		stage.grid:dropColumns() -- state
+		grid:dropColumns() -- state
 		game.phase = "Gravity"
 	end
 end
 
-function phase.applyGravity(dt)
-	stage.grid:updateGravity(dt) -- animation
-	local animation_done = stage.grid:isSettled() -- function
+function phase:applyGravity(dt)
+	local game = self.game
+	local grid = game.stage.grid
+
+	grid:updateGravity(dt) -- animation
+	local animation_done = grid:isSettled() -- function
 	if animation_done then
-		for player in game:players() do player:afterGravity() end
+		for player in game:players() do
+			player:afterGravity()
+		end
 		game.phase = "CheckMatches"
 	end
 end
 
-function phase.getMatchedGems(dt)
-	local _, matches = stage.grid:getMatchedGems() -- sets horizontal/vertical flags for matches
+function phase:getMatchedGems(dt)
+	local _, matches = self.game.stage.grid:getMatchedGems() -- sets horizontal/vertical flags for matches
 	if matches > 0 then
-		game.phase = "FlagGems"
+		self.game.phase = "FlagGems"
 	else
-		game.phase = "ResolvedMatches"
+		self.game.phase = "ResolvedMatches"
 	end
 end
 
-function phase.flagGems(dt)
-	local gem_table = stage.grid:getMatchedGems() -- sets h/v flags
-	stage.grid:flagMatchedGems() -- state
-	for player in game:players() do player:beforeMatch(gem_table) end
-	game.phase = "MatchAnimations"
+function phase:flagGems(dt)
+	local gem_table = self.game.stage.grid:getMatchedGems() -- sets h/v flags
+	self.game.stage.grid:flagMatchedGems() -- state
+	for player in self.game:players() do
+		player:beforeMatch(gem_table)
+	end
+	self.game.phase = "MatchAnimations"
 end
 
 local match_anim_phase, match_anim_count = "start", 0
-function phase.matchAnimations(dt)
+function phase:matchAnimations(dt)
+	local grid = self.game.stage.grid
 	if match_anim_phase == "start" then
-		stage.grid:generateMatchExplodingGems() -- animation
+		grid:generateMatchExplodingGems() -- animation
 		match_anim_phase, match_anim_count = "explode", 20
 	elseif match_anim_phase == "explode" then
 		match_anim_count = math.max(match_anim_count - 1, 0)
 		if match_anim_count == 0 then
-			local matches = stage.grid:getMatchedGems()
-			stage.grid:generateMatchParticles() -- animation
-			anims.screenshake(#matches) -- animation
+			local matches = grid:getMatchedGems()
+			grid:generateMatchParticles() -- animation
+			self.game.ui:screenshake(#matches) -- animation
 			match_anim_phase, match_anim_count = "start", 0
-			game.phase = "ResolvingMatches"
+			self.game.phase = "ResolvingMatches"
 		end
 	end
 end
 
-function phase.resolvingMatches(dt)
-	local gem_table = stage.grid:getMatchedGems()
-	game.scoring_combo = game.scoring_combo + 1
-	for player in game:players() do
+function phase:resolvingMatches(dt)
+	local grid = self.game.stage.grid
+	local p1, p2 = self.game.p1, self.game.p2
+	local gem_table = grid:getMatchedGems()
+	self.game.scoring_combo = self.game.scoring_combo + 1
+	for player in self.game:players() do
 		player:duringMatch(gem_table)
 	end
-	local p1dmg, p2dmg, p1super, p2super = stage.grid:calculateScore()
-	local p1_matched, p2_matched = stage.grid:checkMatchedThisTurn()
+	local p1dmg, p2dmg, p1super, p2super = grid:calculateScore()
+	local p1_matched, p2_matched = grid:checkMatchedThisTurn()
 	if not p1_matched then
-		stage.grid:removeAllGemOwners(p1)
+		grid:removeAllGemOwners(p1)
 	end
 	if not p2_matched then
-		stage.grid:removeAllGemOwners(p2)
+		grid:removeAllGemOwners(p2)
 	end
 	p1:addSuper(p1super)
 	p2:addSuper(p2super)
-	stage.grid:removeMatchedGems()
+	grid:removeMatchedGems()
 	p1.hand:addDamage(p2dmg)
 	p2.hand:addDamage(p1dmg)
-	stage.grid:dropColumnsAnim()
-	stage.grid:dropColumns()
-	game.phase = "Gravity"
+	grid:dropColumnsAnim()
+	grid:dropColumns()
+	self.game.phase = "Gravity"
 end
 
-function phase.resolvedMatches(dt)
+function phase:resolvedMatches(dt)
+	local game = self.game
+
 	for player in game:players() do
 		player:afterMatch()
 		player.hand:update(dt)
 		player.place_type = "normal"
 	end
 	game.scoring_combo = 0
-	stage.grid:setAllGemOwners(0)
+	game.stage.grid:setAllGemOwners(0)
 	game.phase = "GetPiece"
 end
 
-function phase.getPiece(dt)
+function phase:getPiece(dt)
+	local game = self.game
+	local grid = game.stage.grid
 	local handsettled = true
 	for player in game:players() do
 		player.hand:update(dt)
@@ -218,7 +242,7 @@ function phase.getPiece(dt)
 		end
 	end
 
-	stage.grid:updateGravity(dt)
+	grid:updateGravity(dt)
 
 	if not game.finished_getting_pieces then
 		for player in game:players() do
@@ -231,11 +255,11 @@ function phase.getPiece(dt)
 		for player in game:players() do player.hand:update(dt) end
 		-- ignore garbage pushing gems up, creating matches, for now
 
-		if stage.grid:isSettled() then
+		if grid:isSettled() then
 		-- garbage can possibly push gems up, creating matches.
-			local _, matches = stage.grid:getMatchedGems()
+			local _, matches = grid:getMatchedGems()
 			if matches > 0 then
-				stage.grid:setGarbageMatchFlags()
+				grid:setGarbageMatchFlags()
 				game.phase = "Gravity"
 			else
 				game.phase = "Cleanup"
@@ -244,25 +268,29 @@ function phase.getPiece(dt)
 	end
 end
 
-function phase.cleanup(dt)
-	stage.grid:updateGrid()
+function phase:cleanup(dt)
+	local game = self.game
+	local grid = game.stage.grid
+	local p1, p2 = game.p1, game.p2
+
+	grid:updateGrid()
 	for player in game:players() do
 		player:cleanup()
 	end
 	if game.type == "1P" then
-		ai.clear()
+		self.ai:clear()
 	end
 	p1.pieces_fallen, p2.pieces_fallen = 0, 0
 	p1.dropped_piece, p2.dropped_piece = false, false
 	p1.played_pieces, p2.played_pieces = {}, {}
 	game.finished_getting_pieces = false
-	stage.grid:setAllGemOwners(0)
+	grid:setAllGemOwners(0)
 
 	for player in game:players() do
 		player.hand:endOfTurnUpdate()
 	end
 
-	if stage.grid:getLoser() then
+	if grid:getLoser() then
 		game.phase = "GameOver"
 	elseif game.type == "Netplay" then
 		game.phase = "Sync"
@@ -271,19 +299,22 @@ function phase.cleanup(dt)
 	end
 end
 
-function phase.sync(dt)
-	client:newTurn()
-	game:newTurn()
+function phase:sync(dt)
+	self.game.client:newTurn()
+	self.game:newTurn()
 	-- If disconnected by server, change to vs AI
-	if not client.connected then
-		game.type = "1P"
+	if not self.game.client.connected then
+		self.game.type = "1P"
 		print("Disconnected from server :( changing to 1P mode")
-		game:newTurn()
+		self.game:newTurn()
 	end
 end
 
-function phase.gameOver(dt)
-	local loser = stage.grid:getLoser()
+function phase:gameOver(dt)
+	local game = self.game
+	local particles = game.particles
+
+	local loser = game.stage.grid:getLoser()
 	if loser == "P1" then
 		print("P2 wins gg")
 	elseif loser == "P2" then
@@ -293,11 +324,11 @@ function phase.gameOver(dt)
 	else
 		print("Match ended unexpectedly, whopps!")
 	end
-	local damage_particles = particles.getNumber("Damage", p1) + particles.getNumber("Damage", p2)
-	local super_particles = particles.getNumber("Super", p1) + particles.getNumber("Super", p2)
+	local damage_particles = particles:getNumber("Damage", game.p1) + particles:getNumber("Damage", game.p2)
+	local super_particles = particles:getNumber("Super", game.p1) + particles:getNumber("Super", game.p2)
 	local anims_done = (damage_particles == 0) and (super_particles == 0)
 	if anims_done and game.type == "Netplay" then
-		client:endMatch()
+		game.client:endMatch()
 		game.current_screen = "lobby"
 	elseif anims_done and game.type == "1P" then
 		game.current_screen = "charselect"
@@ -322,11 +353,11 @@ phase.lookup = {
 	GameOver = phase.gameOver
 }
 
-function phase.run(self, ...)
-	local todo = phase.lookup[game.phase]
-	assert (todo, "You did a typo for the current phase idiot - " .. game.phase)
-	todo(...)
-	queue.update()
+function phase:run(...)
+	local todo = phase.lookup[self.game.phase]
+	assert (todo, "You did a typo for the current phase idiot - " .. self.game.phase)
+	todo(self, ...)
+	self.game.queue.update()
 end
 
-return phase
+return common.class("PhaseManager", phase)

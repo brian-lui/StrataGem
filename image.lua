@@ -1,3 +1,5 @@
+local love = _G.love
+
 local image = {
 	lookup = {},
 	dummy = love.graphics.newImage('images/dummy.png'),

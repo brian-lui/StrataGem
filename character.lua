@@ -1,13 +1,12 @@
 local love = _G.love
 require 'inits'
-local class = require "middleclass"
+local common = require "class.commons"
 local image = require 'image'
-local stage
---local Piece = require 'piece'
+local tween = require 'tween'
 local pic = require 'pic'
-local hand = require 'hand'
+local Hand = require 'hand'
 
-local character = class("Character")
+local character = {}
 --character.defaults = require 'characters/default' -- called from charselect
 --character.heath = require 'characters/heath'
 --character.walter = require 'characters/walter'
@@ -41,14 +40,13 @@ character.supering = false
 character.super_this_turn = false
 character.place_type = "normal"
 
-function character:initialize(playerNum, _stage)
-	stage = _stage
+function character:init(playerNum, game)
+	self.game = game
+	self.playerNum = playerNum
 	if playerNum == 1 then
 		self.ID, self.start_col, self.end_col = "P1", 1, 4
-		p1 = self
 	elseif playerNum == 2 then
 		self.ID, self.start_col, self.end_col = "P2", 5, 8
-		p2 = self
 	else
 		love.errhand("Invalid playerNum " .. tostring(playerNum))
 	end
@@ -59,40 +57,41 @@ function character:initialize(playerNum, _stage)
 end
 
 -- initialize super meter graphics
-local function setupSuperMeter(player)
-	local super_frame = player.ID == "P1" and image.UI.gauge_gold or image.UI.gauge_silver
-	player.super_frame = pic:new{x = stage.super[player.ID].frame.x,
-		y = stage.super[player.ID].frame.y, image = super_frame}
-	player.super_word = pic:new{x = stage.super[player.ID].frame.x,
-		y = stage.super[player.ID].frame.y, image = player.super_images.word}
-	player.super_block = {}
-	player.super_partial = {}
-	player.super_glow = {}
+local function setupSuperMeter(self)
+	local stage = self.game.stage
+	local super_frame = self.ID == "P1" and image.UI.gauge_gold or image.UI.gauge_silver
+	self.super_frame = common.instance(pic, {x = stage.super[self.ID].frame.x,
+		y = stage.super[self.ID].frame.y, image = super_frame})
+	self.super_word = common.instance(pic, {x = stage.super[self.ID].frame.x,
+		y = stage.super[self.ID].frame.y, image = self.super_images.word})
+	self.super_block = {}
+	self.super_partial = {}
+	self.super_glow = {}
 	for i = 1, 4 do
-		player.super_block[i] = pic:new{x = stage.super[player.ID][i].x,
-			y = stage.super[player.ID][i].y, image = player.super_images.full}
-		player.super_partial[i] = pic:new{x = stage.super[player.ID][i].x,
-			y = stage.super[player.ID][i].y, image = player.super_images.partial}
-		player.super_glow[i] = pic:new{x = stage.super[player.ID][i].glow_x,
-			y = stage.super[player.ID][i].glow_y, image = player.super_images.glow[i]}
+		self.super_block[i] = common.instance(pic, {x = stage.super[self.ID][i].x,
+			y = stage.super[self.ID][i].y, image = self.super_images.full})
+		self.super_partial[i] = common.instance(pic, {x = stage.super[self.ID][i].x,
+			y = stage.super[self.ID][i].y, image = self.super_images.partial})
+		self.super_glow[i] = common.instance(pic, {x = stage.super[self.ID][i].glow_x,
+			y = stage.super[self.ID][i].glow_y, image = self.super_images.glow[i]})
 
 	end
-	player.super_glow.full = pic:new{x = stage.super[player.ID][4].glow_x,
-		y = stage.super[player.ID][4].glow_y, image = player.super_images.glow[4]}
-	player.super_glow.full.scaling = 0
+	self.super_glow.full = common.instance(pic, {x = stage.super[self.ID][4].glow_x,
+		y = stage.super[self.ID][4].glow_y, image = self.super_images.glow[4]})
+	self.super_glow.full.scaling = 0
 end
 
 -- placeholder, waiting for animations
-local function createCharacterAnimation(player)
-	player.animation = pic:new{x = stage.character[player.ID].x,
-	y = stage.character[player.ID].y, image = player.small_image}
+local function createCharacterAnimation(self)
+	self.animation = common.instance(pic, {x = self.game.stage.character[self.ID].x,
+	y = self.game.stage.character[self.ID].y, image = self.small_image})
 end
 
 
-local function setupPieces(player)
-	player.pieces_per_turn_init = player.pieces_per_turn_init or 1
-	player.pieces_per_turn = player.pieces_per_turn_init
-	player.pieces_to_get = 1
+local function setupPieces(self)
+	self.pieces_per_turn_init = self.pieces_per_turn_init or 1
+	self.pieces_per_turn = self.pieces_per_turn_init
+	self.pieces_to_get = 1
 end
 
 -- TODO: Make player and/or character into classes and put this in there
@@ -103,7 +102,7 @@ end
 
 -- do those things to set up the character. Called at start of match
 function character:setup()
-	self.hand = hand:new(self)
+	self.hand = common.instance(Hand, self.game, self)
 	self.hand:makeInitialPieces()
 	setupSuperMeter(self)
 	createCharacterAnimation(self)
@@ -151,68 +150,69 @@ end
 
 
 function character:superSlideIn()
+	local stage = self.game.stage
 	local x_pos = self.ID == "P1" and stage.width * -0.2 or stage.width * 1.2
 
-	local particles = game.particles
+	local particles = self.game.particles
 
-	local shadow = particles.superEffects2:new{
+	local shadow = common.instance(particles.superEffects2, {
 		image = self.shadow_image,
 		x = x_pos,
 		y = stage.height * 0.5,
-		update = function(self, dt)
-			if self.tweening then
-				local complete = self.tweening:update(dt)
+		update = function(_self, dt)
+			if _self.tweening then
+				local complete = _self.tweening:update(dt)
 				if complete then
-					queue.add(25, self.remove, self)
-					self.tweening = nil
+					self.game.queue.add(25, _self.remove, _self)
+					_self.tweening = nil
 				end
 			end
 		end
-	}
-	local action = particles.superEffects3:new{
+	})
+	local action = common.instance(particles.superEffects3, {
 		image = self.action_image,
 		x = x_pos,
 		y = stage.height * 0.5,
-		update = function(self, dt)
-			if self.tweening then
-				local complete = self.tweening:update(dt)
+		update = function(_self, dt)
+			if _self.tweening then
+				local complete = _self.tweening:update(dt)
 				if complete then
-					queue.add(25, self.remove, self)
-					self.tweening = nil
+					self.game.queue.add(25, _self.remove, _self)
+					_self.tweening = nil
 				end
 			end
 		end
-	}
+	})
 
-	local fuzz1 = particles.superEffects1:new{
+	local fuzz1 = common.instance(particles.superEffects1, {
 		image = self.super_fuzz_image,
 		x = stage.width * 0.5,
 		y = self.super_fuzz_image:getHeight() * -0.5,
-		update = function(self, dt)
-			if self.tweening then
-				local complete = self.tweening:update(dt)
+		update = function(_self, dt)
+			if _self.tweening then
+				local complete = _self.tweening:update(dt)
 				if complete then
-					queue.add(40, self.remove, self)
-					self.tweening = nil
+					self.game.queue.add(40, _self.remove, _self)
+					_self.tweening = nil
 				end
 			end
 		end
-	}
+	})
 
-	local fuzz2 = particles.superEffects1:new{
+	local fuzz2 = common.instance(pic, particles.superEffects1, {
 		image = self.super_fuzz_image,
 		x = stage.width * 0.5,
 		y = self.super_fuzz_image:getHeight() * 0.5 + stage.height,
-		update = function(self, dt)
-			if self.tweening then
-				local complete = self.tweening:update(dt)
+		update = function(_self, dt)
+			if _self.tweening then
+				local complete = _self.tweening:update(dt)
 				if complete then
-					queue.add(40, self.remove, self)
-					self.tweening = nil
+					self.game.queue.add(40, _self.remove, _self)
+					_self.tweening = nil
 				end
 			end
 		end
-	}
+	})
 
 	fuzz1.tweening = tween.new(0.35, fuzz1, {y = 0}, "outQuart")
 	fuzz2.tweening = tween.new(0.35, fuzz2, {y = stage.height}, "outQuart")
@@ -227,4 +227,4 @@ function character:superSlideIn()
 	end
 end
 
-return character
+return common.class("Character", character)

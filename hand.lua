@@ -1,21 +1,23 @@
 require 'utilities' -- helper functions
-local class = require 'middleclass' -- class support
+local common = require "class.commons" -- class support
 local Piece = require 'piece'
 local GemPlatform = require 'gemplatform'
 local pic = require 'pic'
 local image = require 'image'
-local stage
 
-local DamageBar = class('DamageBar', pic)
-function DamageBar:initialize(player)
-	pic.initialize(self, {x = 0, y = 0, image = image.UI.damage_bar})
+local DamageBar = {}
+function DamageBar:init()
+	pic.init(self, {x = 0, y = 0, image = image.UI.damage_bar})
 end
 
-local Hand = class('Hand')
+DamageBar = common.class("DamageBar", DamageBar, pic)
+
+local Hand = {}
 Hand.PLATFORM_SPEED = window.height / 192 -- pixels per second for pieces to shuffle
 
-function Hand:initialize(player)
-	stage = game.stage
+function Hand:init(game, player)
+	self.game = game
+	local stage = game.stage
 
 	--assert((player == p1 or player == p2), "Invalid player given!")
 	self.owner = player
@@ -29,31 +31,32 @@ function Hand:initialize(player)
 	self[0].y = stage.height / 8 -- discard place is higher up
 	self.garbage = {} -- pending-garbage gems
 	self.damage = 4 -- each 4 damage is one more platform movement
-	self.damage_bar = DamageBar:new(player)
+	self.damage_bar = common.instance(DamageBar, player)
 	self:moveDamageBar()
 end
 
 -- make pieces at start of round. They are all then moved up 5 spaces
 function Hand:makeInitialPieces(gem_table)
 	for i = 8, 10 do
-		self[i].piece = Piece:new{
+		self[i].piece = common.instance(Piece, self.game, {
 			location = self[i],
 			hand_idx = i,
 			owner = self.owner,
 			x = self[i].x,
 			y = self[i].y,
 			gem_table = gem_table,
-		}
+		})
 		self:movePiece(i, i-5)
 	end
 	for i = 6, 10 do
-		self[i].platform = GemPlatform:new(self.owner, i)
+		self[i].platform = common.instance(GemPlatform, self.owner, i)
 		self:movePlatform(i, i-5)
 	end
 end
 
 -- this describes the shape of the curve for the hands.
 function Hand:getx(y)
+	local stage = self.game.stage
 	local sign = self.owner.ID == "P1" and -1 or 1
 	if y == nil then print("Invalid y provided to getx!") return nil end
 	if y <= stage.height * 0.6 then
@@ -65,33 +68,33 @@ function Hand:getx(y)
 	end
 end
 
-local function destroyTopPieceAnim(hand)
-	print("Check top piece: ", hand[0].piece, hand.owner.ID)
-	for i = 1, #hand[0].piece.gems do
-		local this_gem = hand[0].piece.gems[i]
-		local x_dist = this_gem.x - hand[0].x
-		local y_dist = this_gem.y - hand[0].y
+local function destroyTopPieceAnim(self)
+	print("Check top piece: ", self[0].piece, self.owner.ID)
+	for i = 1, #self[0].piece.gems do
+		local this_gem = self[0].piece.gems[i]
+		local x_dist = this_gem.x - self[0].x
+		local y_dist = this_gem.y - self[0].y
 		local dist = (x_dist^2 + y_dist^2)^0.5
-		local angle = math.atan2(y_dist, x_dist)
-		local duration = math.abs(dist / hand.PLATFORM_SPEED)
-		this_gem:moveTo{x = hand[0].x, y = hand[0].y, duration = duration}
+		--local angle = math.atan2(y_dist, x_dist)
+		local duration = math.abs(dist / self.PLATFORM_SPEED)
+		this_gem:moveTo{x = self[0].x, y = self[0].y, duration = duration}
 	end
 end
 
-local function destroyTopPiece(hand)
-	for i = 1, #hand[0].piece.gems do
-		local this_gem = hand[0].piece.gems[i]
+local function destroyTopPiece(self)
+	--for i = 1, #hand[0].piece.gems do
+		--local this_gem = hand[0].piece.gems[i]
 		--hand.garbage[#hand.garbage+1] = this_gem -- do this alter
-	end
-	hand[0].piece:breakUp()
-	stage.grid:addBottomRow(hand.owner) -- add a penalty row TODO: callback function this later
-	hand.owner.pieces_fallen = hand.owner.pieces_fallen + 1 -- to determine garbage ownership
+	--end
+	self[0].piece:breakUp()
+	self.game.stage.grid:addBottomRow(self.owner) -- add a penalty row TODO: callback function this later
+	self.owner.pieces_fallen = self.owner.pieces_fallen + 1 -- to determine garbage ownership
 end
 
 -- moves a piece from location to location, as integers
 function Hand:movePiece(start_pos, end_pos)
 	-- anims
-	local dist = stage.height * 0.1375 * (end_pos - start_pos)
+	local dist = self.game.stage.height * 0.1375 * (end_pos - start_pos)
 	local duration = math.abs(dist / self.PLATFORM_SPEED)
 	local to_move = self[start_pos].piece
 	to_move.hand_idx = end_pos
@@ -117,7 +120,7 @@ end
 -- moves a gem platform from location to location, as integers
 function Hand:movePlatform(start_pos, end_pos)
 	-- anims
-	local dist = stage.height * 0.1375 * (end_pos - start_pos)
+	local dist = self.game.stage.height * 0.1375 * (end_pos - start_pos)
 	local duration = math.abs(dist / self.PLATFORM_SPEED)
 	self[start_pos].platform:moveTo{
 		x = function() return self:getx(self[end_pos].platform.y) end,
@@ -141,18 +144,18 @@ end
 -- creates the new pieces for the turn. Takes optional gem_table for gem frequencies
 function Hand:getNewTurnPieces(gem_table)
 	local player = self.owner
-	local distance = stage.height * 0.1375 * player.pieces_to_get
-	local duration = math.abs(distance / self.PLATFORM_SPEED)
+	--local distance = self.game.stage.height * 0.1375 * player.pieces_to_get
+	--local duration = math.abs(distance / self.PLATFORM_SPEED)
 	for i = 6, player.pieces_to_get + 5 do
-		self[i].piece = Piece:new{
+		self[i].piece = common.instance(Piece, {
 			location = self[i],
 			hand_idx = i,
 			owner = self.owner,
 			x = self[i].x,
 			y = self[i].y,
 			gem_table = gem_table,
-		}
-		self[i].platform = GemPlatform:new(self.owner, i)
+		})
+		self[i].platform = common.instance(GemPlatform, self.owner, i)
 	end
 	for i = 1, 10 do -- move up all the pieces
 		local end_pos = math.max(i - player.pieces_to_get, 0)
@@ -165,7 +168,7 @@ end
 -- No need to check gem platforms, because hand[6] will always have a piece.
 -- Takes optional start_loc for which position to start checking from.
 function Hand:isSettled(start_loc)
-	local start_loc = start_loc or 0 -- we may not always want to check if discard finished moving
+	start_loc = start_loc or 0 -- we may not always want to check if discard finished moving
 	local all_unmoved = true
 	for i = start_loc, self.owner.hand_size + 1 do
 		if self[i].piece then
@@ -216,6 +219,7 @@ function Hand:addDamage(damage)
 end
 
 function Hand:moveDamageBar()
+	local stage = self.game.stage
 	local y = stage.height * 0.1375 * ((self.damage + 2) / 4) + stage.height * 0.1875
 	local x = function() return self:getx(self.damage_bar.y) end
 	self.damage_bar:moveTo{duration = 90, x = x, y = y, easing = "outBounce"}
@@ -235,4 +239,4 @@ function Hand:endOfTurnUpdate()
 	self:moveDamageBar()
 end
 
-return Hand
+return common.class("Hand", Hand)
