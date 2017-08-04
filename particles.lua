@@ -26,7 +26,9 @@ function Particles:getNumber(particle_tbl, player)
 	local num = 0
 	if self.allParticles[particle_tbl] then
 		for _, particle in pairs(self.allParticles[particle_tbl]) do
-			if particle.owner == player then num = num + 1 end
+			if not player or particle.owner == player then
+				num = num + 1
+			end
 		end
 	else
 		print("Erreur, invalid particle table requested")
@@ -43,6 +45,7 @@ function Particles:reset()
 		Super = {},
 		Pop = {},
 		ExplodingGem = {},
+		ExplodingPlatform = {},
 		PlatformTinyStar = {},
 		PlatformStar = {},
 		Dust = {},
@@ -257,6 +260,54 @@ function ExplodingGem:generate(gem)
 end
 
 ExplodingGem = common.class("ExplodingGem", ExplodingGem, Pic)
+
+-------------------------------------------------------------------------------
+-- When a gem platform disappears, this is the explody parts
+local ExplodingPlatform = {}
+function ExplodingPlatform:init(manager, x, y, image)
+	pic.init(self, {x = x, y = y, image = image})
+	manager.allParticles.ExplodingPlatform[ID.particle] = self
+end
+
+function ExplodingPlatform:remove(manager)
+	manager.allParticles.ExplodingPlatform[self.ID] = nil
+end
+
+function ExplodingPlatform:generate(platform)
+	local x, y = platform.x, platform.y
+	local todraw = image.UI.starpiece
+	local rotation = 6
+	local duration = 60
+	local width, height = self.stage.width, self.stage.height
+
+	local moves = {
+		{x = width * -0.2, y = height * -0.5,  rotation = -6},
+		{x = width *  0.2, y = height * -0.5,  rotation =  6},
+		{x = width * -0.2, y = height * -0.05, rotation = -6},
+		{x = width *  0.2, y = height * -0.05, rotation =  6},
+	}
+
+	for i = 1, #todraw do
+		local p = common.instance(ExplodingPlatform, self.particles, x, y, todraw[i])
+		p.scaling = 0.25
+		p.transparency = 510
+		local function y_func()
+			return y + p.t * moves[i].y + p.t^2 * height
+		end
+
+		p:moveTo{
+			duration = duration,
+			rotation = moves[i].rotation,
+			x = x + moves[i].x,
+			y = y_func,
+			transparency = 0,
+			scaling = 0.375,
+			exit = true
+		}
+	end
+end
+
+ExplodingPlatform = common.class("ExplodingPlatform", ExplodingPlatform, Pic)
 
 -------------------------------------------------------------------------------
 --[[
@@ -483,6 +534,23 @@ function Dust:generateFalling(gem, x_drift, y_drift)
  	p:moveTo{duration = duration, rotation = rotation, y = y + 0.13 * self.stage.height}
  	p:moveTo{duration = duration * 0.3, rotation = rotation * 1.3, transparency = 0,
  		y = y + 1.3 * (0.13 * self.stage.height), exit = true}
+end
+
+-- generate the spinning dust from platforms
+function Dust:generatePlatformSpin(x, y, speed)
+	local todraw = image.lookup.dust.small("red")
+	local rotation = 6
+	local duration = 60
+
+	local x_vel = (math.random() - 0.5) * 2 * self.stage.width * (speed + 0.2)
+	local x_vel = (math.random() - 0.75) * 3 * self.stage.height * (speed + 0.2)
+	local acc = stage.height * (speed + 0.2) * 3
+
+	local p = common.instance(Dust, self.particles, x, y, todraw, "Dust")
+	local function y_func()
+		return y + p.1 * y_vel + p.t^2 * acc
+	end
+	p:moveTo{duration = duration, rotation = rotation, x = x + x_vel, y = y_func, transparency = 0, exit = true}
 end
 
 Dust = common.class("Dust", Dust, Pic)
@@ -812,6 +880,7 @@ Particles.damage = DamageParticle
 Particles.super_ = SuperParticle	-- If this is just called "super" it interferes with middleclass
 Particles.pop = PopParticle
 Particles.explodingGem = ExplodingGem
+Particles.explodingPlatform = ExplodingPlatform
 Particles.damageTrail = DamageTrailParticle
 Particles.platformStar = PlatformStar
 Particles.dust = Dust

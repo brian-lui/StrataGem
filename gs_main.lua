@@ -159,10 +159,6 @@ function gs_main:drawGems()
 		love.graphics.setStencilTest()
 	love.graphics.pop()
 
-	-- damage bar
-	for player in self:players() do
-		player.hand.damage_bar:draw()
-	end
 	-- over-gem particles
 	for _, v in pairs(allParticles.Super) do v:draw() end
 	for _, v in pairs(allParticles.DamageTrail) do v:draw() end
@@ -202,6 +198,14 @@ function gs_main:drawText()
 		end
 		for c = 0, self.stage.grid.columns + 1 do
 			love.graphics.print(c, self.stage.grid.x[c], 200)
+		end
+	love.graphics.pop()
+
+	-- debug overlay
+	love.graphics.push("all")
+		love.graphics.setColor(255, 255, 255)
+		if self.debug_overlay then
+			love.graphics.printf(self.debug_overlay(), 0, 40, 1000, "right")
 		end
 	love.graphics.pop()
 end

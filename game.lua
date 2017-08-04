@@ -135,7 +135,6 @@ function Game:reset()
 	self.me_player = false
 	self.them_player = false
 	self.active_piece = false
-	self.finished_getting_pieces = false
 	self.grid_wait = 0
 	self.screenshake_frames = 0
 	self.screenshake_vel = 0
@@ -211,14 +210,6 @@ function Game:keypressed(key)
 	elseif key == "f" then
 		p1.cur_mp = math.min(p1.cur_mp + 20, p1.MAX_MP)
 		p2.cur_mp = math.min(p2.cur_mp + 20, p2.MAX_MP)
-	--[[ animationsandbox
-	if key == "g" then sandbox.g() end
-	if key == "b" then sandbox.b() end
-	if key == "h" then sandbox.h() end
-	if key == "n" then sandbox.n() end
-	if key == "j" then sandbox.j() end
-	if key == "m" then sandbox.m() end
-	--]]
 	elseif key == "k" then self.canvas[6]:renderTo(function() love.graphics.clear() end)
 	elseif key == "z" then self:start("1P", "heath", "walter", self.background.Starfall, nil, 1)
 	elseif key == "x" then
@@ -270,6 +261,12 @@ function Game:keypressed(key)
 		n(8, 6, "R")
 	elseif key == "m" then
 		p1.hand[3].platform:screenshake(30)
+	elseif key == "," then
+		self.debug_overlay = function ()
+			return self.particles:getNumber("Damage", self:playerByIndex(2))
+		end
+	elseif key == "." then
+		self.timeStep = self.timeStep == 0.1 and 1/60 or 0.1
 	end
 end
 
