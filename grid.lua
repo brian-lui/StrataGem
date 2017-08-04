@@ -539,10 +539,16 @@ function Grid:checkMatchedThisTurn()
 end
 
 function Grid:generateMatchExplodingGems()
-	local particles = self.game.particles
 	for _, gem in pairs(self:getMatchedGems()) do
-		particles.explodingGem.generate(self.game, gem)
+		self:generateExplodingGem(gem)
 	end
+end
+
+function Grid:generateExplodingGem(gem)
+	local game = self.game
+	game.particles.explodingGem.generate(game, gem)
+	local sfx = game.sound:play("gembreak" .. math.min(5, game.scoring_combo + 1))
+	sfx:setPosition((gem.column - 4.5) * 0.2, 0, 0)
 end
 
 function Grid:generateMatchParticles()

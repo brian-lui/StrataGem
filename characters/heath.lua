@@ -323,14 +323,14 @@ end
 -- Make fire for horizontal matches
 -- Super-clear if super was active
 function Heath:beforeMatch(gem_table)
-	local stage = self.game.stage
+	local grid = self.game.stage.grid
 
 	local own_tbl = {self.game.p1, self.game.p2}
 
 	-- store horizontal fire locations, used in aftermatch phase
 	for _, gem in pairs(gem_table) do
 		local owned = own_tbl[gem.owner] == self
-		local top_gem = gem.row-1 == stage.grid:getFirstEmptyRow(gem.column)
+		local top_gem = gem.row-1 == grid:getFirstEmptyRow(gem.column)
 		if owned and gem.horizontal and top_gem then
 			self.pending_fires[#self.pending_fires+1] = {gem.row, gem.column, self}
 		end
@@ -343,6 +343,17 @@ function Heath:beforeMatch(gem_table)
 			local owned = own_tbl[gem.owner] == self
 			if owned and gem.horizontal then
 				self.super_clears[#self.super_clears+1] = gem
+			end
+		end
+
+		-- generate match exploding gems for super clears
+		for _, gem in ipairs(self.super_clears) do
+			local r, c = gem.row, gem.column
+			if grid[r-1][c].gem then
+				grid:generateExplodingGem(grid[r-1][c].gem)
+			end
+			if grid[r+1][c].gem then
+				grid:generateExplodingGem(grid[r+1][c].gem)
 			end
 		end
 	end
@@ -362,12 +373,12 @@ function Heath:duringMatch(gem_table)
 		local damage_to_add = 0 -- add it all at the end so it doesn't interfere with particles
 
 		local function processGemGamestate(gem)
-			local r, c = gem.row, gem.column
 			gem:addOwner(self)
 			if gem.owner ~= 3 then
 				damage_to_add = damage_to_add + 1
 				particles.damage:generate(gem)
 				grid:removeGem(gem)
+			end
 		end
 
 		grid:updateGrid()

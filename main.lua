@@ -7,15 +7,10 @@ require "classcommons"
 local common = require "class.commons"
 
 local game
-local music
 
 function love.load()
 	_G.game = common.instance(require "game")
 	game = _G.game
-
-	music = require "music"
-
-	music.setBGM("bgm.mp3", 1)
 end
 -- local sandbox = require 'animationsandbox'
 

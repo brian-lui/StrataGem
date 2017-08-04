@@ -296,11 +296,12 @@ end
 
 function PhaseManager:platformsExploding(dt)
 	if self.game.particles:getNumber("ExplodingPlatform") == 0 then
+		self.game.particles:clearCount()	-- clear here so the platforms display redness/spin correctly
 		self.game.phase = "PlatformsMoving"
 	end
 end
 
-function PhaseManager:platformsMovingUp(dt)
+function PhaseManager:platformsMoving(dt)
 	local game = self.game
 	local grid = game.stage.grid
 	local handsettled = true
@@ -416,7 +417,7 @@ PhaseManager.lookup = {
 	PlatformSpinDelay = PhaseManager.platformSpinDelay,
 	GetPiece = PhaseManager.getPiece,
 	PlatformsExploding = PhaseManager.platformsExploding,
-	PlatformsMoving = PhaseManager.platformsMovingUp,
+	PlatformsMoving = PhaseManager.platformsMoving,
 	Cleanup = PhaseManager.cleanup,
 	Sync = PhaseManager.sync,
 	GameOver = PhaseManager.gameOver

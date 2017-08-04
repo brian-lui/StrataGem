@@ -56,7 +56,8 @@ function Game:init()
 	self.p2 = common.instance(require "character")
 	self.phaseManager = common.instance(require "phasemanager", self)
 	self.rng = love.math.newRandomGenerator()
-	self.bgm = nil
+	self.sound = common.instance(require "sound", self)
+	self.music = common.instance(require "music", self)
 	self.stage = common.instance(require "stage", self)	-- playing field area and grid
 	self.background = common.instance(require "background", self)
 	self.animations = common.instance(require "animations", self)
@@ -64,6 +65,8 @@ function Game:init()
 	self.client = common.instance(require "client", self)
 	self.ui = common.instance(require "ui", self)
 	self.queue = common.instance(Queue, self)
+
+	self.music:setBGM("buzz.ogg", 1)
 
 	self.statemanager = common.instance(require "statemanager", self)
 	self.statemanager:switch(require "gs_title")
@@ -75,6 +78,7 @@ function Game:start(gametype, char1, char2, bkground, seed, side)
 	ID:reset()
 
 	self:reset()
+	self.sound:reset()
 	self.stage.grid:reset()
 	self.particles:reset()
 	if seed then
@@ -146,7 +150,7 @@ function Game:reset()
 	self.screenshake_vel = 0
 	self.rng:setSeed(os.time())	-- TODO: This probably causes desyncs
 	self.orig_rng_seed = self.rng:getSeed() -- for debugging
-	self.frame = 0	-- TODO: Deglobalize
+	self.frame = 0
 end
 
 -- testing!
@@ -251,9 +255,7 @@ function Game:keypressed(key)
 		self.debug_drawDamage = not self.debug_drawDamage
 		self.debug_drawGrid = not self.debug_drawGrid
 	elseif key == "," then
-		self.debug_overlay = function ()
-			return self.particles.getNumber("SuperParticles", self.p1) + self.particles.getNumber("SuperParticles", p2)
-		end
+		self.sound:play("gembreak1")
 	elseif key == "." then
 		self.timeStep = self.timeStep == 0.1 and 1/60 or 0.1
 	end
