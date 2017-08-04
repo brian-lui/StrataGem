@@ -1,11 +1,8 @@
 local love = _G.love
+
 local common = require "class.commons"
-local image = require 'image'
+local image = require "image"
 local Character = require "character"
---local pic = require 'pic'
---local hand = require 'hand'
---local default = require 'characters/default'
---local stage = game.stage
 
 local Heath = {}
 
@@ -15,7 +12,7 @@ Heath.action_image = love.graphics.newImage('images/characters/heathaction.png')
 Heath.shadow_image = love.graphics.newImage('images/characters/heathshadow.png')
 
 Heath.character_id = "Heath"
-Heath.meter_gain = {RED = 8, BLUE = 4, GREEN = 4, YELLOW = 4}
+Heath.meter_gain = {red = 8, blue = 4, green = 4, yellow = 4}
 Heath.super_images = {
 	word = image.UI.super.red_word,
 	partial = image.UI.super.red_partial,
@@ -68,7 +65,7 @@ function particle_effects.FireParticle(fire)
 		x = fire.x + x_start,
 		y = fire.y,
 		rotation = angle + math.pi/2,
-		image = heath.special_images.fire_particle,
+		image = Heath.special_images.fire_particle,
 		t = 0,
 		update = update_func,
 		owner = fire.owner,
@@ -114,7 +111,7 @@ function particle_effects:SmallFire(row, col, owner)
 			draw_img = draw_img % #draw_order + 1
 			--self.old_image = self.image
 			--self.old_image_transparency = 255
-			_self.image = heath.special_images["testfire" .. draw_order[draw_img] ]
+			_self.image = Heath.special_images["testfire" .. draw_order[draw_img] ]
 		end
 
 		_self.x = stage.grid.x[col]
@@ -122,7 +119,7 @@ function particle_effects:SmallFire(row, col, owner)
 
 		if _self.scaling < 1 then -- scale in
 			_self.scaling = math.min(_self.t * 2, 1)
-			_self.y = self.y + image.GEM_HEIGHT * self.t
+			_self.y = _self.y + image.GEM_HEIGHT * _self.t
 		end
 
 		if _self.t > 0.2 then _self.y = math.min(_self.y, y_dest) end
@@ -135,9 +132,9 @@ function particle_effects:SmallFire(row, col, owner)
 	end
 	--[[
 	local draw_func = function(self, dt)
-		pic.draw(self)
+		Pic.draw(self)
 		if self.old_image then
-			pic.draw(self, nil, nil, nil, nil, nil, {255, 255, 255, self.old_image_transparency}, self.old_image)
+			Pic.draw(self, nil, nil, nil, nil, nil, {255, 255, 255, self.old_image_transparency}, self.old_image)
 			self.old_image_transparency = self.old_image_transparency - 16
 		end
 	end
@@ -150,17 +147,17 @@ function particle_effects:SmallFire(row, col, owner)
 		local trans1 = trans * 255
 		--local trans2 = trans * ((math.sin(self.t * 20) + 1) * 127.5)
 		local trans2 = math.sin(self.t * 20) > 0 and 255 * trans or 0
-		pic.draw(self, nil, nil, nil, nil, nil, {255, 255, 255, trans1})
-		pic.draw(self, nil, nil, nil, nil, nil, {255, 255, 255, trans2}, heath.special_images.fire2)
-		--pic.draw(self, nil, nil, nil, nil, nil, {255, 255, 255, glow1}, heath.special_images.glow1)
-		--pic.draw(self, nil, nil, nil, nil, nil, {255, 255, 255, glow2}, heath.special_images.glow2)
+		Pic.draw(self, nil, nil, nil, nil, nil, {255, 255, 255, trans1})
+		Pic.draw(self, nil, nil, nil, nil, nil, {255, 255, 255, trans2}, heath.special_images.fire2)
+		--Pic.draw(self, nil, nil, nil, nil, nil, {255, 255, 255, glow1}, heath.special_images.glow1)
+		--Pic.draw(self, nil, nil, nil, nil, nil, {255, 255, 255, glow2}, heath.special_images.glow2)
 	end
 	--]]
 	return {
 		x = stage.grid.x[col],
 		y = stage.grid.y[row],
 		rotation = 0,
-		image = heath.special_images.testfire1,
+		image = Heath.special_images.testfire1,
 		t = 0,
 		update = update_func,
 		turns_remaining = 1,
@@ -190,7 +187,7 @@ function particle_effects:BoomParticle(boom)
 		x = boom.x,
 		y = boom.y,
 		rotation = 0,
-		image = heath.special_images["boomparticle"..math.random(1, 3)],
+		image = Heath.special_images["boomparticle"..math.random(1, 3)],
 		t = 0,
 		update = update_func,
 		owner = boom.owner,
@@ -213,7 +210,7 @@ function particle_effects:Boom(row, col, owner)
 			if draw_img > #draw_order then
 				_self:remove()
 			else
-				_self:newImage(heath.special_images["boom"..draw_order[draw_img] ])
+				_self:newImage(Heath.special_images["boom"..draw_order[draw_img] ])
 			end
 		end
 		if _self.t >= 0.2 and not already_boom_particled then
@@ -229,7 +226,7 @@ function particle_effects:Boom(row, col, owner)
 		x = stage.grid.x[col],
 		y = stage.grid.y[row],
 		rotation = math.pi * 2 / math.random(1, 4),
-		image = heath.special_images.boom1,
+		image = Heath.special_images.boom1,
 		t = 0,
 		update = update_func,
 		owner = owner,
@@ -301,7 +298,7 @@ function Heath:afterGravity()
 	local ouch_gems = {}
 	for col, _ in pairs(self.fire_columns) do
 		for _, gem in pairs(bottom_gems) do
-			if gem.column == col and gem.color ~= "RED" and own_tbl[gem.owner] == self.enemy then
+			if gem.column == col and gem.color ~= "red" and own_tbl[gem.owner] == self.enemy then
 				ouches = ouches + 1
 				ouch_gems[#ouch_gems+1] = gem
 			end
@@ -310,8 +307,8 @@ function Heath:afterGravity()
 	if ouches > 0 then
 		self.enemy.hand:addDamage(ouches)
 		for i = 1, #ouch_gems do
-			particles.dust:generateBigFountain(ouch_gems[i], 120, self) -- placeholder animation
-			ret[#ret+1] = {1, particles.dust.generateBigFountain, particles.dust, ouch_gems[i], 120, self}
+			particles.dust.generateBigFountain(self.game, ouch_gems[i], 120, self) -- placeholder animation
+			ret[#ret+1] = {1, particles.dust.generateBigFountain, self.game, particles.dust, ouch_gems[i], 120, self}
 		end
 	end
 	return ret
@@ -398,8 +395,8 @@ function Heath:duringMatch(gem_table)
 				if gem.owner ~= 3 and current_columns[gem.column] and check_columns[gem.column] then
 					local boom_object = particle_effects.Boom(self, gem.row, gem.column, gem.owner)
 					local delay = 3 + explode_round * 4
-					queue.add(delay, particles.charEffects.new, particles.charEffects, boom_object)
-					queue.add(delay, stage.grid.removeGem, stage.grid, gem) -- this is state-affecting!
+					game.queue:add(delay, particles.charEffects.new, particles.charEffects, boom_object)
+					game.queue:add(delay, stage.grid.removeGem, stage.grid, gem) -- this is state-affecting!
 				end
 			end
 			local add_columns = {} -- columns to check for next round
@@ -448,7 +445,7 @@ function Heath:afterMatch()
 	local makeFire = function(row, col, owner)
 		self.fire_columns[col] = 1
 		local fire_object = particle_effects.SmallFire(self, row, col, owner)
-		common.instance(particles.charEffects, fire_object)
+		common.instance(particles.charEffects, self.game.particles, fire_object)
 	end
 
 	for i = 1, #self.pending_fires do

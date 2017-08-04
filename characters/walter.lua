@@ -8,7 +8,7 @@ local Walter = {}
 Walter.full_size_image = love.graphics.newImage('images/characters/walter.png')
 Walter.small_image = love.graphics.newImage('images/characters/waltersmall.png')
 Walter.character_id = "Walter"
-Walter.meter_gain = {RED = 4, BLUE = 8, GREEN = 4, YELLOW = 4}
+Walter.meter_gain = {red = 4, blue = 8, green = 4, yellow = 4}
 Walter.super_images = {
 	word = image.UI.super.blue_word,
 	partial = image.UI.super.blue_partial,

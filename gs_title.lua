@@ -2,8 +2,7 @@ local love = _G.love
 
 local common = require "class.commons"
 local image = require 'image'
-local pic = require 'pic'
-local client = require 'client'
+local Pic = require 'pic'
 local tween = require 'tween'
 
 local title = {}
@@ -47,7 +46,7 @@ function title:enter()
 	local objects = {}
 
 	for item, obj in pairs(data) do
-		objects[item] = common.instance(pic, {x = obj.x, y = obj.start_y, image = obj.image})
+		objects[item] = common.instance(Pic, self, {x = obj.x, y = obj.start_y, image = obj.image})
 		objects[item].transparency = obj.start_transparency
 		objects[item].tweening = tween.new(obj.tween_dur, objects[item],
 			{y = obj.y, transparency = obj.transparency}, obj.tween_type)
@@ -57,13 +56,13 @@ function title:enter()
 	local buttons = {
 		vscpu = {
 			item = objects.vscpu,
-			action = function() self.statemanager:switch(require "charselect") end,
+			action = function() self.statemanager:switch(require "gs_charselect") end,
 			pushed = function() objects.vscpu.image = image.title.vscpupush end,
 			released = function() objects.vscpu.image = image.title.vscpu end,
 		},
 		online ={
 			item = objects.online,
-			action = function() self.statemanager:switch(require "lobby") self.client:connect() end,
+			action = function() self.statemanager:switch(require "gs_lobby") self.client:connect() end,
 			pushed = function() objects.online.image = image.title.onlinepush end,
 			released = function() objects.online.image = image.title.online end,
 		},
@@ -100,7 +99,7 @@ function title:drawBackground()
 	self.background.seasons.drawImages(self.background)
 end
 
-local pointIsInRect = require("utilities").pointIsInRect
+local pointIsInRect = require "utilities".pointIsInRect
 
 function title:mousepressed(x, y)
 	for _, button in pairs(self.buttons) do

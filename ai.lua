@@ -101,11 +101,11 @@ local function getCoords(column)
 end
 
 -- place piece into actual grid
-local function placePiece(piece, coords, place_type)
+local function placePiece(self, piece, coords, place_type)
 	local player = piece.owner
 	place_type = place_type or "normal"
 	player.place_type = place_type
-	ai.queued_action = {func = piece.dropIntoBasin, args = {piece, coords}}
+	self.queued_action = {func = piece.dropIntoBasin, args = {piece, coords}}
 end
 
 -- returns a scoring for all possible pieces and their placements
@@ -137,7 +137,7 @@ end
 function ai:placeholder(player)
 	if countdown == 0 then
 		-- Get a set of moves that yield the highest score
-		local matrices = generateScoreMatrices(self.stage.grid, player)
+		local matrices = generateScoreMatrices(self.game.stage.grid, player)
 		local maximum_score = 0
 		local possible_moves = {}
 		for rot = 1, 4 do
@@ -163,20 +163,20 @@ function ai:placeholder(player)
 				piece:rotate()
 			end
 
-			placePiece(piece, getCoords(selected.column))
+			placePiece(self, piece, getCoords(selected.column))
 		elseif player.cur_mp >= player.RUSH_COST then
 			local piece = selectRandomPiece(player)
 			if piece.horizontal then	-- Always do vertical rushes.
 				piece:rotate()
 			end
 
-			placePiece(piece, {player.enemy.start_col, player.enemy.start_col}, "rush")
+			placePiece(self, piece, {player.enemy.start_col, player.enemy.start_col}, "rush")
 		else
 			-- random play
 			local piece = selectRandomPiece(player)
 			local coords = getCoords(selectRandomColumn(piece, player))
 
-			placePiece(piece, coords)
+			placePiece(self, piece, coords)
 		end
 
 		countdown = 5

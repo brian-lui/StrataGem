@@ -1,6 +1,8 @@
 local love = _G.love
 
-local pointIsInRect = require("utilities").pointIsInRect
+local common = require "class.commons"
+
+local pointIsInRect = require "utilities".pointIsInRect
 
 local gs_main = {}
 
@@ -14,6 +16,7 @@ function gs_main:enter()
 		canvas[i] = love.graphics.newCanvas()
 	end
 	self.canvas = canvas
+	self.camera = common.instance(require "camera")
 end
 
 local function timeDip(self, logic_function, ...)
@@ -34,7 +37,7 @@ end
 function gs_main:update(dt)
 	timeDip(self, function() self.phaseManager:run(self.timeStep) end)
 	self.particles:update(dt) -- variable fps
-	self.background.update() -- variable fps
+	self.background.current.update(self.background) -- variable fps
 	self.ui.timer:update()
 	self.animations:updateAll(dt)
 	self.screenshake_frames = math.max(0, self.screenshake_frames - 1)
@@ -43,27 +46,22 @@ function gs_main:update(dt)
 	-- Testing trail stars
 	-- TODO: put this in the right place
 	if self.frame % 10 == 0 then
-		self.particles.platformStar:generate(self.p1, "TinyStar", 0.05, 0.2, 0.29)
-		self.particles.platformStar:generate(self.p2, "TinyStar", 0.95, 0.8, 0.71)
+		self.particles.platformStar.generate(self, self.p1, "TinyStar", 0.05, 0.2, 0.29)
+		self.particles.platformStar.generate(self, self.p2, "TinyStar", 0.95, 0.8, 0.71)
 	end
 	if self.frame % 42 == 0 then
-		self.particles.platformStar:generate(self.p1, "Star", 0.05, 0.21, 0.28)
-		self.particles.platformStar:generate(self.p2, "Star", 0.95, 0.79, 0.72)
+		self.particles.platformStar.generate(self, self.p1, "Star", 0.05, 0.21, 0.28)
+		self.particles.platformStar.generate(self, self.p2, "Star", 0.95, 0.79, 0.72)
 	end
 end
 
-local draw = require "draw"
-
 -- background and background effects
 function gs_main:drawBackground()
-	love.graphics.clear()
-	self.background.current.drawImages()
+	self.background.current.drawImages(self.background)
 end
 
 -- draw all the non-gem screen elements: super bar, sprite
 function gs_main:drawScreenElements()
-	love.graphics.clear()
-
 	-- under-platform trails
 	for _, v in pairs(self.particles.allParticles.PlatformTinyStar) do v:draw() end
 	for _, v in pairs(self.particles.allParticles.PlatformStar) do v:draw() end
@@ -77,22 +75,31 @@ function gs_main:drawScreenElements()
 	end
 end
 
-function gs_main:draw()
-	self:drawGems()
+-- screenshake effect
+function gs_main.screenshake(self, shake)
+	local frame = self.frame
+	shake = shake or 6
+	local h_displacement = shake * (frame % 7 / 2 + frame % 13 / 4 + frame % 23 / 6 - 5)
+	local v_displacement = shake * (frame % 5 * 2/3 + frame % 11 / 4 + frame % 17 / 6 - 5)
+	self.camera:setPosition(h_displacement, v_displacement)
+end
 
-	draw.camera:set(1, 1)
+function gs_main:draw()
+	gs_main.drawBackground(self)
+
+	self.camera:set(1, 1)
 		if self.screenshake_frames > 0 then
-			draw.screenshake(self.screenshake_vel)
+			gs_main.screenshake(self, self.screenshake_vel)
 		else
-			draw.camera:setPosition(0, 0)
+			self.camera:setPosition(0, 0)
 		end
 
-		self:drawScreenElements()
-		self:drawGems()
-		--self:drawAnimations()
-	draw.camera:unset()
+		gs_main.drawScreenElements(self)
+		gs_main.drawGems(self)
+		--gs_main.drawAnimations(self)
+	self.camera:unset()
 
-	self:drawText()
+	gs_main.drawText(self)
 end
 
 -- draw gems and related objects (platforms, particles)
@@ -122,16 +129,19 @@ function gs_main:drawGems()
 				end
 			end
 		end
-		for i = 1, #player.hand.garbage do player.hand.garbage[i]:draw() end
+		for i = 1, #player.hand.garbage do
+			player.hand.garbage[i]:draw()
+		end
 	end
 
 	local function blockBottomGemRow()
+		local stage = self.stage
 	-- stencil function to hide gems in bottom row
 	-- makes it look nicer when gems are generated and push up from the bottom
-		local x = (self.stage.grid.x[0] + self.stage.grid.x[1]) / 2
-		local y = (self.stage.grid.y[self.stage.grid.rows] + self.stage.grid.y[self.stage.grid.rows + 1]) / 2
-		local width = self.stage.grid.x[self.stage.grid.columns] - self.stage.grid.x[0]
-		local height = self.stage.gem_width
+		local x = (stage.grid.x[0] + stage.grid.x[1]) / 2
+		local y = (stage.grid.y[stage.grid.rows] + stage.grid.y[stage.grid.rows + 1]) / 2
+		local width = stage.grid.x[stage.grid.columns] - stage.grid.x[0]
+		local height = stage.gem_width
 		love.graphics.rectangle("fill", x, y, width, height)
 	end
 
@@ -181,8 +191,6 @@ end
 
 -- draw text items
 function gs_main:drawText()
-	love.graphics.clear()
-
 	-- words
 	for _, v in pairs(self.particles.allParticles.Words) do v:draw() end
 

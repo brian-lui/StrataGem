@@ -1,7 +1,8 @@
+local love = _G.love
 require 'utilities' -- move
 local image = require 'image'
 local common = require "class.commons" -- class support
-local pic = require 'pic'
+local Pic = require 'pic'
 
 -- gem platforms are generated through the Hand class
 local GemPlatform = {}
@@ -9,9 +10,10 @@ GemPlatform.PLATFORM_ROTATION_SPEED = 0.02
 GemPlatform.GEM_PLATFORM_TURN_RED_SPEED = 8
 --GemPlatform.PLATFORM_FADE = 8
 
-function GemPlatform:init(owner, location)
+function GemPlatform:init(game, owner, location)
+	self.game = game
 	local img = owner.ID == "P1" and image.UI.platform_gold or image.UI.platform_silver
-	pic.init(self, {x = owner.hand[location].x, y = owner.hand[location].y, image = img})
+	Pic.init(self, {x = owner.hand[location].x, y = owner.hand[location].y, image = img})
 	self.hand_idx = location
 	self.x, self.y = owner.hand[location].x, owner.hand[location].y
 	self.owner = owner
@@ -22,6 +24,7 @@ function GemPlatform:init(owner, location)
 end
 
 function GemPlatform:draw()
+	local frame = self.game.frame
 	--screen shake translation
 	local h_shake, v_shake = 0, 0
 	if self.shake then
@@ -31,15 +34,15 @@ function GemPlatform:draw()
 
 	love.graphics.push("all")
 		love.graphics.translate(h_shake, v_shake)
-		pic.draw(self)
+		Pic.draw(self)
 		if self.redness > 0 then
 			local redRGB = {255, 255, 255, math.min(self.redness, self.transparency)}
-			pic.draw(self, nil, nil, nil, nil, nil, redRGB, image.UI.platform_red)
+			Pic.draw(self, nil, nil, nil, nil, nil, redRGB, image.UI.platform_red)
 		end
 		if self.redness == 255 and self.owner.hand[self.hand_idx].piece then
 			local fr = frame - self.glow_startframe
 			local glowRGB = {255, 255, 255, math.sin(fr/20) * 255}
-			pic.draw(self, nil, nil, nil, nil, nil, glowRGB, image.UI.platform_red_glow)
+			Pic.draw(self, nil, nil, nil, nil, nil, glowRGB, image.UI.platform_red_glow)
 		end
 	love.graphics.pop()
 end
@@ -59,7 +62,7 @@ function GemPlatform:screenshake(frames)
 end
 
 function GemPlatform:update(dt)
-	pic.update(self, dt)
+	Pic.update(self, dt)
 	local player = self.owner
 	local loc = self.hand_idx
 	--[[
@@ -71,14 +74,14 @@ function GemPlatform:update(dt)
 	elseif loc <= 5 and (loc <= player.hand.damage / 4) and game.phase == "Action" then
 		self.redness = math.min(self.redness + self.GEM_PLATFORM_TURN_RED_SPEED, 255)
 		if self.redness == 255 and not self.glow_startframe then
-			self.glow_startframe = frame
+			self.glow_startframe = self.game.frame
 		end
 	end
 	--]]
 	if loc <= player.hand.damage / 4 and game.phase == "Action" then
 		self.redness = math.min(self.redness + self.GEM_PLATFORM_TURN_RED_SPEED, 255)
 		if self.redness == 255 and not self.glow_startframe then
-			self.glow_startframe = frame
+			self.glow_startframe = self.game.frame
 		end
 	end
 
@@ -88,4 +91,4 @@ function GemPlatform:update(dt)
 	end
 end
 
-return common.class("GemPlatform", GemPlatform, pic)
+return common.class("GemPlatform", GemPlatform, Pic)

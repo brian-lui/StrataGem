@@ -1,7 +1,6 @@
-local love = _G.love
 local common = require "class.commons"
 local image = require 'image'
-local pic = require 'pic'
+local Pic = require 'pic'
 local tween = require 'tween'
 
 local charselect = {}
@@ -142,7 +141,7 @@ function charselect:enter()
 
 	self.objects = {}
 	for item, obj in pairs(data) do
-		self.objects[item] = common.instance(pic, {x = obj.start_x, y = obj.start_y, image = obj.image})
+		self.objects[item] = common.instance(Pic, self, {x = obj.start_x, y = obj.start_y, image = obj.image})
 		self.objects[item].transparency = obj.start_transparency
 		self.objects[item].tweening = tween.new(obj.tween_dur, self.objects[item],
 			{x = obj.x, y = obj.y, transparency = obj.transparency}, obj.tween_type)
@@ -168,8 +167,8 @@ function charselect:enter()
 					local char2 = "walter"
 					local bkground = self.background.list[self.background_idx].background
 					self.current_char = nil
-					self:start(gametype, char1, char2, bkground, nil, 1)
 					resetScreen()
+					self:start(gametype, char1, char2, bkground, nil, 1)
 				end
 			end,
 			pushed = function() self.objects.start:newImage(image.charselect.startpush) end,
@@ -178,8 +177,8 @@ function charselect:enter()
 		back = {
 			item = self.objects.back,
 			action = function()
-				self.current_screen = "title"
 				resetScreen()
+				self.statemanager:switch(require "gs_title")
 			end,
 			pushed = function() self.objects.back:newImage(image.charselect.backpush) end,
 			released = function() self.objects.back:newImage(image.charselect.back) end,
@@ -240,7 +239,7 @@ function charselect:drawScreenElements()
 	end
 end
 
-local pointIsInRect = require("utilities").pointIsInRect
+local pointIsInRect = require "utilities".pointIsInRect
 
 function charselect:mousepressed(x, y)
 	for _, button in pairs(self.buttons) do

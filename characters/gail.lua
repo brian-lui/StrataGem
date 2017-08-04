@@ -8,7 +8,7 @@ local Gail = {}
 Gail.full_size_image = love.graphics.newImage('images/characters/gail.png')
 Gail.small_image = love.graphics.newImage('images/characters/gailsmall.png')
 Gail.character_id = "Gail"
-Gail.meter_gain = {RED = 4, BLUE = 4, GREEN = 4, YELLOW = 8}
+Gail.meter_gain = {red = 4, blue = 4, green = 4, yellow = 8}
 Gail.super_images = {
 	word = image.UI.super.yellow_word,
 	partial = image.UI.super.yellow_partial,

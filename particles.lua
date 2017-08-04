@@ -2,7 +2,7 @@ local love = _G.love
 
 local image = require 'image'
 local common = require 'class.commons'
-local pic = require 'pic'
+local Pic = require 'pic'
 local tween = require 'tween'
 local pairs = pairs
 
@@ -10,7 +10,6 @@ local Particles = {}
 
 function Particles:init(game)
 	self.game = game
-	self.stage = game.stage
 	self:reset()
 end
 
@@ -63,22 +62,23 @@ end
 -- Damage particles generated when a player makes a match
 local DamageParticle = {}
 DamageParticle.DAMAGE_DROP_SPEED = window.height / 192	-- pixels for damage particles after reaching platform
-function DamageParticle:init(gem)
+function DamageParticle:init(manager, gem)
 	local img = image.lookup.particle_freq.random(gem.color)
-	pic.init(self, {x = gem.x, y = gem.y, image = img})
-	self.allParticles.Damage[ID.particle] = self
+	Pic.init(self, {x = gem.x, y = gem.y, image = img})
+	manager.allParticles.Damage[ID.particle] = self
+	self.manager = manager
 end
 
 function DamageParticle:remove()
-	self.allParticles.Damage[self.ID] = nil
+	self.manager.allParticles.Damage[self.ID] = nil
 end
 
 function DamageParticle:generate(gem)
-	local player = self.game:playerByIndex(gem.owner)
+	local player = self:playerByIndex(gem.owner)
 	local full_segments = math.floor(player.hand.damage / 4)
 
 	-- TODO: bug: for multi-match, it calculates full_segments incorrectly because it's based on the damage after the first match
-	local already_particles = self.game.particles:getNumber("Damage", player)
+	local already_particles = self.particles:getNumber("Damage", player)
 	local final_loc = math.min(2 + (full_segments/4) + (already_particles/12), 6)
 
 	-- calculate bezier curve
@@ -94,7 +94,7 @@ function DamageParticle:generate(gem)
 		local curve = love.math.newBezierCurve(x1, y1, x2, y2, x3, y3, x4, y4)
 
 		-- create damage particle
-		local p = common.instance(DamageParticle, gem)
+		local p = common.instance(DamageParticle, self.particles, gem)
 		local duration = 54 + math.random() * 12
 		local rotation = math.random() * 5
 		p.final_loc_idx = math.floor(final_loc)
@@ -102,7 +102,7 @@ function DamageParticle:generate(gem)
 
 		-- second part of movement once it hits the platform
 		local drop_y = player.hand[p.final_loc_idx].y
-		local drop_duration = (drop_y - player.hand[2].y) / self.DAMAGE_DROP_SPEED
+		local drop_duration = (drop_y - player.hand[2].y) / DamageParticle.DAMAGE_DROP_SPEED
 		local drop_x = function() return player.hand:getx(p.y) end
 		local exit_1 = function() player.hand[2].platform:screenshake(4) end
 		local exit_2 = function()
@@ -130,27 +130,28 @@ function DamageParticle:generate(gem)
 				trail.drop_duration, trail.drop_x, trail.drop_y = drop_duration, drop_x, drop_y
 			end
 
-			self.game.queue.add(i * 2, self.game.particles.damageTrail.generate, self.game.particles.damageTrail, trail)
+			self.queue:add(i * 2, self.particles.damageTrail.generate, self, trail)
 		end
 	end
 end
 
-DamageParticle = common.class("DamageParticle", DamageParticle, pic)
+DamageParticle = common.class("DamageParticle", DamageParticle, Pic)
 
 -------------------------------------------------------------------------------
 
 local DamageTrailParticle = {}
-function DamageTrailParticle:init(gem)
-	pic.init(self, {x = gem.x, y = gem.y, image = image.lookup.trail_particle[gem.color]})
-	self.allParticles.DamageTrail[ID.particle] = self
+function DamageTrailParticle:init(manager, gem)
+	Pic.init(self, {x = gem.x, y = gem.y, image = image.lookup.trail_particle[gem.color]})
+	manager.allParticles.DamageTrail[ID.particle] = self
+	self.manager = manager
 end
 
 function DamageTrailParticle:remove()
-	self.allParticles.DamageTrail[self.ID] = nil
+	self.manager.allParticles.DamageTrail[self.ID] = nil
 end
 
 function DamageTrailParticle:generate(trail)
-	local p = common.instance(DamageTrailParticle, trail.gem)
+	local p = common.instance(DamageTrailParticle, self.particles, trail.gem)
 	p.particle_type = "DamageTrail"
 	if trail.drop_duration then
 		p:moveTo{duration = trail.duration, rotation = trail.rotation, curve = trail.curve}
@@ -162,24 +163,25 @@ function DamageTrailParticle:generate(trail)
 	end
 end
 
-DamageTrailParticle = common.class("DamageTrailParticle", DamageTrailParticle, pic)
+DamageTrailParticle = common.class("DamageTrailParticle", DamageTrailParticle, Pic)
 
 -------------------------------------------------------------------------------
 -- particles for super meter generated when a gem is matched
 local SuperParticle = {}
-function SuperParticle:init(gem)
+function SuperParticle:init(manager, gem)
 	local img = image.lookup.super_particle[gem.color]
-	pic.init(self, {x = gem.x, y = gem.y, image = img})
-	self.allParticles.Super[ID.particle] = self
+	Pic.init(self, {x = gem.x, y = gem.y, image = img})
+	manager.allParticles.Super[ID.particle] = self
+	self.manager = manager
 end
 
 function SuperParticle:remove()
-	self.allParticles.Super[self.ID] = nil
+	self.manager.allParticles.Super[self.ID] = nil
 end
 
 function SuperParticle:generate(gem, num_particles)
 -- particles follow cubic Bezier curve from gem origin to super bar.
-	local player = self.game:playerByIndex(gem.owner)
+	local player = self:playerByIndex(gem.owner)
 	for _ = 1, num_particles do
 		-- create bezier curve
 		local x1, y1 = gem.x, gem.y -- start
@@ -193,7 +195,7 @@ function SuperParticle:generate(gem, num_particles)
 		local curve = love.math.newBezierCurve(x1, y1, x2, y2, x3, y3, x4, y4)
 
 		-- create particle
-		local p = common.instance(SuperParticle, gem)
+		local p = common.instance(SuperParticle, self.particles, gem)
 
 		-- move particle
 		local duration = (0.9 + 0.2 * math.random()) * 90
@@ -201,47 +203,50 @@ function SuperParticle:generate(gem, num_particles)
 	end
 end
 
-SuperParticle = common.class("SuperParticle", SuperParticle, pic)
+SuperParticle = common.class("SuperParticle", SuperParticle, Pic)
 
 -------------------------------------------------------------------------------
 -- When a match is made, this is the glow behind the gems
 local PopParticle = {}
-function PopParticle:init(gem)
-	pic.init(self, {x = self.stage.grid.x[gem.column], y = self.stage.grid.y[gem.row],
+function PopParticle:init(manager, gem)
+	local stage = manager.game.stage
+	Pic.init(self, {x = stage.grid.x[gem.column], y = stage.grid.y[gem.row],
 		image = image.lookup.pop_particle[gem.color]})
-	self.allParticles.Pop[ID.particle] = self
+	manager.allParticles.Pop[ID.particle] = self
+	self.manager = manager
 end
 
 function PopParticle:remove()
-	self.allParticles.Pop[self.ID] = nil
+	self.manager.allParticles.Pop[self.ID] = nil
 end
 
 function PopParticle:generate(gem)
-	local p = common.instance(PopParticle, gem)
+	local p = common.instance(PopParticle, self.particles, gem)
 	p:moveTo{duration = 30, transparency = 0, scaling = 4, exit = true}
 end
 
-PopParticle = common.class("PopParticle", PopParticle, pic)
+PopParticle = common.class("PopParticle", PopParticle, Pic)
 
 -------------------------------------------------------------------------------
 -- When a match is made, this is the white/gray overlay for the gems
 local ExplodingGem = {}
 ExplodingGem.GEM_EXPLODE_FRAMES = 20
 ExplodingGem.GEM_FADE_FRAMES = 10
-function ExplodingGem:init(gem)
+function ExplodingGem:init(manager, gem)
 	local grey_gems = gem.owner == 3
-	local color = grey_gems and (gem.color .. "_GRAY") or gem.color
+	local color = grey_gems and (gem.color .. "_gray") or gem.color
 	local img = image.lookup.gem_explode[color]
-	pic.init(self, {x = gem.x, y = gem.y, image = img, transparency = 0})
-	self.allParticles.ExplodingGem[ID.particle] = self
+	Pic.init(self, {x = gem.x, y = gem.y, image = img, transparency = 0})
+	manager.allParticles.ExplodingGem[ID.particle] = self
+	self.manager = manager
 end
 
 function ExplodingGem:remove()
-	self.allParticles.ExplodingGem[self.ID] = nil
+	self.manager.allParticles.ExplodingGem[self.ID] = nil
 end
 
 function ExplodingGem:generate(gem)
-	local p = common.instance(ExplodingGem, gem)
+	local p = common.instance(ExplodingGem, self.particles, gem)
 	p:moveTo{duration = self.GEM_EXPLODE_FRAMES, transparency = 255}
 	if gem.owner == 3 then
 		p:moveTo{duration = self.GEM_FADE_FRAMES, exit = true}
@@ -251,7 +256,7 @@ function ExplodingGem:generate(gem)
 	end
 end
 
-ExplodingGem = common.class("ExplodingGem", ExplodingGem, pic)
+ExplodingGem = common.class("ExplodingGem", ExplodingGem, Pic)
 
 -------------------------------------------------------------------------------
 --[[
@@ -263,33 +268,35 @@ ExplodingGem = common.class("ExplodingGem", ExplodingGem, pic)
 	right_max: the right-most x that particles end up moving to.
  --]]
 local PlatformStar = {}
-function PlatformStar:init(x, y, image, particle_type)
-	pic.init(self, {x = x, y = y, image = image})
-	self.allParticles[particle_type][ID.particle] = self
+function PlatformStar:init(manager, x, y, _image, particle_type)
+	Pic.init(self, {x = x, y = y, image = _image})
+	manager.allParticles[particle_type][ID.particle] = self
+	self.manager = manager
 	self.particle_type = particle_type
 end
 
 function PlatformStar:remove()
-	self.allParticles[self.particle_type][self.ID] = nil
+	self.manager.allParticles[self.particle_type][self.ID] = nil
 end
 
 function PlatformStar:generate(player, star_type, left, right_min, right_max)
+	local stage = self.stage
  	-- generate particle
 	local star = star_type .. player.ID
 	local rand = math.random(1, #image.lookup.platform_star[star])
 	local todraw = image.lookup.platform_star[star][rand]
-	local x = math.random(left * self.stage.width, right_max * self.stage.width)
-	local y = self.stage.height
-	local p = common.instance(PlatformStar, x, y, todraw, "Platform" .. star_type)
+	local x = math.random(left * stage.width, right_max * stage.width)
+	local y = stage.height
+	local p = common.instance(PlatformStar, self.particles, x, y, todraw, "Platform" .. star_type)
 
 	-- create bezier curve for bottom half movement
-	local curve_right_min = math.max(right_min * self.stage.width, x)
-	local curve_right = math.random(curve_right_min, right_max * self.stage.width)
+	local curve_right_min = math.max(right_min * stage.width, x)
+	local curve_right = math.random(curve_right_min, right_max * stage.width)
 	if player.ID == "P2" then
-		curve_right_min = math.min(right_min * self.stage.width, x)
-		curve_right = math.random(right_max * self.stage.width, curve_right_min)
+		curve_right_min = math.min(right_min * stage.width, x)
+		curve_right = math.random(right_max * stage.width, curve_right_min)
 	end
-	local curve = love.math.newBezierCurve(x, y, curve_right, y * 0.75, curve_right, self.stage.y_mid)
+	local curve = love.math.newBezierCurve(x, y, curve_right, y * 0.75, curve_right, stage.y_mid)
 
 	-- create move functions
 	local duration = 360
@@ -297,23 +304,24 @@ function PlatformStar:generate(player, star_type, left, right_min, right_max)
 	if star_type == "TinyStar" then rotation = 0.06 * duration end
 	if player.ID == "P2" then rotation = -rotation end
 	p:moveTo{duration = duration * 0.5, curve = curve, rotation = rotation * 0.5}
-	p:moveTo{duration = duration * 0.2, y = self.stage.height * 0.3, rotation = rotation * 0.7}
-	p:moveTo{duration = duration * 0.15, y = self.stage.height * 0.15, rotation = rotation * 0.85,
+	p:moveTo{duration = duration * 0.2, y = stage.height * 0.3, rotation = rotation * 0.7}
+	p:moveTo{duration = duration * 0.15, y = stage.height * 0.15, rotation = rotation * 0.85,
 		transparency = 0, exit = true}
 end
 
-PlatformStar = common.class("PlatformStar", PlatformStar, pic)
+PlatformStar = common.class("PlatformStar", PlatformStar, Pic)
 
 -------------------------------------------------------------------------------
 local Dust = {}
-function Dust:init(x, y, image, particle_type)
-	pic.init(self, {x = x, y = y, image = image})
-	self.allParticles[particle_type][ID.particle] = self
+function Dust:init(manager, x, y, _image, particle_type)
+	Pic.init(self, {x = x, y = y, image = _image})
+	manager.allParticles[particle_type][ID.particle] = self
+	self.manager = manager
 	self.particle_type = particle_type
 end
 
 function Dust:remove()
-	self.allParticles[self.particle_type][self.ID] = nil
+	self.manager.allParticles[self.particle_type][self.ID] = nil
 end
 
 -- starburst along n lines, like when you capture a pokemon. Unused
@@ -327,7 +335,7 @@ function Dust:generateStarburst(gem, n)
 		local y_vel = (math.random() - 0.5) * 0.015 * self.stage.height
 
 		for j = 1, math.random(1, 3) do
-	 		local p = common.instance(Dust, gem.x, gem.y, todraw, "OverDust")
+	 		local p = common.instance(Dust, self.particles, gem.x, gem.y, todraw, "OverDust")
 	 		p.RGB = {128, 128, 128}
 	 		local x_func = function() return x + p.t * x_vel * j end
 	 		--local x_func2 = function() return x + x_vel * (1 + p.t * 0.2)end
@@ -347,7 +355,7 @@ function Dust:generateYoshi(gem)
 	local img = image.lookup.dust.star(gem.color)
 	local yoshi = {left = -1, right = 1}
 	for _, sign in pairs(yoshi) do
-		local p = common.instance(Dust, x, y, img, "OverDust")
+		local p = common.instance(Dust, self.particles, x, y, img, "OverDust")
 		p.scaling = 0.5
 		p:moveTo{x = x + self.stage.width * 0.05 * sign, y = y - self.stage.height * 0.02,
 			duration = 30, rotation = sign, scaling = 0.8, easing = "outQuart"}
@@ -367,7 +375,7 @@ function Dust:generateFountain(gem, n)
 	 	local y_vel = (math.random() + 1) * - 0.1 * self.stage.height
 	 	local acc = 0.26 * self.stage.height
 
- 		local p = common.instance(Dust, gem.x, gem.y, todraw, p_type)
+ 		local p = common.instance(Dust, self.particles, gem.x, gem.y, todraw, p_type)
  		local x1 = x + x_vel
  		local x2 = x + x_vel * 1.2
  		local y_func = function() return y + p.t * y_vel + p.t^2 * acc end
@@ -391,7 +399,7 @@ function Dust:generateBigFountain(gem, n)
 	 	local y_vel = (math.random() - 0.75) * 0.52 * self.stage.height
 	 	local acc = 0.2 * self.stage.height
 
- 		local p = common.instance(Dust, gem.x, gem.y, todraw, p_type)
+ 		local p = common.instance(Dust, self.particles, gem.x, gem.y, todraw, p_type)
  		local x1 = x + x_vel
  		local x2 = x_vel * 1.2
  		local y_func = function() return y + p.t * y_vel + p.t^2 * acc end
@@ -416,7 +424,7 @@ function Dust:generateStarFountain(gem, n)
 	 	local acc = 3 * self.stage.height
 
 	 	-- create star
- 		local p = common.instance(Dust, gem.x, gem.y, todraw, p_type)
+ 		local p = common.instance(Dust, self.particles, gem.x, gem.y, todraw, p_type)
  		local x1 = x + x_vel
  		local y_func = function() return y + p.t * y_vel + p.t^2 * acc end
  		p:moveTo{duration = duration, rotation = rotation, x = x1, y = y_func, exit = true}
@@ -424,7 +432,7 @@ function Dust:generateStarFountain(gem, n)
  		-- create trails
  		for frames = 1, 3 do
 	 		local trail_image = image.lookup.trail_particle[gem.color]
-			local trail = common.instance(Dust, x, y, trail_image, p_type)
+			local trail = common.instance(Dust, self.particles, x, y, trail_image, p_type)
 			local trail_y = function() return y + trail.t * y_vel + trail.t^2 * acc end
 			trail.scaling = 1.25 - (frames * 0.25)
 			trail:wait(frames * 2)
@@ -439,22 +447,22 @@ function Dust:generateYellowFountain(x, y)
 	local rotation = 0.5
 
 	for i = 1, 48 do
-		local todraw = image.lookup.particle_freq.random("YELLOW")
+		local todraw = image.lookup.particle_freq.random("yellow")
 		local p_type = (i % 2 == 1) and "Dust" or "OverDust"
 	 	local x_vel = (math.random() - 0.5) * 2 * self.stage.width
 	 	local y_vel = (math.random() - 0.75) * 3 * self.stage.height
 	 	local acc = 3 * self.stage.height
 
 		-- create star
-	 	local p = common.instance(Dust, x, y, todraw, p_type)
+	 	local p = common.instance(Dust, self.particles, x, y, todraw, p_type)
 	 	local x1 = x + x_vel
 	 	local y_func = function() return y + p.t * y_vel + p.t^2 * acc end
 	 	p:moveTo{duration = duration, rotation = rotation, x = x1, y = y_func, exit = true}
 
 		-- create trails
  		for frames = 1, 3 do
-	 		local trail_image = image.lookup.trail_particle.YELLOW
-			local trail = common.instance(Dust, x, y, trail_image, p_type)
+	 		local trail_image = image.lookup.trail_particle.yellow
+			local trail = common.instance(Dust, self.particles, x, y, trail_image, p_type)
 			local trail_y = function() return y + trail.t * y_vel + trail.t^2 * acc end
 			trail.scaling = 1.25 - (frames * 0.25)
 			trail:wait(frames * 2)
@@ -471,59 +479,63 @@ function Dust:generateFalling(gem, x_drift, y_drift)
  	local duration = 60
  	local p_type = (math.random(1, 2) == 2) and "Dust" or "OverDust"
 
- 	local p = common.instance(Dust, x, y, todraw, p_type)
+ 	local p = common.instance(Dust, self.particles, x, y, todraw, p_type)
  	p:moveTo{duration = duration, rotation = rotation, y = y + 0.13 * self.stage.height}
  	p:moveTo{duration = duration * 0.3, rotation = rotation * 1.3, transparency = 0,
  		y = y + 1.3 * (0.13 * self.stage.height), exit = true}
 end
 
-Dust = common.class("Dust", Dust, pic)
+Dust = common.class("Dust", Dust, Pic)
 
 -------------------------------------------------------------------------------
 -- When a gem is placed in basin, make the gem effects for tweening offscreen.
 local UpGem = {}
-function UpGem:init(gem)
-	pic.init(self, {x = gem.x, y = gem.y, image = gem.image})
-	self.allParticles.UpGem[ID.particle] = self
+function UpGem:init(manager, gem)
+	Pic.init(self, {x = gem.x, y = gem.y, image = gem.image})
+	manager.allParticles.UpGem[ID.particle] = self
+	self.manager = manager
 end
 
 function UpGem:remove()
-	self.allParticles.UpGem[self.ID] = nil
+	self.manager.allParticles.UpGem[self.ID] = nil
 end
 
 function UpGem:generate(gem)
-	local p = common.instance(UpGem, gem)
+	local p = common.instance(UpGem, self.particles, gem)
 	p:moveTo{y = -p.height, duration = 60, easing = "inQuad", exit = true}
 end
 
 -- Remove all gems at end of turn, whether they finished tweening or not
-function UpGem:removeAll()
-	for _, v in pairs(self.allParticles.UpGem) do v:remove() end
+function UpGem.removeAll(manager)
+	for _, v in pairs(manager.allParticles.UpGem) do
+		v:remove()
+	end
 end
 
-UpGem = common.class("UpGem", UpGem, pic)
+UpGem = common.class("UpGem", UpGem, Pic)
 
 -------------------------------------------------------------------------------
 local WordEffects = {}
-function WordEffects:init(x, y, todraw)
-	pic.init(self, {x = x, y = y, image = todraw})
-	self.allParticles.WordEffects[ID.particle] = self
+function WordEffects:init(manager, x, y, todraw)
+	Pic.init(self, {x = x, y = y, image = todraw})
+	manager.allParticles.WordEffects[ID.particle] = self
+	self.manager = manager
 end
 
 function WordEffects:remove()
-	self.allParticles.WordEffects[self.ID] = nil
+	self.manager.allParticles.WordEffects[self.ID] = nil
 end
 
 -- the glow cloud behind a doublecast piece.
 -- called from anims.putPendingOnTop, and from anims.update
 function WordEffects:generateDoublecastCloud(gem1, gem2, horizontal)
 	local todraw = image.words.doublecast_cloud
-	local p = common.instance(WordEffect, (gem1.x + gem2.x) * 0.5, (gem1.y + gem2.y) * 0.5, todraw)
+	local p = common.instance(WordEffects, self.particles, (gem1.x + gem2.x) * 0.5, (gem1.y + gem2.y) * 0.5, todraw)
 	p.rotation = horizontal and 0 or math.pi * 0.5
 	p.transparency = 0
 	p:moveTo{duration = 20, transparency = 255, easing = "inCubic"}
 	p.update = function(_self, dt)
-		pic.update(_self, dt)
+		Pic.update(_self, dt)
 		_self.x, _self.y = (gem1.x + gem2.x) * 0.5, (gem1.y + gem2.y) * 0.5
 	end
 	p.cloud = true
@@ -533,12 +545,12 @@ end
 -- called from anims.putPendingOnTop, and from anims.update
 function WordEffects:generateRushCloud(gem1, gem2, horizontal)
 	local todraw = horizontal and image.words.rush_cloud_h or image.words.rush_cloud_v
-	local p = common.instance(WordEffects, (gem1.x + gem2.x) * 0.5, (gem1.y + gem2.y) * 0.5, todraw)
+	local p = common.instance(WordEffects, self.particles, (gem1.x + gem2.x) * 0.5, (gem1.y + gem2.y) * 0.5, todraw)
 	p.transparency = 0
 	p:moveTo{duration = 20, transparency = 255, easing = "inCubic"}
-	p:moveTo{duration = 600, during = {8, 0, WordEffects.generateRushParticle, WordEffects, gem1, gem2, horizontal}}
+	p:moveTo{duration = 600, during = {8, 0, WordEffects.generateRushParticle, self, gem1, gem2, horizontal}}
 	p.update = function(_self, dt)
-		pic.update(_self, dt)
+		Pic.update(_self, dt)
 		_self.x, _self.y = (gem1.x + gem2.x) * 0.5, (gem1.y + gem2.y) * 0.5
 	end
 	p.cloud = true
@@ -558,7 +570,7 @@ function WordEffects:generateRushParticle(gem1, gem2, horizontal)
 		y_adj = -image.GEM_HEIGHT
 	end
 
-	local p = common.instance(WordEffects, x + x_drift, y + y_adj, todraw)
+	local p = common.instance(WordEffects, self.particles, x + x_drift, y + y_adj, todraw)
 	p.rotation = (x_drift / image.GEM_WIDTH) / (math.pi * 2)
 	p:moveTo{duration = 18, scaling = 0.7, exit = true}
 end
@@ -566,14 +578,14 @@ end
 -- falling stars accompanying Ready at start of match. Called from Words.Ready
 function WordEffects:generateReadyParticle(size, x, y)
 	local todraw = image.lookup.words_ready(size)
-	local p = common.instance(WordEffects, x, y, todraw)
+	local p = common.instance(WordEffects, self.particles, x, y, todraw)
 	local y_func = function() return y + (p.t*3)^2 * 0.15 * self.stage.height end
 	p:moveTo{duration = 120, y = y_func, exit = true}
 end
 
 -- large gold star accompanying Go at start of match. Called from Words.Go
 function WordEffects:generateGoStar(x, y, x_vel, y_vel)
-	local p = common.instance(WordEffects, x, y, image.words.go_star)
+	local p = common.instance(WordEffects, self.particles, x, y, image.words.go_star)
 	local y_func = function() return y + p.t * y_vel + (p.t)^2 * 3 * self.stage.height end
 	p:moveTo{duration = 120, x = x + x_vel, y = y_func, exit = true}
 end
@@ -581,13 +593,13 @@ end
 -- DoublecastCloud, RushCloud, RushParticle, ReadyParticle, GoStar
 function WordEffects:generate(effect_type, ...)
 	local particle = {
-		DoublecastCloud = self.generateDoublecastCloud,
-		RushCloud = self.generateRushCloud,
-		RushParticle = self.generateRushParticle,
-		ReadyParticle = self.generateReadyParticle,
-		GoStar = self.generateGoStar,
+		DoublecastCloud = WordEffects.generateDoublecastCloud,
+		RushCloud = WordEffects.generateRushCloud,
+		RushParticle = WordEffects.generateRushParticle,
+		ReadyParticle = WordEffects.generateReadyParticle,
+		GoStar = WordEffects.generateGoStar,
 	}
-	particle[effect_type](particle[effect_type], ...)
+	particle[effect_type](self, ...)
 end
 
 function WordEffects:cloudExists()
@@ -597,13 +609,13 @@ function WordEffects:cloudExists()
 	return false
 end
 
-function WordEffects:clear()
-	for _, effect in pairs(self.allParticles.WordEffects) do
+function WordEffects.clear(manager)
+	for _, effect in pairs(manager.allParticles.WordEffects) do
 		if effect.cloud then effect:remove() end
 	end
 end
 
-WordEffects = common.class("WordEffects", WordEffects, pic)
+WordEffects = common.class("WordEffects", WordEffects, Pic)
 
 -------------------------------------------------------------------------------
 
@@ -612,20 +624,21 @@ WordEffects = common.class("WordEffects", WordEffects, pic)
 -------------------------------------------------------------------------------
 -- words! Doublecast, rush, go, and ready so far.
 local Words = {}
-function Words:init(x, y, todraw)
-	pic.init(self, {x = x, y = y, image = todraw})
-	self.allParticles.Words[ID.particle] = self
+function Words:init(manager, x, y, todraw)
+	Pic.init(self, {x = x, y = y, image = todraw})
+	manager.allParticles.Words[ID.particle] = self
+	self.manager = manager
 end
 
 function Words:remove()
-	self.allParticles.Words[self.ID] = nil
+	self.manager.allParticles.Words[self.ID] = nil
 end
 
 function Words:generateDoublecast(player)
 	local x = player.ID == "P1" and self.stage.width * 0.4 or self.stage.width * 0.6
 	local y = self.stage.height * 0.3
 	local todraw = image.words.doublecast
-	local p = common.instance(Words, x, y, todraw, nil, nil, nil, nil, nil, true)
+	local p = common.instance(Words, self.particles, x, y, todraw, nil, nil, nil, nil, nil, true)
 	p.scaling = 5
 	p:moveTo{duration = 60, scaling = 1, easing = "outQuart"}
 	p:moveTo{duration = 60, transparency = 0, easing = "inExpo", exit = true}
@@ -636,64 +649,68 @@ function Words:generateRush(player)
 	local x = self.stage.width * (0.5 - sign * 0.6)
 	local y = self.stage.height * 0.3
 	local todraw = image.words.rush
-	local p = common.instance(Words, x, y, todraw, nil, nil, nil, nil, nil, true)
+	local p = common.instance(Words, self.particles, x, y, todraw, nil, nil, nil, nil, nil, true)
 	p.rotation = 0.25
 	p:moveTo{duration = 60, x = self.stage.width * (0.5 + sign * 0.2), rotation = 0, easing = "outBounce"}
 	p:moveTo{duration = 60, x = self.stage.width * (0.5 + sign * 0.9), rotation = 0.5, easing = "inBack", exit = true}
 end
 
-function Words:generateReady()
-	local x = self.stage.width * -0.4
-	local y = self.stage.height * 0.3
+function Words.generateReady(game)
+	local stage = game.stage
+	local particles = game.particles
+	local x = stage.width * -0.4
+	local y = stage.height * 0.3
 	local todraw = image.words.ready
 	local h, w = todraw:getHeight(), todraw:getWidth()
-	local p = common.instance(Words, x, y, todraw, nil, nil, nil, nil, nil, true)
+	local p = common.instance(Words, particles, x, y, todraw, nil, nil, nil, nil, nil, true)
 	local generate_big = function()
-		particles.wordEffects:generateReadyParticle("large",
-				p.x + (math.random()-0.5)*w, self.stage.height*0.3 + (math.random()-0.5)*h)
+		particles.wordEffects.generateReadyParticle(game, "large",
+				p.x + (math.random()-0.5)*w, stage.height*0.3 + (math.random()-0.5)*h)
 	end
 	local generate_small = function()
-		particles.wordEffects:generateReadyParticle("small",
-			p.x + (math.random()-0.5)*w, self.stage.height*0.3 + (math.random()-0.5)*h)
+		particles.wordEffects.generateReadyParticle(game, "small",
+			p.x + (math.random()-0.5)*w, stage.height*0.3 + (math.random()-0.5)*h)
 	end
-	p:moveTo{duration = 60, x = 0.5 * self.stage.width, transparency = 510,
+	p:moveTo{duration = 60, x = 0.5 * stage.width, transparency = 510,
 		during = {{5, 0, generate_big}, {2, 0, generate_small}}, easing = "outQuart"}
-	p:moveTo{duration = 60, x = 1.4 * self.stage.width, transparency = 0,
+	p:moveTo{duration = 60, x = 1.4 * stage.width, transparency = 0,
 		during = {{5, 0, generate_big}, {2, 0, generate_small}}, easing = "inQuad", exit = true}
 end
 
-function Words:generateGo()
-	local x = self.stage.width * 0.5
-	local y = self.stage.height * 0.3
+function Words.generateGo(game)
+	local stage = game.stage
+	local x = stage.width * 0.5
+	local y = stage.height * 0.3
 	local todraw = image.words.go
-	local p = common.instance(Words, x, y, todraw)
+	local p = common.instance(Words, game.particles, x, y, todraw)
 	p.scaling = 0.1
 	p:moveTo{duration = 36, scaling = 1, easing = "outQuart"}
 	p:moveTo{duration = 18, transparency = 0, easing = "linear", exit = true}
 
-	local particles = self.game.particles
-	particles.wordEffects:generateGoStar(x, y, self.stage.width * 0.25, self.stage.height * -0.4)
-	particles.wordEffects:generateGoStar(x, y, self.stage.width * 0.25, self.stage.height * -1.2)
-	particles.wordEffects:generateGoStar(x, y, self.stage.width * -0.25, self.stage.height * -0.4)
-	particles.wordEffects:generateGoStar(x, y, self.stage.width * -0.25, self.stage.height * -1.2)
-	particles.dust:generateYellowFountain(x, y)
+	local particles = game.particles
+	particles.wordEffects.generateGoStar(game, x, y, stage.width * 0.25, stage.height * -0.4)
+	particles.wordEffects.generateGoStar(game, x, y, stage.width * 0.25, stage.height * -1.2)
+	particles.wordEffects.generateGoStar(game, x, y, stage.width * -0.25, stage.height * -0.4)
+	particles.wordEffects.generateGoStar(game, x, y, stage.width * -0.25, stage.height * -1.2)
+	particles.dust.generateYellowFountain(game, x, y)
 end
 
-Words = common.class("Words", Words, pic)
+Words = common.class("Words", Words, Pic)
 
 -------------------------------------------------------------------------------
 
 local PieEffects = {}
-function PieEffects:init(x, y, rotation, todraw, update_func, tw)
-	pic.init(self, {x = x, y = y, rotation = rotation, image = todraw})
-	self.allParticles.PieEffects[ID.particle] = self
+function PieEffects:init(manager, x, y, rotation, todraw, update_func, tw)
+	Pic.init(self, {x = x, y = y, rotation = rotation, image = todraw})
+	manager.allParticles.PieEffects[ID.particle] = self
+	self.manager = manager
 	self.update = update_func
 	self.t = 0
 	self.tweening = tween.new(tw.duration, self, tw.var, tw.movement)
 end
 
 function PieEffects:remove()
-	self.allParticles.PieEffects[self.ID] = nil
+	self.manager.allParticles.PieEffects[self.ID] = nil
 end
 
 function PieEffects:generateSegment(segment, todraw)
@@ -717,73 +734,77 @@ function PieEffects:generateSegment(segment, todraw)
 		end
 	end
 	local tweening = {duration = 0.5,	var = {t = 1}, movement = "inCubic"}
-	common.instance(PieEffects, segment.x, segment.y, segment.rotation, todraw, update_func, tweening)
+	common.instance(PieEffects, self.particles, segment.x, segment.y, segment.rotation, todraw, update_func, tweening)
 end
 
 function PieEffects:generatePie(pie)
 end
 
-PieEffects = common.class("PieEffects", PieEffects, pic)
+PieEffects = common.class("PieEffects", PieEffects, Pic)
 
 -------------------------------------------------------------------------------
 
 local CharEffects = {}
 -- required stuff in table: x, y, rotation, image
-function CharEffects:init(tbl)
-	pic.init(self, tbl)
-	self.allParticles.CharEffects[ID.particle] = self
+function CharEffects:init(manager, tbl)
+	Pic.init(self, tbl)
+	manager.allParticles.CharEffects[ID.particle] = self
+	self.manager = manager
 end
 
 function CharEffects:remove()
-	self.allParticles.CharEffects[self.ID] = nil
+	self.manager.allParticles.CharEffects[self.ID] = nil
 end
 
-CharEffects = common.class("CharEffects", CharEffects, pic)
+CharEffects = common.class("CharEffects", CharEffects, Pic)
 
 -------------------------------------------------------------------------------
 
 local SuperEffects1 = {}
 -- required stuff in table: x, y, rotation, image
-function SuperEffects1:init(tbl)
-	pic.init(self, tbl)
+function SuperEffects1:init(manager, tbl)
+	Pic.init(self, tbl)
 	self.allParticles.SuperEffects1[ID.particle] = self
+	self.manager = manager
 end
 
 function SuperEffects1:remove()
-	self.allParticles.SuperEffects1[self.ID] = nil
+	self.manager.allParticles.SuperEffects1[self.ID] = nil
 end
 
-SuperEffects1 = common.class("SuperEffects1", SuperEffects1, pic)
+SuperEffects1 = common.class("SuperEffects1", SuperEffects1, Pic)
 
 -------------------------------------------------------------------------------
 
 local SuperEffects2 = {}
 -- required stuff in table: x, y, rotation, image
-function SuperEffects2:init(tbl)
-	pic.init(self, tbl)
+function SuperEffects2:init(manager, tbl)
+	Pic.init(self, tbl)
 	self.allParticles.SuperEffects2[ID.particle] = self
+	self.manager = manager
 end
 
 function SuperEffects2:remove()
-	self.allParticles.SuperEffects2[self.ID] = nil
+	self.manager.allParticles.SuperEffects2[self.ID] = nil
 end
 
-SuperEffects2 = common.class("SuperEffects2", SuperEffects2, pic)
+SuperEffects2 = common.class("SuperEffects2", SuperEffects2, Pic)
 
 -------------------------------------------------------------------------------
 
 local SuperEffects3 = {}
 -- required stuff in table: x, y, rotation, image
-function SuperEffects3:init(tbl)
-	pic.init(self, tbl)
+function SuperEffects3:init(manager, tbl)
+	Pic.init(self, tbl)
 	self.allParticles.SuperEffects3[ID.particle] = self
+	self.manager = manager
 end
 
 function SuperEffects3:remove()
-	self.allParticles.SuperEffects3[self.ID] = nil
+	self.manager.allParticles.SuperEffects3[self.ID] = nil
 end
 
-SuperEffects3 = common.class("SuperEffects3", SuperEffects3, pic)
+SuperEffects3 = common.class("SuperEffects3", SuperEffects3, Pic)
 
 -------------------------------------------------------------------------------
 

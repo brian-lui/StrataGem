@@ -6,9 +6,11 @@ QUEUE COMPONENT
 --]==================]
 
 local Queue = {}
-function Queue:init(_game)
-	self.game = _game
+
+function Queue:init(game)
+	self.game = game
 end
+
 function Queue:add(frames, func, ...)
 	assert(frames % 1 == 0 and frames >= 0, "non-integer or negative queue received")
 	local a = self.game.frame + frames
@@ -30,23 +32,22 @@ end
 Queue = common.class("Queue", Queue)
 
 --[==================[
-QUEUE COMPONENT
+END QUEUE COMPONENT
 --]==================]
 
-local game = {}
+local Game = {}
 
-game.INIT_TIME_TO_NEXT = 430 -- frames in each action phase
-game.INIT_PIECE_WAITING_TIME = 30 -- delay before new pieces
-game.LOSE_ROW = 6
-game.RUSH_ROW = 8 -- can only rush if this row is empty
-game.NETPLAY_MAX_WAIT = 60
-game.STATE_SEND_WAIT = 80
-game.VERSION = "64.0"
+Game.INIT_TIME_TO_NEXT = 430 -- frames in each action phase
+Game.INIT_PIECE_WAITING_TIME = 30 -- delay before new pieces
+Game.LOSE_ROW = 6
+Game.RUSH_ROW = 8 -- can only rush if this row is empty
+Game.NETPLAY_MAX_WAIT = 60
+Game.STATE_SEND_WAIT = 80
+Game.VERSION = "64.0"
 
-function game:init()
-	-- TODO: Deglobalize players and uncomment these
-	-- self.p1 = common.instance(require "character")
-	-- self.p2 = common.instance(require "character")
+function Game:init()
+	self.p1 = common.instance(require "character")	-- Dummy
+	self.p2 = common.instance(require "character")
 	self.phaseManager = common.instance(require "phasemanager", self)
 	self.rng = love.math.newRandomGenerator()
 	self.bgm = nil
@@ -55,15 +56,16 @@ function game:init()
 	self.animations = common.instance(require "animations", self)
 	self.particles = common.instance(require "particles", self)
 	self.client = common.instance(require "client", self)
+	self.ui = common.instance(require "ui", self)
 	self.queue = common.instance(Queue, self)
 
 	self.statemanager = common.instance(require "statemanager", self)
-	self.statemanager:switch(require "title")
+	self.statemanager:switch(require "gs_title")
 
 	self:reset()
 end
 
-function game:start(gametype, char1, char2, bkground, seed, side)
+function Game:start(gametype, char1, char2, bkground, seed, side)
 	ID:reset()
 
 	self:reset()
@@ -77,8 +79,6 @@ function game:start(gametype, char1, char2, bkground, seed, side)
 	self.p2 = common.instance(require("characters." .. char2), 2, self)
 	self.p1.enemy = self.p2
 	self.p2.enemy = self.p1
-	self.animations:create(self, self.p1)
-	self.animations:create(self, self.p2)
 
 	side = side or 1
 	if side == 1 then
@@ -91,23 +91,23 @@ function game:start(gametype, char1, char2, bkground, seed, side)
 		print("Sh*t")
 	end
 
-	self.background = bkground
-	self.background.reset()
+	self.background.current = bkground
+	self.background.current.reset(self.background)
 
 	self.type = gametype
 	self.statemanager:switch(require "gs_main")
 end
 
-function game:update(dt)
+function Game:update(dt)
 	self.client:update(dt)
 end
 
-function game:playerByIndex(i)
+function Game:playerByIndex(i)
 	local p = {self.p1, self.p2}
 	return p[i]
 end
 
-function game:players()
+function Game:players()
 	local p = {self.p1, self.p2}
   local i = 0
   return function()
@@ -116,14 +116,14 @@ function game:players()
 	end
 end
 
-function game:newTurn()
+function Game:newTurn()
 	self.turn = self.turn + 1
 	self.phase = "Action"
 	self.frozen = false
 	self.time_to_next = self.INIT_TIME_TO_NEXT
 end
 
-function game:reset()
+function Game:reset()
 	self.phase = "Intro"
 	self.turn = 1
 	self.time_to_next = self.INIT_TIME_TO_NEXT
@@ -145,7 +145,7 @@ function game:reset()
 end
 
 -- testing!
-local gem = require 'gem'
+local Gem = require 'gem'
 
 local colorAliases = {
 	r = "Red",
@@ -180,12 +180,12 @@ local function n(self, row, column, color)
 
 	row = row + 6
 	local x, y = self.stage.grid.x[column], self.stage.grid.y[row]
-	local gem_color = gem[color.."Gem"]
+	local gem_color = Gem[color .. "Gem"]
 	self.stage.grid[row][column].gem = common.instance(gem_color, x, y)
 	self.stage.grid[row][column].gem:addOwner(1)
 end
 
-function game:keypressed(key)
+function Game:keypressed(key)
 	local stage = self.stage
 	local grid = stage.grid
 	local p1, p2 = self.p1, self.p2
@@ -225,22 +225,34 @@ function game:keypressed(key)
 		p1.cur_mp = 64
 		--p2.cur_mp = 20
 	elseif key == "c" then
-		local pic = require 'pic'
+		local Pic = require 'pic'
 		local image = require 'image'
-		local temp = common.instance(pic, {x = stage.width * 0.5, y = stage.height * 0.5, image = image.red_gem})
+		local temp = common.instance(Pic, self, {x = stage.width * 0.5, y = stage.height * 0.5, image = image.red_gem})
 		self.particles.allParticles.PieEffects[ID.particle] = temp
 		temp.update = temp.greatupdate
 		local newbluegem = function()
 			local x, y = temp.x, temp.y
-			local blue = common.instance(pic, {x = x, y = y, image = image.blue_gem})
+			local blue = common.instance(Pic, self, {x = x, y = y, image = image.blue_gem})
 			blue.update = blue.greatupdate
 			self.particles.allParticles.PieEffects[ID.particle] = blue
 		end
 		local during = {10, 5, newbluegem}
 		temp:moveTo{x = 300, y = 200, duration = 120, during = during}
-		queue.add(10, temp.moveTo, temp, {x = 600, y = 450, duration = 60, easing = "outQuart"})
-	elseif key == "v" then
-		debugTool.printSummaryState(stage.grid, p1, p2)
+		self.queue:add(10, temp.moveTo, temp, {x = 600, y = 450, duration = 60, easing = "outQuart"})
+	elseif key == "v" then	-- print summary state
+		local toprint = {"", "", "", "", "", "", "", "", ""}
+		for row = 7, 14 do
+			for col = 1, 8 do
+				if grid[row][col].gem then
+					local colors = {red = "R", blue = "B", green = "G", yellow = "Y"}
+					toprint[row-6] = toprint[row-6] .. colors[ grid[row][col].gem.color ]
+				else
+					toprint[row-6] = toprint[row-6] .. "."
+				end
+			end
+		end
+		toprint[9] = p1.cur_mp .. "|" .. p2.cur_mp
+		for i = 1, #toprint do print(toprint[i]) end
 	elseif key == "b" then
 		n(8, 7, "G")
 		n(8, 6, "G")
@@ -261,4 +273,4 @@ function game:keypressed(key)
 	end
 end
 
-return common.class("Game", game)
+return common.class("Game", Game)

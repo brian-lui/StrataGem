@@ -1,3 +1,5 @@
+local love = _G.love
+
 local music = {}
 
 local bgm = {}

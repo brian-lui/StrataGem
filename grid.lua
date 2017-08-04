@@ -1,8 +1,7 @@
 local common = require "class.commons"
-
 local Gem = require "gem"
 
-local deepcpy = require("utilities").deepcpy
+local deepcpy = require "utilities".deepcpy
 
 local Grid = {}
 
@@ -102,7 +101,7 @@ function Grid:getMatches(minimumLength)
 	end
 
 	minimumLength = minimumLength or 3
-	local match_colors = {"RED", "BLUE", "GREEN", "YELLOW"}
+	local match_colors = {"red", "blue", "green", "yellow"}
 	local ret = {}
 	for _, c in pairs(match_colors) do
 		for _, row, column in self:gems() do
@@ -303,7 +302,7 @@ function Grid:getDropLocations(piece, optional_shift)
 end
 
 function Grid:getPermittedColors(column, banned_color1, banned_color2)
-	local avail_color = {"RED", "BLUE", "GREEN", "YELLOW"}
+	local avail_color = {"red", "blue", "green", "yellow"}
 	local ban1 = false
 	local ret = {}
 	if self[self.rows - 1][column].gem then
@@ -323,10 +322,10 @@ function Grid:generate1by1(column, banned_color1, banned_color2)
 	local row = self.rows -- grid.rows is the row underneath the bottom row
 	local avail_colors = self:getPermittedColors(column, banned_color1, banned_color2)
 	local all_gems = {
-		{color = "RED", gem = Gem.RedGem, freq = 1},
-		{color = "BLUE", gem = Gem.BlueGem, freq = 1},
-		{color = "GREEN", gem = Gem.GreenGem, freq = 1},
-		{color = "YELLOW", gem = Gem.YellowGem, freq = 1}
+		{color = "red", freq = 1},
+		{color = "blue", freq = 1},
+		{color = "green", freq = 1},
+		{color = "yellow", freq = 1}
 	}
 	local legal_gems = {}
 	for i = 1, 4 do
@@ -341,7 +340,7 @@ function Grid:generate1by1(column, banned_color1, banned_color2)
 	local speed = self.DROP_SPEED + self.DROP_MULTIPLE_SPEED * self.game.scoring_combo
 	local duration = distance / speed
 	local make_gem = function(r, c)
-		self[r][c].gem = common.instance(make_color, self.game, self.x[c], self.y[r+1], true)
+		self[r][c].gem = common.instance(Gem, self.game, self.x[c], self.y[r+1], make_color, true)
 		self[r][c].gem:moveTo{x = self.x[c], y = self.y[r], duration = duration}
 	end
 	make_gem(row, column)
@@ -536,7 +535,7 @@ end
 function Grid:generateMatchExplodingGems()
 	local particles = self.game.particles
 	for _, gem in pairs(self:getMatchedGems()) do
-		particles.explodingGem:generate(gem)
+		particles.explodingGem.generate(self.game, gem)
 	end
 end
 
@@ -552,10 +551,10 @@ function Grid:generateMatchParticles()
 			elseif player.place_type == "rush" or player.place_type == "double" then
 				num_super_particles = num_super_particles * 0.25
 			end
-			particles.super_:generate(gem, num_super_particles)
-			particles.damage:generate(gem)
-			particles.pop:generate(gem)
-			particles.dust:generateBigFountain(gem, 24, player)
+			particles.super_.generate(self.game, gem, num_super_particles)
+			particles.damage.generate(self.game, gem)
+			particles.pop.generate(self.game, gem)
+			particles.dust.generateBigFountain(self.game, gem, 24, player)
 		end
 	end
 end

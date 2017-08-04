@@ -6,11 +6,10 @@ local love = _G.love
 --]]
 
 local common = require 'classcommons'
-local tween = require 'tween'
 local pairs = pairs
 local Animation = require "animation"
 
-local spairs = require("utilities").spairs
+local spairs = require "utilities".spairs
 
 -----------------------------------HELPERS-------------------------------------
 -- cartesian to polar

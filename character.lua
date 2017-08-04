@@ -3,7 +3,7 @@ require 'inits'
 local common = require "class.commons"
 local image = require 'image'
 local tween = require 'tween'
-local pic = require 'pic'
+local Pic = require 'pic'
 local Hand = require 'hand'
 
 local character = {}
@@ -19,7 +19,7 @@ character.shadow_image = love.graphics.newImage('images/characters/heathshadow.p
 character.super_fuzz_image = love.graphics.newImage('images/ui/superfuzzred.png')
 
 character.character_id = "Lamer"
-character.meter_gain = {RED = 4, BLUE = 4, GREEN = 4, YELLOW = 4}
+character.meter_gain = {red = 4, blue = 4, green = 4, yellow = 4}
 character.super_images = {
 	word = image.UI.super.red_word,
 	partial = image.UI.super.red_partial,
@@ -60,30 +60,30 @@ end
 local function setupSuperMeter(self)
 	local stage = self.game.stage
 	local super_frame = self.ID == "P1" and image.UI.gauge_gold or image.UI.gauge_silver
-	self.super_frame = common.instance(pic, {x = stage.super[self.ID].frame.x,
+	self.super_frame = common.instance(Pic, game, {x = stage.super[self.ID].frame.x,
 		y = stage.super[self.ID].frame.y, image = super_frame})
-	self.super_word = common.instance(pic, {x = stage.super[self.ID].frame.x,
+	self.super_word = common.instance(Pic, game, {x = stage.super[self.ID].frame.x,
 		y = stage.super[self.ID].frame.y, image = self.super_images.word})
 	self.super_block = {}
 	self.super_partial = {}
 	self.super_glow = {}
 	for i = 1, 4 do
-		self.super_block[i] = common.instance(pic, {x = stage.super[self.ID][i].x,
+		self.super_block[i] = common.instance(Pic, game, {x = stage.super[self.ID][i].x,
 			y = stage.super[self.ID][i].y, image = self.super_images.full})
-		self.super_partial[i] = common.instance(pic, {x = stage.super[self.ID][i].x,
+		self.super_partial[i] = common.instance(Pic, game, {x = stage.super[self.ID][i].x,
 			y = stage.super[self.ID][i].y, image = self.super_images.partial})
-		self.super_glow[i] = common.instance(pic, {x = stage.super[self.ID][i].glow_x,
+		self.super_glow[i] = common.instance(Pic, game, {x = stage.super[self.ID][i].glow_x,
 			y = stage.super[self.ID][i].glow_y, image = self.super_images.glow[i]})
 
 	end
-	self.super_glow.full = common.instance(pic, {x = stage.super[self.ID][4].glow_x,
+	self.super_glow.full = common.instance(Pic, game, {x = stage.super[self.ID][4].glow_x,
 		y = stage.super[self.ID][4].glow_y, image = self.super_images.glow[4]})
 	self.super_glow.full.scaling = 0
 end
 
 -- placeholder, waiting for animations
 local function createCharacterAnimation(self)
-	self.animation = common.instance(pic, {x = self.game.stage.character[self.ID].x,
+	self.animation = common.instance(Pic, game, {x = self.game.stage.character[self.ID].x,
 	y = self.game.stage.character[self.ID].y, image = self.small_image})
 end
 
@@ -163,7 +163,7 @@ function character:superSlideIn()
 			if _self.tweening then
 				local complete = _self.tweening:update(dt)
 				if complete then
-					self.game.queue.add(25, _self.remove, _self)
+					self.game.queue:add(25, _self.remove, _self)
 					_self.tweening = nil
 				end
 			end
@@ -177,7 +177,7 @@ function character:superSlideIn()
 			if _self.tweening then
 				local complete = _self.tweening:update(dt)
 				if complete then
-					self.game.queue.add(25, _self.remove, _self)
+					self.game.queue:add(25, _self.remove, _self)
 					_self.tweening = nil
 				end
 			end
@@ -192,14 +192,14 @@ function character:superSlideIn()
 			if _self.tweening then
 				local complete = _self.tweening:update(dt)
 				if complete then
-					self.game.queue.add(40, _self.remove, _self)
+					self.game.queue:add(40, _self.remove, _self)
 					_self.tweening = nil
 				end
 			end
 		end
 	})
 
-	local fuzz2 = common.instance(pic, particles.superEffects1, {
+	local fuzz2 = common.instance(particles.superEffects1, {
 		image = self.super_fuzz_image,
 		x = stage.width * 0.5,
 		y = self.super_fuzz_image:getHeight() * 0.5 + stage.height,
@@ -207,7 +207,7 @@ function character:superSlideIn()
 			if _self.tweening then
 				local complete = _self.tweening:update(dt)
 				if complete then
-					self.game.queue.add(40, _self.remove, _self)
+					self.game.queue:add(40, _self.remove, _self)
 					_self.tweening = nil
 				end
 			end

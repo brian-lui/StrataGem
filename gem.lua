@@ -1,17 +1,21 @@
 local love = _G.love
---require 'inits'
-local image = require 'image'
-require 'utilities' -- helper functions
+
 local common = require 'class.commons' -- class support
---local GemPlatform = require 'gemplatform'
---local tween = require 'tween'
+local image = require 'image'
 local Pic = require 'pic'
 
+local gemImages = {
+	red = image.red_gem,
+	blue = image.blue_gem,
+	green = image.green_gem,
+	yellow = image.yellow_gem,
+}
+
 local Gem = {}
-function Gem:init(game, x, y, _image, color, garbage)
+function Gem:init(game, x, y, color, garbage)
 	self.game = game
 
-	Pic.init(self, {x = x, y = y, image = _image})
+	Pic.init(self, {x = x, y = y, image = gemImages[color:lower()]})
 	ID.gem = ID.gem + 1
 	self.horizontal = false -- for gem matches
 	self.vertical = false -- for gem matches
@@ -36,7 +40,7 @@ function Gem.random(game, gem_table)
 	for i = 1, #gem_table do
 		for _ = 1, gem_table[i].freq do
 			num = num + 1
-			rand_table[num] = gem_table[i].gem
+			rand_table[num] = gem_table[i].color
 		end
 	end
 
@@ -73,7 +77,7 @@ function Gem:landedInGrid()
 	if self.no_yoshi_particle then
 		self.no_yoshi_particle = nil
 	else
-		self.game.particles.dust:generateYoshi(self)
+		self.game.particles.dust.generateYoshi(self.game, self)
 	end
 end
 
@@ -82,15 +86,15 @@ function Gem:landedInStagingArea(place_type, owner)
 	local particles = self.game.particles
 	for player in self.game:players() do
 		if player.place_type == "double" then
-			particles.words:generateDoublecast(player)
+			particles.words.generateDoublecast(self.game, player)
 		elseif player.place_type == "rush" then
-			particles.words:generateRush(player)
+			particles.words.generateRush(self.game, player)
 		end
 	end
 	if place_type == "double" then
-		particles.dust:generateStarFountain(self, 24, owner)
+		particles.dust.generateStarFountain(self.game, self, 24, owner)
 	elseif place_type == "rush" then
-		particles.dust:generateStarFountain(self, 24, owner)
+		particles.dust.generateStarFountain(self.game, self, 24, owner)
 	else
 		print("wtf")
 	end
@@ -175,21 +179,5 @@ function Gem:getAnimFrames()
 	end
 	return f
 end
-
-Gem.RedGem = common.class("Gem.RedGem", {init = function (self, game, x, y, garbage)
-	Gem.init(self, game, x, y, image.red_gem, "RED", garbage)
-end})
-
-Gem.BlueGem = common.class("Gem.BlueGem", {init = function (self, game, x, y, garbage)
-	Gem.init(self, game, x, y, image.blue_gem, "BLUE", garbage)
-end})
-
-Gem.GreenGem = common.class("Gem.GreenGem", {init = function (self, game, x, y, garbage)
-	Gem.init(self, game, x, y, image.green_gem, "GREEN", garbage)
-end})
-
-Gem.YellowGem = common.class("Gem.YellowGem", {init = function (self, game, x, y, garbage)
-	Gem.init(self, game, x, y, image.yellow_gem, "YELLOW", garbage)
-end})
 
 return common.class("Gem", Gem, Pic)

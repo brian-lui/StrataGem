@@ -261,7 +261,7 @@ local function receivePing(self)
 end
 
 local function receiveDudes(self, recv)
-	self.game.stateManager:current().updateUsers(self.game, recv.all_dudes)
+	self.game.statemanager:current().updateUsers(self.game, recv.all_dudes)
 end
 
 local function receiveQueue(self, recv)
@@ -408,6 +408,7 @@ function Client:disconnect()
 	else
 		print("Cannot disconnect, you weren't connected")
 	end
+	self.connected = false
 	self:clear()
 end
 

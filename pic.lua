@@ -1,12 +1,13 @@
 local love = _G.love
 
-local common = require 'class.commons'
+local common = require "class.commons"
 local tween = require 'tween'
 
-local pic = {}
+local Pic = {}
 
 -- required: x, y, image
-function pic:init(tbl)
+function Pic:init(game, tbl)
+	self.game = game
 	ID.particle = ID.particle + 1
 	self.queued_moves = {}
 	self.speed_x = 0
@@ -28,7 +29,7 @@ function pic:init(tbl)
 	self.ID = ID.particle
 end
 
-function pic:draw(h_flip, x, y, rotation, scale, RGBTable, img, quad)
+function Pic:draw(h_flip, x, y, rotation, scale, RGBTable, img, quad)
 	love.graphics.push("all")
 		local x_scale = scale or self.scaling
 		local y_scale = scale or self.scaling
@@ -62,26 +63,26 @@ function pic:draw(h_flip, x, y, rotation, scale, RGBTable, img, quad)
 	love.graphics.pop()
 end
 
-function pic:changeQuad(x, y, w, h)
+function Pic:changeQuad(x, y, w, h)
 	--self.new_quad = love.graphics.newQuad(x, y, w, h, self.width, self.height)
 	self.quad = love.graphics.newQuad(x, y, w, h, self.width, self.height)
 	self.quad_y = self.y + y
 	self.quad_x = self.x + x
 end
 
-function pic:isStationary()
+function Pic:isStationary()
 	return self.move_func == nil
 end
 
-function pic:remove()
-	AllParticles[self.ID] = nil
+function Pic:remove()
+	self.game.particles.allParticles[self.ID] = nil
 end
 
-function pic:getRect()
+function Pic:getRect()
 	return self.x - (self.width / 2), self.y - (self.height / 2), self.width, self.height
 end
 
-function pic:newImage(img)
+function Pic:newImage(img)
 	self.image = img
 	self.width = img:getWidth()
 	self.height = img:getHeight()
@@ -96,10 +97,10 @@ local function clearMove(self)
 			self:remove()
 		elseif type(self.exit[1]) == "table" then -- multiple funcs
 			for i = 1, #self.exit do
-				self.exit[i][1](unpack(self.exit[i], 2))
+				self.exit[i][1](table.unpack(self.exit[i], 2))
 			end
 		else -- single func
-			self.exit[1](unpack(self.exit, 2))
+			self.exit[1](table.unpack(self.exit, 2))
 		end
 	end
 	self.t, self.tweening, self.curve, self.move_func = nil, nil, nil, nil
@@ -132,36 +133,56 @@ local function createMoveFunc(self, target)
 	self.exit = target.exit
 	self.t = 0
 	self.tweening = tween.new(target.duration, self, target.tween_target, target.easing)
-	if target.debug then print("duration:", target.duration) end
+	if target.debug then
+		print("duration:", target.duration)
+	end
 
 	-- create the move_func
 	local move_func
 	if target.curve then -- bezier provided, use curve:evaluate instead of x() and y()
-		if target.debug then print("creating bezier curve") end
+		if target.debug then
+			print("creating bezier curve")
+		end
 		self.curve = target.curve
-		move_func = function(self, dt)
-			self.t = self.t + dt / target.duration
-			local complete = self.tweening:update(dt)
-			self.x, self.y = self.curve:evaluate(self.t)
-			self.rotation, self.transparency = target.rotation(), target.transparency()
-			self.scaling = target.scaling()
-			if target.debug then sprint("current x, current y:", self.x, self.y) end
+		move_func = function(_self, dt)
+			_self.t = _self.t + dt / target.duration
+			local complete = _self.tweening:update(dt)
+			_self.x, _self.y = _self.curve:evaluate(_self.t)
+			_self.rotation, _self.transparency = target.rotation(), target.transparency()
+			_self.scaling = target.scaling()
+			if target.debug then
+				target.debugCounter = ((target.debugCounter or 0) + 1) % 10
+				if target.debugCounter == 0 then
+					print("current x, current y:", _self.x, _self.y)
+				end
+			end
 			if complete then
-				if target.debug then print("Tween ended") end
+				if target.debug then
+					print("Tween ended")
+				end
 				return true
 			end
 		end
 	else
-		if target.debug then print("creating non-bezier move_func") end
-		move_func = function(self, dt)
-			self.t = self.t + dt / target.duration
-			local complete = self.tweening:update(dt)
-			self.x, self.y = target.x(), target.y()
-			self.rotation, self.transparency = target.rotation(), target.transparency()
-			self.scaling = target.scaling()
-			if target.debug then sprint("current x, current y:", self.x, self.y) end
+		if target.debug then
+			print("creating non-bezier move_func")
+		end
+		move_func = function(_self, dt)
+			_self.t = _self.t + dt / target.duration
+			local complete = _self.tweening:update(dt)
+			_self.x, _self.y = target.x(), target.y()
+			_self.rotation, _self.transparency = target.rotation(), target.transparency()
+			_self.scaling = target.scaling()
+			if target.debug then
+				target.debugCounter = ((target.debugCounter or 0) + 1) % 10
+				if target.debugCounter == 0 then
+					print("current x, current y:", _self.x, _self.y)
+				end
+			end
 			if complete then
-				if target.debug then print("Tween ended") end
+				if target.debug then
+					print("Tween ended")
+				end
 				return true
 			end
 		end
@@ -185,13 +206,17 @@ end
 		exit: {func, args}, if any, to execute when the move finishes. Optional "true" to delete
 		debug: print some unhelpful debug info
 	Junk created: self.t, move_func, tweening, curve, exit, during. during_frame
-	Cleans up after itself when movement or tweening finished during pic:update()
+	Cleans up after itself when movement or tweening finished during Pic:update()
 --]]
-function pic:moveTo(target)
+function Pic:moveTo(target)
 	target.easing = target.easing or "linear"
 	target.tween_target = target.tween_target or {t = 1}
-	if target.queue ~= false then target.queue = true end
-	if target.debug then print("New move instruction received") end
+	if target.queue ~= false then
+		target.queue = true
+	end
+	if target.debug then
+		print("New move instruction received")
+	end
 
 	if not target.duration then -- apply instantly, interrupting all moves
 		clearMove(self)
@@ -208,7 +233,9 @@ function pic:moveTo(target)
 		end
 	elseif target.queue then -- append to end of self.queued_moves
 		self.queued_moves[#self.queued_moves+1] = target
-		if target.debug then print("Queueing this tween") end
+		if target.debug then
+			print("Queueing this tween")
+		end
 	elseif target.here then -- clear queue, tween from current position
 		clearMove(self)
 		self.queued_moves = {}
@@ -230,11 +257,11 @@ function pic:moveTo(target)
 end
 
 -- queues a wait during the move animation, in frames.
-function pic:wait(frames)
+function Pic:wait(frames)
 	self:moveTo{duration = frames}
 end
 
-function pic:resolve()
+function Pic:resolve()
 	while self.move_func do
 		self:move_func(math.huge)
 		clearMove(self)
@@ -245,14 +272,14 @@ function pic:resolve()
 	end
 end
 -- clears all moves
-function pic:clear()
+function Pic:clear()
 	self.t, self.tweening, self.curve, self.move_func = nil, nil, nil, nil
 	self.during, self.during_frame = nil, nil
 	self.exit = nil
 	self.queued_moves = {}
 end
 
-function pic:update(dt)
+function Pic:update(dt)
 	dt = 1  -- we update in frames, not dt. Sucka MC!
 	if self.move_func then
 		if self.during then -- takes {frame_step, frame_start, func, args}
@@ -283,4 +310,4 @@ function pic:update(dt)
 	end
 end
 
-return common.class("Pic", pic)
+return common.class("Pic", Pic)

@@ -2,15 +2,15 @@ require 'utilities' -- helper functions
 local common = require "class.commons" -- class support
 local Piece = require 'piece'
 local GemPlatform = require 'gemplatform'
-local pic = require 'pic'
+local Pic = require 'pic'
 local image = require 'image'
 
 local DamageBar = {}
 function DamageBar:init()
-	pic.init(self, {x = 0, y = 0, image = image.UI.damage_bar})
+	Pic.init(self, {x = 0, y = 0, image = image.UI.damage_bar})
 end
 
-DamageBar = common.class("DamageBar", DamageBar, pic)
+DamageBar = common.class("DamageBar", DamageBar, Pic)
 
 local Hand = {}
 Hand.PLATFORM_SPEED = window.height / 192 -- pixels per second for pieces to shuffle
@@ -49,7 +49,7 @@ function Hand:makeInitialPieces(gem_table)
 		self:movePiece(i, i-5)
 	end
 	for i = 6, 10 do
-		self[i].platform = common.instance(GemPlatform, self.owner, i)
+		self[i].platform = common.instance(GemPlatform, self.game, self.owner, i)
 		self:movePlatform(i, i-5)
 	end
 end
@@ -147,7 +147,7 @@ function Hand:getNewTurnPieces(gem_table)
 	--local distance = self.game.stage.height * 0.1375 * player.pieces_to_get
 	--local duration = math.abs(distance / self.PLATFORM_SPEED)
 	for i = 6, player.pieces_to_get + 5 do
-		self[i].piece = common.instance(Piece, {
+		self[i].piece = common.instance(Piece, self.game, {
 			location = self[i],
 			hand_idx = i,
 			owner = self.owner,
@@ -155,7 +155,7 @@ function Hand:getNewTurnPieces(gem_table)
 			y = self[i].y,
 			gem_table = gem_table,
 		})
-		self[i].platform = common.instance(GemPlatform, self.owner, i)
+		self[i].platform = common.instance(GemPlatform, self.game, self.owner, i)
 	end
 	for i = 1, 10 do -- move up all the pieces
 		local end_pos = math.max(i - player.pieces_to_get, 0)

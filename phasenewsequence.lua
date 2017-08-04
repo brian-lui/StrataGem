@@ -1,12 +1,9 @@
 -- handles the main game phases
 
-require 'inits'
 local hand = require 'hand'
 local ai = require 'ai'
 local stage = game.stage
 local particles = game.particles
-local anims = require 'anims'
-local inspect = require 'inspect'
 
 -------------------------------------------------------------------------------
 ------------------ Here are some useful functions for netplay -----------------

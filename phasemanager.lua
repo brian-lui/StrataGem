@@ -1,32 +1,31 @@
 local love = _G.love
 -- handles the main game phases
 
-require 'inits'
 local common = require "class.commons"
-local inspect = require 'inspect'
+local inspect = require "inspect"	-- TODO: Fix netcode so this can be removed.
 
-local phase = {}
+local PhaseManager = {}
 
-function phase:init(game)
+function PhaseManager:init(game)
 	self.game = game
 	self.ai = common.instance(require "ai", game)
 end
 
-function phase:intro(dt)
+function PhaseManager:intro(dt)
 	local game = self.game
 	for player in game:players() do
 		player.hand:update(dt)
 	end
 	if game.frame == 30 then
-		game.particles.words:generateReady()
+		game.particles.words.generateReady(self.game)
 	end
 	if game.frame == 120 then
-		game.particles.words:generateGo()
+		game.particles.words.generateGo(self.game)
 		game.phase = "Action"
 	end
 end
 
-function phase:action(dt)
+function PhaseManager:action(dt)
 	local game = self.game
 	local client = game.client
 	local ai = self.ai
@@ -47,7 +46,7 @@ function phase:action(dt)
 	end
 	if game.time_to_next == 0 then
 		love.mousereleased(love.mouse.getPosition())
-		game.particles.wordEffects:clear()
+		game.particles.wordEffects.clear(game.particles)
 		game.phase = "Resolve"
 		if game.type == "Netplay" then
 			if not client.our_delta[game.turn] then
@@ -116,7 +115,7 @@ function phase:action(dt)
 	end
 end
 
-function phase:resolve(dt)
+function PhaseManager:resolve(dt)
 	local game = self.game
 
 	if game.me_player.place_type == nil then
@@ -126,12 +125,12 @@ function phase:resolve(dt)
 		player.hand:afterActionPhaseUpdate()
 	end
 	self.game.ui:putPendingAtTop(game)
-	game.particles.upGem:removeAll() -- animation
+	game.particles.upGem.removeAll(game.particles) -- animation
 	game.frozen = true
 	game.phase = "GemTween"
 end
 
-function phase:applyGemTween(dt)
+function PhaseManager:applyGemTween(dt)
 	local game = self.game
 	local grid = game.stage.grid
 	grid:updateGravity(dt) -- animation
@@ -142,7 +141,7 @@ function phase:applyGemTween(dt)
 	end
 end
 
-function phase:applyGravity(dt)
+function PhaseManager:applyGravity(dt)
 	local game = self.game
 	local grid = game.stage.grid
 
@@ -156,8 +155,9 @@ function phase:applyGravity(dt)
 	end
 end
 
-function phase:getMatchedGems(dt)
+function PhaseManager:getMatchedGems(dt)
 	local _, matches = self.game.stage.grid:getMatchedGems() -- sets horizontal/vertical flags for matches
+	print(matches)
 	if matches > 0 then
 		self.game.phase = "FlagGems"
 	else
@@ -165,7 +165,7 @@ function phase:getMatchedGems(dt)
 	end
 end
 
-function phase:flagGems(dt)
+function PhaseManager:flagGems(dt)
 	local gem_table = self.game.stage.grid:getMatchedGems() -- sets h/v flags
 	self.game.stage.grid:flagMatchedGems() -- state
 	for player in self.game:players() do
@@ -175,7 +175,7 @@ function phase:flagGems(dt)
 end
 
 local match_anim_phase, match_anim_count = "start", 0
-function phase:matchAnimations(dt)
+function PhaseManager:matchAnimations(dt)
 	local grid = self.game.stage.grid
 	if match_anim_phase == "start" then
 		grid:generateMatchExplodingGems() -- animation
@@ -192,7 +192,7 @@ function phase:matchAnimations(dt)
 	end
 end
 
-function phase:resolvingMatches(dt)
+function PhaseManager:resolvingMatches(dt)
 	local grid = self.game.stage.grid
 	local p1, p2 = self.game.p1, self.game.p2
 	local gem_table = grid:getMatchedGems()
@@ -218,7 +218,7 @@ function phase:resolvingMatches(dt)
 	self.game.phase = "Gravity"
 end
 
-function phase:resolvedMatches(dt)
+function PhaseManager:resolvedMatches(dt)
 	local game = self.game
 
 	for player in game:players() do
@@ -231,7 +231,7 @@ function phase:resolvedMatches(dt)
 	game.phase = "GetPiece"
 end
 
-function phase:getPiece(dt)
+function PhaseManager:getPiece(dt)
 	local game = self.game
 	local grid = game.stage.grid
 	local handsettled = true
@@ -268,7 +268,7 @@ function phase:getPiece(dt)
 	end
 end
 
-function phase:cleanup(dt)
+function PhaseManager:cleanup(dt)
 	local game = self.game
 	local grid = game.stage.grid
 	local p1, p2 = game.p1, game.p2
@@ -299,7 +299,7 @@ function phase:cleanup(dt)
 	end
 end
 
-function phase:sync(dt)
+function PhaseManager:sync(dt)
 	self.game.client:newTurn()
 	self.game:newTurn()
 	-- If disconnected by server, change to vs AI
@@ -310,7 +310,7 @@ function phase:sync(dt)
 	end
 end
 
-function phase:gameOver(dt)
+function PhaseManager:gameOver(dt)
 	local game = self.game
 	local particles = game.particles
 
@@ -329,35 +329,35 @@ function phase:gameOver(dt)
 	local anims_done = (damage_particles == 0) and (super_particles == 0)
 	if anims_done and game.type == "Netplay" then
 		game.client:endMatch()
-		game.current_screen = "lobby"
+		game.statemanager:switch(require "gs_lobby")
 	elseif anims_done and game.type == "1P" then
-		game.current_screen = "charselect"
+		game.statemanager:switch(require "gs_charselect")
 	end
 end
 
-phase.lookup = {
-	Intro = phase.intro,
-	Action = phase.action,
-	Resolve = phase.resolve,
-	SuperFreeze = phase.superFreeze,
-	GemTween = phase.applyGemTween,
-	Gravity = phase.applyGravity,
-	CheckMatches = phase.getMatchedGems,
-	FlagGems = phase.flagGems,
-	MatchAnimations = phase.matchAnimations,
-	ResolvingMatches = phase.resolvingMatches,
-	ResolvedMatches = phase.resolvedMatches,
-	GetPiece = phase.getPiece,
-	Cleanup = phase.cleanup,
-	Sync = phase.sync,
-	GameOver = phase.gameOver
+PhaseManager.lookup = {
+	Intro = PhaseManager.intro,
+	Action = PhaseManager.action,
+	Resolve = PhaseManager.resolve,
+	SuperFreeze = PhaseManager.superFreeze,
+	GemTween = PhaseManager.applyGemTween,
+	Gravity = PhaseManager.applyGravity,
+	CheckMatches = PhaseManager.getMatchedGems,
+	FlagGems = PhaseManager.flagGems,
+	MatchAnimations = PhaseManager.matchAnimations,
+	ResolvingMatches = PhaseManager.resolvingMatches,
+	ResolvedMatches = PhaseManager.resolvedMatches,
+	GetPiece = PhaseManager.getPiece,
+	Cleanup = PhaseManager.cleanup,
+	Sync = PhaseManager.sync,
+	GameOver = PhaseManager.gameOver
 }
 
-function phase:run(...)
-	local todo = phase.lookup[self.game.phase]
-	assert (todo, "You did a typo for the current phase idiot - " .. self.game.phase)
+function PhaseManager:run(...)
+	local todo = PhaseManager.lookup[self.game.phase]
+	assert(todo, "You did a typo for the current phase idiot - " .. self.game.phase)
 	todo(self, ...)
-	self.game.queue.update()
+	self.game.queue:update()
 end
 
-return common.class("PhaseManager", phase)
+return common.class("PhaseManager", PhaseManager)

@@ -1,9 +1,13 @@
+local love = _G.love
+
 require 'inits' -- ID
-require 'utilities' -- helper functions
 local common = require "class.commons"
 local tween = require 'tween'
-local pic = require 'pic'
+local Pic = require 'pic'
 local Gem = require "gem"
+
+local reverseTable = require "utilities".reverseTable
+local pointIsInRect = require "utilities".pointIsInRect
 
 local function updatePieceGems(self)
 	if self.horizontal then
@@ -34,15 +38,17 @@ function Piece:init(game, tbl)
 	for i = 1, #tocopy do
 		local item = tocopy[i]
 		self[item] = tbl[item]
-		if tbl[item] == nil and item ~= "gem_table" then print("No " .. item .. " received!") end
+		if tbl[item] == nil and item ~= "gem_table" then
+			print("No " .. item .. " received!")
+		end
 	end
 	self.ID = ID.piece
 	self.size = self.size or 2
 	self.gem_table = self.gem_table or {
-		{gem = Gem.RedGem, freq = 1},
-		{gem = Gem.BlueGem, freq = 1},
-		{gem = Gem.GreenGem, freq = 1},
-		{gem = Gem.YellowGem, freq = 1}
+		{color = "red", freq = 1},
+		{color = "blue", freq = 1},
+		{color = "green", freq = 1},
+		{color = "yellow", freq = 1}
 	}
 	self.rotation = 0
 	self.rotation_index = 0
@@ -60,27 +66,27 @@ end
 function Piece:addGems(gem_table)
 	for i = 1, self.size do
 		local gem = Gem.random(self.game, gem_table)
-		self.gems[i] = common.instance(gem, self.game, self.x, self.y)
+		self.gems[i] = common.instance(Gem, self.game, self.x, self.y, gem)
 	end
 	updatePieceGems(self)
 end
 
 function Piece:moveTo(target)
 	self.queued_moves = self.queued_moves or {}
-	pic.moveTo(self, target)
+	Pic.moveTo(self, target)
 	updatePieceGems(self)
 end
 
 function Piece:resolve()
-	pic.resolve(self)
+	Pic.resolve(self)
 end
 
 function Piece:wait(frames)
-	pic.wait(self, frames)
+	Pic.wait(self, frames)
 end
 
 function Piece:update(dt)
-	pic.update(self, dt)
+	Pic.update(self, dt)
 	if self.shake then
 		self.shake = self.shake - 1
 		if self.shake == 0 then self.shake = nil end
@@ -93,7 +99,9 @@ end
 
 function Piece:rotate()
 	self.horizontal = not self.horizontal
-	if self.horizontal then self.gems = reverseTable(self.gems) end
+	if self.horizontal then
+		self.gems = reverseTable(self.gems)
+	end
 	self.rotation_index = (self.rotation_index + 1) % 4
 	updatePieceGems(self)
 	self.rotation = self.rotation % (2 * math.pi)
@@ -109,7 +117,7 @@ function Piece:breakUp()
 	local player = self.owner
 	for i = 0, player.hand_size do
 		if self == player.hand[i].piece then
-			pic.clear(self)
+			Pic.clear(self)
 			player.hand[i].piece = nil
 		end
 	end
@@ -117,6 +125,8 @@ end
 
 -- draw gems with displacement depending on piece horizontal/vertical
 function Piece:draw()
+	local frame = self.game.frame
+	local stage = self.game.stage
 	--screen shake translation
 	local h_shake, v_shake = 0, 0
 	if self.shake then
@@ -150,6 +160,7 @@ end
 -- Shift can be either -1 or +1, used when the input is over the midline;
 -- it forces the gem to be dropped to the left or the right of midline.
 function Piece:getColumns(shift)
+	local stage = self.game.stage
 	local ret = {}
 	shift = shift or 0
 	if shift then shift = shift * stage.gem_width end
@@ -256,6 +267,7 @@ end
 -- Checks whether the rush placement is valid
 -- current_rush_cost is optional
 function Piece:isValidRush()
+	local stage = self.game.stage
 	local player = self.owner
 	local cols = self:getColumns()
 	local enough_mp = player.cur_mp >= player.current_rush_cost
@@ -274,7 +286,7 @@ function Piece:generateDust()
 			local gem = self.gems[i]
 			local x_drift = (math.random() - 0.5) * gem.width
 			local y_drift = (math.random() - 0.5) * gem.height
-			particles.dust:generateFalling(gem, x_drift, y_drift)
+			self.game.particles.dust.generateFalling(self.game, gem, x_drift, y_drift)
 		end
 	end
 end
@@ -284,7 +296,7 @@ function Piece:select()
 	self.game.active_piece = self
 	self:resolve()
 	for i = 1, self.size do -- generate some particles!
-		particles.dust:generateFountain(self.gems[i], math.random(2, 6))
+		self.game.particles.dust.generateFountain(self.game, self.gems[i], math.random(2, 6))
 	end
 end
 
@@ -311,8 +323,9 @@ function Piece:deselect()
 end
 
 function Piece:dropIntoBasin(coords, received_from_opponent)
--- Transfers piece from player's hand into basin.
--- No error checking, assumes this is a valid move! Be careful please.
+	-- Transfers piece from player's hand into basin.
+	-- No error checking, assumes this is a valid move! Be careful please.
+	local stage = self.game.stage
 	local player = self.owner
 
 	-- not received_from_opponent means it's our piece placing,
@@ -323,7 +336,7 @@ function Piece:dropIntoBasin(coords, received_from_opponent)
 
 	-- Generate uptweening gems
 	for i = 1, #self.gems do
-		particles.upGem:generate(self.gems[i])
+		self.game.particles.upGem.generate(self.game, self.gems[i])
 	end
 
 	-- place the gem into the holding area

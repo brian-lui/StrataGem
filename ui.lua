@@ -2,17 +2,17 @@ local love = _G.love
 
 local image = require 'image'
 local common = require 'class.commons'
-local pic = require 'pic'
+local Pic = require 'pic'
 
 --[==================[
 TIMER COMPONENT
 --]==================]
 
-local timer = {}
+local Timer = {}
 
-timer.FADE_SPEED = 15
+Timer.FADE_SPEED = 15
 
-function timer:init(game)
+function Timer:init(game)
 	local stage = game.stage
 	self.game = game
 
@@ -21,16 +21,18 @@ function timer:init(game)
 	self.text_x = stage.x_mid
 	self.text_y = stage.height * 0.33
 
-	self.timerbase = common.instance(pic, {x = stage.x_mid, y = stage.height * 0.5 - 80, image = image.UI.timer_bar})
-	self.timerbar = common.instance(pic, {x = stage.x_mid, y = stage.height * 0.5 - 80, image = image.UI.timer_bar_full, transparency = 255})
+	self.timerbase = common.instance(Pic, game, {x = stage.x_mid, y = stage.height * 0.5 - 80, image = image.UI.timer_bar})
+	self.timerbar = common.instance(Pic, game, {x = stage.x_mid, y = stage.height * 0.5 - 80, image = image.UI.timer_bar_full, transparency = 255})
 end
 
-function timer:update()
+function Timer:update()
 	-- set percentage of timer to show
 	local percent = (self.game.time_to_next / self.game.INIT_TIME_TO_NEXT)
-	local bar_width = percent * self.width
-	self.draw_offset = (1 - percent) * 0.5 * self.width
-	self.quad = love.graphics.newQuad(0, 0, bar_width, self.height, self.width, self.height)
+	local timerBarWidth = self.timerbar.width
+	local timerBarHeight = self.timerbar.height
+	local bar_width = percent * timerBarWidth
+	self.draw_offset = (1 - percent) * 0.5 * timerBarWidth
+	self.timerbar.quad = love.graphics.newQuad(0, 0, bar_width, timerBarHeight, timerBarWidth, timerBarHeight)
 
 	-- fade in/out
 	if percent == 0 then
@@ -49,22 +51,22 @@ local function drawTimerText(self)
 		local todraw = image.UI.timer[time_int]
 		local w, h = todraw:getWidth(), todraw:getHeight()
 		local t = time_int - time_remaining
-		local scale = self.scaling(t)
+		local scale = self.text_scaling(t)
 
 		love.graphics.push("all")
-			love.graphics.setColor(255, 255, 255, self.transparency(t))
-			love.graphics.draw(todraw, self.x, self.y, 0, scale, scale, w/2, h/2)
+			love.graphics.setColor(255, 255, 255, self.text_transparency(t))
+			love.graphics.draw(todraw, self.text_x, self.text_y, 0, scale, scale, w/2, h/2)
 		love.graphics.pop()
 	end
 end
 
-function timer:draw()
+function Timer:draw()
 	self.timerbase:draw()
-	self.timerbar:draw(nil, self.draw_offset + self.x) -- centered timer bar
+	self.timerbar:draw(nil, self.draw_offset + self.timerbar.x) -- centered timer bar
 	drawTimerText(self)
 end
 
-local Timer = common.class("Timer", timer)
+Timer = common.class("Timer", Timer)
 
 --[==================[
 END TIMER COMPONENT
@@ -78,10 +80,10 @@ function ui:init(game)
 	self.timer = common.instance(Timer, game)
 
 	-- Red X shown on gems in invalid placement spots
-	self.redX = common.instance(pic, {x = 0, y = 0, image = image.UI.redX})
+	self.redX = common.instance(Pic, game, {x = 0, y = 0, image = image.UI.redX})
 
 	-- Base tub image
-	self.tub_img = common.instance(pic, {x = game.stage.x_mid, y = game.stage.height * 0.95 - 189, image = image.UI.tub})
+	self.tub_img = common.instance(Pic, game, {x = game.stage.x_mid, y = game.stage.height * 0.95 - 189, image = image.UI.tub})
 end
 
 -- returns the super drawables for player based on player MP, called every dt
@@ -273,7 +275,7 @@ function ui:putPendingAtTop()
 		end
 		if #effect > 0 then
 			local h = effect[1].row == effect[2].row
-			effect.func(self.game.particles.wordEffects, effect[1], effect[2], h)
+			effect.func(self.game, effect[1], effect[2], h)
 		end
 	end
 end
@@ -287,7 +289,7 @@ function ui:update(dt)
 	local pending_gems = game.stage.grid:getPendingGems(player)
 	local valid = false
 	local place_type
-	local cloud = game.particles.wordEffects:cloudExists()
+	local cloud = game.particles.wordEffects.cloudExists(game.particles)
 
 	-- if piece is held, generate effects and check if it's valid
 	if game.active_piece then
@@ -306,17 +308,17 @@ function ui:update(dt)
 				--TODO: support variable number of gems
 				local gem1, gem2 = game.active_piece.gems[1], game.active_piece.gems[2]
 				local h = game.active_piece.horizontal
-				game.particles.wordEffects:generateDoublecastCloud(gem1, gem2, h)
+				game.particles.wordEffects.generateDoublecastCloud(game, gem1, gem2, h)
 			elseif valid and place_type == "rush" then
 				local gem1, gem2 = game.active_piece.gems[1], game.active_piece.gems[2]
 				local h = game.active_piece.horizontal
-				game.particles.wordEffects:generateRushCloud(gem1, gem2, h)
+				game.particles.wordEffects.generateRushCloud(game, gem1, gem2, h)
 			end
 		elseif not valid or place_type == "normal" then
-			game.particles.wordEffects:clear()
+			game.particles.wordEffects.clear(game.particles)
 		end
 	elseif cloud then -- remove glow effects if piece not active
-		game.particles.wordEffects:clear()
+		game.particles.wordEffects.clear(game.particles)
 	end
 
 	-- tween gem particles

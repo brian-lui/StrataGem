@@ -5,10 +5,8 @@ local love = _G.love
 	of the game field.
 --]]
 
---local image = require 'image'
-local common = require 'classcommons'
---local stage = game.stage
-local pic = require 'pic'
+local common = require "class.commons"
+local Pic = require 'pic'
 local tween = require 'tween'
 local pairs = pairs
 
@@ -63,7 +61,7 @@ end
 ---------------------------------PUBLIC CLASS----------------------------------
 local Animation = {}
 function Animation:init(object, manager)
-	pic.init(self, object)
+	Pic.init(self, object)
 	self.manager = manager
 end
 
@@ -172,4 +170,4 @@ function Animation:fadeIn(duration, easing)
 	newTween(self, duration, "transparency", 255, easing, "FadeIn")
 end
 
-return common.class("Animation", Animation, pic)
+return common.class("Animation", Animation, Pic)

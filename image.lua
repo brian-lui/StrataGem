@@ -225,29 +225,29 @@ image.lookup.words_ready = function(size)
 end
 
 image.lookup.gem_explode = {
-	BLUE = image.blue_explode,
-	RED = image.red_explode,
-	GREEN = image.green_explode,
-	YELLOW = image.yellow_explode,
-	RED_GRAY = image.red_grey,
-	BLUE_GRAY = image.blue_grey,
-	GREEN_GRAY = image.green_grey,
-	YELLOW_GRAY = image.yellow_grey
+	blue = image.blue_explode,
+	red = image.red_explode,
+	green = image.green_explode,
+	yellow = image.yellow_explode,
+	red_gray = image.red_grey,
+	blue_gray = image.blue_grey,
+	green_gray = image.green_grey,
+	yellow_gray = image.yellow_grey
 }
 
 image.lookup.particle_freq = {
-	BLUE = {[image.blue_particle1] = 12, [image.blue_particle2] = 7, [image.blue_particle3] = 1},
-	GREEN = {[image.green_particle1] = 12, [image.green_particle2] = 7, [image.green_particle3] = 1},
-	RED = {[image.red_particle1] = 12, [image.red_particle2] = 7, [image.red_particle3] = 1},
-	YELLOW = {[image.yellow_particle1] = 12, [image.yellow_particle2] = 7, [image.yellow_particle3] = 1}
+	red = {[image.red_particle1] = 12, [image.red_particle2] = 7, [image.red_particle3] = 1},
+	blue = {[image.blue_particle1] = 12, [image.blue_particle2] = 7, [image.blue_particle3] = 1},
+	green = {[image.green_particle1] = 12, [image.green_particle2] = 7, [image.green_particle3] = 1},
+	yellow = {[image.yellow_particle1] = 12, [image.yellow_particle2] = 7, [image.yellow_particle3] = 1}
 }
 image.lookup.particle_freq.random = function(color)
 	local rand_table = {}
 	local num = 0
-	for color, freq in pairs(image.lookup.particle_freq[color]) do
-		for i = 1, freq do
+	for c, freq in pairs(image.lookup.particle_freq[color]) do
+		for _ = 1, freq do
 			num = num + 1
-			rand_table[num] = color
+			rand_table[num] = c
 		end
 	end
 	local rand = math.random(num)
@@ -255,24 +255,24 @@ image.lookup.particle_freq.random = function(color)
 end
 
 image.lookup.super_particle = {
-	RED = image.super_particle_red,
-	BLUE = image.super_particle_blue,
-	GREEN = image.super_particle_green,
-	YELLOW = image.super_particle_yellow
+	red = image.super_particle_red,
+	blue = image.super_particle_blue,
+	green = image.super_particle_green,
+	yellow = image.super_particle_yellow
 }
 
 image.lookup.pop_particle = {
-	RED = image.pop_particle_red,
-	BLUE = image.pop_particle_blue,
-	GREEN = image.pop_particle_green,
-	YELLOW = image.pop_particle_yellow
+	red = image.pop_particle_red,
+	blue = image.pop_particle_blue,
+	green = image.pop_particle_green,
+	yellow = image.pop_particle_yellow
 }
 
 image.lookup.trail_particle = {
-	RED = image.trail_particle_red,
-	BLUE = image.trail_particle_blue,
-	GREEN = image.trail_particle_green,
-	YELLOW = image.trail_particle_yellow
+	red = image.trail_particle_red,
+	blue = image.trail_particle_blue,
+	green = image.trail_particle_green,
+	yellow = image.trail_particle_yellow
 }
 
 image.lookup.platform_star = {
@@ -290,28 +290,30 @@ image.lookup.dust = {
 		if star_instead then
 			return image.lookup.dust.star(color)
 		else
-			if color == "RED" then
+			if color == "red" then
 				local tbl = {image.dust.red1, image.dust.red2, image.dust.red3}
 				return tbl[rand]
-			elseif color == "BLUE" then
+			elseif color == "blue" then
 				local tbl = {image.dust.blue1, image.dust.blue2, image.dust.blue3}
 				return tbl[rand]
-			elseif color == "GREEN" then
+			elseif color == "green" then
 				local tbl = {image.dust.green1, image.dust.green2, image.dust.green3}
 				return tbl[rand]
-			elseif color == "YELLOW" then
+			elseif color == "yellow" then
 				local tbl = {image.dust.yellow1, image.dust.yellow2, image.dust.yellow3}
 				return tbl[rand]
-			else print("image.lookup.dust Sucka MC") return image.dust.red1
+			else
+				print("image.lookup.dust Sucka MC")
+				return image.dust.red1
 			end
 		end
 	end,
 
 	star = function(color)
-		if color == "RED" then return image.red_particle1
-		elseif color == "BLUE" then return image.blue_particle1
-		elseif color == "GREEN" then return image.green_particle1
-		elseif color == "YELLOW" then return image.yellow_particle1
+		if color == "red" then return image.red_particle1
+		elseif color == "blue" then return image.blue_particle1
+		elseif color == "green" then return image.green_particle1
+		elseif color == "yellow" then return image.yellow_particle1
 		else print("image.lookup.dust Sucka MC") return image.red_particle1 end
 	end
 }

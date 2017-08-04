@@ -8,12 +8,11 @@ local love = _G.love
 	Note that the "self" passed to these functions is Background, not Background.XYZ
 --]]
 
-local common = require 'class.commons'
-require 'inits'
+local common = require "class.commons"
 local image = require 'image'
-local pic = require 'pic'
+local Pic = require 'pic'
 
-local spairs = require("utilities").spairs
+local spairs = require "utilities".spairs
 
 local Background = {}
 
@@ -23,15 +22,15 @@ function Background:init(game)
 
 	self.backgroundParticles = {}
 
-	self.cloud.background_image = common.instance(pic, {x = stage.x_mid, y = stage.y_mid, image = image.background.cloud.background})
+	self.cloud.background_image = common.instance(Pic, game, {x = stage.x_mid, y = stage.y_mid, image = image.background.cloud.background})
 
-	self.starfall.background_image = common.instance(pic, {x = stage.x_mid, y = stage.y_mid, image = image.background.starfall.background})
+	self.starfall.background_image = common.instance(Pic, game, {x = stage.x_mid, y = stage.y_mid, image = image.background.starfall.background})
 	self.starfallstar_speed_x = function(height) return (stage.height / height) * 0.1 end
 	self.starfallstar_speed_y = function(height) return (stage.height / height) * 0.15 end
 	self.starfallstar_rotation = function(height) return (stage.height / height) * 0.005 end
 
-	self.seasons.background_image = common.instance(pic, {x = stage.x_mid, y = stage.y_mid, image = image.seasons_background})
-	self.seasons.background_image2 = common.instance(pic, {x = stage.x_mid, y = stage.y_mid, image = image.seasons_background2})
+	self.seasons.background_image = common.instance(Pic, game, {x = stage.x_mid, y = stage.y_mid, image = image.seasons_background})
+	self.seasons.background_image2 = common.instance(Pic, game, {x = stage.x_mid, y = stage.y_mid, image = image.seasons_background2})
 	self.seasons.sakura_speed_x = function(height) return (stage.height / height) * 0.4 end
 	self.seasons.sakura_speed_y = function(height) return (stage.height / height) * 0.6 end
 	self.seasons.sakura_rotation = function(height) return (stage.height / height) * 0.0004 end
@@ -45,11 +44,11 @@ function Background:init(game)
 	self.seasons.snow_speed_y = function(height) return (stage.height / height^0.5) / 10 end
 	self.seasons.snow_rotation = function(height) return (stage.height / height^0.5) / 1000 end
 
-	self.colors.background_image1 = common.instance(pic, {x = stage.x_mid, y = stage.y_mid, image = image.background.colors.white})
-	self.colors.background_image2 = common.instance(pic, {x = stage.x_mid, y = stage.y_mid, image = image.background.colors.blue})
-	self.colors.background_image3 = common.instance(pic, {x = stage.x_mid, y = stage.y_mid, image = image.background.colors.red})
-	self.colors.background_image4 = common.instance(pic, {x = stage.x_mid, y = stage.y_mid, image = image.background.colors.green})
-	self.colors.background_image5 = common.instance(pic, {x = stage.x_mid, y = stage.y_mid, image = image.background.colors.yellow})
+	self.colors.background_image1 = common.instance(Pic, game, {x = stage.x_mid, y = stage.y_mid, image = image.background.colors.white})
+	self.colors.background_image2 = common.instance(Pic, game, {x = stage.x_mid, y = stage.y_mid, image = image.background.colors.blue})
+	self.colors.background_image3 = common.instance(Pic, game, {x = stage.x_mid, y = stage.y_mid, image = image.background.colors.red})
+	self.colors.background_image4 = common.instance(Pic, game, {x = stage.x_mid, y = stage.y_mid, image = image.background.colors.green})
+	self.colors.background_image5 = common.instance(Pic, game, {x = stage.x_mid, y = stage.y_mid, image = image.background.colors.yellow})
 	self.colors.solid_draw = Background.colors.background_image1
 end
 
@@ -80,7 +79,7 @@ function Background.cloud.Cloud:init(background, x, y, img, speed, classificatio
   background.backgroundParticles[ID.background] = self
 end
 
-Background.cloud.Cloud = common.class("Background.cloud.Cloud", Background.cloud.Cloud, pic)
+Background.cloud.Cloud = common.class("Background.cloud.Cloud", Background.cloud.Cloud, Pic)
 
 local function Cloud_generateBigCloud(self, starting_x)
 	local x = starting_x or image.background.cloud.bigcloud1:getWidth() * -1
@@ -217,7 +216,7 @@ function Background.starfall.Star:init(background, x, y, img, speed_x, speed_y, 
   background.backgroundParticles[ID.background] = self
 end
 
-Background.starfall.Star = common.class("Background.starfall.Star", Background.starfall.Star, pic)
+Background.starfall.Star = common.class("Background.starfall.Star", Background.starfall.Star, Pic)
 
 local function Starfall_generateStar(self)
 	local image_table = {image.background.starfall.star1, image.background.starfall.star2, image.background.starfall.star3, image.background.starfall.star4}
@@ -338,7 +337,7 @@ function Background.seasons.Sakura:init(background, x, y, img, speed_x, speed_y,
   background.backgroundParticles[ID.background] = self
 end
 
-Background.seasons.Sakura = common.class("Background.seasons.Sakura", Background.seasons.Sakura, pic)
+Background.seasons.Sakura = common.class("Background.seasons.Sakura", Background.seasons.Sakura, Pic)
 
 function Background.seasons:_generateSakura()
 	local img = image.seasons_sakura
@@ -417,7 +416,7 @@ function Background.seasons.Leaf:init(background, x, y, img, speed_x, speed_y, r
   background.backgroundParticles[ID.background] = self
 end
 
-Background.seasons.Leaf = common.class("Background.seasons.Leaf", Background.seasons.Leaf, pic)
+Background.seasons.Leaf = common.class("Background.seasons.Leaf", Background.seasons.Leaf, Pic)
 
 function Background.seasons:_generateLeaf()
 	local img = image.seasons_greenleaf
@@ -509,7 +508,7 @@ function Background.seasons.Snow:init(background, x, y, img, speed_x, speed_y, r
   background.backgroundParticles[ID.background] = self
 end
 
-Background.seasons.Snow = common.class("Background.seasons.Snow", Background.seasons.Snow, pic)
+Background.seasons.Snow = common.class("Background.seasons.Snow", Background.seasons.Snow, Pic)
 
 function Background.seasons:_generateSnow()
 	local image_table = {image.seasons_snow1, image.seasons_snow2, image.seasons_snow3, image.seasons_snow4}
