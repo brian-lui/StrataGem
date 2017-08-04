@@ -2,7 +2,6 @@ local love = _G.love
 require 'inits'
 local common = require "class.commons"
 local image = require 'image'
-local tween = require 'tween'
 local Pic = require 'pic'
 local Hand = require 'hand'
 
@@ -20,18 +19,26 @@ character.super_fuzz_image = love.graphics.newImage('images/ui/superfuzzred.png'
 
 character.character_id = "Lamer"
 character.meter_gain = {red = 4, blue = 4, green = 4, yellow = 4}
+--[[
 character.super_images = {
 	word = image.UI.super.red_word,
-	partial = image.UI.super.red_partial,
-	full = image.UI.super.red_full,
-	glow = {image.UI.super.red_glow1, image.UI.super.red_glow2, image.UI.super.red_glow3, image.UI.super.red_glow4}
+	empty = love.graphics.newImage('images/characters/emptyheath.png'),
+	full = love.graphics.newImage('images/characters/fullheath.png'),
+	glow = love.graphics.newImage('images/characters/fullheathglow.png')
+}--]]
+character.burst_images = {
+	partial = image.UI.burst.red_partial,
+	full = image.UI.burst.red_full,
+	glow = {image.UI.burst.red_glow1, image.UI.burst.red_glow2}
 }
-character.SUPER_COST = 64
-character.RUSH_COST = 32
-character.DOUBLE_COST = 16
 character.MAX_MP = 64
-character.cur_mp = 0
-character.old_mp = 0
+character.SUPER_COST = 64
+character.mp = 0
+character.turn_start_mp = 0
+character.MAX_BURST = 6
+character.RUSH_COST = 6
+character.DOUBLE_COST = 3
+character.cur_burst = 3
 character.hand_size = 5
 character.pieces_fallen = 0
 character.dropped_piece = false
@@ -58,55 +65,54 @@ end
 
 -- initialize super meter graphics
 local function setupSuperMeter(self)
-	local stage = self.game.stage
-	local super_frame = self.ID == "P1" and image.UI.gauge_gold or image.UI.gauge_silver
-	self.super_frame = common.instance(Pic, game, {x = stage.super[self.ID].frame.x,
-		y = stage.super[self.ID].frame.y, image = super_frame})
-	self.super_word = common.instance(Pic, game, {x = stage.super[self.ID].frame.x,
-		y = stage.super[self.ID].frame.y, image = self.super_images.word})
-	self.super_block = {}
-	self.super_partial = {}
-	self.super_glow = {}
-	for i = 1, 4 do
-		self.super_block[i] = common.instance(Pic, game, {x = stage.super[self.ID][i].x,
-			y = stage.super[self.ID][i].y, image = self.super_images.full})
-		self.super_partial[i] = common.instance(Pic, game, {x = stage.super[self.ID][i].x,
-			y = stage.super[self.ID][i].y, image = self.super_images.partial})
-		self.super_glow[i] = common.instance(Pic, game, {x = stage.super[self.ID][i].glow_x,
-			y = stage.super[self.ID][i].glow_y, image = self.super_images.glow[i]})
+	local game = self.game
+	local stage = game.stage
+	self.super_frame = common.instance(Pic, game, {x = stage.super[self.ID].x,
+		y = stage.super[self.ID].y, image = self.super_images.empty})
+	self.super_word = common.instance(Pic, game, {x = stage.super[self.ID].x,
+		y = stage.super[self.ID].word_y, image = self.super_images.full})
+	self.super_meter_image = common.instance(Pic, game, {x = stage.super[self.ID].x,
+		y = stage.super[self.ID].y, image = self.super_images.full})
+	self.super_glow = common.instance(Pic, game, {x = stage.super[self.ID].x,
+		y = stage.super[self.ID].y, image = self.super_images.glow})
+end
 
+-- initialize burst meter graphics
+local function setupBurstMeter(self)
+	local stage = self.game.stage
+	local burst_frame = self.ID == "P1" and image.UI.gauge_gold or image.UI.gauge_silver
+	self.burst_frame = common.instance(Pic, self.game, {x = stage.burst[self.ID].frame.x,
+		y = stage.burst[self.ID].frame.y, image = burst_frame})
+	self.burst_block = {}
+	self.burst_partial = {}
+	self.burst_glow = {}
+	for i = 1, 2 do
+		self.burst_block[i] = common.instance(Pic, self.game, {x = stage.burst[self.ID][i].x,
+			y = stage.burst[self.ID][i].y, image = self.burst_images.full})
+		self.burst_partial[i] = common.instance(Pic, self.game, {x = stage.burst[self.ID][i].x,
+			y = stage.burst[self.ID][i].y, image = self.burst_images.partial})
+		self.burst_glow[i] = common.instance(Pic, self.game, {x = stage.burst[self.ID][i].x,
+			y = stage.burst[self.ID][i].y, image = self.burst_images.glow[i]})
 	end
-	self.super_glow.full = common.instance(Pic, game, {x = stage.super[self.ID][4].glow_x,
-		y = stage.super[self.ID][4].glow_y, image = self.super_images.glow[4]})
-	self.super_glow.full.scaling = 0
 end
 
 -- placeholder, waiting for animations
 local function createCharacterAnimation(self)
-	self.animation = common.instance(Pic, game, {x = self.game.stage.character[self.ID].x,
+	self.animation = common.instance(Pic, self.game, {x = self.game.stage.character[self.ID].x,
 	y = self.game.stage.character[self.ID].y, image = self.small_image})
 end
 
-
-local function setupPieces(self)
-	self.pieces_per_turn_init = self.pieces_per_turn_init or 1
-	self.pieces_per_turn = self.pieces_per_turn_init
-	self.pieces_to_get = 1
-end
-
--- TODO: Make player and/or character into classes and put this in there
 function character:addSuper(amt)
-	self.old_mp = self.cur_mp
-	self.cur_mp = math.min(self.cur_mp + amt, self.MAX_MP)
+	self.mp = math.min(self.mp + amt, self.MAX_MP)
 end
 
 -- do those things to set up the character. Called at start of match
 function character:setup()
 	self.hand = common.instance(Hand, self.game, self)
 	self.hand:makeInitialPieces()
+	setupBurstMeter(self)
 	setupSuperMeter(self)
 	createCharacterAnimation(self)
-	setupPieces(self)
 end
 
 function character:actionPhase(dt)
@@ -128,11 +134,11 @@ function character:afterMatch()
 end
 
 function character:cleanup()
+	self.turn_start_mp = self.mp
 end
 
-function character:super()
-	if self.cur_mp >= self.SUPER_COST then
-		self.super_glow.full.scaling = 0
+function character:activateSuper()
+	if self.mp >= self.SUPER_COST then
 		self.supering = not self.supering
 	end
 end
@@ -142,89 +148,58 @@ function character:pieceDroppedOK(piece, shift)
 	if place_type == "normal" then
 		return true
 	elseif place_type == "rush" then
-		return self.cur_mp >= (self.current_rush_cost) and not self.supering
+		return self.cur_burst >= self.current_rush_cost
 	elseif place_type == "double" then
-		return self.cur_mp >= (self.current_double_cost) and not self.supering
+		return self.cur_burst >= self.current_double_cost
 	end
 end
 
 
 function character:superSlideIn()
 	local stage = self.game.stage
-	local x_pos = self.ID == "P1" and stage.width * -0.2 or stage.width * 1.2
-
 	local particles = self.game.particles
+	local sign = self.ID == "P2" and -1 or 1
 
-	local shadow = common.instance(particles.superEffects2, {
+	local shadow = common.instance(particles.superFreezeEffects, {
 		image = self.shadow_image,
-		x = x_pos,
+		draw_order = 2,
+		x = stage.width * (0.5 - sign * 0.7),
 		y = stage.height * 0.5,
-		update = function(_self, dt)
-			if _self.tweening then
-				local complete = _self.tweening:update(dt)
-				if complete then
-					self.game.queue:add(25, _self.remove, _self)
-					_self.tweening = nil
-				end
-			end
-		end
+		flip = sign == -1
 	})
-	local action = common.instance(particles.superEffects3, {
+	shadow:moveTo{duration = 30, x = stage.width * (0.5 + 0.025 * sign), easing = "outQuart"}
+	shadow:wait(25)
+	shadow:moveTo{duration = 5, transparency = 0, exit = true}
+	local portrait = common.instance(particles.superFreezeEffects, {
 		image = self.action_image,
-		x = x_pos,
+		draw_order = 3,
+		x = stage.width * (0.5 - sign * 0.7),
 		y = stage.height * 0.5,
-		update = function(_self, dt)
-			if _self.tweening then
-				local complete = _self.tweening:update(dt)
-				if complete then
-					self.game.queue:add(25, _self.remove, _self)
-					_self.tweening = nil
-				end
-			end
-		end
+		flip = sign == -1
 	})
+	shadow:moveTo{duration = 30, x = stage.width * (0.5 + 0.025 * sign), easing = "outQuart"}
+	shadow:wait(25)
+	shadow:moveTo{duration = 5, transparency = 0, exit = true}
 
-	local fuzz1 = common.instance(particles.superEffects1, {
+	local top_fuzz = common.instance(particles.superFreezeEffects, {
 		image = self.super_fuzz_image,
+		draw_order = 1,
 		x = stage.width * 0.5,
-		y = self.super_fuzz_image:getHeight() * -0.5,
-		update = function(_self, dt)
-			if _self.tweening then
-				local complete = _self.tweening:update(dt)
-				if complete then
-					self.game.queue:add(40, _self.remove, _self)
-					_self.tweening = nil
-				end
-			end
-		end
+		y = self.super_fuzz_image:getHeight() * -0.5
 	})
+	top_fuzz:moveTo{duration = 21, y = 0, easing = "outQuart"}
+	top_fuzz:wait(40)
+	top_fuzz:moveTo{duration = 5, transparency = 0, exit = true}
 
-	local fuzz2 = common.instance(particles.superEffects1, {
+	local bottom_fuzz = common.instance(particles.superFreezeEffects, {
 		image = self.super_fuzz_image,
+		draw_order = 1,
 		x = stage.width * 0.5,
 		y = self.super_fuzz_image:getHeight() * 0.5 + stage.height,
-		update = function(_self, dt)
-			if _self.tweening then
-				local complete = _self.tweening:update(dt)
-				if complete then
-					self.game.queue:add(40, _self.remove, _self)
-					_self.tweening = nil
-				end
-			end
-		end
 	})
-
-	fuzz1.tweening = tween.new(0.35, fuzz1, {y = 0}, "outQuart")
-	fuzz2.tweening = tween.new(0.35, fuzz2, {y = stage.height}, "outQuart")
-
-	if self.ID == "P1" then
-		action.tweening = tween.new(0.5, action, {x = stage.width * 0.475}, "outQuart")
-		shadow.tweening = tween.new(0.5, shadow, {x = stage.width * 0.525}, "outQuart")
-	else
-		action.tweening = tween.new(0.5, action, {x = stage.width * 0.525}, "outQuart")
-		shadow.tweening = tween.new(0.5, shadow, {x = stage.width * 0.475}, "outQuart")
-		shadow.flip, action.flip = true, true
-	end
+	bottom_fuzz:moveTo{duration = 21, y = stage.height, easing = "outQuart"}
+	bottom_fuzz:wait(40)
+	bottom_fuzz:moveTo{duration = 5, transparency = 0, exit = true}
 end
 
 return common.class("Character", character)

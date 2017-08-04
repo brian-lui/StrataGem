@@ -46,7 +46,13 @@ Game.STATE_SEND_WAIT = 80
 Game.VERSION = "64.0"
 
 function Game:init()
-	self.p1 = common.instance(require "character")	-- Dummy
+	self.debug_drawGemOwners = true	-- TODO: Remove this someday.
+	self.debug_drawParticleDestinations = true
+	self.debug_drawGamestate = true
+	self.debug_drawDamage = true
+	self.debug_drawGrid = true
+
+	self.p1 = common.instance(require "character")	-- Dummies
 	self.p2 = common.instance(require "character")
 	self.phaseManager = common.instance(require "phasemanager", self)
 	self.rng = love.math.newRandomGenerator()
@@ -157,7 +163,8 @@ local colorAliases = {
 	yellow = "Yellow"
 }
 -- rows is from 8 at the top to 1 at the bottom
-local function n(self, row, column, color)
+local function n(self, row, column, color, owner)
+	owner = owner or 0
 	color = colorAliases[color:lower()]
 	if type(row) ~= "number" or type(column) ~= "number" then
 		print("row or column not a number!")
@@ -167,7 +174,6 @@ local function n(self, row, column, color)
 		print("row or column not an integer!")
 		return
 	end
-
 	if row < 1 or row > 8 then
 		print("row out of bounds! 1 = bottom, 8 = top")
 		return
@@ -181,7 +187,9 @@ local function n(self, row, column, color)
 	local x, y = self.stage.grid.x[column], self.stage.grid.y[row]
 	local gem_color = Gem[color .. "Gem"]
 	self.stage.grid[row][column].gem = common.instance(gem_color, x, y)
-	self.stage.grid[row][column].gem:addOwner(1)
+	if owner > 0 then
+		self.stage.grid[row][column].gem:addOwner(owner)
+	end
 end
 
 function Game:keypressed(key)
@@ -208,62 +216,43 @@ function Game:keypressed(key)
 	elseif key == "s" then p1.hand:addDamage(1)
 	elseif key == "d" then p2.hand:addDamage(1)
 	elseif key == "f" then
-		p1.cur_mp = math.min(p1.cur_mp + 20, p1.MAX_MP)
-		p2.cur_mp = math.min(p2.cur_mp + 20, p2.MAX_MP)
+		p1.cur_burst = math.min(p1.cur_burst + 1, p1.MAX_BURST)
+		p1.mp = p1.MAX_MP
+		p2.cur_burst = math.min(p2.cur_burst + 1, p2.MAX_BURST)
+		p2.mp = p2.MAX_MP
 	elseif key == "k" then self.canvas[6]:renderTo(function() love.graphics.clear() end)
 	elseif key == "z" then self:start("1P", "heath", "walter", self.background.Starfall, nil, 1)
 	elseif key == "x" then
-		p1.cur_mp = 64
-		--p2.cur_mp = 20
+		n(self, 7, 1, "R") n(self, 7, 2, "G") n(self, 7, 3, "B") n(self, 7, 4, "Y")
+		n(self, 8, 1, "R") n(self, 8, 2, "G") n(self, 8, 3, "B") n(self, 8, 4, "Y")
 	elseif key == "c" then
-		local Pic = require 'pic'
-		local image = require 'image'
-		local temp = common.instance(Pic, self, {x = stage.width * 0.5, y = stage.height * 0.5, image = image.red_gem})
-		self.particles.allParticles.PieEffects[ID.particle] = temp
-		temp.update = temp.greatupdate
-		local newbluegem = function()
-			local x, y = temp.x, temp.y
-			local blue = common.instance(Pic, self, {x = x, y = y, image = image.blue_gem})
-			blue.update = blue.greatupdate
-			self.particles.allParticles.PieEffects[ID.particle] = blue
-		end
-		local during = {10, 5, newbluegem}
-		temp:moveTo{x = 300, y = 200, duration = 120, during = during}
-		self.queue:add(10, temp.moveTo, temp, {x = 600, y = 450, duration = 60, easing = "outQuart"})
-	elseif key == "v" then	-- print summary state
-		local toprint = {"", "", "", "", "", "", "", "", ""}
-		for row = 7, 14 do
-			for col = 1, 8 do
-				if grid[row][col].gem then
-					local colors = {red = "R", blue = "B", green = "G", yellow = "Y"}
-					toprint[row-6] = toprint[row-6] .. colors[ grid[row][col].gem.color ]
-				else
-					toprint[row-6] = toprint[row-6] .. "."
-				end
-			end
-		end
-		toprint[9] = p1.cur_mp .. "|" .. p2.cur_mp
-		for i = 1, #toprint do print(toprint[i]) end
+		n(self, 1, 1, "B")
+		n(self, 2, 1, "B")
+		n(self, 3, 1, "R") n(self, 3, 2, "G")
+		n(self, 4, 1, "Y") n(self, 4, 2, "Y")
+		n(self, 5, 1, "R") n(self, 5, 2, "R") n(self, 5, 3, "G")
+		n(self, 6, 1, "B") n(self, 6, 2, "G") n(self, 6, 3, "B")
+		n(self, 7, 1, "B") n(self, 7, 2, "R") n(self, 7, 3, "R")
+		n(self, 8, 1, "R") n(self, 8, 2, "G") n(self, 8, 3, "G") n(self, 8, 4, "Y")
+	elseif key == "v" then	-- garbage move up match
+		n(self, 7, 3, "B") n(self, 7, 4, "B") n(self, 7, 5, "R") n(self, 7, 6, "R") n(self, 7, 7, "G")
+		n(self, 8, 3, "R") n(self, 8, 4, "R") n(self, 8, 5, "B") n(self, 8, 6, "B") n(self, 8, 7, "Y")
 	elseif key == "b" then
-		n(8, 7, "G")
-		n(8, 6, "G")
-		n(7, 5, "G")
-		n(8, 5)
-		n(8, 4)
-		n(7, 3)
-		n(8, 3, "Y")
-		n(8, 2, "Y")
+		                   n(self, 7, 3, "R")                    n(self, 7, 5, "G")
+		n(self, 8, 2, "Y") n(self, 8, 3, "Y") n(self, 8, 4, "R") n(self, 8, 5, "R") n(self, 8, 6, "G") n(self, 8, 7, "G")
 	elseif key == "n" then
-		n(8, 2, "G")
-		n(8, 4, "G")
-		n(8, 5, "G")
-		n(7, 5, "G")
-		n(8, 6, "R")
+		n(self, 6, 1, "B")
+		n(self, 7, 1, "Y") n(self, 7, 2, "Y")
+		n(self, 8, 1, "G") n(self, 8, 2, "R") n(self, 8, 3, "G")
 	elseif key == "m" then
-		p1.hand[3].platform:screenshake(30)
+		self.debug_drawGemOwners = not self.debug_drawGemOwners
+		self.debug_drawParticleDestinations = not self.debug_drawParticleDestinations
+		self.debug_drawGamestate = not self.debug_drawGamestate
+		self.debug_drawDamage = not self.debug_drawDamage
+		self.debug_drawGrid = not self.debug_drawGrid
 	elseif key == "," then
 		self.debug_overlay = function ()
-			return self.particles:getNumber("Damage", self:playerByIndex(2))
+			return self.particles.getNumber("SuperParticles", self.p1) + self.particles.getNumber("SuperParticles", p2)
 		end
 	elseif key == "." then
 		self.timeStep = self.timeStep == 0.1 and 1/60 or 0.1

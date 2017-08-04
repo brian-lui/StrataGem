@@ -9,6 +9,10 @@ local PhaseManager = {}
 function PhaseManager:init(game)
 	self.game = game
 	self.ai = common.instance(require "ai", game)
+
+	self.super_play = nil
+	self.super_pause = 0
+	self.platformSpinDelayCounter = 15
 end
 
 function PhaseManager:intro(dt)
@@ -87,7 +91,7 @@ function PhaseManager:action(dt)
 
 			if client.compareStates() then
 				print("Frame: " .. game.frame, "Time: " .. love.timer.getTime() - client.match_start_time, "States match!")
-				print("Player 1 meter: " .. game.p1.cur_mp, "Player 2 meter: " .. game.p2.cur_mp)
+				print("Player 1 meter: " .. game.p1.mp, "Player 2 meter: " .. game.p2.mp)
 				client.synced = true
 			else
 				print("Frame: " .. game.frame, "Time: " .. love.timer.getTime() - client.match_start_time, "Desync.")
@@ -127,7 +131,32 @@ function PhaseManager:resolve(dt)
 	self.game.ui:putPendingAtTop(game)
 	game.particles.upGem.removeAll(game.particles) -- animation
 	game.frozen = true
-	game.phase = "GemTween"
+	game.phase = "SuperFreeze"
+end
+
+local function superPlays(self)
+	local ret = {}
+	for player in self.game:players() do
+		if player.supering then
+			ret[#ret + 1] = player
+		end
+	end
+	return ret
+end
+
+-- TODO: refactor this lame stuff
+function PhaseManager:superFreeze(dt)
+	self.super_play = self.super_play or superPlays()
+
+	if self.super_pause > 0 then
+		self.super_pause = super_pause - 1
+	elseif self.super_play[1] then
+		self.super_play[1]:superSlideIn()
+		self.super_pause = 90
+		table.remove(super_play, 1)
+	else
+		self.super_play = nil
+		self.game.phase = "GemTween"
 end
 
 function PhaseManager:applyGemTween(dt)
@@ -152,8 +181,8 @@ function PhaseManager:applyGravity(dt)
 	for player in self.game:players() do
 		player.hand:update(dt)
 	end
-	local animation_done = grid:isSettled() -- function
-	if animation_done then
+	if grid:isSettled() then
+		game.particles.wordEffects.clear(game.particles)
 		for player in game:players() do
 			player:afterGravity()
 		end
@@ -222,13 +251,14 @@ function PhaseManager:resolvingMatches(dt)
 	p2.hand:addDamage(p1dmg)
 	grid:dropColumnsAnim()
 	grid:dropColumns()
+	grid:updateGrid()
 	self.game.phase = "Gravity"
 end
 
 function PhaseManager:resolvedMatches(dt)
 	local game = self.game
 
-	if game.particles.getNumber("Damage") > 0 then
+	if game.particles:getCount("onscreen", "Damage", 1) + particles:getCount("onscreen", "Damage", 2) > 0 then
 		for player in game:players() do
 			player.hand:update(dt)
 		end
@@ -240,6 +270,18 @@ function PhaseManager:resolvedMatches(dt)
 		end
 		game.scoring_combo = 0
 		game.stage.grid:setAllGemOwners(0)
+		game.phase = "PlatformSpinDelay"
+	end
+end
+
+function PhaseManager:platformSpinDelay(dt)
+	if self.platformSpinDelayCounter > 0 then
+		for player in self.game:players() do
+			player.hand:update(dt)
+		end
+		self.platformSpinDelayCounter = self.platformSpinDelayCounter - 1
+	else
+		self.platformSpinDelayCounter = 30
 		game.phase = "GetPiece"
 	end
 end
@@ -297,6 +339,7 @@ function PhaseManager:cleanup(dt)
 	local p1, p2 = game.p1, game.p2
 
 	grid:updateGrid()
+	game.particles:clearCount()
 	for player in game:players() do
 		player:cleanup()
 	end
@@ -347,9 +390,9 @@ function PhaseManager:gameOver(dt)
 	else
 		print("Match ended unexpectedly, whopps!")
 	end
-	local damage_particles = particles:getNumber("Damage", game.p1) + particles:getNumber("Damage", game.p2)
-	local super_particles = particles:getNumber("Super", game.p1) + particles:getNumber("Super", game.p2)
-	local anims_done = (damage_particles == 0) and (super_particles == 0)
+	local damage_particles = particles:getCount("onscreen", "Damage", 1) + particles:getCount("onscreen", "Damage", 2)
+	local super_particles = particles:getCount("onscreen", "MP", 1) + particles:getCount("onscreen", "MP", 2)
+	local anims_done = damage_particles + super_particles == 0
 	if anims_done and game.type == "Netplay" then
 		game.client:endMatch()
 		game.statemanager:switch(require "gs_lobby")
@@ -370,6 +413,7 @@ PhaseManager.lookup = {
 	MatchAnimations = PhaseManager.matchAnimations,
 	ResolvingMatches = PhaseManager.resolvingMatches,
 	ResolvedMatches = PhaseManager.resolvedMatches,
+	PlatformSpinDelay = PhaseManager.platformSpinDelay,
 	GetPiece = PhaseManager.getPiece,
 	PlatformsExploding = PhaseManager.platformsExploding,
 	PlatformsMoving = PhaseManager.platformsMovingUp,

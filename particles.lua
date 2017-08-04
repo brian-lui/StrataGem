@@ -11,6 +11,10 @@ local Particles = {}
 function Particles:init(game)
 	self.game = game
 	self:reset()
+	self.count = {
+		created = {MP = {0, 0}, Damage = {0, 0}},
+		destroyed = {MP = {0, 0}, Damage = {0, 0}}
+	}
 end
 
 function Particles:update(dt)
@@ -38,11 +42,32 @@ function Particles:getNumber(particle_tbl, player)
 	return num
 end
 
+-- increments the count: c_d is "created" or "destroyed",
+-- p_type is "MP" or "Damage", player_num is 1 or 2
+function Particles:incrementCount(c_d, p_type, player_num)
+	self.count[c_d][p_type][player_num] = self.count[c_d][p_type][player_num] + 1
+end
+
+-- takes "created", "destroyed", or "onscreen"
+function Particles:getCount(count_type, p_type, player_num)
+	if count_type == "onscreen" then
+		return self.count.created[p_type][player_num] - self.count.destroyed[p_type][player_num]
+	end
+	return self.count[count_type][p_type][player_num]
+end
+
+function Particles:clearCount()
+	self.count.created.MP = {0, 0}
+	self.count.created.Damage = {0, 0}
+	self.count.destroyed.MP = {0, 0}
+	self.count.destroyed.Damage = {0, 0}
+end
+
 function Particles:reset()
 	self.allParticles = {
 		Damage = {},
 		DamageTrail = {},
-		Super = {},
+		SuperParticles = {},
 		Pop = {},
 		ExplodingGem = {},
 		ExplodingPlatform = {},
@@ -55,9 +80,7 @@ function Particles:reset()
 		WordEffects = {},
 		PieEffects = {},
 		CharEffects = {},
-		SuperEffects1 = {},
-		SuperEffects2 = {},
-		SuperEffects3 = {},
+		SuperFreezeEffects = {},
 	}
 end
 
@@ -68,27 +91,28 @@ DamageParticle.DAMAGE_DROP_SPEED = window.height / 192	-- pixels for damage part
 function DamageParticle:init(manager, gem)
 	local img = image.lookup.particle_freq.random(gem.color)
 	Pic.init(self, {x = gem.x, y = gem.y, image = img})
+	self.owner = gem.owner
 	manager.allParticles.Damage[ID.particle] = self
+	self.damageCreatedThisTurn = {0, 0}	-- TODO: Can this be removed? Unused.
 	self.manager = manager
 end
 
 function DamageParticle:remove()
+	self.manager:incrementCount("destroyed", "Damage", self.owner)
 	self.manager.allParticles.Damage[self.ID] = nil
 end
 
+-- player.hand.damage is the damage before this round's match(es) is scored
 function DamageParticle:generate(gem)
 	local player = self:playerByIndex(gem.owner)
-	local full_segments = math.floor(player.hand.damage / 4)
-
-	-- TODO: bug: for multi-match, it calculates full_segments incorrectly because it's based on the damage after the first match
-	local already_particles = self.particles:getNumber("Damage", player)
-	local final_loc = math.min(2 + (full_segments/4) + (already_particles/12), 6)
 
 	-- calculate bezier curve
 	local x1, y1 = gem.x, gem.y -- start
 	local x4, y4 = player.hand[2].x, player.hand[2].y
 	local dist = ((x4 - x1) ^ 2 + (y4 - y1) ^ 2) ^ 0.5
 	local x3, y3 = 0.5 * (x1 + x4), 0.5 * (y1 + y4)
+	local created_particles = self.particles:getCount("created", "Damage", gem.owner)
+	local final_loc = (player.hand.turn_start_damage + created_particles/3)/4 + 1
 
 	for _ = 1, 3 do
 		local angle = math.random() * math.pi * 2
@@ -101,15 +125,17 @@ function DamageParticle:generate(gem)
 		local duration = 54 + math.random() * 12
 		local rotation = math.random() * 5
 		p.final_loc_idx = math.floor(final_loc)
-		p.owner = player
 
 		-- second part of movement once it hits the platform
 		local drop_y = player.hand[p.final_loc_idx].y
-		local drop_duration = (drop_y - player.hand[2].y) / DamageParticle.DAMAGE_DROP_SPEED
+		local drop_duration = math.max(0, (drop_y - player.hand[2].y) / DamageParticle.DAMAGE_DROP_SPEED)
 		local drop_x = function() return player.hand:getx(p.y) end
 		local exit_1 = function() player.hand[2].platform:screenshake(4) end
 		local exit_2 = function()
-			player.hand[p.final_loc_idx].platform:screenshake(6)
+			local platform = player.hand[p.final_loc_idx].platform
+			if platform then
+				platform:screenshake(6)
+			end
 			p:remove()
 		end
 		if drop_duration == 0 then
@@ -136,6 +162,8 @@ function DamageParticle:generate(gem)
 			self.queue:add(i * 2, self.particles.damageTrail.generate, self, trail)
 		end
 	end
+
+	self.particles:incrementCount("created", "Damage", gem.owner)
 end
 
 DamageParticle = common.class("DamageParticle", DamageParticle, Pic)
@@ -174,12 +202,14 @@ local SuperParticle = {}
 function SuperParticle:init(manager, gem)
 	local img = image.lookup.super_particle[gem.color]
 	Pic.init(self, {x = gem.x, y = gem.y, image = img})
-	manager.allParticles.Super[ID.particle] = self
+	self.owner = gem.owner
+	manager.allParticles.SuperParticles[ID.particle] = self
 	self.manager = manager
 end
 
 function SuperParticle:remove()
-	self.manager.allParticles.Super[self.ID] = nil
+	self.manager:incrementCount("destroyed", "MP", self.owner)
+	self.manager.allParticles.SuperParticles[self.ID] = nil
 end
 
 function SuperParticle:generate(gem, num_particles)
@@ -188,7 +218,7 @@ function SuperParticle:generate(gem, num_particles)
 	for _ = 1, num_particles do
 		-- create bezier curve
 		local x1, y1 = gem.x, gem.y -- start
-		local x4, y4 = self.stage.super[player.ID].frame.x, self.stage.super[player.ID].frame.y -- end
+		local x4, y4 = self.stage.super[player.ID].x, self.stage.super[player.ID].y -- end
 		-- dist and angle vary the second point within a circle around the origin
 		local dist = ((x4 - x1) ^ 2 + (y4 - y1) ^ 2) ^ 0.5
 		local angle = math.random() * math.pi * 2
@@ -199,6 +229,7 @@ function SuperParticle:generate(gem, num_particles)
 
 		-- create particle
 		local p = common.instance(SuperParticle, self.particles, gem)
+		self.particles:incrementCount("created", "MP", gem.owner)
 
 		-- move particle
 		local duration = (0.9 + 0.2 * math.random()) * 90
@@ -276,7 +307,6 @@ end
 function ExplodingPlatform:generate(platform)
 	local x, y = platform.x, platform.y
 	local todraw = image.UI.starpiece
-	local rotation = 6
 	local duration = 60
 	local width, height = self.stage.width, self.stage.height
 
@@ -289,7 +319,6 @@ function ExplodingPlatform:generate(platform)
 
 	for i = 1, #todraw do
 		local p = common.instance(ExplodingPlatform, self.particles, x, y, todraw[i])
-		p.scaling = 0.25
 		p.transparency = 510
 		local function y_func()
 			return y + p.t * moves[i].y + p.t^2 * height
@@ -301,7 +330,7 @@ function ExplodingPlatform:generate(platform)
 			x = x + moves[i].x,
 			y = y_func,
 			transparency = 0,
-			scaling = 0.375,
+			scaling = 1.5,
 			exit = true
 		}
 	end
@@ -548,7 +577,7 @@ function Dust:generatePlatformSpin(x, y, speed)
 
 	local p = common.instance(Dust, self.particles, x, y, todraw, "Dust")
 	local function y_func()
-		return y + p.1 * y_vel + p.t^2 * acc
+		return y + p.t * y_vel + p.t^2 * acc
 	end
 	p:moveTo{duration = duration, rotation = rotation, x = x + x_vel, y = y_func, transparency = 0, exit = true}
 end
@@ -813,7 +842,7 @@ PieEffects = common.class("PieEffects", PieEffects, Pic)
 -------------------------------------------------------------------------------
 
 local CharEffects = {}
--- required stuff in table: x, y, rotation, image
+-- required stuff in table: x, y, image
 function CharEffects:init(manager, tbl)
 	Pic.init(self, tbl)
 	manager.allParticles.CharEffects[ID.particle] = self
@@ -828,56 +857,25 @@ CharEffects = common.class("CharEffects", CharEffects, Pic)
 
 -------------------------------------------------------------------------------
 
-local SuperEffects1 = {}
+local SuperFreezeEffects = {}
 -- required stuff in table: x, y, rotation, image
-function SuperEffects1:init(manager, tbl)
+function SuperFreezeEffects:init(manager, tbl)
+	tbl.draw_order = tbl.draw_order or 1
 	Pic.init(self, tbl)
-	self.allParticles.SuperEffects1[ID.particle] = self
+	self.allParticles.SuperFreezeEffects[ID.particle] = self
 	self.manager = manager
 end
 
-function SuperEffects1:remove()
-	self.manager.allParticles.SuperEffects1[self.ID] = nil
+function SuperFreezeEffects:remove()
+	self.manager.allParticles.SuperFreezeEffects[self.ID] = nil
 end
 
-SuperEffects1 = common.class("SuperEffects1", SuperEffects1, Pic)
-
--------------------------------------------------------------------------------
-
-local SuperEffects2 = {}
--- required stuff in table: x, y, rotation, image
-function SuperEffects2:init(manager, tbl)
-	Pic.init(self, tbl)
-	self.allParticles.SuperEffects2[ID.particle] = self
-	self.manager = manager
-end
-
-function SuperEffects2:remove()
-	self.manager.allParticles.SuperEffects2[self.ID] = nil
-end
-
-SuperEffects2 = common.class("SuperEffects2", SuperEffects2, Pic)
-
--------------------------------------------------------------------------------
-
-local SuperEffects3 = {}
--- required stuff in table: x, y, rotation, image
-function SuperEffects3:init(manager, tbl)
-	Pic.init(self, tbl)
-	self.allParticles.SuperEffects3[ID.particle] = self
-	self.manager = manager
-end
-
-function SuperEffects3:remove()
-	self.manager.allParticles.SuperEffects3[self.ID] = nil
-end
-
-SuperEffects3 = common.class("SuperEffects3", SuperEffects3, Pic)
+SuperFreezeEffects = common.class("SuperFreezeEffects", SuperFreezeEffects, Pic)
 
 -------------------------------------------------------------------------------
 
 Particles.damage = DamageParticle
-Particles.super_ = SuperParticle	-- If this is just called "super" it interferes with middleclass
+Particles.superParticles = SuperParticle
 Particles.pop = PopParticle
 Particles.explodingGem = ExplodingGem
 Particles.explodingPlatform = ExplodingPlatform
@@ -890,8 +888,6 @@ Particles.words = Words
 Particles.wordEffects = WordEffects
 Particles.pieEffects = PieEffects
 Particles.charEffects = CharEffects
-Particles.superEffects1 = SuperEffects1
-Particles.superEffects2 = SuperEffects2
-Particles.superEffects3 = SuperEffects3
+Particles.superFreezeEffects = SuperFreezeEffects
 
 return common.class("Particles", Particles)

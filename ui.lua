@@ -89,50 +89,60 @@ end
 -- returns the super drawables for player based on player MP, called every dt
 -- shown super meter is less than the actual super meter when super particles are on screen
 -- as particles disappear, they visually go into the super meter
-function ui:drawSuper(player)
-	local segment_amount = player.MAX_MP / 4
-	local original_mp = math.max(player.cur_mp, 0)
-	local super = self.game.particles:getNumber("Super", player)
-	local draw_mp = math.max(original_mp - super, 0)
-	if player.old_mp + super > player.MAX_MP then draw_mp = math.max(draw_mp, player.old_mp) end
-	local full_segs = math.min(draw_mp / segment_amount, 4)
-	local part_fill_percent = full_segs % 1
-	--local transparency = math.ceil(math.sin(frame / 30) * 127.5 + 127.5)
-	local flip = player.ID == "P2"
 
-	-- recalculate partial fill block length
+function ui:drawSuper(player)
+	local destroyedParticles = self.game.particles:getCount("destroyed", "MP", player.playerNum)
+
+	local displayed_mp = math.min(player.MAX_MP, player.turn_start_mp + destroyedParticles)
+	local fill_percent = displayed_mp / player.MAX_MP
+	local img = player.super_meter_image
+	img:changeQuad(0, img.height * (1 - fill_percent), img.width, img.height * fill_percent)
+	img.y = self.game.stage.super[player.ID].y + img.height * (1 - fill_percent)
+
+	player.super_frame:draw()	-- super frame
+	img:draw()	-- super meter
+
+	if player.supering then
+		player.super_glow.transparency = 255
+		player.super_glow.full:draw()
+		player.super_word:draw()
+	elseif player.mp >= player.SUPER_COST then
+		player.super_glow.transparency = math
+		player.super_glow.transparency = math.ceil(math.sin(self.game.frame / 30) * 127.5 + 127.5)
+		player.super_glow[math.floor(fill_percent * 4)]:draw()
+	end
+end
+
+function ui:drawBurst(player)
+	local max_segs = 2
+	local segment_width = player.MAX_BURST / max_segs
+	local full_segs = math.min(player.cur_burst / segment_width, max_segs)
+	local part_fill_percent = full_segs % 1
+
+	local flip = player.ID == "P2"
+	-- update partial fill block length
 	if part_fill_percent > 0 then
-		local part_fill_block = player.super_partial[math.floor(full_segs) + 1]
+		local part_fill_block = player.burst_partial[math.floor(full_segs) + 1]
 		local width = math.floor(part_fill_block.width * part_fill_percent)
 		part_fill_block:changeQuad(0, 0, width, part_fill_block.height)
 	end
 
-	player.super_frame:draw() -- super frame
+	player.burst_frame:draw()	-- frame
 
 	-- super meter
-	for i = 1, 4 do
+	for i = 1, max_segs do
 		if full_segs >= i then
-			player.super_block[i]:draw(flip)
-		elseif full_segs + 1 > i then -- partial fill
-			player.super_partial[i]:draw(flip, player.super_block[i].quad_x, player.super_block[i].quad_y)
+			player.burst_block[i]:draw(flip)
+		elseif full_segs + 1 > i then	-- partial fill
+			player.burst_partial[i]:draw(flip, player.burst_block[i].quad_x, player.burst_block[i].quad_y)
 		end
 	end
 
 	-- glow
-	if player.supering then
-		player.super_glow.full:draw()
-		player.super_glow.full.scaling = math.min(player.super_glow.full.scaling + 0.1, 1)
-
-	elseif full_segs >= 1 then
-		player.super_glow[math.floor(full_segs)].transparency = math.ceil(math.sin(self.game.frame / 30) * 127.5 + 127.5)
-		player.super_glow[math.floor(full_segs)]:draw()
+	if full_segs >= 1 then
+		player.burst_glow[math.floor(full_segs)].transparency = math.ceil(math.sin(self.game.frame / 30) * 127.5 + 127.5)
+		player.burst_glow[math.floor(full_segs)]:draw()
 	end
-
-	-- super word, if active
-	if player.supering then
-		player.super_word:draw()
-	end
-
 end
 
 -- draws the shadow underneath the player's gem piece, called if gem is picked up

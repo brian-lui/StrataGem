@@ -1,5 +1,7 @@
 local love = _G.love
 
+local FONT = _G.FONT
+
 local common = require "class.commons"
 
 local pointIsInRect = require "utilities".pointIsInRect
@@ -70,7 +72,8 @@ function gs_main:drawScreenElements()
 	self.ui.timer:draw()	-- timer bar
 
 	for player in self:players() do
-		self.ui:drawSuper(player) -- super meter
+		self.ui:drawBurst(player)	-- burst meter
+		--self.ui:drawSuper(player)	-- super meter
 		player.animation:draw(player.ID == "P2") -- sprite
 	end
 end
@@ -166,9 +169,13 @@ function gs_main:drawGems()
 	for _, v in pairs(allParticles.ExplodingGem) do v:draw() end
 	for _, v in pairs(allParticles.PieEffects) do v:draw() end
 	for _, v in pairs(allParticles.CharEffects) do v:draw() end
-	for _, v in pairs(allParticles.SuperEffects1) do v:draw() end
-	for _, v in pairs(allParticles.SuperEffects2) do v:draw() end
-	for _, v in pairs(allParticles.SuperEffects3) do v:draw() end
+	for i = 1, 3 do
+		for _, v in pairs(allParticles.SuperFreezeEffects) do
+			if v.draw_order == i then
+				v:draw()
+			end
+		end
+	end
 
 	-- draw the gem when it's been grabbed by the player
 	if self.active_piece then
@@ -187,27 +194,70 @@ end
 
 -- draw text items
 function gs_main:drawText()
+	local grid = self.stage.grid
 	-- words
-	for _, v in pairs(self.particles.allParticles.Words) do v:draw() end
+	for _, v in pairs(self.particles.allParticles.Words) do
+		v:draw()
+	end
 
-	-- debug row/column display
-	love.graphics.push("all")
-		love.graphics.setColor(0, 255, 0)
-		for r = 0, self.stage.grid.rows + 1 do
-			love.graphics.print(r, 200, self.stage.grid.y[r])
-		end
-		for c = 0, self.stage.grid.columns + 1 do
-			love.graphics.print(c, self.stage.grid.x[c], 200)
-		end
-	love.graphics.pop()
+	-- debug: row/column display
+	if self.debug_drawGrid then
+		love.graphics.push("all")
+			love.graphics.setColor(0, 255, 0)
+			for r = 0, grid.rows + 1 do
+				love.graphics.print(r, 200, grid.y[r])
+			end
+			for c = 0, grid.columns + 1 do
+				love.graphics.print(c, grid.x[c], 200)
+			end
+		love.graphics.pop()
+	end
 
-	-- debug overlay
-	love.graphics.push("all")
-		love.graphics.setColor(255, 255, 255)
-		if self.debug_overlay then
+	-- debug: top right HUD
+	if self.debug_overlay then
+		love.graphics.push("all")
+			love.graphics.setColor(255, 255, 255)
 			love.graphics.printf(self.debug_overlay(), 0, 40, 1000, "right")
+		love.graphics.pop()
+	end
+
+	-- debug: overlays
+	love.graphics.push("all")
+		love.graphics.setColor(0, 0, 0)
+		love.graphics.setFont(FONT.REGULAR)
+		if self.debug_drawGemOwners then
+			for gem in grid:gems() do
+				love.graphics.print(gem.owner, gem.x, gem.y)
+			end
+		end
+		if self.debug_drawParticleDestinations then
+			for _, p in pairs(self.particles.allParticles.Damage) do
+				love.graphics.print(p.final_loc_idx, p.x, p.y)
+			end
+		end
+		if self.debug_drawGamestate then
+			local toprint = {}
+			local i = 1
+			local colors = {red = "R", blue = "B", green = "G", yellow = "Y"}
+			for row = 0, 14 do
+				for col = 1, 8 do
+					toprint[i] = grid[row][col].gem and colors[grid[row][col].gem.color] or " "
+					i = i + 1
+				end
+				toprint[i] = "\n"
+				i = i + 1
+			end
+
+			love.graphics.print(table.concat(toprint), 50, 400)
+		end
+		if self.debug_drawDamage then
+			local p1hand, p2hand = self.p1.hand, self.p2.hand
+			love.graphics.print(p1hand.damage, p1hand[2].x - 60, p1hand[2].y)
+			love.graphics.print(p2hand.damage, p2hand[2].x + 60, p2hand[2].y)
 		end
 	love.graphics.pop()
+
+
 end
 
 function gs_main:mousepressed(x, y)
@@ -224,7 +274,7 @@ function gs_main:mousepressed(x, y)
 			end
 		end
 
-		if pointIsInRect(x, y, table.unpack(self.stage.super_click[player.ID])) then
+		if pointIsInRect(x, y, table.unpack(self.stage.super[player.ID].rect)) then
 			player.super_clicked = true
 		end
 	end
@@ -245,8 +295,8 @@ function gs_main:mousereleased(x, y)
 			self.active_piece:rotate()
 		end
 
-	elseif player.super_clicked and pointIsInRect(x, y, table.unpack(self.stage.super_click[player.ID])) then
-		player:super()
+	elseif player.super_clicked and pointIsInRect(x, y, table.unpack(self.stage.super[player.ID].rect)) then
+		player:activateSuper()
 	end
 
 	player.super_clicked = false

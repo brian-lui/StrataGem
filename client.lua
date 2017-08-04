@@ -345,10 +345,10 @@ function Client:sendState(delay)
 		frame = game.frame,
 		grid_gems = game.stage.grid:getIDs(),
 		p1_hand = game.p1.hand:getPieceIDs(),
-		p1_super = game.p1.cur_mp,
+		p1_super = game.p1.mp,
 		p1_damage = "TODO",
 		p2_hand = game.p2.hand:getPieceIDs(),
-		p2_super = game.p2.cur_mp,
+		p2_super = game.p2.mp,
 		p2_damage = "TODO",
 		-- place_type
 		-- special ability stuff

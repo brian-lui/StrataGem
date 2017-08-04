@@ -35,4 +35,8 @@ ID = {
 	end
 }
 
+FONT = {
+	REGULAR = love.graphics.newFont('/fonts/anonymous.ttf', 20)
+}
+
 ID:reset()

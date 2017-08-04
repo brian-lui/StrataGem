@@ -229,32 +229,9 @@ function Grid:getScore(matching_number)
 end
 
 function Grid:removeMatchedGems(minimumLength)
-
-	local function getAboveGems(column, start_row)
-		start_row = start_row or 1
-		local above = {}
-		for i = start_row, 1, -1 do
-			if self[i][column].gem then
-				above[#above + 1] = self[i][column].gem
-			end
-		end
-		return above
-	end
-
-	local function propogateFlagsUp(gem_table)
-		for _, gem in pairs(gem_table) do
-			local ownership = gem.owner
-			local above_gems = getAboveGems(gem.column, gem.row)
-			for _, v in pairs(above_gems) do
-				v:setOwner(ownership)
-			end
-		end
-	end
-
 	local gem_table = self:getMatchedGems(minimumLength or 3)
-	propogateFlagsUp(gem_table)
 	for _, gem in pairs(gem_table) do
-		self:removeGem(gem)
+		self:removeGem(gem, true)
 	end
 end
 
@@ -414,7 +391,14 @@ function Grid:moveGemAnim(gem, row, column)
 	--local angle = math.atan2(target_y - gem.y, target_x - gem.x)
 	local speed = self.DROP_SPEED + self.DROP_MULTIPLE_SPEED * self.game.scoring_combo
 	local duration = math.abs(dist / speed)
-	gem:moveTo{x = target_x, y = target_y, duration = duration, exit = {gem.landedInGrid, gem}}
+
+	gem:moveTo{
+		x = target_x,
+		y = target_y,
+		duration = duration,
+		exit = target_y > gem.y and {gem.landedInGrid, gem} or nil
+		-- only call landing function if it was moving downwards
+	}
 end
 
 -- instructions to animate the falling gems
@@ -513,7 +497,29 @@ function Grid:reset()
 end
 
 -- remove a gem
-function Grid:removeGem(g)
+-- propogates flags upwards by default
+function Grid:removeGem(g, propogate_flags_up)
+	local function getAboveGems(column, start_row)
+		start_row = start_row or 1
+		local above = {}
+		for i = start_row, 1, -1 do
+			if self[i][column].gem then
+				above[#above + 1] = self[i][column].gem
+			end
+		end
+		return above
+	end
+
+	local function propogateFlagsUp(gem)
+		local above_gems = getAboveGems(gem.column, gem.row)
+		for _, v in pairs(above_gems) do
+			v:setOwner(gem.owner)
+		end
+	end
+
+	if propogate_flags_up ~= false then
+		propogateFlagsUp(g)
+	end
 	self[g.row][g.column].gem = false
 end
 
@@ -540,21 +546,23 @@ function Grid:generateMatchExplodingGems()
 end
 
 function Grid:generateMatchParticles()
+	local game = self.game
 	local gem_table = self:getMatchedGems()
-	local particles = self.game.particles
+	local particles = game.particles
+	local extra_particles = game.scoring_combo
 	for _, gem in pairs(gem_table) do
-		local player = self.game:playerByIndex(gem.owner)
+		local player = game:playerByIndex(gem.owner)
 		if player then
-			local num_super_particles = player.meter_gain[gem.color]
-			if player.supering then
-				num_super_particles = 0
-			elseif player.place_type == "rush" or player.place_type == "double" then
-				num_super_particles = num_super_particles * 0.25
+			local num_super_particles = player.supering and 0 or player.meter_gain[gem.color]
+			particles.superParticles.generate(game, gem, num_super_particles)
+			particles.damage.generate(game, gem)
+			particles.pop.generate(game, gem)
+			particles.dust.generateBigFountain(game, gem, 24, player)
+			if extra_particles > 0 then
+				particles.superParticles.generate(game, gem, num_super_particles)
+				particles.damage.generate(game, gem)
+				extra_particles = extra_particles - 1
 			end
-			particles.super_.generate(self.game, gem, num_super_particles)
-			particles.damage.generate(self.game, gem)
-			particles.pop.generate(self.game, gem)
-			particles.dust.generateBigFountain(self.game, gem, 24, player)
 		end
 	end
 end
@@ -585,11 +593,11 @@ function Grid:calculateScore()
 
 	for player in self.game:players() do
 		local i = player.playerNum
-		dmg[i] = dmg[i] + self.game.scoring_combo - 1
+		if dmg[i] > 0 then
+			dmg[i] = dmg[i] + self.game.scoring_combo - 1
+		end
 		if player.supering then
 			super[i] = 0
-		elseif player.place_type == "rush" or player.place_type == "double" then
-			super[i] = super[i] * 0.25
 		end
 	end
 
