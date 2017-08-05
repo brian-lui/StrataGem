@@ -1,45 +1,48 @@
-local music = {}
+local love = _G.love
 
-local bgm = {}
-bgm[1] = love.audio.newSource("sound/dummy.ogg")
+local common = require "class.commons"
 
-function music.setBGM(filename, n)
-	n = n or 1
-	if bgm[n] then
-		bgm[n]:stop()
+local Music = {}
+
+function Music:init(game)
+	self.game = game
+	self.bgm = {love.audio.newSource("sound/dummy.ogg")}
+	
+	love.audio.setPosition(0, 1, 0)
+end
+
+function Music:setBGM(filename, n)
+	local bgm = self.bgm[n or 1]
+	if bgm then
+		bgm:stop()
 	end
-	bgm[n] = love.audio.newSource("music/" .. filename, "stream")
-	bgm[n]:setVolume(0.0001)
-	bgm[n]:setLooping(true)
-	bgm[n]:rewind()
-	bgm[n]:play()
+	bgm = love.audio.newSource("music/" .. filename, "stream")
+	bgm:setVolume(0.0001)
+	bgm:setLooping(true)
+	bgm:rewind()
+	bgm:play()
 end
 
-function music.pauseBGM(n)
-	n = n or 1
-	bgm[n]:pause()
+function Music:pauseBGM(n)
+	self.bgm[n or 1]:pause()
 end
 
-function music.stopBGM(n)
-	n = n or 1
-	bgm[n]:stop()
+function Music:stopBGM(n)
+	self.bgm[n or 1]:stop()
 end
 
-function music.resumeBGM(n)
-	n = n or 1
-	bgm[n]:resume()
+function Music:resumeBGM(n)
+	self.bgm[n or 1]:resume()
 end
 
-function music.setBGMspeed(speed, n)
-	n = n or 1
-	speed = speed or 1
-	bgm[n]:setPitch(speed)
+function Music:setBGMspeed(speed, n)
+	self.bgm[n or 1]:setPitch(speed or 1)
 end
 
-function music.playSFX(filename)
+function Music:playSFX(filename)
 	local sfx = love.audio.newSource("sound/" .. filename)
 	sfx:setVolume(0.0001)
 	sfx:play()
 end
 
-return music
+return common.class("Music", Music)

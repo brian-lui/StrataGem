@@ -1,93 +1,6 @@
-local love = _G.love
---local image = require 'image'
---local json = require 'dkjson'
+local utilities = {}
 
--- all prints go to debug.txt file. achtung!
-love.filesystem.remove("debug.txt")
-local reallyprint = print
-function print(...)
-	reallyprint(...)
-	local args = {...}
-	for i = 1, #args do
-		if type(args[i]) == "table" then args[i] = "table"
-		elseif args[i] == true then args[i] = "true"
-		elseif args[i] == false then args[i] = "false"
-		elseif type(args[i]) == "userdata" then args[i] = "userdata"
-		elseif type(args[i]) == "function" then args[i] = "function"
-		elseif type(args[i]) == "thread" then args[i] = "thread"
-		end
-	end
-	local write = table.concat(args, ", ")
-	love.filesystem.append("debug.txt", write .. "\n")
-end
-
-function sprint(...)
-	if frame % 10 == 0 then
-		print(...)
-	end
-end
-
-debugTool = {}
-function debugTool.setOverlay(func)
-	if type(func) ~= "function" then
-		print("Please pass function to setOverlay!")
-	else
-		debugTool.overlay = func
-	end
-end
-
-function debugTool.toggleSlowdown()
-	if time.step == 0.1 then
-		time.step = 1/60
-	else
-		time.step = 0.1
-	end
-end
-
-function debugTool.drawGamestateFunc(use_grid)
-	local toprint = ""
-	local colors = {RED = "R", BLUE = "B", GREEN = "G", YELLOW = "Y"}
-	for row = 0, 14 do
-		for col = 1, 8 do
-			if use_grid[row][col].gem then
-				toprint = toprint .. colors[use_grid[row][col].gem.color]
-			else
-				toprint = toprint .. " "
-			end
-		end
-		toprint = toprint .. "\n"
-	end
-	return toprint
-end
-
-debugTool.drawGemOwners = true
-debugTool.drawParticleDestinations = true
-debugTool.drawGamestate = true
-debugTool.drawDamage = true
-debugTool.drawGrid = true
-
-function math.clamp(_in, low, high)
-	if (_in < low ) then return low end
-	if (_in > high ) then return high end
-	return _in
-end
-
-function string:split(inSplitPattern, outResults)
-	if not outResults then
-		outResults = { }
-	end
-	local theStart = 1
-	local theSplitStart, theSplitEnd = string.find( self, inSplitPattern, theStart )
-	while theSplitStart do
-		table.insert( outResults, string.sub( self, theStart, theSplitStart-1 ) )
-		theStart = theSplitEnd + 1
-		theSplitStart, theSplitEnd = string.find( self, inSplitPattern, theStart )
-	end
-	table.insert( outResults, string.sub( self, theStart ) )
-	return outResults
-end
-
-function spairs(tab, ...)
+function utilities.spairs(tab, ...)
 	local keys,vals,idx = {},{},0
 	for k in pairs(tab) do
 		keys[#keys+1] = k
@@ -102,7 +15,7 @@ function spairs(tab, ...)
 	end
 end
 
-function reverseTable(table)
+function utilities.reverseTable(table)
 	local reversedTable = {}
 	local itemCount = #table
 	for k, v in ipairs(table) do
@@ -111,13 +24,12 @@ function reverseTable(table)
 	return reversedTable
 end
 
-function pointIsInRect(x, y, rx, ry, rw, rh)
+function utilities.pointIsInRect(x, y, rx, ry, rw, rh)
 	return x >= rx and y >= ry and x < rx + rw and y < ry + rh
 end
 
 local deepcpy_mapping = {}
-local real_deepcpy
-function real_deepcpy(tab)
+local function real_deepcpy(tab)
   if deepcpy_mapping[tab] ~= nil then
     return deepcpy_mapping[tab]
   end
@@ -136,7 +48,7 @@ function real_deepcpy(tab)
   return setmetatable(ret, getmetatable(tab))
 end
 
-function deepcpy(tab)
+function utilities.deepcpy(tab)
   if type(tab) ~= "table" then
 		return tab
 	end
@@ -144,3 +56,5 @@ function deepcpy(tab)
   deepcpy_mapping = {}
   return ret
 end
+
+return utilities

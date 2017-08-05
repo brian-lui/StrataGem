@@ -2,7 +2,7 @@
 	This powerful module provides the CPU moves in the single player game.
 --]]
 require 'utilities'
-local stage = game.stage
+local common = require "class.commons"
 
 local ai = {
 	finished = false,
@@ -10,6 +10,10 @@ local ai = {
 }
 
 local countdown = 5 -- frames to wait before calculating move
+
+function ai:init(game)
+	self.game = game
+end
 
 -- debug function, prints maximum score and piece drop to achieve it
 local function printMaximumScore(maximum_score, possible_moves)
@@ -19,17 +23,6 @@ local function printMaximumScore(maximum_score, possible_moves)
 		for i = 1, #possible_moves do
 			print("At orientation " .. possible_moves[i][1] .. ", piece " .. possible_moves[i][2] ..
 			", column " .. possible_moves[i][3])
-		end
-	end
-end
-
--- sends all gems to the bottom immediately
-local function simulateGravity(use_grid)
-	use_grid = use_grid or stage.grid
-	for j = 1, use_grid.columns do
-		local sorted_column = use_grid:columnSort(j)
-		for i = 1, use_grid.rows do
-			use_grid[i][j].gem = sorted_column[i]
 		end
 	end
 end
@@ -108,43 +101,15 @@ local function getCoords(column)
 end
 
 -- place piece into actual grid
-local function placePiece(piece, coords, place_type)
+local function placePiece(self, piece, coords, place_type)
 	local player = piece.owner
 	place_type = place_type or "normal"
 	player.place_type = place_type
-	ai.queued_action = {func = piece.dropIntoBasin, args = {piece, coords}}
-end
-
--- place piece into simulated grid
-local function simulatePlacePiece(use_grid, piece, coords) -- only works with 2-gem piece
-	if piece.horizontal then
-		for i = 1, #piece.gems do
-			local column = coords[i]
-			use_grid[1][column].gem = piece.gems[i]
-		end
-
-	elseif not piece.horizontal then
-		for i = 1, #piece.gems do
-			local column = coords[1]
-			use_grid[i][column].gem = piece.gems[i]
-		end
-	end
-end
-
--- return score for simulated grid + piece placement
-local function simulateScore(piece, coords)
-	local orig_grid = deepcpy(stage.grid)
-	simulatePlacePiece(orig_grid, piece, coords)
-	simulateGravity(orig_grid)
-
-	if not orig_grid:getScore() then
-		print ("nil score")
-	end
-	return orig_grid:getScore()
+	self.queued_action = {func = piece.dropIntoBasin, args = {piece, coords}}
 end
 
 -- returns a scoring for all possible pieces and their placements
-local function generateScoreMatrices(player)
+local function generateScoreMatrices(grid, player)
 	local piece_list = enumeratePieces(player)
 
 	rotateToHorizontal(player) -- settle down the pieces
@@ -159,7 +124,7 @@ local function generateScoreMatrices(player)
 			local end_col = player.end_col
 			if piece_list[piece].horizontal then end_col = end_col - 1 end
 			for col = start_col, end_col do -- j: total valid columns
-				matrix[rotation][piece][col] = simulateScore(piece_list[piece], getCoords(col))
+				matrix[rotation][piece][col] = grid:simulateScore(piece_list[piece], getCoords(col))
 			end
 		end
 	end
@@ -169,10 +134,10 @@ local function generateScoreMatrices(player)
 end
 
 -- this currently always plays the highest possible scoring match, but doesn't discriminate further
-function ai.placeholder(player)
+function ai:placeholder(player)
 	if countdown == 0 then
 		-- Get a set of moves that yield the highest score
-		local matrices = generateScoreMatrices(player)
+		local matrices = generateScoreMatrices(self.game.stage.grid, player)
 		local maximum_score = 0
 		local possible_moves = {}
 		for rot = 1, 4 do
@@ -198,34 +163,34 @@ function ai.placeholder(player)
 				piece:rotate()
 			end
 
-			placePiece(piece, getCoords(selected.column))
+			placePiece(self, piece, getCoords(selected.column))
 		elseif player.cur_burst >= player.RUSH_COST then
 			local piece = selectRandomPiece(player)
 			if piece.horizontal then	-- Always do vertical rushes.
 				piece:rotate()
 			end
 
-			placePiece(piece, {player.enemy.start_col, player.enemy.start_col}, "rush")
+			placePiece(self, piece, {player.enemy.start_col, player.enemy.start_col}, "rush")
 		else
 			-- random play
 			local piece = selectRandomPiece(player)
 			local coords = getCoords(selectRandomColumn(piece, player))
 
-			placePiece(piece, coords)
+			placePiece(self, piece, coords)
 		end
 
 		countdown = 5
-		ai.finished = true
+		self.finished = true
 	else
 		countdown = countdown - 1
 	end
 end
 
 -- clears all the ai stuff and get ready for next turn so you don't get some first turn bugs
-function ai.clear()
-	ai.finished = false
-	ai.queued_action = false
+function ai:clear()
+	self.finished = false
+	self.queued_action = false
 	countdown = 5
 end
 
-return ai
+return common.class("AI", ai)

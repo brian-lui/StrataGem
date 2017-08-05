@@ -1,23 +1,26 @@
+local love = _G.love
 require 'utilities' -- move
 local image = require 'image'
-local class = require 'middleclass' -- class support
-local particles = game.particles
-local pic = require 'pic'
+local common = require "class.commons" -- class support
+local Pic = require 'pic'
 
 -- gem platforms are generated through the Hand class
-local GemPlatform = class('GemPlatform', pic)
-function GemPlatform:initialize(owner, location)
+local GemPlatform = {}
+
+function GemPlatform:init(game, owner, location)
+	self.game = game
 	local img = owner.ID == "P1" and image.UI.platform_gold or image.UI.platform_silver
-	pic.initialize(self, {x = owner.hand[location].x, y = owner.hand[location].y, image = img})
+	Pic.init(self, game, {x = owner.hand[location].x, y = owner.hand[location].y, image = img})
 	self.hand_idx = location
 	self.x, self.y = owner.hand[location].x, owner.hand[location].y
 	self.owner = owner
 	self.getx = owner.hand.getx
 	self.transparency, self.redness, self.rotation = 255, 0, 0
-	self.spin = 0 -- radians per frame
+	self.spin = 0	-- radians per frame
 end
 
 function GemPlatform:draw()
+	local frame = self.game.frame
 	--screen shake translation
 	local h_shake, v_shake = 0, 0
 	if self.shake then
@@ -27,10 +30,10 @@ function GemPlatform:draw()
 
 	love.graphics.push("all")
 		love.graphics.translate(h_shake, v_shake)
-		pic.draw(self)
+		Pic.draw(self)
 		if self.redness > 0 then
 			local redRGB = {255, 255, 255, math.min(self.redness, self.transparency)}
-			pic.draw(self, nil, nil, nil, nil, nil, redRGB, image.UI.platform_red)
+			Pic.draw(self, nil, nil, nil, nil, nil, redRGB, image.UI.platform_red)
 		end
 	love.graphics.pop()
 end
@@ -52,27 +55,24 @@ function GemPlatform:setFastSpin(bool)
 	self.fastspin = bool
 end
 
--- TODO: refactor so it only does the calculationey-stuff if needed
 function GemPlatform:update(dt)
-	pic.update(self, dt)
+	Pic.update(self, dt)
 	local player = self.owner
 	local loc = self.hand_idx
-	local enemy_tbl = {[p1] = 2, [p2] = 1}
-	local enemy_idx = enemy_tbl[player]
 
 	-- set spin and redness
-	local destroyed_particles = particles:getCount("destroyed", "Damage", enemy_idx)
-	local displayed_damage = (player.hand.turn_start_damage + destroyed_particles/3) * 0.25
+	local destroyed_particles = self.game.particles:getCount("destroyed", "Damage", player.enemy.playerNum)
+	local displayed_damage = (player.hand.turn_start_damage + destroyed_particles/3) / 4
 
-	if displayed_damage >= loc then -- fully red, full spin
+	if displayed_damage >= loc then	-- fully red, full spin
 		self.redness = math.min(self.redness + 16, 255)
 		if self.redness == 255 and not self.glow_startframe then
-			self.glow_startframe = frame
+			self.glow_startframe = self.game.frame
 		end
 		self:setSpin(0.02)
 	elseif displayed_damage > (loc - 1) and displayed_damage < loc then
 		self.redness = math.min(self.redness + 16, 200 * (displayed_damage % 1))
-		self:setSpin((displayed_damage % 1) * 0.02) -- partial spin
+		self:setSpin((displayed_damage % 1) * 0.02)	-- partial spin
 	else
 		self.redness = 0
 		self:setSpin(0)
@@ -87,7 +87,7 @@ function GemPlatform:update(dt)
 	if make_a_dust and loc ~= 1 then
 		local x_adj = (math.random() - 0.5) * self.width * 0.2
 		local y_adj = (math.random() - 0.5) * self.height * 0.2
-		particles.dust:generatePlatformSpin(self.x + x_adj, self.y + y_adj, math.abs(current_spin))
+		self.game.particles.dust.generatePlatformSpin(self.game, self.x + x_adj, self.y + y_adj, math.abs(current_spin))
 	end
 	self.rotation = self.rotation + current_spin
 
@@ -97,4 +97,4 @@ function GemPlatform:update(dt)
 	end
 end
 
-return GemPlatform
+return common.class("GemPlatform", GemPlatform, Pic)

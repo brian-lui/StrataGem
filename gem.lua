@@ -1,16 +1,21 @@
+local love = _G.love
+
+local common = require 'class.commons' -- class support
 local image = require 'image'
-require 'utilities' -- helper functions
-local class = require 'middleclass' -- class support
-local pic = require 'pic'
-local particles	-- Set in initializer
-local stage	-- Set in initializer
+local Pic = require 'pic'
 
-local Gem = class('Gem', pic)
-function Gem:initialize(x, y, image, color, garbage)
-	particles = game.particles
-	stage = game.stage
+local gemImages = {
+	red = image.red_gem,
+	blue = image.blue_gem,
+	green = image.green_gem,
+	yellow = image.yellow_gem,
+}
 
-	pic.initialize(self, {x = x, y = y, image = image})
+local Gem = {}
+function Gem:init(game, x, y, color, garbage)
+	self.game = game
+
+	Pic.init(self, game, {x = x, y = y, image = gemImages[color:lower()]})
 	ID.gem = ID.gem + 1
 	self.horizontal = false -- for gem matches
 	self.vertical = false -- for gem matches
@@ -28,14 +33,14 @@ function Gem:initialize(x, y, image, color, garbage)
 	self.pending = false -- piece that's been placed in basin but not activated
 end
 
-function Gem:random(gem_table)
+function Gem.random(game, gem_table)
 	local rand_table = {}
 	local num = 0
 
 	for i = 1, #gem_table do
-		for j = 1, gem_table[i].freq do
+		for _ = 1, gem_table[i].freq do
 			num = num + 1
-			rand_table[num] = gem_table[i].gem
+			rand_table[num] = gem_table[i].color
 		end
 	end
 
@@ -47,7 +52,7 @@ function Gem:isStationary()
 	local stationary = true
 	if self.move_func then stationary = false end
 	if self.row > -1 then -- in grid
-		if self.y ~= stage.grid.y[self.row] then stationary = false end
+		if self.y ~= self.game.stage.grid.y[self.row] then stationary = false end
 	end
 	return stationary
 end
@@ -63,7 +68,7 @@ function Gem:landedInGrid()
 	--particles.dust:generateGlow(self) -- BT said we don't need glow now
 	--TODO: support multiple gems
 	--local remove_fx = false
-	for _, fx in pairs(AllParticles.WordEffects) do
+	for _, fx in pairs(self.game.particles.allParticles.WordEffects) do
 		if fx.name == "DoublecastCloud" or fx.name == "RushCloud" then
 			fx:remove()
 		end
@@ -72,23 +77,24 @@ function Gem:landedInGrid()
 	if self.no_yoshi_particle then
 		self.no_yoshi_particle = nil
 	else
-		particles.dust:generateYoshi(self)
+		self.game.particles.dust.generateYoshi(self.game, self)
 	end
 end
 
 -- landed in the staging area above the grid
 function Gem:landedInStagingArea(place_type, owner)
-	for player in game:players() do
+	local particles = self.game.particles
+	for player in self.game:players() do
 		if player.place_type == "double" then
-			particles.words:generateDoublecast(player)
+			particles.words.generateDoublecast(self.game, player)
 		elseif player.place_type == "rush" then
-			particles.words:generateRush(player)
+			particles.words.generateRush(self.game, player)
 		end
 	end
 	if place_type == "double" then
-		particles.dust:generateStarFountain(self, 24, owner)
+		particles.dust.generateStarFountain(self.game, self, 24, owner)
 	elseif place_type == "rush" then
-		particles.dust:generateStarFountain(self, 24, owner)
+		particles.dust.generateStarFountain(self.game, self, 24, owner)
 	else
 		print("wtf")
 	end
@@ -174,24 +180,4 @@ function Gem:getAnimFrames()
 	return f
 end
 
-Gem.RedGem = class('Gem.RedGem', Gem)
-function Gem.RedGem:initialize(x, y, garbage)
-	Gem.initialize(self, x, y, image.red_gem, "RED", garbage)
-end
-
-Gem.BlueGem = class('Gem.BlueGem', Gem)
-function Gem.BlueGem:initialize(x, y, garbage)
-	Gem.initialize(self, x, y, image.blue_gem, "BLUE", garbage)
-end
-
-Gem.GreenGem = class('Gem.GreenGem', Gem)
-function Gem.GreenGem:initialize(x, y, garbage)
-	Gem.initialize(self, x, y, image.green_gem, "GREEN", garbage)
-end
-
-Gem.YellowGem = class('Gem.YellowGem', Gem)
-function Gem.YellowGem:initialize(x, y, garbage)
-	Gem.initialize(self, x, y, image.yellow_gem, "YELLOW", garbage)
-end
-
-return Gem
+return common.class("Gem", Gem, Pic)
