@@ -1,15 +1,15 @@
 local love = _G.love
 
-local common = "class.commons"
+local common = require "class.commons"
 
 local Sound = {
 }
 
 function Sound:init(game)
 	self.game = game
-	Sound.gembreak = {}
+	self.gembreak = {}
 	for i = 1, 5 do
-		Sound["gembreak"..i] = "sound/gembreak"..i..".ogg"
+		self["gembreak"..i] = "sound/gembreak"..i..".ogg"
 	end
 	self.last_played_frame = setmetatable({}, {__index = function() return -1 end})
 end

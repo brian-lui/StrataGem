@@ -90,7 +90,7 @@ local DamageParticle = {}
 DamageParticle.DAMAGE_DROP_SPEED = window.height / 192	-- pixels for damage particles after reaching platform
 function DamageParticle:init(manager, gem)
 	local img = image.lookup.particle_freq.random(gem.color)
-	Pic.init(self, {x = gem.x, y = gem.y, image = img})
+	Pic.init(self, manager.game, {x = gem.x, y = gem.y, image = img})
 	self.owner = gem.owner
 	manager.allParticles.Damage[ID.particle] = self
 	self.damageCreatedThisTurn = {0, 0}	-- TODO: Can this be removed? Unused.
@@ -172,7 +172,7 @@ DamageParticle = common.class("DamageParticle", DamageParticle, Pic)
 
 local DamageTrailParticle = {}
 function DamageTrailParticle:init(manager, gem)
-	Pic.init(self, {x = gem.x, y = gem.y, image = image.lookup.trail_particle[gem.color]})
+	Pic.init(self, manager.game, {x = gem.x, y = gem.y, image = image.lookup.trail_particle[gem.color]})
 	manager.allParticles.DamageTrail[ID.particle] = self
 	self.manager = manager
 end
@@ -201,7 +201,7 @@ DamageTrailParticle = common.class("DamageTrailParticle", DamageTrailParticle, P
 local SuperParticle = {}
 function SuperParticle:init(manager, gem)
 	local img = image.lookup.super_particle[gem.color]
-	Pic.init(self, {x = gem.x, y = gem.y, image = img})
+	Pic.init(self, manager.game, {x = gem.x, y = gem.y, image = img})
 	self.owner = gem.owner
 	manager.allParticles.SuperParticles[ID.particle] = self
 	self.manager = manager
@@ -244,7 +244,7 @@ SuperParticle = common.class("SuperParticle", SuperParticle, Pic)
 local PopParticle = {}
 function PopParticle:init(manager, gem)
 	local stage = manager.game.stage
-	Pic.init(self, {x = stage.grid.x[gem.column], y = stage.grid.y[gem.row],
+	Pic.init(self, manager.game, {x = stage.grid.x[gem.column], y = stage.grid.y[gem.row],
 		image = image.lookup.pop_particle[gem.color]})
 	manager.allParticles.Pop[ID.particle] = self
 	self.manager = manager
@@ -270,7 +270,7 @@ function ExplodingGem:init(manager, gem)
 	local grey_gems = gem.owner == 3
 	local color = grey_gems and (gem.color .. "_gray") or gem.color
 	local img = image.lookup.gem_explode[color]
-	Pic.init(self, {x = gem.x, y = gem.y, image = img, transparency = 0})
+	Pic.init(self, manager.game, {x = gem.x, y = gem.y, image = img, transparency = 0})
 	manager.allParticles.ExplodingGem[ID.particle] = self
 	self.manager = manager
 end
@@ -295,13 +295,14 @@ ExplodingGem = common.class("ExplodingGem", ExplodingGem, Pic)
 -------------------------------------------------------------------------------
 -- When a gem platform disappears, this is the explody parts
 local ExplodingPlatform = {}
-function ExplodingPlatform:init(manager, x, y, image)
-	pic.init(self, {x = x, y = y, image = image})
+function ExplodingPlatform:init(manager, x, y, _image)
+	Pic.init(self, manager.game, {x = x, y = y, image = _image})
 	manager.allParticles.ExplodingPlatform[ID.particle] = self
+	self.manager = manager
 end
 
-function ExplodingPlatform:remove(manager)
-	manager.allParticles.ExplodingPlatform[self.ID] = nil
+function ExplodingPlatform:remove()
+	self.manager.allParticles.ExplodingPlatform[self.ID] = nil
 end
 
 function ExplodingPlatform:generate(platform)
@@ -349,7 +350,7 @@ ExplodingPlatform = common.class("ExplodingPlatform", ExplodingPlatform, Pic)
  --]]
 local PlatformStar = {}
 function PlatformStar:init(manager, x, y, _image, particle_type)
-	Pic.init(self, {x = x, y = y, image = _image})
+	Pic.init(self, manager.game, {x = x, y = y, image = _image})
 	manager.allParticles[particle_type][ID.particle] = self
 	self.manager = manager
 	self.particle_type = particle_type
@@ -394,7 +395,7 @@ PlatformStar = common.class("PlatformStar", PlatformStar, Pic)
 -------------------------------------------------------------------------------
 local Dust = {}
 function Dust:init(manager, x, y, _image, particle_type)
-	Pic.init(self, {x = x, y = y, image = _image})
+	Pic.init(self, manager.game, {x = x, y = y, image = _image})
 	manager.allParticles[particle_type][ID.particle] = self
 	self.manager = manager
 	self.particle_type = particle_type
@@ -571,8 +572,9 @@ function Dust:generatePlatformSpin(x, y, speed)
 	local rotation = 6
 	local duration = 60
 
-	local x_vel = (math.random() - 0.5) * 2 * self.stage.width * (speed + 0.2)
-	local x_vel = (math.random() - 0.75) * 3 * self.stage.height * (speed + 0.2)
+	local stage = self.stage
+	local x_vel = (math.random() - 0.5) * 2 * stage.width * (speed + 0.2)
+	local y_vel = (math.random() - 0.75) * 3 * stage.height * (speed + 0.2)
 	local acc = stage.height * (speed + 0.2) * 3
 
 	local p = common.instance(Dust, self.particles, x, y, todraw, "Dust")
@@ -588,7 +590,7 @@ Dust = common.class("Dust", Dust, Pic)
 -- When a gem is placed in basin, make the gem effects for tweening offscreen.
 local UpGem = {}
 function UpGem:init(manager, gem)
-	Pic.init(self, {x = gem.x, y = gem.y, image = gem.image})
+	Pic.init(self, manager.game, {x = gem.x, y = gem.y, image = gem.image})
 	manager.allParticles.UpGem[ID.particle] = self
 	self.manager = manager
 end
@@ -614,7 +616,7 @@ UpGem = common.class("UpGem", UpGem, Pic)
 -------------------------------------------------------------------------------
 local WordEffects = {}
 function WordEffects:init(manager, x, y, todraw)
-	Pic.init(self, {x = x, y = y, image = todraw})
+	Pic.init(self, manager.game, {x = x, y = y, image = todraw})
 	manager.allParticles.WordEffects[ID.particle] = self
 	self.manager = manager
 end
@@ -626,7 +628,7 @@ end
 -- the glow cloud behind a doublecast piece.
 -- called from anims.putPendingOnTop, and from anims.update
 function WordEffects:generateDoublecastCloud(gem1, gem2, horizontal)
-	local todraw = image.words.doublecast_cloud
+	local todraw = horizontal and image.words.doublecast_cloud_h or image.words.doublecast_cloud_v
 	local p = common.instance(WordEffects, self.particles, (gem1.x + gem2.x) * 0.5, (gem1.y + gem2.y) * 0.5, todraw)
 	p.rotation = horizontal and 0 or math.pi * 0.5
 	p.transparency = 0
@@ -722,7 +724,7 @@ WordEffects = common.class("WordEffects", WordEffects, Pic)
 -- words! Doublecast, rush, go, and ready so far.
 local Words = {}
 function Words:init(manager, x, y, todraw)
-	Pic.init(self, {x = x, y = y, image = todraw})
+	Pic.init(self, manager.game, {x = x, y = y, image = todraw})
 	manager.allParticles.Words[ID.particle] = self
 	self.manager = manager
 end
@@ -798,7 +800,7 @@ Words = common.class("Words", Words, Pic)
 
 local PieEffects = {}
 function PieEffects:init(manager, x, y, rotation, todraw, update_func, tw)
-	Pic.init(self, {x = x, y = y, rotation = rotation, image = todraw})
+	Pic.init(self, manager.game, {x = x, y = y, rotation = rotation, image = todraw})
 	manager.allParticles.PieEffects[ID.particle] = self
 	self.manager = manager
 	self.update = update_func
@@ -844,7 +846,7 @@ PieEffects = common.class("PieEffects", PieEffects, Pic)
 local CharEffects = {}
 -- required stuff in table: x, y, image
 function CharEffects:init(manager, tbl)
-	Pic.init(self, tbl)
+	Pic.init(self, manager.game, tbl)
 	manager.allParticles.CharEffects[ID.particle] = self
 	self.manager = manager
 end
@@ -861,7 +863,7 @@ local SuperFreezeEffects = {}
 -- required stuff in table: x, y, rotation, image
 function SuperFreezeEffects:init(manager, tbl)
 	tbl.draw_order = tbl.draw_order or 1
-	Pic.init(self, tbl)
+	Pic.init(self, manager.game, tbl)
 	self.allParticles.SuperFreezeEffects[ID.particle] = self
 	self.manager = manager
 end

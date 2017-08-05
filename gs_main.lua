@@ -163,7 +163,7 @@ function gs_main:drawGems()
 	love.graphics.pop()
 
 	-- over-gem particles
-	for _, v in pairs(allParticles.Super) do v:draw() end
+	for _, v in pairs(allParticles.SuperParticles) do v:draw() end
 	for _, v in pairs(allParticles.DamageTrail) do v:draw() end
 	for _, v in pairs(allParticles.Damage) do v:draw() end
 	for _, v in pairs(allParticles.ExplodingGem) do v:draw() end

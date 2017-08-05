@@ -52,13 +52,13 @@ function Game:init()
 	self.debug_drawDamage = true
 	self.debug_drawGrid = true
 
-	self.p1 = common.instance(require "character")	-- Dummies
-	self.p2 = common.instance(require "character")
 	self.phaseManager = common.instance(require "phasemanager", self)
 	self.rng = love.math.newRandomGenerator()
 	self.sound = common.instance(require "sound", self)
 	self.music = common.instance(require "music", self)
 	self.stage = common.instance(require "stage", self)	-- playing field area and grid
+	self.p1 = common.instance(require "character", 1, self)	-- Dummies
+	self.p2 = common.instance(require "character", 2, self)
 	self.background = common.instance(require "background", self)
 	self.animations = common.instance(require "animations", self)
 	self.particles = common.instance(require "particles", self)

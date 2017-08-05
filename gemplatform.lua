@@ -10,14 +10,13 @@ local GemPlatform = {}
 function GemPlatform:init(game, owner, location)
 	self.game = game
 	local img = owner.ID == "P1" and image.UI.platform_gold or image.UI.platform_silver
-	Pic.init(self, {x = owner.hand[location].x, y = owner.hand[location].y, image = img})
+	Pic.init(self, game, {x = owner.hand[location].x, y = owner.hand[location].y, image = img})
 	self.hand_idx = location
 	self.x, self.y = owner.hand[location].x, owner.hand[location].y
 	self.owner = owner
 	self.getx = owner.hand.getx
 	self.transparency, self.redness, self.rotation = 255, 0, 0
 	self.spin = 0	-- radians per frame
-	self.rotation_speed = owner.ID == "P1" and self.PLATFORM_ROTATION_SPEED or -self.PLATFORM_ROTATION_SPEED
 end
 
 function GemPlatform:draw()
@@ -88,7 +87,7 @@ function GemPlatform:update(dt)
 	if make_a_dust and loc ~= 1 then
 		local x_adj = (math.random() - 0.5) * self.width * 0.2
 		local y_adj = (math.random() - 0.5) * self.height * 0.2
-		self.game.particles.dust:generatePlatformSpin(self.x + x_adj, self.y + y_adj, math.abs(current_spin))
+		self.game.particles.dust.generatePlatformSpin(self.game, self.x + x_adj, self.y + y_adj, math.abs(current_spin))
 	end
 	self.rotation = self.rotation + current_spin
 

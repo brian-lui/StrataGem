@@ -61,7 +61,7 @@ end
 ---------------------------------PUBLIC CLASS----------------------------------
 local Animation = {}
 function Animation:init(object, manager)
-	Pic.init(self, object)
+	Pic.init(self, manager.game, object)
 	self.manager = manager
 end
 

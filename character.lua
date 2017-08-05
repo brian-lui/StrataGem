@@ -19,18 +19,23 @@ Character.super_fuzz_image = love.graphics.newImage('images/ui/superfuzzred.png'
 
 Character.character_id = "Lamer"
 Character.meter_gain = {red = 4, blue = 4, green = 4, yellow = 4}
---[[
+
 Character.super_images = {
 	word = image.UI.super.red_word,
 	empty = love.graphics.newImage('images/characters/emptyheath.png'),
 	full = love.graphics.newImage('images/characters/fullheath.png'),
 	glow = love.graphics.newImage('images/characters/fullheathglow.png')
-}--]]
+}
+
 Character.burst_images = {
 	partial = image.UI.burst.red_partial,
 	full = image.UI.burst.red_full,
 	glow = {image.UI.burst.red_glow1, image.UI.burst.red_glow2}
 }
+
+assert(image.UI.burst.red_partial)
+assert(Character.burst_images.partial)
+
 Character.MAX_MP = 64
 Character.SUPER_COST = 64
 Character.mp = 0

@@ -1,7 +1,7 @@
 local love = _G.love
 
 require "inits"
-require "lovedebug"
+--require "lovedebug"
 require "classcommons"
 
 local common = require "class.commons"
@@ -9,14 +9,13 @@ local common = require "class.commons"
 local game
 
 function love.load()
-	_G.game = common.instance(require "game")
-	game = _G.game
+	-- build screen
+	love.window.setMode(window.width, window.height)
+	love.window.setTitle("StrataGem!")
+
+	game = common.instance(require "game")
 end
 -- local sandbox = require 'animationsandbox'
-
--- build screen
-love.window.setMode(window.width, window.height)
-love.window.setTitle("StrataGem!")
 
 local __NOP__ = function () end
 

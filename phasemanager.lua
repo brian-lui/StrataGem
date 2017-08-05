@@ -4,6 +4,8 @@ local love = _G.love
 local common = require "class.commons"
 local inspect = require "inspect"	-- TODO: Fix netcode so this can be removed.
 
+local spairs = require "utilities".spairs
+
 local PhaseManager = {}
 
 function PhaseManager:init(game)
@@ -145,18 +147,19 @@ end
 
 -- TODO: refactor this lame stuff
 function PhaseManager:superFreeze(dt)
-	self.super_play = self.super_play or superPlays()
+	self.super_play = self.super_play or superPlays(self)
 
 	if self.super_pause > 0 then
-		self.super_pause = super_pause - 1
+		self.super_pause = self.super_pause - 1
 	elseif self.super_play[1] then
 		self.super_play[1]:superSlideIn()
 		self.super_pause = 90
-		table.remove(super_play, 1)
+		table.remove(self.super_play, 1)
 	else
 		self.super_play = nil
 		self.game.ui:putPendingAtTop()
 		self.game.phase = "GemTween"
+	end
 end
 
 function PhaseManager:applyGemTween(dt)
@@ -258,7 +261,7 @@ end
 function PhaseManager:resolvedMatches(dt)
 	local game = self.game
 
-	if game.particles:getCount("onscreen", "Damage", 1) + particles:getCount("onscreen", "Damage", 2) > 0 then
+	if game.particles:getCount("onscreen", "Damage", 1) + game.particles:getCount("onscreen", "Damage", 2) > 0 then
 		for player in game:players() do
 			player.hand:update(dt)
 		end
@@ -282,7 +285,7 @@ function PhaseManager:platformSpinDelay(dt)
 		self.platformSpinDelayCounter = self.platformSpinDelayCounter - 1
 	else
 		self.platformSpinDelayCounter = 30
-		game.phase = "GetPiece"
+		self.game.phase = "GetPiece"
 	end
 end
 

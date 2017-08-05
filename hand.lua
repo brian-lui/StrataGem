@@ -44,7 +44,7 @@ function Hand:makeInitialPieces(gem_table)
 		self[i].platform = common.instance(GemPlatform, self.game, self.owner, i)
 		self:movePlatform(i, i-5)
 	end
-	self[1].playform:setSpin(0.02)
+	self[1].platform:setSpin(0.02)
 end
 
 -- this describes the shape of the curve for the hands.
@@ -175,8 +175,9 @@ end
 
 function Hand:destroyPlatformsAnim()
 	for i = 1, self.damage / 4 do
-		particles.explodingPlatform:generate(self[i].platform)
+		self.game.particles.explodingPlatform.generate(self.game, self[i].platform)
 	end
+end
 
 -- Checks whether a player's pieces have stopped moving.
 -- No need to check gem platforms, because hand[6] will always have a piece.

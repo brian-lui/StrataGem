@@ -147,6 +147,8 @@ for _, c in pairs(burst_colors) do
 	end
 end
 
+assert(image.UI.burst.red_partial)
+
 image.title = {
 	logo = love.graphics.newImage('images/title/logo.png'),
 	online = love.graphics.newImage('images/title/netplay.png'),

@@ -1,4 +1,5 @@
 local love = _G.love
+
 local common = require "class.commons"
 local Character = require "character"
 local image = require 'image'
@@ -19,9 +20,9 @@ Walter.super_images = {
 --]]
 Walter.burst_images = {
 	word = image.UI.burst.blue_word,
-	partial = image.UI.burst.blue_word,
+	partial = image.UI.burst.blue_partial,
 	full = image.UI.burst.blue_full,
-	glow = {image.UI.burst.red_glow1, image.UI.burst.red_glow2}
+	glow = {image.UI.burst.blue_glow1, image.UI.burst.blue_glow2}
 }
 
 return common.class("Walter", Walter, Character)
