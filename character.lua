@@ -5,49 +5,49 @@ local image = require 'image'
 local Pic = require 'pic'
 local Hand = require 'hand'
 
-local character = {}
---character.defaults = require 'characters/default' -- called from charselect
---character.heath = require 'characters/heath'
---character.walter = require 'characters/walter'
---character.gail = require 'characters/gail'
+local Character = {}
+--Character.defaults = require 'characters/default' -- called from charselect
+--Character.heath = require 'characters/heath'
+--Character.walter = require 'characters/walter'
+--Character.gail = require 'characters/gail'
 
-character.full_size_image = love.graphics.newImage('images/characters/heath.png')
-character.small_image = love.graphics.newImage('images/characters/heathsmall.png')
-character.action_image = love.graphics.newImage('images/characters/heathaction.png')
-character.shadow_image = love.graphics.newImage('images/characters/heathshadow.png')
-character.super_fuzz_image = love.graphics.newImage('images/ui/superfuzzred.png')
+Character.full_size_image = love.graphics.newImage('images/characters/heath.png')
+Character.small_image = love.graphics.newImage('images/characters/heathsmall.png')
+Character.action_image = love.graphics.newImage('images/characters/heathaction.png')
+Character.shadow_image = love.graphics.newImage('images/characters/heathshadow.png')
+Character.super_fuzz_image = love.graphics.newImage('images/ui/superfuzzred.png')
 
-character.character_id = "Lamer"
-character.meter_gain = {red = 4, blue = 4, green = 4, yellow = 4}
+Character.character_id = "Lamer"
+Character.meter_gain = {red = 4, blue = 4, green = 4, yellow = 4}
 --[[
-character.super_images = {
+Character.super_images = {
 	word = image.UI.super.red_word,
 	empty = love.graphics.newImage('images/characters/emptyheath.png'),
 	full = love.graphics.newImage('images/characters/fullheath.png'),
 	glow = love.graphics.newImage('images/characters/fullheathglow.png')
 }--]]
-character.burst_images = {
+Character.burst_images = {
 	partial = image.UI.burst.red_partial,
 	full = image.UI.burst.red_full,
 	glow = {image.UI.burst.red_glow1, image.UI.burst.red_glow2}
 }
-character.MAX_MP = 64
-character.SUPER_COST = 64
-character.mp = 0
-character.turn_start_mp = 0
-character.MAX_BURST = 6
-character.RUSH_COST = 6
-character.DOUBLE_COST = 3
-character.cur_burst = 3
-character.hand_size = 5
-character.pieces_fallen = 0
-character.dropped_piece = false
-character.super_clicked = false
-character.supering = false
-character.super_this_turn = false
-character.place_type = "normal"
+Character.MAX_MP = 64
+Character.SUPER_COST = 64
+Character.mp = 0
+Character.turn_start_mp = 0
+Character.MAX_BURST = 6
+Character.RUSH_COST = 6
+Character.DOUBLE_COST = 3
+Character.cur_burst = 3
+Character.hand_size = 5
+Character.pieces_fallen = 0
+Character.dropped_piece = false
+Character.super_clicked = false
+Character.supering = false
+Character.super_this_turn = false
+Character.place_type = "normal"
 
-function character:init(playerNum, game)
+function Character:init(playerNum, game)
 	self.game = game
 	self.playerNum = playerNum
 	if playerNum == 1 then
@@ -102,12 +102,12 @@ local function createCharacterAnimation(self)
 	y = self.game.stage.character[self.ID].y, image = self.small_image})
 end
 
-function character:addSuper(amt)
+function Character:addSuper(amt)
 	self.mp = math.min(self.mp + amt, self.MAX_MP)
 end
 
 -- do those things to set up the character. Called at start of match
-function character:setup()
+function Character:setup()
 	self.hand = common.instance(Hand, self.game, self)
 	self.hand:makeInitialPieces()
 	setupBurstMeter(self)
@@ -115,35 +115,39 @@ function character:setup()
 	createCharacterAnimation(self)
 end
 
-function character:actionPhase(dt)
+function Character:actionPhase(dt)
 end
 
 -- returns a list of {frames, func, args to execute}
-function character:afterGravity()
+function Character:afterGravity()
 	return {}
 end
 
 
-function character:beforeMatch(gem_table)
+function Character:beforeMatch(gem_table)
 end
 
-function character:duringMatch(gem_table)
+function Character:duringMatch(gem_table)
 end
 
-function character:afterMatch()
+function Character:afterMatch()
 end
 
-function character:cleanup()
+function Character:cleanup()
+	self:resetMP()
+end
+
+function Character:resetMP()
 	self.turn_start_mp = self.mp
 end
 
-function character:activateSuper()
+function Character:activateSuper()
 	if self.mp >= self.SUPER_COST then
 		self.supering = not self.supering
 	end
 end
 
-function character:pieceDroppedOK(piece, shift)
+function Character:pieceDroppedOK(piece, shift)
 	local _, place_type = piece:isDropValid(shift)
 	if place_type == "normal" then
 		return true
@@ -155,7 +159,7 @@ function character:pieceDroppedOK(piece, shift)
 end
 
 
-function character:superSlideIn()
+function Character:superSlideIn()
 	local stage = self.game.stage
 	local particles = self.game.particles
 	local sign = self.ID == "P2" and -1 or 1
@@ -177,9 +181,9 @@ function character:superSlideIn()
 		y = stage.height * 0.5,
 		flip = sign == -1
 	})
-	shadow:moveTo{duration = 30, x = stage.width * (0.5 + 0.025 * sign), easing = "outQuart"}
-	shadow:wait(25)
-	shadow:moveTo{duration = 5, transparency = 0, exit = true}
+	portrait:moveTo{duration = 30, x = stage.width * (0.5 + 0.025 * sign), easing = "outQuart"}
+	portrait:wait(25)
+	portrait:moveTo{duration = 5, transparency = 0, exit = true}
 
 	local top_fuzz = common.instance(particles.superFreezeEffects, {
 		image = self.super_fuzz_image,
@@ -202,4 +206,4 @@ function character:superSlideIn()
 	bottom_fuzz:moveTo{duration = 5, transparency = 0, exit = true}
 end
 
-return common.class("Character", character)
+return common.class("Character", Character)

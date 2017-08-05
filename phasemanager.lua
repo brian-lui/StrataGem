@@ -128,7 +128,6 @@ function PhaseManager:resolve(dt)
 	for player in game:players() do
 		player.hand:afterActionPhaseUpdate()
 	end
-	self.game.ui:putPendingAtTop(game)
 	game.particles.upGem.removeAll(game.particles) -- animation
 	game.frozen = true
 	game.phase = "SuperFreeze"
@@ -156,6 +155,7 @@ function PhaseManager:superFreeze(dt)
 		table.remove(super_play, 1)
 	else
 		self.super_play = nil
+		self.game.ui:putPendingAtTop()
 		self.game.phase = "GemTween"
 end
 
@@ -166,7 +166,7 @@ function PhaseManager:applyGemTween(dt)
 	for player in self.game:players() do
 		player.hand:update(dt)
 	end
-	local animation_done = grid:isSettled() -- function
+	local animation_done = grid:isSettled() --  tween-from-top is done
 	if animation_done then
 		grid:dropColumns() -- state
 		game.phase = "Gravity"
@@ -297,6 +297,9 @@ end
 function PhaseManager:platformsExploding(dt)
 	if self.game.particles:getNumber("ExplodingPlatform") == 0 then
 		self.game.particles:clearCount()	-- clear here so the platforms display redness/spin correctly
+		for player in self.game:players() do
+			player:resetMP()
+		end
 		self.game.phase = "PlatformsMoving"
 	end
 end

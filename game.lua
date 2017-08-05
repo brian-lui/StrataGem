@@ -101,6 +101,9 @@ function Game:start(gametype, char1, char2, bkground, seed, side)
 		print("Sh*t")
 	end
 
+	for player in self:players() do
+		player:cleanup()
+	end
 	self.background.current = bkground
 	self.background.current.reset(self.background)
 
@@ -220,10 +223,11 @@ function Game:keypressed(key)
 	elseif key == "s" then p1.hand:addDamage(1)
 	elseif key == "d" then p2.hand:addDamage(1)
 	elseif key == "f" then
-		p1.cur_burst = math.min(p1.cur_burst + 1, p1.MAX_BURST)
-		p1.mp = p1.MAX_MP
-		p2.cur_burst = math.min(p2.cur_burst + 1, p2.MAX_BURST)
-		p2.mp = p2.MAX_MP
+		for player in self:players() do
+			player.cur_burst = math.min(player.cur_burst + 1, player.MAX_BURST)
+			player:addSuper(10000)
+			player:resetMP()
+		end
 	elseif key == "k" then self.canvas[6]:renderTo(function() love.graphics.clear() end)
 	elseif key == "z" then self:start("1P", "heath", "walter", self.background.Starfall, nil, 1)
 	elseif key == "x" then
@@ -242,8 +246,11 @@ function Game:keypressed(key)
 		n(self, 7, 3, "B") n(self, 7, 4, "B") n(self, 7, 5, "R") n(self, 7, 6, "R") n(self, 7, 7, "G")
 		n(self, 8, 3, "R") n(self, 8, 4, "R") n(self, 8, 5, "B") n(self, 8, 6, "B") n(self, 8, 7, "Y")
 	elseif key == "b" then
-		                   n(self, 7, 3, "R")                    n(self, 7, 5, "G")
-		n(self, 8, 2, "Y") n(self, 8, 3, "Y") n(self, 8, 4, "R") n(self, 8, 5, "R") n(self, 8, 6, "G") n(self, 8, 7, "G")
+		                                                                            n(self, 6, 6, "R")                    n(self, 4, 8, "G")
+		                                                         n(self, 5, 5, "R") n(self, 5, 6, "B") n(self, 5, 7, "B") n(self, 5, 8, "R")
+		                   n(self, 6, 3, "G") n(self, 6, 4, "R") n(self, 6, 5, "B") n(self, 6, 6, "Y") n(self, 6, 7, "Y") n(self, 6, 8, "R")
+		n(self, 7, 2, "R") n(self, 7, 3, "R") n(self, 7, 4, "G") n(self, 7, 5, "B") n(self, 7, 6, "G") n(self, 7, 7, "G") n(self, 7, 8, "Y")
+		n(self, 8, 2, "Y") n(self, 8, 3, "Y") n(self, 8, 4, "R") n(self, 8, 5, "G") n(self, 8, 6, "B") n(self, 8, 7, "B") n(self, 8, 8, "R")
 	elseif key == "n" then
 		n(self, 6, 1, "B")
 		n(self, 7, 1, "Y") n(self, 7, 2, "Y")
@@ -255,7 +262,9 @@ function Game:keypressed(key)
 		self.debug_drawDamage = not self.debug_drawDamage
 		self.debug_drawGrid = not self.debug_drawGrid
 	elseif key == "," then
-		self.sound:play("gembreak1")
+		self.debug_overlay = function ()
+			return p1.super_meter_image.transparency
+		end
 	elseif key == "." then
 		self.timeStep = self.timeStep == 0.1 and 1/60 or 0.1
 	end

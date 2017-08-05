@@ -124,7 +124,7 @@ function DamageParticle:generate(gem)
 		local p = common.instance(DamageParticle, self.particles, gem)
 		local duration = 54 + math.random() * 12
 		local rotation = math.random() * 5
-		p.final_loc_idx = math.floor(final_loc)
+		p.final_loc_idx = math.min(5, math.floor(final_loc))
 
 		-- second part of movement once it hits the platform
 		local drop_y = player.hand[p.final_loc_idx].y

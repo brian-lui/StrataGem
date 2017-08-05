@@ -94,7 +94,7 @@ function ui:drawSuper(player)
 	local destroyedParticles = self.game.particles:getCount("destroyed", "MP", player.playerNum)
 
 	local displayed_mp = math.min(player.MAX_MP, player.turn_start_mp + destroyedParticles)
-	local fill_percent = displayed_mp / player.MAX_MP
+	local fill_percent = 0.12 + 0.76 * displayed_mp / player.MAX_MP
 	local img = player.super_meter_image
 	img:changeQuad(0, img.height * (1 - fill_percent), img.width, img.height * fill_percent)
 	img.y = self.game.stage.super[player.ID].y + img.height * (1 - fill_percent)
@@ -106,7 +106,7 @@ function ui:drawSuper(player)
 		player.super_glow.transparency = 255
 		player.super_glow.full:draw()
 		player.super_word:draw()
-	elseif player.mp >= player.SUPER_COST then
+	elseif displayed_mp >= player.SUPER_COST then
 		player.super_glow.transparency = math
 		player.super_glow.transparency = math.ceil(math.sin(self.game.frame / 30) * 127.5 + 127.5)
 		player.super_glow[math.floor(fill_percent * 4)]:draw()
