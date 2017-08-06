@@ -563,7 +563,7 @@ function Grid:generateMatchParticles()
 			particles.superParticles.generate(game, gem, num_super_particles)
 			particles.damage.generate(game, gem)
 			particles.pop.generate(game, gem)
-			particles.dust.generateBigFountain(game, gem, 24, player)
+			particles.dust.generateBigFountain(game, gem, 24)
 			if extra_particles > 0 then
 				particles.superParticles.generate(game, gem, num_super_particles)
 				particles.damage.generate(game, gem)

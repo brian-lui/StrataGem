@@ -47,10 +47,10 @@ local function press_b(self)
 	self.TestAnimation:rotate(-math.pi/2, 2, "inQuart")
 	self.TestAnimation:move(80, 0, 2, "inQuart")
 	for i = 10, 120, 20 do
-		self.queue:add(i, self.TestAnimation3.rotate, self.TestAnimation3, -math.pi/2, 0.15, "linear")
+		self.queue:add(i, self.TestAnimation3.rotate, self.TestAnimation3, -math.pi * 0.5, 0.15, "linear")
 	end
 	for i = 0, 110, 20 do
-		self.queue:add(i, self.TestAnimation3.rotate, self.TestAnimation3, math.pi/2, 0.15, "linear")
+		self.queue:add(i, self.TestAnimation3.rotate, self.TestAnimation3, math.pi * 0.5, 0.15, "linear")
 	end
 
 	self.queue:add(125, self.TestAnimation5.move, self.TestAnimation5, 50, 500, 1, "outCubic")

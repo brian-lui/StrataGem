@@ -70,7 +70,7 @@ function particle_effects.FireParticle(fire)
 	return {
 		x = fire.x + x_start,
 		y = fire.y,
-		rotation = angle + math.pi/2,
+		rotation = angle + math.pi * 0.5,
 		image = Heath.special_images.fire_particle,
 		t = 0,
 		update = update_func,
@@ -231,7 +231,7 @@ function particle_effects:Boom(row, col, owner)
 	return {
 		x = stage.grid.x[col],
 		y = stage.grid.y[row],
-		rotation = math.pi * 2 / math.random(1, 4),
+		rotation = math.pi * 2 / math.random(4),
 		image = Heath.special_images.boom1,
 		t = 0,
 		update = update_func,
@@ -313,7 +313,7 @@ function Heath:afterGravity()
 	if ouches > 0 then
 		self.enemy.hand:addDamage(ouches)
 		for i = 1, #ouch_gems do
-			particles.dust.generateBigFountain(self.game, ouch_gems[i], 120, self) -- placeholder animation
+			particles.dust.generateBigFountain(self.game, ouch_gems[i], 120) -- placeholder animation
 			ret[#ret+1] = {1, particles.dust.generateBigFountain, self.game, particles.dust, ouch_gems[i], 120, self}
 		end
 	end
@@ -376,7 +376,7 @@ function Heath:duringMatch(gem_table)
 			gem:addOwner(self)
 			if gem.owner ~= 3 then
 				damage_to_add = damage_to_add + 1
-				particles.damage:generate(gem)
+				particles.damage.generate(game, gem)
 				grid:removeGem(gem)
 			end
 		end

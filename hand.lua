@@ -21,7 +21,7 @@ function Hand:init(game, player)
 		self[i].y = stage.height * 0.1375 * i + stage.height * 0.1875
 		self[i].x = self:getx(self[i].y)
 	end
-	self[0].y = stage.height / 8 -- discard place is higher up
+	self[0].y = stage.height * 0.125 -- discard place is higher up
 	self.garbage = {} -- pending-garbage gems
 	self.damage = 4 -- each 4 damage is one more platform movement
 	self.turn_start_damage = 4	-- damage at the start of the turn, used in particles calcs
@@ -69,7 +69,7 @@ local function destroyTopPieceAnim(self)
 		local y_dist = this_gem.y - self[0].y
 		local dist = (x_dist^2 + y_dist^2)^0.5
 		--local angle = math.atan2(y_dist, x_dist)
-		local duration = math.abs(dist / self.PLATFORM_SPEED)
+		local duration = math.abs(dist / Hand.PLATFORM_SPEED)
 		this_gem:moveTo{x = self[0].x, y = self[0].y, duration = duration}
 	end
 end
@@ -92,7 +92,7 @@ function Hand:movePiece(start_pos, end_pos)
 
 	-- anims
 	local dist = self.game.stage.height * 0.1375 * (end_pos - start_pos)
-	local duration = math.abs(dist / self.PLATFORM_SPEED)
+	local duration = math.abs(dist / Hand.PLATFORM_SPEED)
 	local to_move = self[start_pos].piece
 	to_move.hand_idx = end_pos
 	to_move:resolve()
@@ -122,7 +122,7 @@ function Hand:movePlatform(start_pos, end_pos)
 
 	-- anims
 	local dist = self.game.stage.height * 0.1375 * (end_pos - start_pos)
-	local duration = math.abs(dist / self.PLATFORM_SPEED)
+	local duration = math.abs(dist / Hand.PLATFORM_SPEED)
 	self[start_pos].platform:moveTo{
 		x = function() return self:getx(self[end_pos].platform.y) end,
 		y = self[end_pos].y,
@@ -142,7 +142,7 @@ end
 -- creates the new pieces for the turn and clears damage.
 -- Takes optional gem_table for gem frequencies
 function Hand:getNewTurnPieces(gem_table)
-	local pieces_to_get = math.floor(self.damage / 4)
+	local pieces_to_get = math.floor(self.damage * 0.25)
 	self.damage = self.damage % 4
 	self.turn_start_damage = self.damage
 	if pieces_to_get == 0 then
@@ -174,7 +174,7 @@ function Hand:getNewTurnPieces(gem_table)
 end
 
 function Hand:destroyPlatformsAnim()
-	for i = 1, self.damage / 4 do
+	for i = 1, math.min(5, self.damage * 0.25) do
 		self.game.particles.explodingPlatform.generate(self.game, self[i].platform)
 	end
 end

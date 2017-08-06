@@ -73,7 +73,7 @@ function gs_main:drawScreenElements()
 
 	for player in self:players() do
 		self.ui:drawBurst(player)	-- burst meter
-		--self.ui:drawSuper(player)	-- super meter
+		self.ui:drawSuper(player)	-- super meter
 		player.animation:draw(player.ID == "P2") -- sprite
 	end
 end
@@ -82,8 +82,8 @@ end
 function gs_main.screenshake(self, shake)
 	local frame = self.frame
 	shake = shake or 6
-	local h_displacement = shake * (frame % 7 / 2 + frame % 13 / 4 + frame % 23 / 6 - 5)
-	local v_displacement = shake * (frame % 5 * 2/3 + frame % 11 / 4 + frame % 17 / 6 - 5)
+	local h_displacement = shake * (frame % 7 * 0.5 + frame % 13 * 0.25 + frame % 23 / 6 - 5)
+	local v_displacement = shake * (frame % 5 * 2/3 + frame % 11 * 0.25 + frame % 17 / 6 - 5)
 	self.camera:setPosition(h_displacement, v_displacement)
 end
 
@@ -141,8 +141,8 @@ function gs_main:drawGems()
 		local stage = self.stage
 	-- stencil function to hide gems in bottom row
 	-- makes it look nicer when gems are generated and push up from the bottom
-		local x = (stage.grid.x[0] + stage.grid.x[1]) / 2
-		local y = (stage.grid.y[stage.grid.rows] + stage.grid.y[stage.grid.rows + 1]) / 2
+		local x = 0.5 * (stage.grid.x[0] + stage.grid.x[1])
+		local y = 0.5 * (stage.grid.y[stage.grid.rows] + stage.grid.y[stage.grid.rows + 1])
 		local width = stage.grid.x[stage.grid.columns] - stage.grid.x[0]
 		local height = stage.gem_width
 		love.graphics.rectangle("fill", x, y, width, height)
@@ -186,6 +186,9 @@ function gs_main:drawGems()
 
 	-- over-dust
 	for _, v in pairs(allParticles.OverDust) do v:draw() end
+
+	-- exploded platform pieces
+	for _, v in pairs(allParticles.ExplodingPlatform) do v:draw() end
 
 	-- uptween gems
 	for _, v in pairs(allParticles.UpGem) do v:draw() end

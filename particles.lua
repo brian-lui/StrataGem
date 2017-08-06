@@ -93,7 +93,6 @@ function DamageParticle:init(manager, gem)
 	Pic.init(self, manager.game, {x = gem.x, y = gem.y, image = img})
 	self.owner = gem.owner
 	manager.allParticles.Damage[ID.particle] = self
-	self.damageCreatedThisTurn = {0, 0}	-- TODO: Can this be removed? Unused.
 	self.manager = manager
 end
 
@@ -103,25 +102,25 @@ function DamageParticle:remove()
 end
 
 -- player.hand.damage is the damage before this round's match(es) is scored
-function DamageParticle:generate(gem)
-	local player = self:playerByIndex(gem.owner)
+function DamageParticle.generate(game, gem)
+	local player = game:playerByIndex(gem.owner)
 
 	-- calculate bezier curve
 	local x1, y1 = gem.x, gem.y -- start
 	local x4, y4 = player.hand[2].x, player.hand[2].y
 	local dist = ((x4 - x1) ^ 2 + (y4 - y1) ^ 2) ^ 0.5
 	local x3, y3 = 0.5 * (x1 + x4), 0.5 * (y1 + y4)
-	local created_particles = self.particles:getCount("created", "Damage", gem.owner)
-	local final_loc = (player.hand.turn_start_damage + created_particles/3)/4 + 1
 
 	for _ = 1, 3 do
+		local created_particles = game.particles:getCount("created", "Damage", gem.owner)
+		local final_loc = (player.hand.turn_start_damage + created_particles/3)/4 + 1
 		local angle = math.random() * math.pi * 2
 		local x2 = x1 + math.cos(angle) * dist * 0.5
 		local y2 = y1 + math.sin(angle) * dist * 0.5
 		local curve = love.math.newBezierCurve(x1, y1, x2, y2, x3, y3, x4, y4)
 
 		-- create damage particle
-		local p = common.instance(DamageParticle, self.particles, gem)
+		local p = common.instance(DamageParticle, game.particles, gem)
 		local duration = 54 + math.random() * 12
 		local rotation = math.random() * 5
 		p.final_loc_idx = math.min(5, math.floor(final_loc))
@@ -159,11 +158,11 @@ function DamageParticle:generate(gem)
 				trail.drop_duration, trail.drop_x, trail.drop_y = drop_duration, drop_x, drop_y
 			end
 
-			self.queue:add(i * 2, self.particles.damageTrail.generate, self, trail)
+			game.queue:add(i * 2, game.particles.damageTrail.generate, game, trail)
 		end
-	end
 
-	self.particles:incrementCount("created", "Damage", gem.owner)
+		game.particles:incrementCount("created", "Damage", gem.owner)
+	end
 end
 
 DamageParticle = common.class("DamageParticle", DamageParticle, Pic)
@@ -181,8 +180,8 @@ function DamageTrailParticle:remove()
 	self.manager.allParticles.DamageTrail[self.ID] = nil
 end
 
-function DamageTrailParticle:generate(trail)
-	local p = common.instance(DamageTrailParticle, self.particles, trail.gem)
+function DamageTrailParticle.generate(game, trail)
+	local p = common.instance(DamageTrailParticle, game.particles, trail.gem)
 	p.particle_type = "DamageTrail"
 	if trail.drop_duration then
 		p:moveTo{duration = trail.duration, rotation = trail.rotation, curve = trail.curve}
@@ -212,13 +211,13 @@ function SuperParticle:remove()
 	self.manager.allParticles.SuperParticles[self.ID] = nil
 end
 
-function SuperParticle:generate(gem, num_particles)
+function SuperParticle.generate(game, gem, num_particles)
 -- particles follow cubic Bezier curve from gem origin to super bar.
-	local player = self:playerByIndex(gem.owner)
+	local player = game:playerByIndex(gem.owner)
 	for _ = 1, num_particles do
 		-- create bezier curve
 		local x1, y1 = gem.x, gem.y -- start
-		local x4, y4 = self.stage.super[player.ID].x, self.stage.super[player.ID].y -- end
+		local x4, y4 = game.stage.super[player.ID].x, game.stage.super[player.ID].y -- end
 		-- dist and angle vary the second point within a circle around the origin
 		local dist = ((x4 - x1) ^ 2 + (y4 - y1) ^ 2) ^ 0.5
 		local angle = math.random() * math.pi * 2
@@ -228,8 +227,8 @@ function SuperParticle:generate(gem, num_particles)
 		local curve = love.math.newBezierCurve(x1, y1, x2, y2, x3, y3, x4, y4)
 
 		-- create particle
-		local p = common.instance(SuperParticle, self.particles, gem)
-		self.particles:incrementCount("created", "MP", gem.owner)
+		local p = common.instance(SuperParticle, game.particles, gem)
+		game.particles:incrementCount("created", "MP", gem.owner)
 
 		-- move particle
 		local duration = (0.9 + 0.2 * math.random()) * 90
@@ -254,8 +253,8 @@ function PopParticle:remove()
 	self.manager.allParticles.Pop[self.ID] = nil
 end
 
-function PopParticle:generate(gem)
-	local p = common.instance(PopParticle, self.particles, gem)
+function PopParticle.generate(game, gem)
+	local p = common.instance(PopParticle, game.particles, gem)
 	p:moveTo{duration = 30, transparency = 0, scaling = 4, exit = true}
 end
 
@@ -279,13 +278,13 @@ function ExplodingGem:remove()
 	self.manager.allParticles.ExplodingGem[self.ID] = nil
 end
 
-function ExplodingGem:generate(gem)
-	local p = common.instance(ExplodingGem, self.particles, gem)
-	p:moveTo{duration = self.GEM_EXPLODE_FRAMES, transparency = 255}
+function ExplodingGem.generate(game, gem)
+	local p = common.instance(ExplodingGem, game.particles, gem)
+	p:moveTo{duration = game.GEM_EXPLODE_FRAMES, transparency = 255}
 	if gem.owner == 3 then
-		p:moveTo{duration = self.GEM_FADE_FRAMES, exit = true}
+		p:moveTo{duration = game.GEM_FADE_FRAMES, exit = true}
 	else
-		p:moveTo{duration = self.GEM_FADE_FRAMES, transparency = 0, scaling = 2,
+		p:moveTo{duration = game.GEM_FADE_FRAMES, transparency = 0, scaling = 2,
 			exit = true}
 	end
 end
@@ -305,11 +304,11 @@ function ExplodingPlatform:remove()
 	self.manager.allParticles.ExplodingPlatform[self.ID] = nil
 end
 
-function ExplodingPlatform:generate(platform)
+function ExplodingPlatform.generate(game, platform)
 	local x, y = platform.x, platform.y
 	local todraw = image.UI.starpiece
 	local duration = 60
-	local width, height = self.stage.width, self.stage.height
+	local width, height = game.stage.width, game.stage.height
 
 	local moves = {
 		{x = width * -0.2, y = height * -0.5,  rotation = -6},
@@ -319,7 +318,7 @@ function ExplodingPlatform:generate(platform)
 	}
 
 	for i = 1, #todraw do
-		local p = common.instance(ExplodingPlatform, self.particles, x, y, todraw[i])
+		local p = common.instance(ExplodingPlatform, game.particles, x, y, todraw[i])
 		p.transparency = 510
 		local function y_func()
 			return y + p.t * moves[i].y + p.t^2 * height
@@ -360,15 +359,15 @@ function PlatformStar:remove()
 	self.manager.allParticles[self.particle_type][self.ID] = nil
 end
 
-function PlatformStar:generate(player, star_type, left, right_min, right_max)
-	local stage = self.stage
+function PlatformStar.generate(game, player, star_type, left, right_min, right_max)
+	local stage = game.stage
  	-- generate particle
 	local star = star_type .. player.ID
 	local rand = math.random(1, #image.lookup.platform_star[star])
 	local todraw = image.lookup.platform_star[star][rand]
 	local x = math.random(left * stage.width, right_max * stage.width)
 	local y = stage.height
-	local p = common.instance(PlatformStar, self.particles, x, y, todraw, "Platform" .. star_type)
+	local p = common.instance(PlatformStar, game.particles, x, y, todraw, "Platform" .. star_type)
 
 	-- create bezier curve for bottom half movement
 	local curve_right_min = math.max(right_min * stage.width, x)
@@ -406,17 +405,17 @@ function Dust:remove()
 end
 
 -- starburst along n lines, like when you capture a pokemon. Unused
-function Dust:generateStarburst(gem, n)
+function Dust.generateStarburst(game, gem, n)
 	local x, y = gem.x, gem.y
 	local duration = 10
 	local rotation = 0.2
  	for _ = 1, n do
 	 	local todraw = image.lookup.dust.small(gem.color)
-		local x_vel = (math.random() - 0.5) * 0.02 * self.stage.width
-		local y_vel = (math.random() - 0.5) * 0.015 * self.stage.height
+		local x_vel = (math.random() - 0.5) * 0.02 * game.stage.width
+		local y_vel = (math.random() - 0.5) * 0.015 * game.stage.height
 
 		for j = 1, math.random(1, 3) do
-	 		local p = common.instance(Dust, self.particles, gem.x, gem.y, todraw, "OverDust")
+	 		local p = common.instance(Dust, game.particles, gem.x, gem.y, todraw, "OverDust")
 	 		p.RGB = {128, 128, 128}
 	 		local x_func = function() return x + p.t * x_vel * j end
 	 		--local x_func2 = function() return x + x_vel * (1 + p.t * 0.2)end
@@ -431,32 +430,32 @@ function Dust:generateStarburst(gem, n)
 end
 
 -- yoshi-type star movement. generated when a gem lands
-function Dust:generateYoshi(gem)
+function Dust.generateYoshi(game, gem)
 	local x, y = gem.x, gem.y + gem.height * 0.5
 	local img = image.lookup.dust.star(gem.color)
 	local yoshi = {left = -1, right = 1}
 	for _, sign in pairs(yoshi) do
-		local p = common.instance(Dust, self.particles, x, y, img, "OverDust")
+		local p = common.instance(Dust, game.particles, x, y, img, "OverDust")
 		p.scaling = 0.5
-		p:moveTo{x = x + self.stage.width * 0.05 * sign, y = y - self.stage.height * 0.02,
+		p:moveTo{x = x + game.stage.width * 0.05 * sign, y = y - game.stage.height * 0.02,
 			duration = 30, rotation = sign, scaling = 0.8, easing = "outQuart"}
 		p:moveTo{duration = 30, scaling = 1, transparency = 0, rotation = 1.25 * sign, exit = true}
 	end
 end
 
 -- gravity-type fountain, called on clicking a gem
-function Dust:generateFountain(gem, n)
+function Dust.generateFountain(game, gem, n)
 	local x, y = gem.x, gem.y
 	local duration = 60
 	local rotation = 1
  	for i = 1, n do
 	 	local todraw = image.lookup.dust.small(gem.color)
 	 	local p_type = (i % 2 == 1) and "Dust" or "OverDust"
-	 	local x_vel = (math.random() - 0.5) * 0.1 * self.stage.width
-	 	local y_vel = (math.random() + 1) * - 0.1 * self.stage.height
-	 	local acc = 0.26 * self.stage.height
+	 	local x_vel = (math.random() - 0.5) * 0.1 * game.stage.width
+	 	local y_vel = (math.random() + 1) * - 0.1 * game.stage.height
+	 	local acc = 0.26 * game.stage.height
 
- 		local p = common.instance(Dust, self.particles, gem.x, gem.y, todraw, p_type)
+ 		local p = common.instance(Dust, game.particles, gem.x, gem.y, todraw, p_type)
  		local x1 = x + x_vel
  		local x2 = x + x_vel * 1.2
  		local y_func = function() return y + p.t * y_vel + p.t^2 * acc end
@@ -469,18 +468,18 @@ function Dust:generateFountain(gem, n)
 end
 
 -- called when a match is made
-function Dust:generateBigFountain(gem, n)
+function Dust.generateBigFountain(game, gem, n)
 	local x, y = gem.x, gem.y
 	local duration = 30
 	local rotation = 0.5
  	for i = 1, n do
  		local todraw = image.lookup.dust.small(gem.color)
 	 	local p_type = (i % 2 == 1) and "Dust" or "OverDust"
-	 	local x_vel = (math.random() - 0.5) * 0.4 * self.stage.width
-	 	local y_vel = (math.random() - 0.75) * 0.52 * self.stage.height
-	 	local acc = 0.2 * self.stage.height
+	 	local x_vel = (math.random() - 0.5) * 0.4 * game.stage.width
+	 	local y_vel = (math.random() - 0.75) * 0.52 * game.stage.height
+	 	local acc = 0.2 * game.stage.height
 
- 		local p = common.instance(Dust, self.particles, gem.x, gem.y, todraw, p_type)
+ 		local p = common.instance(Dust, game.particles, gem.x, gem.y, todraw, p_type)
  		local x1 = x + x_vel
  		local x2 = x_vel * 1.2
  		local y_func = function() return y + p.t * y_vel + p.t^2 * acc end
@@ -493,19 +492,19 @@ function Dust:generateBigFountain(gem, n)
 end
 
 -- called when a doublecast/rush landed in the holding area
-function Dust:generateStarFountain(gem, n)
+function Dust.generateStarFountain(game, gem, n)
 	local x, y = gem.x, gem.y
 	local duration = 120
 	local rotation = 0.5
  	for i = 1, n do
  		local todraw = image.lookup.particle_freq.random(gem.color)
 	 	local p_type = (i % 2 == 1) and "Dust" or "OverDust"
-	 	local x_vel = (math.random() - 0.5) * self.stage.width
-	 	local y_vel = (math.random() - 0.75) * 2 * self.stage.height
-	 	local acc = 3 * self.stage.height
+	 	local x_vel = (math.random() - 0.5) * game.stage.width
+	 	local y_vel = (math.random() - 0.75) * 2 * game.stage.height
+	 	local acc = 3 * game.stage.height
 
 	 	-- create star
- 		local p = common.instance(Dust, self.particles, gem.x, gem.y, todraw, p_type)
+ 		local p = common.instance(Dust, game.particles, gem.x, gem.y, todraw, p_type)
  		local x1 = x + x_vel
  		local y_func = function() return y + p.t * y_vel + p.t^2 * acc end
  		p:moveTo{duration = duration, rotation = rotation, x = x1, y = y_func, exit = true}
@@ -513,7 +512,7 @@ function Dust:generateStarFountain(gem, n)
  		-- create trails
  		for frames = 1, 3 do
 	 		local trail_image = image.lookup.trail_particle[gem.color]
-			local trail = common.instance(Dust, self.particles, x, y, trail_image, p_type)
+			local trail = common.instance(Dust, game.particles, x, y, trail_image, p_type)
 			local trail_y = function() return y + trail.t * y_vel + trail.t^2 * acc end
 			trail.scaling = 1.25 - (frames * 0.25)
 			trail:wait(frames * 2)
@@ -523,19 +522,19 @@ function Dust:generateStarFountain(gem, n)
 end
 
 -- called from "Go" word. Similar to generateStarFountain but faster
-function Dust:generateYellowFountain(x, y)
+function Dust.generateYellowFountain(game, x, y)
 	local duration = 120
 	local rotation = 0.5
 
 	for i = 1, 48 do
 		local todraw = image.lookup.particle_freq.random("yellow")
 		local p_type = (i % 2 == 1) and "Dust" or "OverDust"
-	 	local x_vel = (math.random() - 0.5) * 2 * self.stage.width
-	 	local y_vel = (math.random() - 0.75) * 3 * self.stage.height
-	 	local acc = 3 * self.stage.height
+	 	local x_vel = (math.random() - 0.5) * 2 * game.stage.width
+	 	local y_vel = (math.random() - 0.75) * 3 * game.stage.height
+	 	local acc = 3 * game.stage.height
 
 		-- create star
-	 	local p = common.instance(Dust, self.particles, x, y, todraw, p_type)
+	 	local p = common.instance(Dust, game.particles, x, y, todraw, p_type)
 	 	local x1 = x + x_vel
 	 	local y_func = function() return y + p.t * y_vel + p.t^2 * acc end
 	 	p:moveTo{duration = duration, rotation = rotation, x = x1, y = y_func, exit = true}
@@ -543,7 +542,7 @@ function Dust:generateYellowFountain(x, y)
 		-- create trails
  		for frames = 1, 3 do
 	 		local trail_image = image.lookup.trail_particle.yellow
-			local trail = common.instance(Dust, self.particles, x, y, trail_image, p_type)
+			local trail = common.instance(Dust, game.particles, x, y, trail_image, p_type)
 			local trail_y = function() return y + trail.t * y_vel + trail.t^2 * acc end
 			trail.scaling = 1.25 - (frames * 0.25)
 			trail:wait(frames * 2)
@@ -553,31 +552,31 @@ function Dust:generateYellowFountain(x, y)
 end
 
 -- constant speed falling with no x-movement
-function Dust:generateFalling(gem, x_drift, y_drift)
+function Dust.generateFalling(game, gem, x_drift, y_drift)
 	local x, y = gem.x + x_drift, gem.y + y_drift
  	local todraw = image.lookup.dust.small(gem.color, false)
  	local rotation = 6
  	local duration = 60
  	local p_type = (math.random(1, 2) == 2) and "Dust" or "OverDust"
 
- 	local p = common.instance(Dust, self.particles, x, y, todraw, p_type)
- 	p:moveTo{duration = duration, rotation = rotation, y = y + 0.13 * self.stage.height}
+ 	local p = common.instance(Dust, game.particles, x, y, todraw, p_type)
+ 	p:moveTo{duration = duration, rotation = rotation, y = y + 0.13 * game.stage.height}
  	p:moveTo{duration = duration * 0.3, rotation = rotation * 1.3, transparency = 0,
- 		y = y + 1.3 * (0.13 * self.stage.height), exit = true}
+ 		y = y + 1.3 * (0.13 * game.stage.height), exit = true}
 end
 
 -- generate the spinning dust from platforms
-function Dust:generatePlatformSpin(x, y, speed)
+function Dust.generatePlatformSpin(game, x, y, speed)
 	local todraw = image.lookup.dust.small("red")
 	local rotation = 6
 	local duration = 60
 
-	local stage = self.stage
+	local stage = game.stage
 	local x_vel = (math.random() - 0.5) * 2 * stage.width * (speed + 0.2)
 	local y_vel = (math.random() - 0.75) * 3 * stage.height * (speed + 0.2)
 	local acc = stage.height * (speed + 0.2) * 3
 
-	local p = common.instance(Dust, self.particles, x, y, todraw, "Dust")
+	local p = common.instance(Dust, game.particles, x, y, todraw, "Dust")
 	local function y_func()
 		return y + p.t * y_vel + p.t^2 * acc
 	end
@@ -599,8 +598,8 @@ function UpGem:remove()
 	self.manager.allParticles.UpGem[self.ID] = nil
 end
 
-function UpGem:generate(gem)
-	local p = common.instance(UpGem, self.particles, gem)
+function UpGem.generate(game, gem)
+	local p = common.instance(UpGem, game.particles, gem)
 	p:moveTo{y = -p.height, duration = 60, easing = "inQuad", exit = true}
 end
 
@@ -627,9 +626,9 @@ end
 
 -- the glow cloud behind a doublecast piece.
 -- called from anims.putPendingOnTop, and from anims.update
-function WordEffects:generateDoublecastCloud(gem1, gem2, horizontal)
+function WordEffects.generateDoublecastCloud(game, gem1, gem2, horizontal)
 	local todraw = horizontal and image.words.doublecast_cloud_h or image.words.doublecast_cloud_v
-	local p = common.instance(WordEffects, self.particles, (gem1.x + gem2.x) * 0.5, (gem1.y + gem2.y) * 0.5, todraw)
+	local p = common.instance(WordEffects, game.particles, (gem1.x + gem2.x) * 0.5, (gem1.y + gem2.y) * 0.5, todraw)
 	p.rotation = horizontal and 0 or math.pi * 0.5
 	p.transparency = 0
 	p:moveTo{duration = 20, transparency = 255, easing = "inCubic"}
@@ -642,12 +641,12 @@ end
 
 -- the glow cloud behind a rush piece.
 -- called from anims.putPendingOnTop, and from anims.update
-function WordEffects:generateRushCloud(gem1, gem2, horizontal)
+function WordEffects.generateRushCloud(game, gem1, gem2, horizontal)
 	local todraw = horizontal and image.words.rush_cloud_h or image.words.rush_cloud_v
-	local p = common.instance(WordEffects, self.particles, (gem1.x + gem2.x) * 0.5, (gem1.y + gem2.y) * 0.5, todraw)
+	local p = common.instance(WordEffects, game.particles, (gem1.x + gem2.x) * 0.5, (gem1.y + gem2.y) * 0.5, todraw)
 	p.transparency = 0
 	p:moveTo{duration = 20, transparency = 255, easing = "inCubic"}
-	p:moveTo{duration = 600, during = {8, 0, WordEffects.generateRushParticle, self, gem1, gem2, horizontal}}
+	p:moveTo{duration = 600, during = {8, 0, WordEffects.generateRushParticle, game, gem1, gem2, horizontal}}
 	p.update = function(_self, dt)
 		Pic.update(_self, dt)
 		_self.x, _self.y = (gem1.x + gem2.x) * 0.5, (gem1.y + gem2.y) * 0.5
@@ -656,8 +655,8 @@ function WordEffects:generateRushCloud(gem1, gem2, horizontal)
 end
 
 -- the sparks coming out from the rush cloud.
--- called from WordEffects:generateRushCloud
-function WordEffects:generateRushParticle(gem1, gem2, horizontal)
+-- called from WordEffects.generateRushCloud
+function WordEffects.generateRushParticle(game, gem1, gem2, horizontal)
 	local todraw = image.words.rush_particle
 	local x, y = (gem1.x + gem2.x) * 0.5, (gem1.y + gem2.y) * 0.5
 	local x_drift, y_adj
@@ -669,28 +668,28 @@ function WordEffects:generateRushParticle(gem1, gem2, horizontal)
 		y_adj = -image.GEM_HEIGHT
 	end
 
-	local p = common.instance(WordEffects, self.particles, x + x_drift, y + y_adj, todraw)
+	local p = common.instance(WordEffects, game.particles, x + x_drift, y + y_adj, todraw)
 	p.rotation = (x_drift / image.GEM_WIDTH) / (math.pi * 2)
 	p:moveTo{duration = 18, scaling = 0.7, exit = true}
 end
 
 -- falling stars accompanying Ready at start of match. Called from Words.Ready
-function WordEffects:generateReadyParticle(size, x, y)
+function WordEffects.generateReadyParticle(game, size, x, y)
 	local todraw = image.lookup.words_ready(size)
-	local p = common.instance(WordEffects, self.particles, x, y, todraw)
-	local y_func = function() return y + (p.t*3)^2 * 0.15 * self.stage.height end
+	local p = common.instance(WordEffects, game.particles, x, y, todraw)
+	local y_func = function() return y + (p.t*3)^2 * 0.15 * game.stage.height end
 	p:moveTo{duration = 120, y = y_func, exit = true}
 end
 
 -- large gold star accompanying Go at start of match. Called from Words.Go
-function WordEffects:generateGoStar(x, y, x_vel, y_vel)
-	local p = common.instance(WordEffects, self.particles, x, y, image.words.go_star)
-	local y_func = function() return y + p.t * y_vel + (p.t)^2 * 3 * self.stage.height end
+function WordEffects.generateGoStar(game, x, y, x_vel, y_vel)
+	local p = common.instance(WordEffects, game.particles, x, y, image.words.go_star)
+	local y_func = function() return y + p.t * y_vel + (p.t)^2 * 3 * game.stage.height end
 	p:moveTo{duration = 120, x = x + x_vel, y = y_func, exit = true}
 end
 
 -- DoublecastCloud, RushCloud, RushParticle, ReadyParticle, GoStar
-function WordEffects:generate(effect_type, ...)
+function WordEffects.generate(game, effect_type, ...)
 	local particle = {
 		DoublecastCloud = WordEffects.generateDoublecastCloud,
 		RushCloud = WordEffects.generateRushCloud,
@@ -698,7 +697,7 @@ function WordEffects:generate(effect_type, ...)
 		ReadyParticle = WordEffects.generateReadyParticle,
 		GoStar = WordEffects.generateGoStar,
 	}
-	particle[effect_type](self, ...)
+	particle[effect_type](game, ...)
 end
 
 function WordEffects:cloudExists()
@@ -733,25 +732,25 @@ function Words:remove()
 	self.manager.allParticles.Words[self.ID] = nil
 end
 
-function Words:generateDoublecast(player)
-	local x = player.ID == "P1" and self.stage.width * 0.4 or self.stage.width * 0.6
-	local y = self.stage.height * 0.3
+function Words.generateDoublecast(game, player)
+	local x = player.ID == "P1" and game.stage.width * 0.4 or game.stage.width * 0.6
+	local y = game.stage.height * 0.3
 	local todraw = image.words.doublecast
-	local p = common.instance(Words, self.particles, x, y, todraw, nil, nil, nil, nil, nil, true)
+	local p = common.instance(Words, game.particles, x, y, todraw, nil, nil, nil, nil, nil, true)
 	p.scaling = 5
 	p:moveTo{duration = 60, scaling = 1, easing = "outQuart"}
 	p:moveTo{duration = 60, transparency = 0, easing = "inExpo", exit = true}
 end
 
-function Words:generateRush(player)
+function Words.generateRush(game, player)
 	local sign = player.ID == "P1" and 1 or -1
-	local x = self.stage.width * (0.5 - sign * 0.6)
-	local y = self.stage.height * 0.3
+	local x = game.stage.width * (0.5 - sign * 0.6)
+	local y = game.stage.height * 0.3
 	local todraw = image.words.rush
-	local p = common.instance(Words, self.particles, x, y, todraw, nil, nil, nil, nil, nil, true)
+	local p = common.instance(Words, game.particles, x, y, todraw, nil, nil, nil, nil, nil, true)
 	p.rotation = 0.25
-	p:moveTo{duration = 60, x = self.stage.width * (0.5 + sign * 0.2), rotation = 0, easing = "outBounce"}
-	p:moveTo{duration = 60, x = self.stage.width * (0.5 + sign * 0.9), rotation = 0.5, easing = "inBack", exit = true}
+	p:moveTo{duration = 60, x = game.stage.width * (0.5 + sign * 0.2), rotation = 0, easing = "outBounce"}
+	p:moveTo{duration = 60, x = game.stage.width * (0.5 + sign * 0.9), rotation = 0.5, easing = "inBack", exit = true}
 end
 
 function Words.generateReady(game)
@@ -812,7 +811,7 @@ function PieEffects:remove()
 	self.manager.allParticles.PieEffects[self.ID] = nil
 end
 
-function PieEffects:generateSegment(segment, todraw)
+function PieEffects.generateSegment(game, segment, todraw)
 	todraw = todraw or segment.image
 	local x_sign, y_sign
 	if segment.owner.ID == "P1" then
@@ -833,12 +832,14 @@ function PieEffects:generateSegment(segment, todraw)
 		end
 	end
 	local tweening = {duration = 0.5,	var = {t = 1}, movement = "inCubic"}
-	common.instance(PieEffects, self.particles, segment.x, segment.y, segment.rotation, todraw, update_func, tweening)
+	common.instance(PieEffects, game.particles, segment.x, segment.y, segment.rotation, todraw, update_func, tweening)
 end
 
-function PieEffects:generatePie(pie)
+-- TODO: Delete this function? Maybe the whole PieEffects class.
+--[[
+function PieEffects.generatePie(game, pie)
 end
-
+--]]
 PieEffects = common.class("PieEffects", PieEffects, Pic)
 
 -------------------------------------------------------------------------------

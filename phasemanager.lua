@@ -346,7 +346,7 @@ function PhaseManager:cleanup(dt)
 	local p1, p2 = game.p1, game.p2
 
 	grid:updateGrid()
-	game.particles:clearCount()
+	--game.particles:clearCount()
 	for player in game:players() do
 		player:cleanup()
 	end
@@ -399,12 +399,13 @@ function PhaseManager:gameOver(dt)
 	end
 	local damage_particles = particles:getCount("onscreen", "Damage", 1) + particles:getCount("onscreen", "Damage", 2)
 	local super_particles = particles:getCount("onscreen", "MP", 1) + particles:getCount("onscreen", "MP", 2)
-	local anims_done = damage_particles + super_particles == 0
-	if anims_done and game.type == "Netplay" then
-		game.client:endMatch()
-		game.statemanager:switch(require "gs_lobby")
-	elseif anims_done and game.type == "1P" then
-		game.statemanager:switch(require "gs_charselect")
+	if damage_particles + super_particles == 0 then
+		if game.type == "Netplay" then
+			game.client:endMatch()
+			game.statemanager:switch(require "gs_lobby")
+		elseif game.type == "1P" then
+			game.statemanager:switch(require "gs_charselect")
+		end
 	end
 end
 

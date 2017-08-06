@@ -24,8 +24,8 @@ function GemPlatform:draw()
 	--screen shake translation
 	local h_shake, v_shake = 0, 0
 	if self.shake then
-		h_shake = math.floor(self.shake * (frame % 7 / 2 + frame % 13 / 4 + frame % 23 / 6 - 5))
-		v_shake = math.floor(self.shake * (frame % 5 * 2/3 + frame % 11 / 4 + frame % 17 / 6 - 5))
+		h_shake = math.floor(self.shake * (frame % 7 * 0.5 + frame % 13 * 0.25 + frame % 23 / 6 - 5))
+		v_shake = math.floor(self.shake * (frame % 5 * 2/3 + frame % 11 * 0.25 + frame % 17 / 6 - 5))
 	end
 
 	love.graphics.push("all")
@@ -62,7 +62,7 @@ function GemPlatform:update(dt)
 
 	-- set spin and redness
 	local destroyed_particles = self.game.particles:getCount("destroyed", "Damage", player.enemy.playerNum)
-	local displayed_damage = (player.hand.turn_start_damage + destroyed_particles/3) / 4
+	local displayed_damage = (player.hand.turn_start_damage + destroyed_particles/3) * 0.25
 
 	if displayed_damage >= loc then	-- fully red, full spin
 		self.redness = math.min(self.redness + 16, 255)

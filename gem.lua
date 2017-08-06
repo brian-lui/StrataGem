@@ -22,8 +22,8 @@ function Gem:init(game, x, y, color, garbage)
 	self.target_x = x
 	self.target_y = y
 	self.target_rotation = 0
-	self.pivot_x = self.width / 2
-	self.pivot_y = self.height / 2
+	self.pivot_x = self.width * 0.5
+	self.pivot_y = self.height * 0.5
 	self.color = color
 	self.ID = ID.gem
 	self.row = -1
