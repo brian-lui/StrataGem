@@ -103,7 +103,8 @@ end
 
 -- player.hand.damage is the damage before this round's match(es) is scored
 function DamageParticle.generate(game, gem)
-	local player = game:playerByIndex(gem.owner)
+	local gem_creator = game:playerByIndex(gem.owner)
+	local player = gem_creator.enemy
 
 	-- calculate bezier curve
 	local x1, y1 = gem.x, gem.y -- start
