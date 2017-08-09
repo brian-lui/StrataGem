@@ -866,7 +866,7 @@ local SuperFreezeEffects = {}
 function SuperFreezeEffects:init(manager, tbl)
 	tbl.draw_order = tbl.draw_order or 1
 	Pic.init(self, manager.game, tbl)
-	self.allParticles.SuperFreezeEffects[ID.particle] = self
+	manager.allParticles.SuperFreezeEffects[ID.particle] = self
 	self.manager = manager
 end
 

@@ -75,7 +75,7 @@ local function setupSuperMeter(self)
 	self.super_frame = common.instance(Pic, game, {x = stage.super[self.ID].x,
 		y = stage.super[self.ID].y, image = self.super_images.empty})
 	self.super_word = common.instance(Pic, game, {x = stage.super[self.ID].x,
-		y = stage.super[self.ID].word_y, image = self.super_images.full})
+		y = stage.super[self.ID].word_y, image = self.super_images.word})
 	self.super_meter_image = common.instance(Pic, game, {x = stage.super[self.ID].x,
 		y = stage.super[self.ID].y, image = self.super_images.full})
 	self.super_glow = common.instance(Pic, game, {x = stage.super[self.ID].x,
@@ -96,8 +96,8 @@ local function setupBurstMeter(self)
 			y = stage.burst[self.ID][i].y, image = self.burst_images.full})
 		self.burst_partial[i] = common.instance(Pic, self.game, {x = stage.burst[self.ID][i].x,
 			y = stage.burst[self.ID][i].y, image = self.burst_images.partial})
-		self.burst_glow[i] = common.instance(Pic, self.game, {x = stage.burst[self.ID][i].x,
-			y = stage.burst[self.ID][i].y, image = self.burst_images.glow[i]})
+		self.burst_glow[i] = common.instance(Pic, self.game, {x = stage.burst[self.ID][i].glow_x,
+			y = stage.burst[self.ID][i].glow_y, image = self.burst_images.glow[i]})
 	end
 end
 
@@ -169,7 +169,7 @@ function Character:superSlideIn()
 	local particles = self.game.particles
 	local sign = self.ID == "P2" and -1 or 1
 
-	local shadow = common.instance(particles.superFreezeEffects, {
+	local shadow = common.instance(particles.superFreezeEffects, particles, {
 		image = self.shadow_image,
 		draw_order = 2,
 		x = stage.width * (0.5 - sign * 0.7),
@@ -179,7 +179,7 @@ function Character:superSlideIn()
 	shadow:moveTo{duration = 30, x = stage.width * (0.5 + 0.025 * sign), easing = "outQuart"}
 	shadow:wait(25)
 	shadow:moveTo{duration = 5, transparency = 0, exit = true}
-	local portrait = common.instance(particles.superFreezeEffects, {
+	local portrait = common.instance(particles.superFreezeEffects, particles, {
 		image = self.action_image,
 		draw_order = 3,
 		x = stage.width * (0.5 - sign * 0.7),
@@ -190,7 +190,7 @@ function Character:superSlideIn()
 	portrait:wait(25)
 	portrait:moveTo{duration = 5, transparency = 0, exit = true}
 
-	local top_fuzz = common.instance(particles.superFreezeEffects, {
+	local top_fuzz = common.instance(particles.superFreezeEffects, particles, {
 		image = self.super_fuzz_image,
 		draw_order = 1,
 		x = stage.width * 0.5,
@@ -200,7 +200,7 @@ function Character:superSlideIn()
 	top_fuzz:wait(40)
 	top_fuzz:moveTo{duration = 5, transparency = 0, exit = true}
 
-	local bottom_fuzz = common.instance(particles.superFreezeEffects, {
+	local bottom_fuzz = common.instance(particles.superFreezeEffects, particles, {
 		image = self.super_fuzz_image,
 		draw_order = 1,
 		x = stage.width * 0.5,

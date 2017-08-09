@@ -104,7 +104,7 @@ function ui:drawSuper(player)
 
 	if player.supering then
 		player.super_glow.transparency = 255
-		player.super_glow.full:draw()
+		player.super_glow:draw()
 		player.super_word:draw()
 	elseif displayed_mp >= player.SUPER_COST then
 		player.super_glow.transparency = math.ceil(math.sin(self.game.frame / 30) * 127.5 + 127.5)
