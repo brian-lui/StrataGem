@@ -548,7 +548,7 @@ function Grid:generateExplodingGem(gem)
 	local game = self.game
 	game.particles.explodingGem.generate(game, gem)
 	local sfx = game.sound:play("gembreak" .. math.min(5, game.scoring_combo + 1))
-	--sfx:setPosition((gem.column - 4.5) * 0.1, 0, 0)	-- TODO: Make the sounds mono so we can use spatial audio
+	sfx:setPosition((gem.column - 4.5) * 0.1, 0, 0)
 end
 
 function Grid:generateMatchParticles()
