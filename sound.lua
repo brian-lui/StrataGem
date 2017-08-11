@@ -30,8 +30,10 @@ function Sound:play(s)
 		local previous = self.last_played_frame[s]
 		print("frame, prev", frame, previous)
 		if frame <= previous then -- queue
-			self.game.queue:add(2 + previous - frame, self._playImmediately, self, s)
+			local instance = love.audio.newSource(self[s])
+			self.game.queue:add(2 + previous - frame, love.audio.play, instance)
 			self.last_played_frame[s] = 2 + previous
+			return instance
 		else -- play immediately
 			local instance = self:_playImmediately(s)
 			return instance
