@@ -81,7 +81,9 @@ end
 
 --function particle_effects.SmallFire(gem)
 function particle_effects:SmallFire(row, col, owner)
-	local stage = self.game.stage
+	local game = self.game
+	local stage = game.stage
+	local grid = game.grid
 
 	--[[
 		TODO: update the y-tracking:
@@ -89,7 +91,7 @@ function particle_effects:SmallFire(row, col, owner)
 			however, instead of moving directly to y_dest, only move at speed of SPEED.DROP
 			this will make sure it moves along with the other gems, instead of instantly
 	--]]
-	--local first_empty_row = stage.grid:getFirstEmptyRow(gem.column)
+	--local first_empty_row = grid:getFirstEmptyRow(gem.column)
 	local first_empty_row = row
 	local new_particle_t = 0
 	local draw_t, draw_img = 0, 1
@@ -98,9 +100,9 @@ function particle_effects:SmallFire(row, col, owner)
 
 	local function update_func(_self, dt)
 		if self.turns_remaining == 1 then -- stop updating position after cleanup phase
-			first_empty_row = stage.grid:getFirstEmptyRow(col)
+			first_empty_row = grid:getFirstEmptyRow(col)
 		end
-		local y_dest = stage.grid.y[first_empty_row]
+		local y_dest = grid.y[first_empty_row]
 		_self.t = _self.t + dt
 		new_particle_t = new_particle_t + dt
 		draw_t = draw_t + dt
@@ -120,8 +122,8 @@ function particle_effects:SmallFire(row, col, owner)
 			_self.image = Heath.special_images["fire" .. draw_order[draw_img] ]
 		end
 
-		_self.x = stage.grid.x[col]
-		_self.y = stage.grid.y[row] + (-_self.t * 0.5 * stage.height) + (_self.t^2 * stage.height)
+		_self.x = grid.x[col]
+		_self.y = grid.y[row] + (-_self.t * 0.5 * stage.height) + (_self.t^2 * stage.height)
 
 		if _self.scaling < 1 then -- scale in
 			_self.scaling = math.min(_self.t * 2, 1)
@@ -160,8 +162,8 @@ function particle_effects:SmallFire(row, col, owner)
 	end
 	--]]
 	return {
-		x = stage.grid.x[col],
-		y = stage.grid.y[row],
+		x = grid.x[col],
+		y = grid.y[row],
 		rotation = 0,
 		image = Heath.special_images.fire1,
 		t = 0,
@@ -202,8 +204,10 @@ function particle_effects:BoomParticle(boom)
 end
 
 function particle_effects:Boom(row, col, owner)
-	local particles = self.game.particles
-	local stage = self.game.stage
+	local game = self.game
+	local particles = game.particles
+	local stage = game.stage
+	local grid = game.grid
 
 	local draw_t, draw_img = 0, 1
 	local draw_order = {1, 2, 3, 4, 5}
@@ -229,8 +233,8 @@ function particle_effects:Boom(row, col, owner)
 	end
 
 	return {
-		x = stage.grid.x[col],
-		y = stage.grid.y[row],
+		x = grid.x[col],
+		y = grid.y[row],
 		rotation = math.pi * 2 / math.random(4),
 		image = Heath.special_images.boom1,
 		t = 0,
@@ -323,7 +327,7 @@ end
 -- Make fire for horizontal matches
 -- Super-clear if super was active
 function Heath:beforeMatch(gem_table)
-	local grid = self.game.stage.grid
+	local grid = self.game.grid
 
 	local own_tbl = {self.game.p1, self.game.p2}
 
@@ -362,12 +366,12 @@ end
 -- process the super_clears list
 -- TODO: the piece the opponent played this turn is incorrectly counted as belong to him,
 -- even if it didn't participate in a match.
--- TODO: warning - queue.add stage.grid.removeGem affects state
+-- TODO: warning - queue.add grid.removeGem affects state
 
 function Heath:duringMatch(gem_table)
 	local game = self.game
 	local particles = game.particles
-	local grid = game.stage.grid
+	local grid = game.grid
 
 	if self.supering and game.scoring_combo == 1 then	-- don't super on followups
 		local damage_to_add = 0 -- add it all at the end so it doesn't interfere with particles

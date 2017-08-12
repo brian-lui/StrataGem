@@ -137,7 +137,7 @@ end
 function ai:placeholder(player)
 	if countdown == 0 then
 		-- Get a set of moves that yield the highest score
-		local matrices = generateScoreMatrices(self.game.stage.grid, player)
+		local matrices = generateScoreMatrices(self.game.grid, player)
 		local maximum_score = 0
 		local possible_moves = {}
 		for rot = 1, 4 do

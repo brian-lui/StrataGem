@@ -9,13 +9,15 @@ local window = _G.window -- TODO: Remove global
 Grid.DROP_SPEED = window.height / 90 -- pixels per frame for loose gems to drop
 Grid.DROP_MULTIPLE_SPEED = window.height / 180 -- multiplier for scoring_combo
 
-function Grid:init(stage, game)
+function Grid:init(game)
 	self.game = game
 	self.columns = 8
 	self.rows = 14	-- 7-14 basin, 1-6 for rush/double/normal, 0 and 15 sentinels
 	self.x = {}
 	self.y = {}
 	self.active_rect = {}
+
+	local stage = game.stage
 
 	for i = 0, self.columns + 1 do
 		self.x[i] = stage.x_mid + (i - (self.columns / 2) - 0.5) * stage.gem_width
@@ -609,7 +611,7 @@ function Grid:calculateScore()
 end
 
 local function getFirstEmptyRow(self, column)
---[[ This function slightly differs from grid:getFirstEmptyRow stage.grid. This
+--[[ This function slightly differs from grid:getFirstEmptyRow game.grid. This
 	is because we need to check the top two rows, too, to see if any overflowed.
 	TODO: can refactor the functions together
 --]]

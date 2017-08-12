@@ -164,7 +164,7 @@ end
 
 function PhaseManager:applyGemTween(dt)
 	local game = self.game
-	local grid = game.stage.grid
+	local grid = game.grid
 	grid:updateGravity(dt) -- animation
 	for player in self.game:players() do
 		player.hand:update(dt)
@@ -178,7 +178,7 @@ end
 
 function PhaseManager:applyGravity(dt)
 	local game = self.game
-	local grid = game.stage.grid
+	local grid = game.grid
 
 	grid:updateGravity(dt) -- animation
 	for player in self.game:players() do
@@ -194,7 +194,7 @@ function PhaseManager:applyGravity(dt)
 end
 
 function PhaseManager:getMatchedGems(dt)
-	local _, matches = self.game.stage.grid:getMatchedGems() -- sets horizontal/vertical flags for matches
+	local _, matches = self.game.grid:getMatchedGems() -- sets horizontal/vertical flags for matches
 	print(matches)
 	if matches > 0 then
 		self.game.phase = "FlagGems"
@@ -204,8 +204,8 @@ function PhaseManager:getMatchedGems(dt)
 end
 
 function PhaseManager:flagGems(dt)
-	local gem_table = self.game.stage.grid:getMatchedGems() -- sets h/v flags
-	self.game.stage.grid:flagMatchedGems() -- state
+	local gem_table = self.game.grid:getMatchedGems() -- sets h/v flags
+	self.game.grid:flagMatchedGems() -- state
 	for player in self.game:players() do
 		player:beforeMatch(gem_table)
 	end
@@ -215,7 +215,7 @@ end
 local match_anim_phase, match_anim_count = "start", 0
 
 function PhaseManager:matchAnimations(dt)
-	local grid = self.game.stage.grid
+	local grid = self.game.grid
 	if match_anim_phase == "start" then
 		grid:generateMatchExplodingGems() -- animation
 		match_anim_phase, match_anim_count = "explode", 20
@@ -232,7 +232,7 @@ function PhaseManager:matchAnimations(dt)
 end
 
 function PhaseManager:resolvingMatches(dt)
-	local grid = self.game.stage.grid
+	local grid = self.game.grid
 	local p1, p2 = self.game.p1, self.game.p2
 	local gem_table = grid:getMatchedGems()
 	self.game.scoring_combo = self.game.scoring_combo + 1
@@ -272,7 +272,7 @@ function PhaseManager:resolvedMatches(dt)
 			player.place_type = "normal"
 		end
 		game.scoring_combo = 0
-		game.stage.grid:setAllGemOwners(0)
+		game.grid:setAllGemOwners(0)
 		game.phase = "PlatformSpinDelay"
 	end
 end
@@ -309,7 +309,7 @@ end
 
 function PhaseManager:platformsMoving(dt)
 	local game = self.game
-	local grid = game.stage.grid
+	local grid = game.grid
 	local handsettled = true
 
 	for player in game:players() do
@@ -342,7 +342,7 @@ end
 
 function PhaseManager:cleanup(dt)
 	local game = self.game
-	local grid = game.stage.grid
+	local grid = game.grid
 	local p1, p2 = game.p1, game.p2
 
 	grid:updateGrid()
@@ -387,7 +387,7 @@ function PhaseManager:gameOver(dt)
 	local game = self.game
 	local particles = game.particles
 
-	local loser = game.stage.grid:getLoser()
+	local loser = game.grid:getLoser()
 	if loser == "P1" then
 		print("P2 wins gg")
 	elseif loser == "P2" then

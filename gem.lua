@@ -52,7 +52,7 @@ function Gem:isStationary()
 	local stationary = true
 	if self.move_func then stationary = false end
 	if self.row > -1 then -- in grid
-		if self.y ~= self.game.stage.grid.y[self.row] then stationary = false end
+		if self.y ~= self.game.grid.y[self.row] then stationary = false end
 	end
 	return stationary
 end

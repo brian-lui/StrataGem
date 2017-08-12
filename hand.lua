@@ -84,7 +84,7 @@ local function destroyTopPiece(self)
 		self.game.particles.garbageParticles.generate(self.game, self[0].piece.gems[i])
 	end
 	self[0].piece:breakUp()
-	self.game.stage.grid:addBottomRow(self.owner) -- add a penalty row TODO: callback function this later
+	self.game.grid:addBottomRow(self.owner) -- add a penalty row TODO: callback function this later
 	self.owner.pieces_fallen = self.owner.pieces_fallen + 1 -- to determine garbage ownership
 end
 

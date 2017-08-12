@@ -263,12 +263,12 @@ end
 function GarbageParticles.generate(game, gem)
 	local player = game:playerByIndex(gem.owner)
 	local start_col, end_col = 1, 4
-	local end_row = game.stage.grid.rows
+	local end_row = game.grid.rows
 	if player == 2 then start_col = 5 end_col = 8 end
 
 	-- calculate bezier curve
 	local x1, y1 = gem.x, gem.y -- start
-	local x4, y4 = game.stage.grid.x[start_col], game.stage.grid.y[end_row] -- end
+	local x4, y4 = game.grid.x[start_col], game.grid.y[end_row] -- end
 	local dist = ((x4 - x1) ^ 2 + (y4 - y1) ^ 2) ^ 0.5
 	local x3, y3 = 0.5 * (x1 + x4), 0.5 * (y1 + y4)
 
@@ -325,8 +325,8 @@ GarbageTrail = common.class("GarbageTrail", GarbageTrail, Pic)
 -- When a match is made, this is the glow behind the gems
 local PopParticle = {}
 function PopParticle:init(manager, gem)
-	local stage = manager.game.stage
-	Pic.init(self, manager.game, {x = stage.grid.x[gem.column], y = stage.grid.y[gem.row],
+	local grid = manager.game.grid
+	Pic.init(self, manager.game, {x = grid.x[gem.column], y = grid.y[gem.row],
 		image = image.lookup.pop_particle[gem.color]})
 	manager.allParticles.Pop[ID.particle] = self
 	self.manager = manager

@@ -156,7 +156,7 @@ end
 
 -- show the shadow at the top that indicates where the piece will be placed
 local function drawPlacementShadow(self, piece, shift)
-	local stage = self.game.stage
+	local grid = self.game.grid
 	local _, place_type = piece:isDropValid(shift)
 	local row_adj = false
 	if place_type == "normal" then row_adj = 0
@@ -168,11 +168,11 @@ local function drawPlacementShadow(self, piece, shift)
 	local drop_cols = piece:getColumns(shift)
 	for i = 1, piece.size do
 		show[i] = {}
-		show[i].x = stage.grid.x[ drop_cols[i] ]
+		show[i].x = grid.x[ drop_cols[i] ]
 		if piece.horizontal then
-			show[i].y = stage.grid.y[1 + row_adj]
+			show[i].y = grid.y[1 + row_adj]
 		else
-			show[i].y = stage.grid.y[i + row_adj]
+			show[i].y = grid.y[i + row_adj]
 		end
 		if show[i].x and show[i].y then
 			piece.gems[i]:draw(show[i].x, show[i].y, {0, 0, 0, 128})
@@ -182,19 +182,19 @@ end
 
 -- draws the gem shadows indicating where the piece will land.
 local function drawDoublecastGemShadow(self, gem)
-	local dropped_row = self.game.stage.grid:getFirstEmptyRow(gem.column)
+	local dropped_row = self.game.grid:getFirstEmptyRow(gem.column)
 	-- gem:draw takes a y value relative to the gem's y-value
-	local dropped_y = self.game.stage.grid.y[dropped_row] - gem.y
+	local dropped_y = self.game.grid.y[dropped_row] - gem.y
 	gem:draw(nil, nil, {255, 255, 255, 160}, nil, 0, dropped_y)
 end
 
 -- draws the gem shadows indicating where the piece will land.
 local function drawDestinationShadow(self, piece, shift, account_for_doublecast)
-	local stage = self.game.stage
+	local grid = self.game.grid
 	local toshow = {}
-	local drop_locs = stage.grid:getDropLocations(piece, shift)
+	local drop_locs = grid:getDropLocations(piece, shift)
 	if account_for_doublecast then
-		local pending_gems = stage.grid:getPendingGems(piece.owner)
+		local pending_gems = grid:getPendingGems(piece.owner)
 		for i = 1, piece.size do
 			for _, gem in pairs(pending_gems) do
 				if drop_locs[i][1] == gem.column then
@@ -207,8 +207,8 @@ local function drawDestinationShadow(self, piece, shift, account_for_doublecast)
 	for i = 1, piece.size do
 		-- shadow at bottom
 		toshow[i] = {}
-		toshow[i].x = stage.grid.x[ drop_locs[i][1] ] -- tub c column
-		toshow[i].y = stage.grid.y[ drop_locs[i][2] ] -- tub r row
+		toshow[i].x = grid.x[ drop_locs[i][1] ] -- tub c column
+		toshow[i].y = grid.y[ drop_locs[i][2] ] -- tub r row
 		if toshow[i].x and toshow[i].y then
 			piece.gems[i]:draw(toshow[i].x, toshow[i].y, {255, 255, 255, 160})
 		end
@@ -224,7 +224,7 @@ function ui:showShadows(piece)
 	end
 	local valid = piece:isDropValid(shift)
 	-- TODO: somehow account for variable piece size
-	local pending_gems = self.game.stage.grid:getPendingGems(piece.owner)
+	local pending_gems = self.game.grid:getPendingGems(piece.owner)
 	local account_for_doublecast = #pending_gems == 2
 	drawUnderGemShadow(self, piece)
 	if valid then
@@ -260,8 +260,8 @@ end
 -- at turn end, move the gems to the top of the screen so they fall down nicely
 function ui:putPendingAtTop()
 	local pending = {
-		{gems = self.game.stage.grid:getPendingGems(self.game.p1), me = 1, foe = 2},
-		{gems = self.game.stage.grid:getPendingGems(self.game.p2), me = 2, foe = 1},
+		{gems = self.game.grid:getPendingGems(self.game.p1), me = 1, foe = 2},
+		{gems = self.game.grid:getPendingGems(self.game.p2), me = 2, foe = 1},
 	}
 	for _, piece in pairs(pending) do
 		local effect = {}
@@ -295,7 +295,7 @@ end
 function ui:update(dt)
 	local game = self.game
 	local player = game.me_player
-	local pending_gems = game.stage.grid:getPendingGems(player)
+	local pending_gems = game.grid:getPendingGems(player)
 	local valid = false
 	local place_type
 	local cloud = game.particles.wordEffects.cloudExists(game.particles)

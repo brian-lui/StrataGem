@@ -60,6 +60,7 @@ function Game:init()
 	self.sound = common.instance(require "sound", self)
 	self.music = common.instance(require "music", self)
 	self.stage = common.instance(require "stage", self)	-- playing field area and grid
+	self.grid = common.instance(require "grid", self)
 	self.p1 = common.instance(require "character", 1, self)	-- Dummies
 	self.p2 = common.instance(require "character", 2, self)
 	self.background = common.instance(require "background", self)
@@ -82,7 +83,7 @@ function Game:start(gametype, char1, char2, bkground, seed, side)
 
 	self:reset()
 	self.sound:reset()
-	self.stage.grid:reset()
+	self.grid:reset()
 	self.particles:reset()
 	if seed then
 		self.rng:setSeed(seed)
@@ -194,10 +195,10 @@ local function n(self, row, column, color, owner)
 	end
 
 	row = row + 6
-	local x, y = self.stage.grid.x[column], self.stage.grid.y[row]
-	self.stage.grid[row][column].gem = common.instance(Gem, self, x, y, color)
+	local x, y = self.grid.x[column], self.grid.y[row]
+	self.grid[row][column].gem = common.instance(Gem, self, x, y, color)
 	if owner > 0 then
-		self.stage.grid[row][column].gem:addOwner(owner)
+		self.grid[row][column].gem:addOwner(owner)
 	end
 end
 
@@ -214,8 +215,7 @@ local function nrow(game, row, colors)
 end
 
 function Game:keypressed(key)
-	local stage = self.stage
-	local grid = stage.grid
+	local grid = self.grid
 	local p1, p2 = self.p1, self.p2
 
 	if key == "escape" then

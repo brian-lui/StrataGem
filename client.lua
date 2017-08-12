@@ -343,7 +343,7 @@ function Client:sendState(delay)
 		type = "state",
 		turn = game.turn,
 		frame = game.frame,
-		grid_gems = game.stage.grid:getIDs(),
+		grid_gems = game.grid:getIDs(),
 		p1_hand = game.p1.hand:getPieceIDs(),
 		p1_super = game.p1.mp,
 		p1_damage = "TODO",

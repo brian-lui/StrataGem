@@ -161,6 +161,7 @@ end
 -- it forces the gem to be dropped to the left or the right of midline.
 function Piece:getColumns(shift)
 	local stage = self.game.stage
+	local grid = self.game.grid
 	local ret = {}
 	shift = shift or 0
 	if shift then shift = shift * stage.gem_width end
@@ -168,18 +169,18 @@ function Piece:getColumns(shift)
 	if self.horizontal then
 		for i = 1, self.size do
 			ret[i] = false
-			for j = 1, stage.grid.columns do
+			for j = 1, grid.columns do
 				local in_this_column = pointIsInRect(self.gems[i].x + shift, self.gems[i].y,
-					table.unpack(stage.grid.active_rect[j]))
+					table.unpack(grid.active_rect[j]))
 				if in_this_column then ret[i] = j end
 			end
 		end
 
 	elseif not self.horizontal then
 		for i = 1, self.size do ret[i] = false	end -- set array length
-		for j = 1, stage.grid.columns do
+		for j = 1, grid.columns do
 			local in_this_column = pointIsInRect(self.gems[1].x + shift, self.gems[1].y,
-				table.unpack(stage.grid.active_rect[j]))
+				table.unpack(grid.active_rect[j]))
 			if in_this_column then
 				for k = 1, #ret do ret[k] = j end
 			end
@@ -267,13 +268,13 @@ end
 -- Checks whether the rush placement is valid
 -- current_rush_cost is optional
 function Piece:isValidRush()
-	local stage = self.game.stage
+	local grid = self.game.grid
 	local player = self.owner
 	local cols = self:getColumns()
 	local enough_burst = player.cur_burst >= player.current_rush_cost
 	local row_ok = true
 	for i = 1, self.size do
-		local empty_row = stage.grid:getFirstEmptyRow(cols[i])
+		local empty_row = grid:getFirstEmptyRow(cols[i])
 		if empty_row < self.game.RUSH_ROW then row_ok = false end
 	end
 	return enough_burst and row_ok
@@ -325,7 +326,7 @@ end
 function Piece:dropIntoBasin(coords, received_from_opponent)
 	-- Transfers piece from player's hand into basin.
 	-- No error checking, assumes this is a valid move! Be careful please.
-	local stage = self.game.stage
+	local grid = self.game.grid
 	local player = self.owner
 
 	-- not received_from_opponent means it's our piece placing,
@@ -347,13 +348,13 @@ function Piece:dropIntoBasin(coords, received_from_opponent)
 		player.dropped_piece = "rushed"
 	elseif player.place_type == "double" then
 		-- move existing pending piece down, if it's a normal piece
-		local pending_gems = stage.grid:getPendingGems(player)
+		local pending_gems = grid:getPendingGems(player)
 		for _, gem in pairs(pending_gems) do
 			if gem.row == 1 or gem.row == 2 then
-				stage.grid[gem.row + 4][gem.column].gem = gem
-				stage.grid[gem.row][gem.column].gem = false
+				grid[gem.row + 4][gem.column].gem = gem
+				grid[gem.row][gem.column].gem = false
 				gem.row = gem.row + 4
-				gem.y = stage.grid.y[gem.row]
+				gem.y = grid.y[gem.row]
 				gem.tweening = tween.new(0.01, gem, {})
 				-- a nil tween since we are showing the new location now
 			end
@@ -377,11 +378,11 @@ function Piece:dropIntoBasin(coords, received_from_opponent)
 	if self.horizontal then
 		for i = 1, #self.gems do
 			local column = coords[i]
-			stage.grid[1 + row_adj][column].gem = self.gems[i]
-			self.gems[i].x = stage.grid.x[column]
+			grid[1 + row_adj][column].gem = self.gems[i]
+			self.gems[i].x = grid.x[column]
 			self.gems[i].column = column
-			self.gems[i].y = stage.grid.y[1 + row_adj]
-			self.tween_y = stage.grid.y[1 + row_adj + 4]
+			self.gems[i].y = grid.y[1 + row_adj]
+			self.tween_y = grid.y[1 + row_adj + 4]
 			self.gems[i].row = 1 + row_adj
 			self.gems[i].tweening = tween.new(0.3, self.gems[i], {y = self.tween_y}, "outBack")
 			this_played_pieces[i] = self.gems[i]
@@ -389,11 +390,11 @@ function Piece:dropIntoBasin(coords, received_from_opponent)
 	elseif not self.horizontal then
 		for i = 1, #self.gems do
 			local column = coords[1]
-			stage.grid[i + row_adj][column].gem = self.gems[i]
-			self.gems[i].x = stage.grid.x[column]
+			grid[i + row_adj][column].gem = self.gems[i]
+			self.gems[i].x = grid.x[column]
 			self.gems[i].column = column
-			self.gems[i].y = stage.grid.y[i + row_adj]
-			self.tween_y = stage.grid.y[i + row_adj + 4]
+			self.gems[i].y = grid.y[i + row_adj]
+			self.tween_y = grid.y[i + row_adj + 4]
 			self.gems[i].row = i + row_adj
 			self.gems[i].tweening = tween.new(0.3, self.gems[i], {y = self.tween_y}, "outBack")
 			if i ~= #self.gems then self.gems[i].no_yoshi_particle = true end

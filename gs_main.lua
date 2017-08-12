@@ -139,11 +139,12 @@ function gs_main:drawGems()
 
 	local function blockBottomGemRow()
 		local stage = self.stage
+		local grid = self.grid
 	-- stencil function to hide gems in bottom row
 	-- makes it look nicer when gems are generated and push up from the bottom
-		local x = 0.5 * (stage.grid.x[0] + stage.grid.x[1])
-		local y = 0.5 * (stage.grid.y[stage.grid.rows] + stage.grid.y[stage.grid.rows + 1])
-		local width = stage.grid.x[stage.grid.columns] - stage.grid.x[0]
+		local x = 0.5 * (grid.x[0] + grid.x[1])
+		local y = 0.5 * (grid.y[grid.rows] + grid.y[grid.rows + 1])
+		local width = grid.x[grid.columns] - grid.x[0]
 		local height = stage.gem_width
 		love.graphics.rectangle("fill", x, y, width, height)
 	end
@@ -152,7 +153,7 @@ function gs_main:drawGems()
 	love.graphics.push("all")
 		love.graphics.stencil(blockBottomGemRow, "replace", 1)
 		love.graphics.setStencilTest("equal", 0)
-		for gem, r in self.stage.grid:gems() do
+		for gem, r in self.grid:gems() do
 			if self.phase == "Action" and r <= 6 then
 				gem:draw(nil, nil, {255, 255, 255, 192})
 			else
@@ -197,7 +198,7 @@ end
 
 -- draw text items
 function gs_main:drawText()
-	local grid = self.stage.grid
+	local grid = self.grid
 	-- words
 	for _, v in pairs(self.particles.allParticles.Words) do
 		v:draw()
