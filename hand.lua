@@ -79,6 +79,10 @@ local function destroyTopPiece(self)
 		--local this_gem = hand[0].piece.gems[i]
 		--hand.garbage[#hand.garbage+1] = this_gem -- do this alter
 	--end
+	for i = 1, #self[0].piece.gems do
+		self[0].piece.gems[i].owner = self.owner.playerNum
+		self.game.particles.garbageParticles.generate(self.game, self[0].piece.gems[i])
+	end
 	self[0].piece:breakUp()
 	self.game.stage.grid:addBottomRow(self.owner) -- add a penalty row TODO: callback function this later
 	self.owner.pieces_fallen = self.owner.pieces_fallen + 1 -- to determine garbage ownership
