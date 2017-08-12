@@ -172,7 +172,7 @@ local colorAliases = {
 -- rows is from 8 at the top to 1 at the bottom
 local function n(self, row, column, color, owner)
 	owner = owner or 0
-	color = colorAliases[color:lower()]
+	color = colorAliases[color:lower()] or "Red"
 	if type(row) ~= "number" or type(column) ~= "number" then
 		print("row or column not a number!")
 		return
@@ -192,8 +192,7 @@ local function n(self, row, column, color, owner)
 
 	row = row + 6
 	local x, y = self.stage.grid.x[column], self.stage.grid.y[row]
-	local gem_color = Gem[color .. "Gem"]
-	self.stage.grid[row][column].gem = common.instance(gem_color, x, y)
+	self.stage.grid[row][column].gem = common.instance(Gem, self, x, y, color)
 	if owner > 0 then
 		self.stage.grid[row][column].gem:addOwner(owner)
 	end
