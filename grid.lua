@@ -105,13 +105,13 @@ function Grid:getMatches(minimumLength)
 	local ret = {}
 	for _, c in pairs(match_colors) do
 		for _, row, column in self:gems() do
-			if getColor(row, column, self) == c then
+			if tostring(getColor(row, column)):lower() == c then
 				-- HORIZONTAL MATCHES
 				local matchLength = 0
-				if getColor(row, column - 1, self) ~= c then	-- Only start a match at the beginning of a run
+				if tostring(getColor(row, column - 1)):lower() ~= c then	-- Only start a match at the beginning of a run
 					repeat
 						matchLength = matchLength + 1
-					until getColor(row, column + matchLength, self) ~= c
+					until tostring(getColor(row, column + matchLength)):lower() ~= c
 				end
 				if matchLength >= minimumLength then
 					ret[#ret+1] = {length = matchLength, row = row, column = column, horizontal = true}
@@ -119,10 +119,10 @@ function Grid:getMatches(minimumLength)
 
 				-- VERTICAL MATCHES
 				--[[local]] matchLength = 0
-				if getColor(row - 1, column, self) ~= c then -- Only start a match at the beginning of a run
+				if tostring(getColor(row - 1, column, self)):lower() ~= c then -- Only start a match at the beginning of a run
 					repeat
 						matchLength = matchLength + 1
-					until getColor(row + matchLength, column, self) ~= c
+					until tostring(getColor(row + matchLength, column, self)):lower() ~= c
 				end
 				if matchLength >= minimumLength then
 					ret[#ret+1] = {length = matchLength, row = row, column = column, horizontal = false}
@@ -223,9 +223,7 @@ end
 
 -- get score of simulated piece placements
 function Grid:getScore(matching_number)
-	matching_number = matching_number or 3
-	local gems_removed = self:getMatchedGems(matching_number)
-	return #gems_removed
+	return #self:getMatchedGems(matching_number or 3)
 end
 
 function Grid:removeMatchedGems(minimumLength)

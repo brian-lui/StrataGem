@@ -163,19 +163,19 @@ end
 local Gem = require 'gem'
 
 local colorAliases = {
-	r = "Red",
-	red = "Red",
-	b = "Blue",
-	blue = "Blue",
-	g = "Green",
-	green = "Green",
-	y = "Yellow",
-	yellow = "Yellow"
+	r = "red",
+	red = "red",
+	b = "blue",
+	blue = "blue",
+	g = "green",
+	green = "green",
+	y = "yellow",
+	yellow = "yellow"
 }
 -- rows is from 8 at the top to 1 at the bottom
 local function n(self, row, column, color, owner)
 	owner = owner or 0
-	color = colorAliases[color:lower()] or "Red"
+	color = colorAliases[color:lower()] or "red"
 	if type(row) ~= "number" or type(column) ~= "number" then
 		print("row or column not a number!")
 		return
@@ -198,6 +198,18 @@ local function n(self, row, column, color, owner)
 	self.stage.grid[row][column].gem = common.instance(Gem, self, x, y, color)
 	if owner > 0 then
 		self.stage.grid[row][column].gem:addOwner(owner)
+	end
+end
+
+local function nrow(game, row, colors)
+	if type(colors) ~= "string" or #colors ~= 8 then
+		love.errhand("nrow() received invalid string: \"" .. tostring(colors) .. "\"")
+	end
+	for i = 1, 8 do
+		local c = colors:sub(i, i)
+		if c ~= " " then
+			n(game, row, i, c)
+		end
 	end
 end
 
@@ -233,30 +245,30 @@ function Game:keypressed(key)
 	elseif key == "k" then self.canvas[6]:renderTo(function() love.graphics.clear() end)
 	elseif key == "z" then self:start("1P", "heath", "walter", self.background.Starfall, nil, 1)
 	elseif key == "x" then
-		n(self, 7, 1, "R") n(self, 7, 2, "G") n(self, 7, 3, "B") n(self, 7, 4, "Y")
-		n(self, 8, 1, "R") n(self, 8, 2, "G") n(self, 8, 3, "B") n(self, 8, 4, "Y")
+		nrow(self, 7, "RGBY    ")
+		nrow(self, 8, "RGBY    ")
 	elseif key == "c" then
-		n(self, 1, 1, "B")
-		n(self, 2, 1, "B")
-		n(self, 3, 1, "R") n(self, 3, 2, "G")
-		n(self, 4, 1, "Y") n(self, 4, 2, "Y")
-		n(self, 5, 1, "R") n(self, 5, 2, "R") n(self, 5, 3, "G")
-		n(self, 6, 1, "B") n(self, 6, 2, "G") n(self, 6, 3, "B")
-		n(self, 7, 1, "B") n(self, 7, 2, "R") n(self, 7, 3, "R")
-		n(self, 8, 1, "R") n(self, 8, 2, "G") n(self, 8, 3, "G") n(self, 8, 4, "Y")
+		nrow(self, 1, "B       ")
+		nrow(self, 2, "B       ")
+		nrow(self, 3, "RG      ")
+		nrow(self, 4, "YY      ")
+		nrow(self, 5, "RRG     ")
+		nrow(self, 6, "BGB     ")
+		nrow(self, 7, "BRR     ")
+		nrow(self, 8, "RGGY    ")
 	elseif key == "v" then	-- garbage move up match
-		n(self, 7, 3, "B") n(self, 7, 4, "B") n(self, 7, 5, "R") n(self, 7, 6, "R") n(self, 7, 7, "G")
-		n(self, 8, 3, "R") n(self, 8, 4, "R") n(self, 8, 5, "B") n(self, 8, 6, "B") n(self, 8, 7, "Y")
+		nrow(self, 7, "  BBRRG ")
+		nrow(self, 8, "  RRBBY ")
 	elseif key == "b" then
-		                                                                            n(self, 6, 6, "R")                    n(self, 4, 8, "G")
-		                                                         n(self, 5, 5, "R") n(self, 5, 6, "B") n(self, 5, 7, "B") n(self, 5, 8, "R")
-		                   n(self, 6, 3, "G") n(self, 6, 4, "R") n(self, 6, 5, "B") n(self, 6, 6, "Y") n(self, 6, 7, "Y") n(self, 6, 8, "R")
-		n(self, 7, 2, "R") n(self, 7, 3, "R") n(self, 7, 4, "G") n(self, 7, 5, "B") n(self, 7, 6, "G") n(self, 7, 7, "G") n(self, 7, 8, "Y")
-		n(self, 8, 2, "Y") n(self, 8, 3, "Y") n(self, 8, 4, "R") n(self, 8, 5, "G") n(self, 8, 6, "B") n(self, 8, 7, "B") n(self, 8, 8, "R")
+		nrow(self, 4, "     R G")
+		nrow(self, 5, "    RBBR")
+		nrow(self, 6, "  GRBYYR")
+		nrow(self, 7, " RRGBGGY")
+		nrow(self, 8, " YYRGBBR")
 	elseif key == "n" then
-		n(self, 6, 1, "B")
-		n(self, 7, 1, "Y") n(self, 7, 2, "Y")
-		n(self, 8, 1, "G") n(self, 8, 2, "R") n(self, 8, 3, "G")
+		nrow(self, 6, "B       ")
+		nrow(self, 7, "YY      ")
+		nrow(self, 8, "GRG     ")
 	elseif key == "m" then
 		self.debug_drawGemOwners = not self.debug_drawGemOwners
 		self.debug_drawParticleDestinations = not self.debug_drawParticleDestinations
