@@ -181,8 +181,8 @@ local function drawPlacementShadow(self, piece, shift)
 end
 
 -- draws the gem shadows indicating where the piece will land.
-local function drawDoublecastGemShadow(self, gem)
-	local dropped_row = self.game.grid:getFirstEmptyRow(gem.column)
+local function drawDoublecastGemShadow(self, gem, row)
+	local dropped_row = row --self.game.grid:getFirstEmptyRow(gem.column)
 	-- gem:draw takes a y value relative to the gem's y-value
 	local dropped_y = self.game.grid.y[dropped_row] - gem.y
 	gem:draw(nil, nil, {255, 255, 255, 160}, nil, 0, dropped_y)
@@ -222,16 +222,21 @@ function ui:showShadows(piece)
 	if midline then
 		if on_left then shift = -1 else shift = 1 end
 	end
-	local valid = piece:isDropValid(shift)
-	-- TODO: somehow account for variable piece size
-	local pending_gems = self.game.grid:getPendingGems(piece.owner)
-	local account_for_doublecast = #pending_gems == 2
 	drawUnderGemShadow(self, piece)
-	if valid then
+	if piece:isDropValid(shift) then
+		-- TODO: somehow account for variable piece size
+		local pending_gems = self.game.grid:getPendingGems(piece.owner)
+		local account_for_doublecast = #pending_gems == 2
+
 		drawPlacementShadow(self, piece, shift)
 		if account_for_doublecast then
-			drawDoublecastGemShadow(self, pending_gems[1])
-			drawDoublecastGemShadow(self, pending_gems[2])
+			local row1, row2 = self.game.grid:getFirstEmptyRow(pending_gems[1].column), self.game.grid:getFirstEmptyRow(pending_gems[2].column)
+			if pending_gems[1].column == pending_gems[2].column then
+				drawDoublecastGemShadow(self, pending_gems[1], row2 - 1)	-- except up 1
+			else
+				drawDoublecastGemShadow(self, pending_gems[1], row2)
+			end
+			drawDoublecastGemShadow(self, pending_gems[2], row2)
 		end
 		drawDestinationShadow(self, piece, shift, account_for_doublecast)
 	end
@@ -301,26 +306,27 @@ function ui:update(dt)
 	local cloud = game.particles.wordEffects.cloudExists(game.particles)
 
 	-- if piece is held, generate effects and check if it's valid
-	if game.active_piece then
-		game.active_piece:generateDust()
+	local active_piece = game.active_piece
+	if active_piece then
+		active_piece:generateDust()
 		--local legal = game.active_piece:isDropLegal()
-		local midline, on_left = game.active_piece:isOnMidline()
+		local midline, on_left = active_piece:isOnMidline()
 		local shift = 0
 		if midline then
 			if on_left then shift = -1 else shift = 1 end
 		end
-		valid, place_type = game.active_piece:isDropValid(shift)
+		valid, place_type = active_piece:isDropValid(shift)
 
 		-- glow effects
 		if not cloud then
 			if valid and place_type == "double" then
 				--TODO: support variable number of gems
-				local gem1, gem2 = game.active_piece.gems[1], game.active_piece.gems[2]
-				local h = game.active_piece.horizontal
+				local gem1, gem2 = active_piece.gems[1], active_piece.gems[2]
+				local h = active_piece.horizontal
 				game.particles.wordEffects.generateDoublecastCloud(game, gem1, gem2, h)
 			elseif valid and place_type == "rush" then
-				local gem1, gem2 = game.active_piece.gems[1], game.active_piece.gems[2]
-				local h = game.active_piece.horizontal
+				local gem1, gem2 = game.active_piece.gems[1], active_piece.gems[2]
+				local h = active_piece.horizontal
 				game.particles.wordEffects.generateRushCloud(game, gem1, gem2, h)
 			end
 		elseif not valid or place_type == "normal" then
