@@ -43,6 +43,9 @@ Game.LOSE_ROW = 6
 Game.RUSH_ROW = 8 -- can only rush if this row is empty
 Game.NETPLAY_MAX_WAIT = 60
 Game.STATE_SEND_WAIT = 80
+Game.DAMAGE_PARTICLE_TO_PLATFORM_FRAMES = 54
+Game.DAMAGE_PARTICLE_PER_DROP_FRAMES = 26
+Game.EXPLODING_PLATFORM_FRAMES = 60
 Game.VERSION = "64.0"
 
 function Game:init()

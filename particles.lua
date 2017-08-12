@@ -92,7 +92,6 @@ end
 -------------------------------------------------------------------------------
 -- Damage particles generated when a player makes a match
 local DamageParticle = {}
-DamageParticle.DAMAGE_DROP_SPEED = window.height / 192	-- pixels for damage particles after reaching platform
 function DamageParticle:init(manager, gem)
 	local img = image.lookup.particle_freq.random(gem.color)
 	Pic.init(self, manager.game, {x = gem.x, y = gem.y, image = img})
@@ -127,13 +126,13 @@ function DamageParticle.generate(game, gem)
 
 		-- create damage particle
 		local p = common.instance(DamageParticle, game.particles, gem)
-		local duration = 54 + math.random() * 12
+		local duration = game.DAMAGE_PARTICLE_TO_PLATFORM_FRAMES + math.random() * 12
 		local rotation = math.random() * 5
 		p.final_loc_idx = math.min(5, math.floor(final_loc))
 
 		-- second part of movement once it hits the platform
 		local drop_y = player.hand[p.final_loc_idx].y
-		local drop_duration = math.max(0, (drop_y - player.hand[2].y) / DamageParticle.DAMAGE_DROP_SPEED)
+		local drop_duration = (p.final_loc_idx - 2) * game.DAMAGE_PARTICLE_PER_DROP_FRAMES
 		local drop_x = function() return player.hand:getx(p.y) end
 		local exit_1 = function() player.hand[2].platform:screenshake(4) end
 		local exit_2 = function()
@@ -391,7 +390,7 @@ end
 function ExplodingPlatform.generate(game, platform)
 	local x, y = platform.x, platform.y
 	local todraw = image.UI.starpiece
-	local duration = 60
+	local duration = game.EXPLODING_PLATFORM_FRAMES
 	local width, height = game.stage.width, game.stage.height
 
 	local moves = {
