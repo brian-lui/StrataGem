@@ -294,10 +294,10 @@ function PhaseManager:getPiece(dt)
 		player.hand:destroyPlatformsAnim()
 		player.hand:getNewTurnPieces()
 	end
-	self.game.phase = "PlatformsExploding"
+	self.game.phase = "PlatformsExplodingAndGarbageAppearing"
 end
 
-function PhaseManager:platformsExploding(dt)
+function PhaseManager:platformsExplodingAndGarbageAppearing(dt)
 	if self.game.particles:getNumber("ExplodingPlatform") == 0 then
 		self.game.particles:clearCount()	-- clear here so the platforms display redness/spin correctly
 		for player in self.game:players() do
@@ -423,7 +423,7 @@ PhaseManager.lookup = {
 	ResolvedMatches = PhaseManager.resolvedMatches,
 	PlatformSpinDelay = PhaseManager.platformSpinDelay,
 	GetPiece = PhaseManager.getPiece,
-	PlatformsExploding = PhaseManager.platformsExploding,
+	PlatformsExplodingAndGarbageAppearing = PhaseManager.platformsExplodingAndGarbageAppearing,
 	PlatformsMoving = PhaseManager.platformsMoving,
 	Cleanup = PhaseManager.cleanup,
 	Sync = PhaseManager.sync,

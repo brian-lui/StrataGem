@@ -12,8 +12,8 @@ function Particles:init(game)
 	self.game = game
 	self:reset()
 	self.count = {
-		created = {MP = {0, 0}, Damage = {0, 0}},
-		destroyed = {MP = {0, 0}, Damage = {0, 0}}
+		created = {MP = {0, 0}, Damage = {0, 0}, Garbage = {0, 0},},
+		destroyed = {MP = {0, 0}, Damage = {0, 0}, Garbage = {0, 0},},
 	}
 end
 
@@ -59,8 +59,10 @@ end
 function Particles:clearCount()
 	self.count.created.MP = {0, 0}
 	self.count.created.Damage = {0, 0}
+	self.count.created.Garbage = {0, 0}
 	self.count.destroyed.MP = {0, 0}
 	self.count.destroyed.Damage = {0, 0}
+	self.count.destroyed.Garbage = {0, 0}
 end
 
 function Particles:reset()
@@ -68,6 +70,9 @@ function Particles:reset()
 		Damage = {},
 		DamageTrail = {},
 		SuperParticles = {},
+		GarbageParticles = {},
+		GarbageTrail = {},
+		GarbageAppearParticles = {},
 		Pop = {},
 		ExplodingGem = {},
 		ExplodingPlatform = {},
@@ -238,6 +243,84 @@ function SuperParticle.generate(game, gem, num_particles)
 end
 
 SuperParticle = common.class("SuperParticle", SuperParticle, Pic)
+
+-------------------------------------------------------------------------------
+-- Garbage particles generated when a piece falls off a platform
+local GarbageParticles = {}
+function GarbageParticles:init(manager, gem)
+	local img = image.lookup.particle_freq.random(gem.color)
+	Pic.init(self, manager.game, {x = gem.x, y = gem.y, image = img})
+	self.owner = gem.owner
+	manager.allParticles.GarbageParticles[ID.particle] = self
+	self.manager = manager
+end
+
+function GarbageParticles:remove()
+	self.manager:incrementCount("destroyed", "Garbage", self.owner)
+	self.manager.allParticles.Damage[self.ID] = nil
+end
+
+-- player.hand.damage is the damage before this round's match(es) is scored
+function GarbageParticles.generate(game, gem)
+	local player = game:playerByIndex(gem.owner)
+	local start_col, end_col = 1, 4
+	local end_row = game.stage.grid.rows
+	if player == 2 then start_col = 5 end_col = 8 end
+
+	-- calculate bezier curve
+	local x1, y1 = gem.x, gem.y -- start
+	local x4, y4 = game.stage.grid.x[start_col], game.stage.grid.y[end_row] -- end
+	local dist = ((x4 - x1) ^ 2 + (y4 - y1) ^ 2) ^ 0.5
+	local x3, y3 = 0.5 * (x1 + x4), 0.5 * (y1 + y4)
+
+	for _ = 1, 3 do
+		local angle = math.random() * math.pi * 2
+		local x2 = x1 + math.cos(angle) * dist * 0.5
+		local y2 = y1 + math.sin(angle) * dist * 0.5
+		local curve = love.math.newBezierCurve(x1, y1, x2, y2, x3, y3, x4, y4)
+
+		-- create damage particle
+		local p = common.instance(GarbageParticles, game.particles, gem)
+		local duration = 54 + math.random() * 12
+		local rotation = math.random() * 5
+		p:moveTo{duration = duration, rotation = rotation, curve = curve, exit = true}
+
+		-- create damage trails
+		for i = 1, 3 do
+			local trail = {
+				duration = duration,
+				gem = gem,
+				rotation = rotation,
+				curve = curve,
+				scaling = 1.25 - 0.25 * i
+			}
+
+			game.queue:add(i * 2, game.particles.damageTrail.generate, game, trail)
+		end
+		game.particles:incrementCount("created", "Garbage", gem.owner)
+	end
+end
+GarbageParticles = common.class("GarbageParticles", GarbageParticles, Pic)
+
+-------------------------------------------------------------------------------
+local GarbageTrail = {}
+function GarbageTrail:init(manager, gem)
+	Pic.init(self, manager.game, {x = gem.x, y = gem.y, image = image.lookup.trail_particle[gem.color]})
+	manager.allParticles.GarbageTrail[ID.particle] = self
+	self.manager = manager
+end
+
+function GarbageTrail:remove()
+	self.manager.allParticles.GarbageTrail[self.ID] = nil
+end
+
+function GarbageTrail.generate(game, trail)
+	local p = common.instance(GarbageTrail, game.particles, trail.gem)
+	p.particle_type = "GarbageTrail"
+	p:moveTo{duration = trail.duration, rotation = trail.rotation,
+		curve = trail.curve, exit = true}
+end
+GarbageTrail = common.class("GarbageTrail", GarbageTrail, Pic)
 
 -------------------------------------------------------------------------------
 -- When a match is made, this is the glow behind the gems
@@ -879,11 +962,15 @@ SuperFreezeEffects = common.class("SuperFreezeEffects", SuperFreezeEffects, Pic)
 -------------------------------------------------------------------------------
 
 Particles.damage = DamageParticle
+Particles.damageTrail = DamageTrailParticle
 Particles.superParticles = SuperParticle
 Particles.pop = PopParticle
 Particles.explodingGem = ExplodingGem
 Particles.explodingPlatform = ExplodingPlatform
-Particles.damageTrail = DamageTrailParticle
+Particles.garbageParticles = GarbageParticles
+Particles.garbageTrail = GarbageTrail
+
+Particles.garbageAppearParticles = GarbageAppearParticles
 Particles.platformStar = PlatformStar
 Particles.dust = Dust
 --Particles.overDust = OverDust
