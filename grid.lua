@@ -546,8 +546,11 @@ end
 
 function Grid:generateExplodingGem(gem)
 	local game = self.game
+	local soundfile_name = "sfx_gembreak" .. math.min(5, game.scoring_combo + 1)
 	game.particles.explodingGem.generate(game, gem)
-	local sfx = game.sound:play("gembreak" .. math.min(5, game.scoring_combo + 1))
+	--local sfx = game.sound:play(soundfile_name)
+	local sfx = game.sound.object.generate(game, soundfile_name)
+	print("the sfx object", sfx)
 	sfx:setPosition((gem.column - 4.5) * 0.1, 0, 0)
 end
 

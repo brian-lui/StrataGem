@@ -58,7 +58,6 @@ function Game:init()
 	self.phaseManager = common.instance(require "phasemanager", self)
 	self.rng = love.math.newRandomGenerator()
 	self.sound = common.instance(require "sound", self)
-	self.music = common.instance(require "music", self)
 	self.stage = common.instance(require "stage", self)	-- playing field area and grid
 	self.grid = common.instance(require "grid", self)
 	self.p1 = common.instance(require "character", 1, self)	-- Dummies
@@ -69,8 +68,6 @@ function Game:init()
 	self.client = common.instance(require "client", self)
 	self.ui = common.instance(require "ui", self)
 	self.queue = common.instance(Queue, self)
-
-	self.music:setBGM("buzz.ogg", 1)
 
 	self.statemanager = common.instance(require "statemanager", self)
 	self.statemanager:switch(require "gs_title")
