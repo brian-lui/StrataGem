@@ -73,6 +73,10 @@ function SoundObject:setTime(time)
 	self.source:seek(time)
 end
 
+function SoundObject:setPosition(x, y, z)
+	self.source:setPosition(x, y, z)
+end
+
 -- sets volume to fade in from 0 to default volume
 -- frames is optional
 function SoundObject:fadeIn(frames)
