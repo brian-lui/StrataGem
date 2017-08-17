@@ -72,6 +72,7 @@ end
 
 function title:update(dt)
 	--self:drawBackground()	-- TODO: Shouldn't this be in draw()?
+	self.sound:update()
 	self.background.seasons.update(self.background)
 	for _, v in pairs(self.objects) do
 		if v.tweening then

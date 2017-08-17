@@ -80,6 +80,7 @@ function Game:start(gametype, char1, char2, bkground, seed, side)
 
 	self:reset()
 	self.sound:reset()
+	self.queue:add(100, self.sound.newBGM, self.sound, "bgm_buzz")	
 	self.grid:reset()
 	self.particles:reset()
 	if seed then
@@ -110,6 +111,7 @@ function Game:start(gametype, char1, char2, bkground, seed, side)
 
 	self.type = gametype
 	self.statemanager:switch(require "gs_main")
+
 end
 
 function Game:update(dt)

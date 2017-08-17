@@ -15,6 +15,7 @@ function print(...)
 		if type(args[i]) == "table" then args[i] = "table"
 		elseif args[i] == true then args[i] = "true"
 		elseif args[i] == false then args[i] = "false"
+		elseif args[i] == nil then args[i] = "nil"
 		elseif type(args[i]) == "userdata" then args[i] = "userdata"
 		elseif type(args[i]) == "function" then args[i] = "function"
 		elseif type(args[i]) == "thread" then args[i] = "thread"
