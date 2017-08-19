@@ -26,6 +26,7 @@ function PhaseManager:intro(dt)
 		game.particles.words.generateReady(self.game)
 	end
 	if game.frame == 120 then
+		game.sound:newBGM("bgm_heath", true)
 		game.particles.words.generateGo(self.game)
 		game.phase = "Action"
 	end

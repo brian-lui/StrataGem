@@ -9,8 +9,12 @@ local pointIsInRect = require "utilities".pointIsInRect
 local lobby = {}
 
 function lobby:enter()
-	local stage = self.stage
+	if self.sound:getCurrentBGM() ~= "bgm_menu" then
+		self.sound:stopBGM()
+		self.sound:newBGM("bgm_menu", true)
+	end
 
+	local stage = self.stage
 	self.clicked = false
 	self.current_users = {}
 

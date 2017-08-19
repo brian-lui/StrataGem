@@ -6,6 +6,11 @@ local tween = require 'tween'
 local charselect = {}
 
 function charselect:enter()
+	if self.sound:getCurrentBGM() ~= "bgm_menu" then
+		self.sound:stopBGM()
+		self.sound:newBGM("bgm_menu", true)
+	end
+		
 	self.current_char = nil
 	self.background_idx = 1
 

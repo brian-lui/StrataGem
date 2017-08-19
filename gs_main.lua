@@ -19,6 +19,7 @@ function gs_main:enter()
 	end
 	self.canvas = canvas
 	self.camera = common.instance(require "camera")
+	self.sound:stopBGM()
 end
 
 local function timeDip(self, logic_function, ...)
@@ -38,7 +39,6 @@ end
 
 function gs_main:update(dt)
 	timeDip(self, function() self.phaseManager:run(self.timeStep) end)
-	self.sound:update()
 	self.particles:update(dt) -- variable fps
 	self.background.current.update(self.background) -- variable fps
 	self.ui.timer:update()

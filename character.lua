@@ -209,6 +209,7 @@ function Character:superSlideIn()
 	bottom_fuzz:moveTo{duration = 21, y = stage.height, easing = "outQuart"}
 	bottom_fuzz:wait(40)
 	bottom_fuzz:moveTo{duration = 5, transparency = 0, exit = true}
+	self.game.sound:newSFX("sfx_superactivate")
 end
 
 return common.class("Character", Character)

@@ -78,6 +78,8 @@ function Gem:landedInGrid()
 		self.no_yoshi_particle = nil
 	else
 		self.game.particles.dust.generateYoshi(self.game, self)
+		local drop_sound = self.game.sound:newSFX("sfx_gemdrop", true)
+		drop_sound:setPosition((self.column - 4.5) * 0.02, 0, 0)
 	end
 end
 
@@ -87,8 +89,10 @@ function Gem:landedInStagingArea(place_type, owner)
 	for player in self.game:players() do
 		if player.place_type == "double" then
 			particles.words.generateDoublecast(self.game, player)
+			self.game.sound:newSFX("sfx_doublecast")
 		elseif player.place_type == "rush" then
 			particles.words.generateRush(self.game, player)
+			self.game.sound:newSFX("sfx_rush")
 		end
 	end
 	if place_type == "double" then

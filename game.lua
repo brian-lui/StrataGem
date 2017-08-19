@@ -68,11 +68,9 @@ function Game:init()
 	self.client = common.instance(require "client", self)
 	self.ui = common.instance(require "ui", self)
 	self.queue = common.instance(Queue, self)
-
 	self.statemanager = common.instance(require "statemanager", self)
 	self.statemanager:switch(require "gs_title")
-
-	self:reset()
+	self:reset()	
 end
 
 function Game:start(gametype, char1, char2, bkground, seed, side)
@@ -80,7 +78,6 @@ function Game:start(gametype, char1, char2, bkground, seed, side)
 
 	self:reset()
 	self.sound:reset()
-	self.queue:add(100, self.sound.newBGM, self.sound, "bgm_buzz")	
 	self.grid:reset()
 	self.particles:reset()
 	if seed then
@@ -116,6 +113,7 @@ end
 
 function Game:update(dt)
 	self.client:update(dt)
+	self.sound:update()
 end
 
 function Game:playerByIndex(i)

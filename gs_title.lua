@@ -9,6 +9,7 @@ local title = {}
 
 function title:enter()
 	self.clicked = nil
+	if self.sound:getCurrentBGM() ~= "bgm_menu" then self.sound:stopBGM() end
 	local stage = self.stage
 	local data = {
 		logo = {
@@ -72,12 +73,16 @@ end
 
 function title:update(dt)
 	--self:drawBackground()	-- TODO: Shouldn't this be in draw()?
-	self.sound:update()
 	self.background.seasons.update(self.background)
-	for _, v in pairs(self.objects) do
+	for name, v in pairs(self.objects) do
 		if v.tweening then
 			if v.tweening:update(dt) then
 				v.tweening = nil
+				if name == "logo" then
+					if self.sound:getCurrentBGM() ~= "bgm_menu" then
+						self.sound:newBGM("bgm_menu", true)
+					end
+				end
 			end
 		end
 	end
