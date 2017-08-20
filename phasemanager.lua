@@ -167,9 +167,7 @@ function PhaseManager:applyGemTween(dt)
 	local game = self.game
 	local grid = game.grid
 	grid:updateGravity(dt) -- animation
-	for player in self.game:players() do
-		player.hand:update(dt)
-	end
+	for player in self.game:players() do player.hand:update(dt) end
 	local animation_done = grid:isSettled() --  tween-from-top is done
 	if animation_done then
 		grid:dropColumns() -- state
@@ -180,11 +178,8 @@ end
 function PhaseManager:applyGravity(dt)
 	local game = self.game
 	local grid = game.grid
-
 	grid:updateGravity(dt) -- animation
-	for player in self.game:players() do
-		player.hand:update(dt)
-	end
+	for player in self.game:players() do player.hand:update(dt) end
 	if grid:isSettled() then
 		game.particles.wordEffects.clear(game.particles)
 		for player in game:players() do
@@ -237,17 +232,11 @@ function PhaseManager:resolvingMatches(dt)
 	local p1, p2 = self.game.p1, self.game.p2
 	local gem_table = grid:getMatchedGems()
 	self.game.scoring_combo = self.game.scoring_combo + 1
-	for player in self.game:players() do
-		player:duringMatch(gem_table)
-	end
+	for player in self.game:players() do player:duringMatch(gem_table) end
 	local p1dmg, p2dmg, p1super, p2super = grid:calculateScore()
 	local p1_matched, p2_matched = grid:checkMatchedThisTurn()
-	if not p1_matched then
-		grid:removeAllGemOwners(p1)
-	end
-	if not p2_matched then
-		grid:removeAllGemOwners(p2)
-	end
+	if not p1_matched then grid:removeAllGemOwners(p1) end
+	if not p2_matched then grid:removeAllGemOwners(p2) end
 	p1:addSuper(p1super)
 	p2:addSuper(p2super)
 	grid:removeMatchedGems()
@@ -263,9 +252,7 @@ function PhaseManager:resolvedMatches(dt)
 	local game = self.game
 
 	if game.particles:getCount("onscreen", "Damage", 1) + game.particles:getCount("onscreen", "Damage", 2) > 0 then
-		for player in game:players() do
-			player.hand:update(dt)
-		end
+		for player in game:players() do player.hand:update(dt) end
 	else	-- all damage particles finished
 		for player in game:players() do
 			player:afterMatch()
@@ -279,6 +266,7 @@ function PhaseManager:resolvedMatches(dt)
 end
 
 function PhaseManager:platformSpinDelay(dt)
+	for player in self.game:players() do player.hand:update(dt) end
 	if self.platformSpinDelayCounter > 0 then
 		for player in self.game:players() do
 			player.hand:update(dt)
@@ -299,6 +287,7 @@ function PhaseManager:getPiece(dt)
 end
 
 function PhaseManager:platformsExplodingAndGarbageAppearing(dt)
+	for player in self.game:players() do player.hand:update(dt) end
 	if self.game.particles:getNumber("ExplodingPlatform") == 0 then
 		self.game.particles:clearCount()	-- clear here so the platforms display redness/spin correctly
 		for player in self.game:players() do
@@ -315,9 +304,7 @@ function PhaseManager:platformsMoving(dt)
 
 	for player in game:players() do
 		player.hand:update(dt)
-		if not player.hand:isSettled() then
-			handsettled = false
-		end
+		if not player.hand:isSettled() then handsettled = false end
 	end
 
 	grid:updateGravity(dt)
@@ -348,21 +335,15 @@ function PhaseManager:cleanup(dt)
 
 	grid:updateGrid()
 	--game.particles:clearCount()
-	for player in game:players() do
-		player:cleanup()
-	end
-	if game.type == "1P" then
-		self.ai:clear()
-	end
+	for player in game:players() do player:cleanup() end
+	if game.type == "1P" then self.ai:clear() end
 	p1.pieces_fallen, p2.pieces_fallen = 0, 0
 	p1.dropped_piece, p2.dropped_piece = false, false
 	p1.played_pieces, p2.played_pieces = {}, {}
 	game.finished_getting_pieces = false
 	grid:setAllGemOwners(0)
 
-	for player in game:players() do
-		player.hand:endOfTurnUpdate()
-	end
+	for player in game:players() do player.hand:endOfTurnUpdate() end
 
 	if grid:getLoser() then
 		game.phase = "GameOver"

@@ -266,22 +266,23 @@ function gs_main:drawText()
 end
 
 function gs_main:mousepressed(x, y)
-	if self.phase == "Action" then
-		self.lastClickedFrame = self.frame
-		self.lastClickedX = x
-		self.lastClickedY = y
+	self.lastClickedFrame = self.frame
+	self.lastClickedX = x
+	self.lastClickedY = y
+	local player = self.me_player
 
-		local player = self.me_player
-
-		for i = 1, player.hand_size do
-			if player.hand[i].piece and pointIsInRect(x, y, player.hand[i].piece:getRect()) then
+	for i = 1, player.hand_size do
+		if player.hand[i].piece and pointIsInRect(x, y, player.hand[i].piece:getRect()) then
+			if self.phase == "Action" then
 				player.hand[i].piece:select()
+			else
+				self.active_piece = player.hand[i].piece
 			end
 		end
+	end
 
-		if pointIsInRect(x, y, table.unpack(self.stage.super[player.ID].rect)) then
-			player.super_clicked = true
-		end
+	if pointIsInRect(x, y, table.unpack(self.stage.super[player.ID].rect)) then
+		player.super_clicked = true
 	end
 end
 
@@ -295,12 +296,11 @@ function gs_main:mousereleased(x, y)
 		local quickclick = self.frame - self.lastClickedFrame < QUICKCLICK_FRAMES
 		local nomove = math.abs(x - self.lastClickedX) < self.stage.width * QUICKCLICK_MAX_MOVE and
 			math.abs(y - self.lastClickedY) < self.stage.height * QUICKCLICK_MAX_MOVE
-		self.active_piece:deselect()
-		if quickclick and nomove then
-			self.active_piece:rotate()
-		end
-
-	elseif player.super_clicked and pointIsInRect(x, y, table.unpack(self.stage.super[player.ID].rect)) then
+		
+		if quickclick and nomove then self.active_piece:rotate() end
+		if self.phase == "Action" then print("deselect now") self.active_piece:deselect() end
+	elseif player.super_clicked and self.phase == "Action" and 
+	pointIsInRect(x, y, table.unpack(self.stage.super[player.ID].rect)) then
 		player:activateSuper()
 	end
 

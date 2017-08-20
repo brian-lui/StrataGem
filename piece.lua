@@ -91,6 +91,10 @@ function Piece:update(dt)
 		self.shake = self.shake - 1
 		if self.shake == 0 then self.shake = nil end
 	end
+	if self._rotateTween then
+		local complete = self._rotateTween:update(dt)
+		if complete then self._rotateTween = nil end
+	end
 end
 
 function Piece:isStationary()
@@ -98,6 +102,8 @@ function Piece:isStationary()
 end
 
 function Piece:rotate()
+	if self._rotateTween then self._rotateTween:set(math.huge) end
+
 	self.horizontal = not self.horizontal
 	if self.horizontal then
 		self.gems = reverseTable(self.gems)
@@ -110,7 +116,7 @@ function Piece:rotate()
 		the piece from its original starting location --]]
 	local new_rotation = self.rotation
 	self.rotation = self.rotation - (0.5 * math.pi)
-	self:moveTo{rotation = new_rotation, duration = 60, here = true, easing = "outExpo"}
+	self._rotateTween = tween.new(1, self, {rotation = new_rotation}, 'outExpo')
 end
 
 function Piece:breakUp()
@@ -315,7 +321,7 @@ function Piece:deselect()
 		(place_type == "rush" and self:isValidRush()) or
 		(place_type == "double" and player.cur_burst >= player.current_double_cost)
 	local char_ability_ok = player:pieceDroppedOK(self, shift)
-	if valid and not self.game.frozen and go_ahead and char_ability_ok then
+	if valid and not self.game.frozen and go_ahead and char_ability_ok and self.game.phase == "Action" then
 		player.place_type = place_type
 		self:dropIntoBasin(cols)
 	else -- snap back to original place. Can't use moveTo because it interferes with rotate tween
