@@ -266,6 +266,9 @@ function GarbageParticles.generate(game, gem)
 	local end_row = game.grid.rows
 	if player == 2 then start_col = 5 end_col = 8 end
 
+	-- create exploding gem
+	game.particles.explodingGem.generate(game, gem) -- HELP
+	
 	-- calculate bezier curve
 	local x1, y1 = gem.x, gem.y -- start
 	local x4, y4 = game.grid.x[start_col], game.grid.y[end_row] -- end
@@ -279,7 +282,7 @@ function GarbageParticles.generate(game, gem)
 		local curve = love.math.newBezierCurve(x1, y1, x2, y2, x3, y3, x4, y4)
 
 		-- create damage particle
-		local p = common.instance(GarbageParticles, game.particles, gem)
+		local p = common.instance(GarbageParticles, game.particles, gem) -- HELP
 		local duration = 54 + math.random() * 12
 		local rotation = math.random() * 5
 		p:moveTo{duration = duration, rotation = rotation, curve = curve, exit = true}
@@ -298,6 +301,8 @@ function GarbageParticles.generate(game, gem)
 		end
 		game.particles:incrementCount("created", "Garbage", gem.owner)
 	end
+
+
 end
 GarbageParticles = common.class("GarbageParticles", GarbageParticles, Pic)
 
@@ -362,6 +367,8 @@ function ExplodingGem:remove()
 end
 
 function ExplodingGem.generate(game, gem)
+	print("making exploding gem, owner", gem.owner)
+
 	local p = common.instance(ExplodingGem, game.particles, gem)
 	p:moveTo{duration = game.GEM_EXPLODE_FRAMES, transparency = 255}
 	if gem.owner == 3 then
