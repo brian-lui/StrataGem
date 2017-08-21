@@ -167,6 +167,7 @@ function gs_main:drawGems()
 	-- over-gem particles
 	for _, v in pairs(allParticles.SuperParticles) do v:draw() end
 	for _, v in pairs(allParticles.DamageTrail) do v:draw() end
+	for _, v in pairs(allParticles.GarbageParticles) do v:draw() end
 	for _, v in pairs(allParticles.Damage) do v:draw() end
 	for _, v in pairs(allParticles.ExplodingGem) do v:draw() end
 	for _, v in pairs(allParticles.PieEffects) do v:draw() end

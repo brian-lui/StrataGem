@@ -71,7 +71,6 @@ function Particles:reset()
 		DamageTrail = {},
 		SuperParticles = {},
 		GarbageParticles = {},
-		GarbageTrail = {},
 		GarbageAppearParticles = {},
 		Pop = {},
 		ExplodingGem = {},
@@ -267,7 +266,7 @@ function GarbageParticles.generate(game, gem)
 	if player == 2 then start_col = 5 end_col = 8 end
 
 	-- create exploding gem
-	game.particles.explodingGem.generate(game, gem) -- HELP
+	game.particles.explodingGem.generate(game, gem)
 	
 	-- calculate bezier curve
 	local x1, y1 = gem.x, gem.y -- start
@@ -301,30 +300,8 @@ function GarbageParticles.generate(game, gem)
 		end
 		game.particles:incrementCount("created", "Garbage", gem.owner)
 	end
-
-
 end
 GarbageParticles = common.class("GarbageParticles", GarbageParticles, Pic)
-
--------------------------------------------------------------------------------
-local GarbageTrail = {}
-function GarbageTrail:init(manager, gem)
-	Pic.init(self, manager.game, {x = gem.x, y = gem.y, image = image.lookup.trail_particle[gem.color]})
-	manager.allParticles.GarbageTrail[ID.particle] = self
-	self.manager = manager
-end
-
-function GarbageTrail:remove()
-	self.manager.allParticles.GarbageTrail[self.ID] = nil
-end
-
-function GarbageTrail.generate(game, trail)
-	local p = common.instance(GarbageTrail, game.particles, trail.gem)
-	p.particle_type = "GarbageTrail"
-	p:moveTo{duration = trail.duration, rotation = trail.rotation,
-		curve = trail.curve, exit = true}
-end
-GarbageTrail = common.class("GarbageTrail", GarbageTrail, Pic)
 
 -------------------------------------------------------------------------------
 -- When a match is made, this is the glow behind the gems
@@ -351,8 +328,6 @@ PopParticle = common.class("PopParticle", PopParticle, Pic)
 -------------------------------------------------------------------------------
 -- When a match is made, this is the white/gray overlay for the gems
 local ExplodingGem = {}
-ExplodingGem.GEM_EXPLODE_FRAMES = 20
-ExplodingGem.GEM_FADE_FRAMES = 10
 function ExplodingGem:init(manager, gem)
 	local grey_gems = gem.owner == 3
 	local color = grey_gems and (gem.color .. "_gray") or gem.color
@@ -367,8 +342,6 @@ function ExplodingGem:remove()
 end
 
 function ExplodingGem.generate(game, gem)
-	print("making exploding gem, owner", gem.owner)
-
 	local p = common.instance(ExplodingGem, game.particles, gem)
 	p:moveTo{duration = game.GEM_EXPLODE_FRAMES, transparency = 255}
 	if gem.owner == 3 then
