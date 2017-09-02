@@ -64,21 +64,20 @@ end
 function Hand:createGarbageAnimation()
 	local game = self.game
 	for i = 1, #self[0].piece.gems do
+		local gem = self[0].piece.gems[i]
+		gem.owner = self.owner.playerNum
+		game.particles.explodingGem.generate(game, gem)
+		game.queue:add(game.GEM_EXPLODE_FRAMES, game.particles.garbageParticles.generate, game, gem)
+		--game.queue:add(game.GEM_EXPLODE_FRAMES, game.particles.pop.generate, game, gem)
+		--game.queue:add(game.GEM_EXPLODE_FRAMES, game.particles.dust.generateBigFountain, game, gem, 24)
 	end
-end
-
-local function destroyTopPiece(self)
-	--for i = 1, #hand[0].piece.gems do
-		--local this_gem = hand[0].piece.gems[i]
-		--hand.garbage[#hand.garbage+1] = this_gem -- do this alter
-	--end
-	for i = 1, #self[0].piece.gems do
-		self[0].piece.gems[i].owner = self.owner.playerNum
-		self.game.particles.garbageParticles.generate(self.game, self[0].piece.gems[i])
+	local gems = self[0].piece:breakUp() -- but need to show the gems still, until game.GEM_EXPLODE_FRAMES later
+	for i = 1, #gems do
+		game.dying_gems[#game.dying_gems+1] = gems[i]
 	end
-	self[0].piece:breakUp()
 	self.game.grid:addBottomRow(self.owner) -- add a penalty row TODO: callback function this later
 	self.owner.pieces_fallen = self.owner.pieces_fallen + 1 -- to determine garbage ownership
+
 end
 
 -- moves a piece from location to location, as integers
@@ -106,6 +105,7 @@ function Hand:movePiece(start_pos, end_pos)
 	self[end_pos].piece = self[start_pos].piece
 	self[start_pos].piece = nil
 	if self[0].piece then
+		self:createGarbageAnimation()
 	end
 end
 
