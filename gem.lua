@@ -78,7 +78,7 @@ function Gem:landedInGrid()
 		self.no_yoshi_particle = nil
 	else
 		self.game.particles.dust.generateYoshi(self.game, self)
-		drop_sound = self.game.sound:newSFX("sfx_gemdrop", true)
+		self.game.sound:newSFX("sfx_gemdrop", true)
 	end
 end
 

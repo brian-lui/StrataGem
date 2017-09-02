@@ -176,7 +176,10 @@ function charselect:enter()
 					self:start(gametype, char1, char2, bkground, nil, 1)
 				end
 			end,
-			pushed = function() self.objects.start:newImage(image.charselect.startpush) end,
+			pushed = function()
+				self.sound:newSFX("button")
+				self.objects.start:newImage(image.charselect.startpush)
+			end,
 			released = function() self.objects.start:newImage(image.charselect.start) end,
 		},
 		back = {
@@ -185,7 +188,10 @@ function charselect:enter()
 				resetScreen()
 				self.statemanager:switch(require "gs_title")
 			end,
-			pushed = function() self.objects.back:newImage(image.charselect.backpush) end,
+			pushed = function()
+				self.sound:newSFX("button_back")
+				self.objects.back:newImage(image.charselect.backpush)
+			end,
 			released = function() self.objects.back:newImage(image.charselect.back) end,
 		},
 		left_arrow = {
@@ -194,7 +200,10 @@ function charselect:enter()
 				self.background_idx = (self.background_idx - 2) % #self.background.list + 1
 				self.objects.bkground:newImage(self.background.list[self.background_idx].thumbnail)
 			 end,
-			pushed = function() self.objects.left_arrow:newImage(image.charselect.left_arrow_push) end,
+			pushed = function()
+				self.sound:newSFX("button")
+				self.objects.left_arrow:newImage(image.charselect.left_arrow_push)
+			end,
 			released = function() self.objects.left_arrow:newImage(image.charselect.left_arrow) end,
 		},
 		right_arrow = {
@@ -203,7 +212,10 @@ function charselect:enter()
 				self.background_idx = self.background_idx % #self.background.list + 1
 				self.objects.bkground:newImage(self.background.list[self.background_idx].thumbnail)
 			end,
-			pushed = function() self.objects.right_arrow:newImage(image.charselect.right_arrow_push) end,
+			pushed = function()
+				self.sound:newSFX("button")
+				self.objects.right_arrow:newImage(image.charselect.right_arrow_push)
+			end,
 			released = function() self.objects.right_arrow:newImage(image.charselect.right_arrow) end,
 		},
 	}
@@ -220,7 +232,10 @@ function charselect:enter()
 					self.current_char = selectable_chars[i]
 				end
 			end,
-			pushed = function() self.objects[i]:newImage(image.charselect[selectable_chars[i].."ring"]) end,
+			pushed = function()
+				self.sound:newSFX("button")
+				self.objects[i]:newImage(image.charselect[selectable_chars[i].."ring"])
+			end,
 			released = function() self.objects[i]:newImage(image.charselect[selectable_chars[i].."ring"]) end,
 		}
 	end
@@ -248,7 +263,7 @@ local pointIsInRect = require "utilities".pointIsInRect
 
 function charselect:mousepressed(x, y)
 	for _, button in pairs(self.buttons) do
-		if pointIsInRect(x, y, button.item:getRect()) then
+		if pointIsInRect(x, y, button.item:getRect()) and not self.clicked then
 			self.clicked = button
 			button.pushed()
 			return
@@ -272,10 +287,9 @@ end
 
 function charselect:mousemoved(x, y)
 	if self.clicked then
-		if pointIsInRect(x, y, self.clicked.item:getRect()) then
-			self.clicked.pushed()
-		else
+		if not pointIsInRect(x, y, self.clicked.item:getRect()) then
 			self.clicked.released()
+			self.clicked = false
 		end
 	end
 end

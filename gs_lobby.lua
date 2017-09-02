@@ -102,7 +102,7 @@ function lobby:goBack()
 			client.connected = false
 		end
 	end
-
+	self.sound:newSFX("button_back")
 	self.statemanager:switch(require "gs_title")
 end
 
@@ -127,6 +127,12 @@ function lobby:mousereleased(x, y)
 end
 
 function lobby:mousemoved(x, y)
+	if self.clicked then
+		if not pointIsInRect(x, y, self.clicked.item:getRect()) then
+			self.clicked.released()
+			self.clicked = false
+		end
+	end		
 end
 
 function lobby:getClickedButton(x, y)

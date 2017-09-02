@@ -18,6 +18,9 @@ local soundfiles = {
 	bgm_menu = {filename = "music/menu.ogg", loop_from = 60, loop_to = 5},
 	bgm_heath = {filename = "music/heath.ogg", loop_from = 60, loop_to = 5},
 	bgm_buzz = {filename = "music/buzz.ogg", loop_from = 60, loop_to = 5},
+
+	button = {filename = "sound/button.ogg"},
+	button_back = {filename = "sound/buttonback.ogg"},
 }
 
 -------------------------------------------------------------------------------

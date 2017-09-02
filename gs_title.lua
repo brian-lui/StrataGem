@@ -57,14 +57,24 @@ function title:enter()
 	local buttons = {
 		vscpu = {
 			item = objects.vscpu,
-			action = function() self.statemanager:switch(require "gs_charselect") end,
-			pushed = function() objects.vscpu.image = image.title.vscpupush end,
+			action = function()
+				self.statemanager:switch(require "gs_charselect")
+			end,
+			pushed = function()
+				self.sound:newSFX("button")
+				objects.vscpu.image = image.title.vscpupush
+			end,
 			released = function() objects.vscpu.image = image.title.vscpu end,
 		},
 		online ={
 			item = objects.online,
-			action = function() self.statemanager:switch(require "gs_lobby") self.client:connect() end,
-			pushed = function() objects.online.image = image.title.onlinepush end,
+			action = function() 
+				self.statemanager:switch(require "gs_lobby") self.client:connect()
+			end,
+			pushed = function()
+				self.sound:newSFX("button")
+				objects.online.image = image.title.onlinepush
+			end,
 			released = function() objects.online.image = image.title.online end,
 		},
 	}
@@ -133,10 +143,9 @@ end
 
 function title:mousemoved(x, y)
 	if self.clicked then
-		if pointIsInRect(x, y, self.clicked.item:getRect()) then
-			self.clicked.pushed()
-		else
+		if not pointIsInRect(x, y, self.clicked.item:getRect()) then
 			self.clicked.released()
+			self.clicked = false
 		end
 	end
 end
