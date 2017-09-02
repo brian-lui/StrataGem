@@ -127,6 +127,7 @@ function Piece:breakUp()
 			player.hand[i].piece = nil
 		end
 	end
+	return self.gems -- we can store these in a dying_actors thing
 end
 
 -- draw gems with displacement depending on piece horizontal/vertical

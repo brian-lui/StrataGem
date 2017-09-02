@@ -266,8 +266,11 @@ function GarbageParticles.generate(game, gem)
 	if player == 2 then start_col = 5 end_col = 8 end
 
 	-- create exploding gem
-	game.particles.explodingGem.generate(game, gem)
+	--game.particles.explodingGem.generate(game, gem) now called from Hand:createGarbageAnimation
 	
+	--game.particles.pop.generate(game, gem) -- after countdown to explodinged
+	--game.particles.dust.generateBigFountain(game, gem, 24) -- after countdown to explodinged
+
 	-- calculate bezier curve
 	local x1, y1 = gem.x, gem.y -- start
 	local x4, y4 = game.grid.x[start_col], game.grid.y[end_row] -- end

@@ -199,31 +199,29 @@ function PhaseManager:getMatchedGems(dt)
 	end
 end
 
+-- flag gems, and generate the exploding gem particles
 function PhaseManager:flagGems(dt)
 	local gem_table = self.game.grid:getMatchedGems() -- sets h/v flags
 	self.game.grid:flagMatchedGems() -- state
 	for player in self.game:players() do
 		player:beforeMatch(gem_table)
 	end
+	self.game.grid:generateMatchExplodingGems() -- animation
+	match_anim_count = self.game.GEM_EXPLODE_FRAMES
 	self.game.phase = "MatchAnimations"
 end
 
-local match_anim_phase, match_anim_count = "start", 0
-
+-- wait for gem explode to finish, then create the match particles
+local match_anim_count = 0
 function PhaseManager:matchAnimations(dt)
-	local grid = self.game.grid
-	if match_anim_phase == "start" then
-		grid:generateMatchExplodingGems() -- animation
-		match_anim_phase, match_anim_count = "explode", 20
-	elseif match_anim_phase == "explode" then
-		match_anim_count = math.max(match_anim_count - 1, 0)
-		if match_anim_count == 0 then
-			local matches = grid:getMatchedGems()
-			grid:generateMatchParticles() -- animation
-			self.game.ui:screenshake(#matches) -- animation
-			match_anim_phase, match_anim_count = "start", 0
-			self.game.phase = "ResolvingMatches"
-		end
+	if match_anim_count == 0 then
+		local matches = self.game.grid:getMatchedGems()
+		self.game.grid:generateMatchParticles() -- animation
+		self.game.ui:screenshake(#matches) -- animation
+		self.game.phase = "ResolvingMatches"
+		match_anim_count = self.game.GEM_EXPLODE_FRAMES
+	else
+		match_anim_count = match_anim_count - 1
 	end
 end
 

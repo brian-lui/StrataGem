@@ -20,6 +20,7 @@ function gs_main:enter()
 	self.canvas = canvas
 	self.camera = common.instance(require "camera")
 	self.sound:stopBGM()
+	self.dying_gems = {} -- this creates the dying_gems table in Game. Sad!
 end
 
 local function timeDip(self, logic_function, ...)
@@ -137,6 +138,8 @@ function gs_main:drawGems()
 			player.hand.garbage[i]:draw()
 		end
 	end
+
+	-- for i = 1, #game.dying_gems do blah blah
 
 	local function blockBottomGemRow()
 		local stage = self.stage

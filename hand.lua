@@ -61,16 +61,9 @@ function Hand:getx(y)
 	end
 end
 
-local function destroyTopPieceAnim(self)
-	print("Check top piece: ", self[0].piece, self.owner.ID)
+function Hand:createGarbageAnimation()
+	local game = self.game
 	for i = 1, #self[0].piece.gems do
-		local this_gem = self[0].piece.gems[i]
-		local x_dist = this_gem.x - self[0].x
-		local y_dist = this_gem.y - self[0].y
-		local dist = (x_dist^2 + y_dist^2)^0.5
-		--local angle = math.atan2(y_dist, x_dist)
-		local duration = math.abs(dist / Hand.PLATFORM_SPEED)
-		this_gem:moveTo{x = self[0].x, y = self[0].y, duration = duration}
 	end
 end
 
@@ -113,8 +106,6 @@ function Hand:movePiece(start_pos, end_pos)
 	self[end_pos].piece = self[start_pos].piece
 	self[start_pos].piece = nil
 	if self[0].piece then
-		destroyTopPieceAnim(self)
-		destroyTopPiece(self)
 	end
 end
 
