@@ -251,7 +251,10 @@ local function receivePing(self)
 end
 
 local function receiveDudes(self, recv)
-	self.game.statemanager:current().updateUsers(self.game, recv.all_dudes)
+	local updateUsers = self.game.statemanager:current().updateUsers
+	if updateUsers then
+		updateUsers(self.game, recv.all_dudes)
+	end
 end
 
 local function receiveQueue(self, recv)
