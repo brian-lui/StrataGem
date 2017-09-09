@@ -103,24 +103,12 @@ end
 
 -- confirm to the other guy that we received his delta
 local function sendDeltaConfirmation(self, fail)
-	if not fail then
-		self:send({type = "confirmed_delta", turn = self.game.turn, success = true})
-		--print("Frame: " .. frame, "Time: " .. love.timer.getTime() - client.match_start_time, "sent successful Delta Confirmation")
-	else
-		self:send({type = "confirmed_delta", turn = self.game.turn, success = false})
-		--print("Frame: " .. frame, "Time: " .. love.timer.getTime() - client.match_start_time, "sent failed Delta Confirmation")
-	end
+	self:send({type = "confirmed_delta", turn = self.game.turn, success = not fail})
 end
 
 -- confirm to the other guy that we received his state
 local function sendStateConfirmation(self, fail)
-	if not fail then
-		self:send({type = "confirmed_state", turn = self.game.turn, success = true})
-		--print("Frame: " .. frame, "Time: " .. love.timer.getTime() - client.match_start_time, "sent successful State Confirmation")
-	else
-		self:send({type = "confirmed_state", turn = self.game.turn, success = false})
-		--print("Frame: " .. frame, "Time: " .. love.timer.getTime() - client.match_start_time, "sent failed State Confirmation")
-	end
+	self:send({type = "confirmed_state", turn = self.game.turn, success = not fail})
 end
 
 -- the other guy confirmed that he received our delta
@@ -130,7 +118,7 @@ local function receiveDeltaConfirmation(self, recv)
 		self.opponent_received_delta[recv.turn] = true
 	--else
 		--print("Frame: " .. frame, "Time: " .. love.timer.getTime() - client.match_start_time, "Received failed delta confirmation")
-		-- TODO: better handling
+		-- HACK: better handling
 	end
 end
 
@@ -141,7 +129,7 @@ local function receiveStateConfirmation(self, recv)
 		self.opponent_received_state = true
 	else
 		--print("Frame: " .. frame, "Time: " .. love.timer.getTime() - client.match_start_time, "Received failed state confirmation")
-		-- TODO: better handling
+		-- HACK: better handling
 		self.opponent_received_state = true
 	end
 end
@@ -190,7 +178,7 @@ end
 -- we got a delta from them, let's handle it!
 local function receiveDelta(self, recv)
 	local fail = false
-	print("Frame: " .. self.frame, "Time: " .. love.timer.getTime() - self.match_start_time, "Receiving delta")
+	print("Frame: " .. self.game.frame, "Time: " .. love.timer.getTime() - self.match_start_time, "Receiving delta")
 	self.their_delta[recv.turn] = recv
 	self.received_delta[recv.turn] = true
 	sendDeltaConfirmation(self, fail)
@@ -204,7 +192,9 @@ local function receiveDelta(self, recv)
 		print("Frame: " .. self.game.frame, "Time: " .. love.timer.getTime() - self.match_start_time, "Correct delta received:")
 		for k, v in pairs(recv) do
 			if type(v) == "table" then
-				for key, val in pairs(v) do print(key, val) end
+				for key, val in pairs(v) do
+					print("", key, val)
+				end
 			else
 				print(k, v)
 			end
@@ -294,11 +284,10 @@ function Client:prepareDelta(...)
 		}
 	end
 
+	self.our_delta[game.turn].send_frame = game.frame
 	if args[1] == "blank" then
 		self.our_delta[game.turn].blank = true
-		self.our_delta[game.turn].send_frame = game.frame
 	elseif args[3] == "normal" or args[3] == "rush" then
-		self.our_delta[game.turn].send_frame = game.frame
 		self.our_delta[game.turn].place_type = args[3]
 		self.our_delta[game.turn].piece1 = {
 			piece_ID = args[1].ID,
@@ -307,7 +296,6 @@ function Client:prepareDelta(...)
 			place_type = args[3]
 		}
 	elseif args[3] == "double" then
-		self.our_delta[game.turn].send_frame = game.frame
 		self.our_delta[game.turn].place_type = args[3]
 		self.our_delta[game.turn].piece2 = {
 			piece_ID = args[1].ID,
@@ -316,7 +304,6 @@ function Client:prepareDelta(...)
 			place_type = args[3]
 		}
 	elseif args[3] == "super" then
-		self.our_delta[game.turn].send_frame = game.frame
 		self.our_delta[game.turn].super = {
 			-- tbc
 		}
@@ -328,7 +315,7 @@ function Client:prepareDelta(...)
 end
 
 function Client:sendDelta()
-	if self.our_delta[game.turn] then
+	if self.our_delta[self.game.turn] then
 		print("Frame: " .. self.game.frame, "Time: " .. love.timer.getTime() - self.match_start_time, "Sent delta")
 		self:send(self.our_delta[self.game.turn])
 	else
@@ -396,6 +383,7 @@ function Client:compareStates(us, them)
 end
 
 -- queue up for a match
+-- TODO: This needs to ask the matchmaker and not the peer.
 function Client:queue(action)
 	self:send{type = "queue", action = action}
 end

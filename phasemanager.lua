@@ -1,16 +1,13 @@
 local love = _G.love
+
 -- handles the main game phases
 
 local common = require "class.commons"
-local inspect = require "inspect"	-- TODO: Fix netcode so this can be removed.
-
-local spairs = require "utilities".spairs
 
 local PhaseManager = {}
 
 function PhaseManager:init(game)
 	self.game = game
-	self.ai = common.instance(require "ai", game)
 
 	self.super_play = nil
 	self.super_pause = 0
@@ -35,7 +32,7 @@ end
 function PhaseManager:action(dt)
 	local game = self.game
 	local client = game.client
-	local ai = self.ai
+	local ai = game.ai
 
 	for player in game:players() do
 		player.hand:update(dt)
@@ -46,26 +43,26 @@ function PhaseManager:action(dt)
 	self.game.ui:update(dt)
 
 	game.time_to_next = game.time_to_next - 1
-	if game.type == "1P" then
+	--if game.type == "1P" then
 		if not ai.finished then
-			ai:placeholder(game.them_player)
+			ai:evaluateActions(game.them_player)
 		end
-	end
-	if game.time_to_next == 0 then
+	--end
+	if game.time_to_next <= 0 and ai.finished then
 		love.mousereleased(love.mouse.getPosition())
 		game.particles.wordEffects.clear(game.particles)
 		game.phase = "Resolve"
+
 		if game.type == "Netplay" then
-			if not client.our_delta[game.turn] then
-				client.prepareDelta("blank")
+			if not client.our_delta[game.turn] then	-- If local player hasn't acted, send empty turn
+				client:prepareDelta("blank")
 			end
-		elseif game.type == "1P" then
-			if ai.queued_action then
-				ai.queued_action.func(table.unpack(ai.queued_action.args))
-				ai.queued_action = false
-			end
-		end
+		end--elseif game.type == "1P" then
+			ai:performQueuedAction()	-- TODO: Expand this to netplay and have the ai read from the net
+		--end
 	end
+
+--[==[
 
 	-- This part checks that the state is the same
 	-- We do it in this phase so that players don't need to wait
@@ -73,7 +70,7 @@ function PhaseManager:action(dt)
 	if not client.synced and game.type == "Netplay" then
 		if not client.sent_state then
 			print("Queueing state-send")
-			client.sendState(game.STATE_SEND_WAIT)
+			client:sendState(game.STATE_SEND_WAIT)
 			client.sent_state = true
 		end
 
@@ -92,7 +89,7 @@ function PhaseManager:action(dt)
 				client.giving_frameback = our_frames_behind
 			end
 
-			if client.compareStates() then
+			if client:compareStates() then
 				print("Frame: " .. game.frame, "Time: " .. love.timer.getTime() - client.match_start_time, "States match!")
 				print("Player 1 meter: " .. game.p1.mp, "Player 2 meter: " .. game.p2.mp)
 				client.synced = true
@@ -120,6 +117,8 @@ function PhaseManager:action(dt)
 			end
 		end
 	end
+
+--]==]
 end
 
 function PhaseManager:resolve(dt)
@@ -334,7 +333,7 @@ function PhaseManager:cleanup(dt)
 	grid:updateGrid()
 	--game.particles:clearCount()
 	for player in game:players() do player:cleanup() end
-	if game.type == "1P" then self.ai:clear() end
+	game.ai:newTurn()
 	p1.pieces_fallen, p2.pieces_fallen = 0, 0
 	p1.dropped_piece, p2.dropped_piece = false, false
 	p1.played_pieces, p2.played_pieces = {}, {}

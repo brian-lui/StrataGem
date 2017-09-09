@@ -89,6 +89,9 @@ end
 
 --Error catcher
 _Debug.handleError = function(err)
+	if not _G.debugEnabled then
+		love.errhand(err)
+	end
 	if _DebugSettings.MultipleErrors == false then
 		for i,v in pairs(_Debug.errors) do
 			if v == err then
@@ -113,6 +116,9 @@ end
 
 --On Top drawer
 _Debug.onTop = function()
+	if not _G.debugEnabled then
+		return
+	end
 	love.graphics.push()
 	love.graphics.origin()
 	love.graphics.setFont(_Debug.Font)

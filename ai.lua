@@ -1,20 +1,30 @@
+local love = _G.love
 --[[
-	This powerful module provides the CPU moves in the single player game.
+Each AI is assigned to a player on creation, replacing user input.
+
+The AI follows the following lifecycle, called in PhaseManager and elsewhere.
+
+ai:evaluateActions()	Determines what action to take this turn
+ai:queueAction(func, args)	Sets the currently-queued action for the ai
+ai:performQueuedAction()	Performs the last action queued (ONCE)
+ai:newTurn()	Resets anything that needs to reset between turns.
 --]]
-require 'utilities'
+
 local common = require "class.commons"
 
 local ai = {
-	finished = false,
-	queued_action = false,
+	finished = nil,
+	queuedFunc = nil,
+	queuedArgs = nil,
+	countdown = 5,	-- frames to wait before calculating move
+	-- HACK: Countdown shouldn't need to exist.
 }
 
-local countdown = 5 -- frames to wait before calculating move
-
-function ai:init(game)
+function ai:init(game, player)
 	self.game = game
+	self.player = player
 end
-
+--[[
 -- debug function, prints maximum score and piece drop to achieve it
 local function printMaximumScore(maximum_score, possible_moves)
 	print("Maximum possible score:", maximum_score)
@@ -28,42 +38,35 @@ local function printMaximumScore(maximum_score, possible_moves)
 end
 
 -- randomly rotate all pieces in hand by 1
-local function rotateRandom(player)
-	for i = 1, player.hand_size do
-		local rotate = math.random() < 0.5
-		if rotate and player.hand[i].piece then
-			player.hand[i].piece:rotate()
+-- ISSUE: rotateRandom(): mechanically useless, aesthetically unnecessary?
+local function rotateRandom()
+	for i = 1, self.player.hand_size do
+		if math.random() < 0.5 and self.player.hand[i].piece then
+			self.player.hand[i].piece:rotate()
 		end
 	end
 end
+--]]
 
--- rotate all pieces in hand by 1
-local function rotateAll(player)
-	for i = 1, player.hand_size do
-		if player.hand[i].piece then
-			player.hand[i].piece:rotate()
-		end
-	end
-end
-
+--[[
 -- rotate all pieces until they are horizontal
-local function rotateToHorizontal(player)
-	for i = 1, player.hand_size do
-		if player.hand[i].piece and not player.hand[i].piece.horizontal then
-			player.hand[i].piece:rotate()
+local function rotateToHorizontal()
+	for i = 1, self.player.hand_size do
+		if self.player.hand[i].piece and not self.player.hand[i].piece.horizontal then
+			self.player.hand[i].piece:rotate()
 		end
 	end
 end
 
 -- rotate all pieces until they are vertical
-local function rotateToVertical(player)
-	for i = 1, player.hand_size do
-		if player.hand[i].piece and player.hand[i].piece.horizontal then
-			player.hand[i].piece:rotate()
+local function rotateToVertical()
+	for i = 1, self.player.hand_size do
+		if self.player.hand[i].piece and self.player.hand[i].piece.horizontal then
+			self.player.hand[i].piece:rotate()
 		end
 	end
 end
-
+--]]
 -- return a list of all valid pieces (excluding empty platforms)
 local function enumeratePieces(player)
 	local has_piece = {}
@@ -105,14 +108,22 @@ local function placePiece(self, piece, coords, place_type)
 	local player = piece.owner
 	place_type = place_type or "normal"
 	player.place_type = place_type
-	self.queued_action = {func = piece.dropIntoBasin, args = {piece, coords}}
+	self:queueAction(piece.dropIntoBasin, {piece, coords})
 end
 
 -- returns a scoring for all possible pieces and their placements
 local function generateScoreMatrices(grid, player)
 	local piece_list = enumeratePieces(player)
 
-	rotateToHorizontal(player) -- settle down the pieces
+	--rotateToHorizontal(player) -- settle down the pieces
+	-- rotate all pieces in hand by 1
+	local function rotateAll()
+		for i = 1, player.hand_size do
+			if player.hand[i].piece then
+				player.hand[i].piece:rotate()
+			end
+		end
+	end
 
 	local matrix = {}
 	for rotation = 1, 4 do -- a matrix for each orientation
@@ -134,8 +145,9 @@ local function generateScoreMatrices(grid, player)
 end
 
 -- this currently always plays the highest possible scoring match, but doesn't discriminate further
-function ai:placeholder(player)
-	if countdown == 0 then
+function ai:evaluateActions()
+	local player = self.player
+	if self.countdown == 0 then
 		-- Get a set of moves that yield the highest score
 		local matrices = generateScoreMatrices(self.game.grid, player)
 		local maximum_score = 0
@@ -179,18 +191,29 @@ function ai:placeholder(player)
 			placePiece(self, piece, coords)
 		end
 
-		countdown = 5
+		self.countdown = 5
 		self.finished = true
 	else
-		countdown = countdown - 1
+		self.countdown = self.countdown - 1
 	end
 end
 
+function ai:queueAction(func, args)
+	self.queuedFunc, self.queuedArgs = func, args
+end
+
+function ai:performQueuedAction()
+	if not self.queuedFunc then
+		error("ai tried to perform nonexistent queued action")
+	end
+	self.queuedFunc(table.unpack(self.queuedArgs))
+	self.queuedFunc, self.queuedArgs = nil, nil	-- Only run once.
+end
+
 -- clears all the ai stuff and get ready for next turn so you don't get some first turn bugs
-function ai:clear()
+function ai:newTurn()
 	self.finished = false
-	self.queued_action = false
-	countdown = 5
+	self.countdown = 5
 end
 
 return common.class("AI", ai)

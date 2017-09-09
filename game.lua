@@ -72,7 +72,7 @@ function Game:init()
 	self.queue = common.instance(Queue, self)
 	self.statemanager = common.instance(require "statemanager", self)
 	self.statemanager:switch(require "gs_title")
-	self:reset()	
+	self:reset()
 end
 
 function Game:start(gametype, char1, char2, bkground, seed, side)
@@ -102,6 +102,9 @@ function Game:start(gametype, char1, char2, bkground, seed, side)
 		print("Sh*t")
 	end
 
+	-- Spawn the appropriate ai to handle opponent (net input or actual AI)
+	self.ai = common.instance(require(gametype == "Netplay" and "ai_net" or "ai"), self, self.them_player)
+
 	for player in self:players() do
 		player:cleanup()
 	end
@@ -110,7 +113,6 @@ function Game:start(gametype, char1, char2, bkground, seed, side)
 
 	self.type = gametype
 	self.statemanager:switch(require "gs_main")
-
 end
 
 function Game:update(dt)
@@ -219,6 +221,8 @@ function Game:keypressed(key)
 
 	if key == "escape" then
 		love.event.quit()
+	elseif key == "f3" then	-- Toggle debug mode (see lovedebug.lua). Key chosen from Minecraft.
+		_G.debugEnabled = not _G.debugEnabled
 	elseif key == "t" then
 		grid:addBottomRow(p1)
 		for g in grid:gems() do

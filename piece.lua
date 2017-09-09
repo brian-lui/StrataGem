@@ -333,18 +333,19 @@ end
 function Piece:dropIntoBasin(coords, received_from_opponent)
 	-- Transfers piece from player's hand into basin.
 	-- No error checking, assumes this is a valid move! Be careful please.
-	local grid = self.game.grid
+	local game = self.game
+	local grid = game.grid
 	local player = self.owner
 
 	-- not received_from_opponent means it's our piece placing,
 	-- so we need to send it to them
-	if self.game.type == "Netplay" and not received_from_opponent then
-		self.game.client.prepareDelta(self, coords, player.place_type)
+	if game.type == "Netplay" and not received_from_opponent then
+		game.client.prepareDelta(game.client, self, coords, player.place_type)
 	end
 
 	-- Generate uptweening gems
 	for i = 1, #self.gems do
-		self.game.particles.upGem.generate(self.game, self.gems[i])
+		game.particles.upGem.generate(game, self.gems[i])
 	end
 
 	-- place the gem into the holding area
