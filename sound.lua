@@ -15,9 +15,9 @@ local soundfiles = {
 	sfx_doublecast = {filename = "sound/doublecast.ogg"},
 	sfx_superactivate = {filename = "sound/superactivate.ogg"},
 
-	bgm_menu = {filename = "music/menu.ogg", loop_from = 60, loop_to = 5},
-	bgm_heath = {filename = "music/heath.ogg", loop_from = 60, loop_to = 5},
-	bgm_buzz = {filename = "music/buzz.ogg", loop_from = 60, loop_to = 5},
+	bgm_menu = {filename = "music/menu.ogg", loop_from = 34.758, loop_to = 1.655},
+	bgm_heath = {filename = "music/heath.ogg", loop_from = 77.332, loop_to = 1.333},
+	bgm_buzz = {filename = "music/buzz.ogg", loop_from = 70.235, loop_to = 1.058},
 
 	button = {filename = "sound/button.ogg"},
 	button_back = {filename = "sound/buttonback.ogg"},
