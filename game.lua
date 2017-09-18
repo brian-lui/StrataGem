@@ -57,6 +57,7 @@ function Game:init()
 	self.debug_drawDamage = true
 	self.debug_drawGrid = true
 
+	self.unittests = common.instance(require "unittests", self) -- debug testing
 	self.phaseManager = common.instance(require "phasemanager", self)
 	self.rng = love.math.newRandomGenerator()
 	self.sound = common.instance(require "sound", self)
@@ -161,60 +162,6 @@ function Game:reset()
 	self.frame = 0
 end
 
--- testing!
-local Gem = require 'gem'
-
-local colorAliases = {
-	r = "red",
-	red = "red",
-	b = "blue",
-	blue = "blue",
-	g = "green",
-	green = "green",
-	y = "yellow",
-	yellow = "yellow"
-}
--- rows is from 8 at the top to 1 at the bottom
-local function n(self, row, column, color, owner)
-	owner = owner or 0
-	color = colorAliases[color:lower()] or "red"
-	if type(row) ~= "number" or type(column) ~= "number" then
-		print("row or column not a number!")
-		return
-	end
-	if row % 1 ~= 0 or column % 1 ~= 0 then
-		print("row or column not an integer!")
-		return
-	end
-	if row < 1 or row > 8 then
-		print("row out of bounds! 1 = bottom, 8 = top")
-		return
-	end
-	if column < 1 or column > 8 then
-		print("column out of bounds!")
-		return
-	end
-
-	row = row + 6
-	local x, y = self.grid.x[column], self.grid.y[row]
-	self.grid[row][column].gem = common.instance(Gem, self, x, y, color)
-	if owner > 0 then
-		self.grid[row][column].gem:addOwner(owner)
-	end
-end
-
-local function nrow(game, row, colors)
-	if type(colors) ~= "string" or #colors ~= 8 then
-		love.errhand("nrow() received invalid string: \"" .. tostring(colors) .. "\"")
-	end
-	for i = 1, 8 do
-		local c = colors:sub(i, i)
-		if c ~= " " then
-			n(game, row, i, c)
-		end
-	end
-end
-
 function Game:keypressed(key)
 	local grid = self.grid
 	local p1, p2 = self.p1, self.p2
@@ -248,30 +195,11 @@ function Game:keypressed(key)
 	elseif key == "k" then self.canvas[6]:renderTo(function() love.graphics.clear() end)
 	elseif key == "z" then self:start("1P", "heath", "walter", self.background.Starfall, nil, 1)
 	elseif key == "x" then
-		nrow(self, 7, "RGBY    ")
-		nrow(self, 8, "RGBY    ")
+		self.unittests.garbageMatch(self)
 	elseif key == "c" then
-		nrow(self, 1, "B       ")
-		nrow(self, 2, "B       ")
-		nrow(self, 3, "RG      ")
-		nrow(self, 4, "YY      ")
-		nrow(self, 5, "RRG     ")
-		nrow(self, 6, "BGB     ")
-		nrow(self, 7, "BRR     ")
-		nrow(self, 8, "RGGY    ")
-	elseif key == "v" then	-- garbage move up match
-		nrow(self, 7, "  BBRRG ")
-		nrow(self, 8, "  RRBBY ")
-	elseif key == "b" then
-		nrow(self, 4, "     R G")
-		nrow(self, 5, "    RBBR")
-		nrow(self, 6, "  GRBYYR")
-		nrow(self, 7, " RRGBGGY")
-		nrow(self, 8, " YYRGBBR")
-	elseif key == "n" then
-		nrow(self, 6, "B       ")
-		nrow(self, 7, "YY      ")
-		nrow(self, 8, "GRG     ")
+		self.unittests.multiCombo(self)
+	elseif key == "v" then
+		self.unittests.overflow(self)
 	elseif key == "m" then
 		self.debug_drawGemOwners = not self.debug_drawGemOwners
 		self.debug_drawParticleDestinations = not self.debug_drawParticleDestinations
