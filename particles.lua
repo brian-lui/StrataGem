@@ -255,7 +255,7 @@ end
 
 function GarbageParticles:remove()
 	self.manager:incrementCount("destroyed", "Garbage", self.owner)
-	self.manager.allParticles.Damage[self.ID] = nil
+	self.manager.allParticles.GarbageParticles[self.ID] = nil
 end
 
 -- player.hand.damage is the damage before this round's match(es) is scored
@@ -272,12 +272,12 @@ function GarbageParticles.generate(game, gem)
 	--game.particles.dust.generateBigFountain(game, gem, 24) -- after countdown to explodinged
 
 	-- calculate bezier curve
-	local x1, y1 = gem.x, gem.y -- start
-	local x4, y4 = game.grid.x[start_col], game.grid.y[end_row] -- end
-	local dist = ((x4 - x1) ^ 2 + (y4 - y1) ^ 2) ^ 0.5
-	local x3, y3 = 0.5 * (x1 + x4), 0.5 * (y1 + y4)
+	for i = start_col, end_col do
+		local x1, y1 = gem.x, gem.y -- start
+		local x4, y4 = game.grid.x[i], game.grid.y[end_row] -- end
+		local dist = ((x4 - x1) ^ 2 + (y4 - y1) ^ 2) ^ 0.5
+		local x3, y3 = 0.5 * (x1 + x4), 0.5 * (y1 + y4)
 
-	for _ = 1, 3 do
 		local angle = math.random() * math.pi * 2
 		local x2 = x1 + math.cos(angle) * dist * 0.5
 		local y2 = y1 + math.sin(angle) * dist * 0.5
