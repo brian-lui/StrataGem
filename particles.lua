@@ -263,8 +263,7 @@ function GarbageParticles.generate(game, gem)
 	local player = game:playerByIndex(gem.owner)
 	local start_col, end_col = 1, 4
 	local end_row = game.grid.rows
-	if player == 2 then start_col = 5 end_col = 8 end
-
+	if player.ID == "P2" then start_col = 5 end_col = 8 end
 	-- create exploding gem
 	--game.particles.explodingGem.generate(game, gem) now called from Hand:createGarbageAnimation
 	
