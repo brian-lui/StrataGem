@@ -557,6 +557,7 @@ function Grid:generateMatchParticles()
 	local gem_table = self:getMatchedGems()
 	local particles = game.particles
 	local extra_particles = game.scoring_combo
+
 	for _, gem in pairs(gem_table) do
 		local player = game:playerByIndex(gem.owner)
 		if player then
@@ -572,6 +573,7 @@ function Grid:generateMatchParticles()
 			end
 		end
 	end
+	self.game.ui:screenshake(#gem_table) -- animation
 end
 
 function Grid:setGarbageMatchFlags()

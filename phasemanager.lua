@@ -216,7 +216,6 @@ function PhaseManager:matchAnimations(dt)
 	if match_anim_count == 0 then
 		local matches = self.game.grid:getMatchedGems()
 		self.game.grid:generateMatchParticles() -- animation
-		self.game.ui:screenshake(#matches) -- animation
 		self.game.phase = "ResolvingMatches"
 		match_anim_count = self.game.GEM_EXPLODE_FRAMES
 	else

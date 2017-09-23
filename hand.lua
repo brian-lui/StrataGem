@@ -71,6 +71,8 @@ function Hand:createGarbageAnimation()
 		--game.queue:add(game.GEM_EXPLODE_FRAMES, game.particles.pop.generate, game, gem)
 		--game.queue:add(game.GEM_EXPLODE_FRAMES, game.particles.dust.generateBigFountain, game, gem, 24)
 	end
+	game.ui:screenshake(3)
+
 	local gems = self[0].piece:breakUp() -- but need to show the gems still, until game.GEM_EXPLODE_FRAMES later
 	for i = 1, #gems do
 		game.dying_gems[#game.dying_gems+1] = gems[i]
