@@ -6,11 +6,6 @@ local Pic = require 'pic'
 local Hand = require 'hand'
 
 local Character = {}
---Character.defaults = require 'characters/default' -- called from charselect
---Character.heath = require 'characters/heath'
---Character.walter = require 'characters/walter'
---Character.gail = require 'characters/gail'
-
 Character.full_size_image = love.graphics.newImage('images/characters/heath.png')
 Character.small_image = love.graphics.newImage('images/characters/heathsmall.png')
 Character.action_image = love.graphics.newImage('images/characters/heathaction.png')
@@ -22,9 +17,9 @@ Character.meter_gain = {red = 4, blue = 4, green = 4, yellow = 4}
 
 Character.super_images = {
 	word = image.UI.super.red_word,
-	empty = love.graphics.newImage('images/characters/emptyheath.png'),
-	full = love.graphics.newImage('images/characters/fullheath.png'),
-	glow = love.graphics.newImage('images/characters/fullheathglow.png')
+	empty = love.graphics.newImage('images/characters/heathempty.png'),
+	full = love.graphics.newImage('images/characters/heathfull.png'),
+	glow = love.graphics.newImage('images/characters/heathfullglow.png')
 }
 
 Character.burst_images = {

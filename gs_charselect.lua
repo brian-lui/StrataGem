@@ -15,8 +15,8 @@ function charselect:enter()
 	self.background_idx = 1
 
 	local stage = self.stage
-	local selectable_chars = {"heath", "walter", "gail", "gail", "gail", "hailey", "gail", "buzz", "gail", "gail"}
-	--local selectable_chars = {"heath", "walter", "gail", "holly", "wolfgang", "hailey", "diggory", "buzz", "ivy", "joy"}
+	--local selectable_chars = {"heath", "walter", "gail", "gail", "gail", "hailey", "gail", "buzz", "gail", "gail"}
+	local selectable_chars = {"heath", "walter", "gail", "holly", "wolfgang", "hailey", "diggory", "buzz", "ivy", "joy"}
 	local data = {
 		start = {
 			start_x = stage.width * 0.25,
