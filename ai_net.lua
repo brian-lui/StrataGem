@@ -32,10 +32,15 @@ local function playPiece(self, recv_piece)
 	piece:dropIntoBasin(recv_piece.coords, true)
 end
 
+local function playSuper(self, params)
+	self.player.supering = true
+	self.player.super_params = params
+end
+
 local function performDeltas(self)
 	local play = self.game.client.their_delta[self.game.turn]
-	if next(play.super) then
-		-- TODO: Make supers work online.
+	if play.super then
+		playSuper(self, play.super_params)
 	end
 	if next(play.piece1) then
 		playPiece(self, play.piece1)

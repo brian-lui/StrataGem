@@ -161,9 +161,11 @@ local function playPiece(self, recv_piece)
 end
 
 -- called at end of turn, plays all deltas received from opponent
+-- this is now in ai_net haha
 function Client:playTurn(delta, turn_to_play)
 	local play = delta[turn_to_play]
 	if next(play.super) then
+		print("play super")
 		-- blah blah
 	end
 	if next(play.piece1) then
@@ -273,7 +275,10 @@ local function receiveQueue(self, recv)
 	end
 end
 
--- called from phase.lua, packages our delta so we don't have to send so much stuff
+-- delta for pieces is called from Piece:dropIntoBasin
+-- delta for supers is called from ___
+-- if blank, then phasemanager.lua Action phase will send a blank delta
+-- This packages our delta so we don't have to send so much stuff
 function Client:prepareDelta(...)
 	local game = self.game
 	local args = {...}
@@ -283,7 +288,8 @@ function Client:prepareDelta(...)
 			turn = game.turn,
 			piece1 = {},
 			piece2 = {},
-			super = {}
+			super = false,
+			super_params = {},
 		}
 	end
 
@@ -306,12 +312,15 @@ function Client:prepareDelta(...)
 			coords = args[2],
 			place_type = args[3]
 		}
-	elseif args[3] == "super" then
-		self.our_delta[game.turn].super = {
-			-- tbc
-		}
+	elseif args[2] == "super" then
+		self.our_delta[game.turn].super = true
+		self.our_delta[game.turn].super_params = args[3]
 	else
-		print("Error: invalid delta received from player")
+		print("Error: invalid delta arguments provided")
+		print("***")
+		for k, v in pairs(args) do print("", k, v) end
+		print("***")
+
 	end
 	--print("Frame: " .. frame, "Time: " .. love.timer.getTime() - client.match_start_time, "Prepared delta")
 	self:sendDelta()

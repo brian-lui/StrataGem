@@ -44,6 +44,7 @@ Character.pieces_fallen = 0
 Character.dropped_piece = false
 Character.super_clicked = false
 Character.supering = false
+Character.super_params = {}
 Character.super_this_turn = false
 Character.place_type = "normal"
 
@@ -141,9 +142,11 @@ function Character:resetMP()
 	self.turn_start_mp = self.mp
 end
 
-function Character:activateSuper()
-	if self.mp >= self.SUPER_COST then
-		self.supering = not self.supering
+function Character:activateSuper(received_from_opponent)
+	local game = self.game
+	if self.mp >= self.SUPER_COST then self.supering = true	end
+	if game.type == "Netplay" and not received_from_opponent then
+		game.client.prepareDelta(game.client, self, "super", self.super_params)
 	end
 end
 

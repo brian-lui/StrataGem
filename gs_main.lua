@@ -303,7 +303,7 @@ function gs_main:mousereleased(x, y)
 		
 		if quickclick and nomove then self.active_piece:rotate() end
 		if self.phase == "Action" then print("deselect now") self.active_piece:deselect() end
-	elseif player.super_clicked and self.phase == "Action" and 
+	elseif player.super_clicked and self.phase == "Action" and not self.supering and 
 	pointIsInRect(x, y, table.unpack(self.stage.super[player.ID].rect)) then
 		player:activateSuper()
 	end

@@ -124,9 +124,7 @@ end
 function PhaseManager:resolve(dt)
 	local game = self.game
 
-	if game.me_player.place_type == nil then
-		print("PLACE TYPE BUG")
-	end
+	if game.me_player.place_type == nil then print("PLACE TYPE BUG") end
 	for player in game:players() do
 		player.hand:afterActionPhaseUpdate()
 	end
