@@ -30,10 +30,10 @@ local image = {
 	green_explode = love.graphics.newImage('images/gems/greengemexplode.png'),
 	yellow_explode = love.graphics.newImage('images/gems/yellowgemexplode.png'),
 
-	red_grey = love.graphics.newImage('images/gems/redgrey.png'),
-	blue_grey = love.graphics.newImage('images/gems/bluegrey.png'),
-	green_grey = love.graphics.newImage('images/gems/greengrey.png'),
-	yellow_grey = love.graphics.newImage('images/gems/yellowgrey.png'),
+	red_grey = love.graphics.newImage('images/gems/redgemgrey.png'),
+	blue_grey = love.graphics.newImage('images/gems/bluegemgrey.png'),
+	green_grey = love.graphics.newImage('images/gems/greengemgrey.png'),
+	yellow_grey = love.graphics.newImage('images/gems/yellowgemgrey.png'),
 
 	red_particle1 = love.graphics.newImage('images/particles/redparticle1.png'),
 	red_particle2 = love.graphics.newImage('images/particles/redparticle2.png'),
@@ -53,10 +53,10 @@ local image = {
 	super_particle_green = love.graphics.newImage('images/particles/greensuperparticle.png'),
 	super_particle_yellow = love.graphics.newImage('images/particles/yellowsuperparticle.png'),
 
-	trail_particle_red = love.graphics.newImage('images/particles/trailred.png'),
-	trail_particle_blue = love.graphics.newImage('images/particles/trailblue.png'),
-	trail_particle_green = love.graphics.newImage('images/particles/trailgreen.png'),
-	trail_particle_yellow = love.graphics.newImage('images/particles/trailyellow.png'),
+	trail_particle_red = love.graphics.newImage('images/particles/redtrail.png'),
+	trail_particle_blue = love.graphics.newImage('images/particles/bluetrail.png'),
+	trail_particle_green = love.graphics.newImage('images/particles/greentrail.png'),
+	trail_particle_yellow = love.graphics.newImage('images/particles/yellowtrail.png'),
 
 	pop_particle_red = love.graphics.newImage('images/gems/popred.png'),
 	pop_particle_blue = love.graphics.newImage('images/gems/popblue.png'),
@@ -69,18 +69,18 @@ local image = {
 	star_particle_gold1 = love.graphics.newImage('images/particles/goldstar1.png'),
 	star_particle_gold2 = love.graphics.newImage('images/particles/goldstar2.png'),
 	star_particle_gold3 = love.graphics.newImage('images/particles/goldstar3.png'),
-	tinystar_particle_silver1 = love.graphics.newImage('images/particles/silvertinystar1.png'),
-	tinystar_particle_silver2 = love.graphics.newImage('images/particles/silvertinystar2.png'),
-	tinystar_particle_silver3 = love.graphics.newImage('images/particles/silvertinystar3.png'),
-	tinystar_particle_gold1 = love.graphics.newImage('images/particles/goldtinystar1.png'),
-	tinystar_particle_gold2 = love.graphics.newImage('images/particles/goldtinystar2.png'),
-	tinystar_particle_gold3 = love.graphics.newImage('images/particles/goldtinystar3.png'),
+	tinystar_particle_silver1 = love.graphics.newImage('images/particles/tinystarsilver1.png'),
+	tinystar_particle_silver2 = love.graphics.newImage('images/particles/tinystarsilver2.png'),
+	tinystar_particle_silver3 = love.graphics.newImage('images/particles/tinystarsilver3.png'),
+	tinystar_particle_gold1 = love.graphics.newImage('images/particles/tinystargold1.png'),
+	tinystar_particle_gold2 = love.graphics.newImage('images/particles/tinystargold2.png'),
+	tinystar_particle_gold3 = love.graphics.newImage('images/particles/tinystargold3.png'),
 }
 image.GEM_WIDTH = image.red_gem:getWidth()
 image.GEM_HEIGHT = image.red_gem:getHeight()
 
 local gem_colors = {"red", "blue", "green", "yellow"}
-local super_colors = {"red", "blue", "green", "yellow", "purple", "parch"}
+local super_colors = {"red", "blue", "green", "yellow"}
 local burst_colors = {"red", "blue", "green", "yellow"}
 
 image.background = {}
@@ -112,30 +112,33 @@ end
 
 image.UI = {
 	tub = love.graphics.newImage('images/ui/basin.png'),
-	platform_gold = love.graphics.newImage('images/ui/platgold.png'),
-	platform_silver = love.graphics.newImage('images/ui/platsilver.png'),
-	platform_red = love.graphics.newImage('images/ui/platred.png'),
+	platform_gold = love.graphics.newImage('images/ui/platformstargold.png'),
+	platform_silver = love.graphics.newImage('images/ui/platformstarsilver.png'),
+	platform_red = love.graphics.newImage('images/ui/platformstarred.png'),
 	redX = love.graphics.newImage('images/ui/redx.png'),
+	timer_gauge = love.graphics.newImage('images/ui/timergauge.png'),
 	timer_bar = love.graphics.newImage('images/ui/timerbar.png'),
-	timer_bar_full = love.graphics.newImage('images/ui/timerbarfull.png'),
 	gauge_silver = love.graphics.newImage('images/ui/gaugesilver.png'),
 	gauge_gold = love.graphics.newImage('images/ui/gaugegold.png'),
 	starpiece = {
-		love.graphics.newImage('images/ui/starpiece1.png'),
-		love.graphics.newImage('images/ui/starpiece2.png'),
-		love.graphics.newImage('images/ui/starpiece3.png'),
-		love.graphics.newImage('images/ui/starpiece4.png'),
+		love.graphics.newImage('images/ui/starbreak1.png'),
+		love.graphics.newImage('images/ui/starbreak2.png'),
+		love.graphics.newImage('images/ui/starbreak3.png'),
+		love.graphics.newImage('images/ui/starbreak4.png'),
 	}
 }
 
 image.UI.timer = {}
-for i = 0, 3 do
+for i = 1, 3 do
 	image.UI.timer[i] = love.graphics.newImage('images/numbers/' .. i .. '.png')
 end
 
 image.UI.super = {}
 for _, c in pairs(super_colors) do
 	image.UI.super[c.."_word"] = love.graphics.newImage('images/ui/super'..c..'.png')
+	image.UI.super[c.."_empty"] = love.graphics.newImage('images/ui/'..c..'superempty.png')
+	image.UI.super[c.."_full"] = love.graphics.newImage('images/ui/'..c..'superfull.png')
+	image.UI.super[c.."_glow"] = love.graphics.newImage('images/ui/'..c..'superglow.png')
 end
 
 image.UI.burst = {}
@@ -143,7 +146,7 @@ for _, c in pairs(burst_colors) do
 	image.UI.burst[c .. "_partial"] = love.graphics.newImage('images/ui/' .. c .. 'segmentpartial.png')
 	image.UI.burst[c .. "_full"] = love.graphics.newImage('images/ui/' .. c .. 'segmentfull.png')
 	for i = 1, 2 do
-		image.UI.burst[c .. "_glow" .. i] = love.graphics.newImage('images/ui/' .. c .. 'glow' .. i .. '.png')
+		image.UI.burst[c .. "_glow" .. i] = love.graphics.newImage('images/ui/' .. c .. 'barglow' .. i .. '.png')
 	end
 end
 

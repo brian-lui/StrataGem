@@ -13,16 +13,15 @@ Heath.shadow_image = love.graphics.newImage('images/characters/heathshadow.png')
 
 Heath.character_id = "Heath"
 Heath.meter_gain = {red = 8, blue = 4, green = 4, yellow = 4}
---[[
 Heath.super_images = {
 	word = image.UI.super.red_word,
-	partial = image.UI.super.red_partial,
+	empty = image.UI.super.red_empty,
 	full = image.UI.super.red_full,
-	glow = {image.UI.super.red_glow1, image.UI.super.red_glow2, image.UI.super.red_glow3, image.UI.super.red_glow4}
+	glow = image.UI.super.red_glow,
+	overlay = love.graphics.newImage('images/specials/heath/firelogo.png')
 }
---]]
+
 Heath.burst_images = {
-	word = image.UI.burst.red_word,
 	partial = image.UI.burst.red_partial,
 	full = image.UI.burst.red_full,
 	glow = {image.UI.burst.red_glow1, image.UI.burst.red_glow2}
@@ -32,10 +31,6 @@ Heath.special_images = {
 	fire1 = love.graphics.newImage('images/specials/heath/fire1.png'),
 	fire2 = love.graphics.newImage('images/specials/heath/fire2.png'),
 	fire3 = love.graphics.newImage('images/specials/heath/fire3.png'),
-	fire4 = love.graphics.newImage('images/specials/heath/fire4.png'),
-	fire5 = love.graphics.newImage('images/specials/heath/fire5.png'),
-	--glow1 = love.graphics.newImage('images/specials/heath/glow1.png'),
-	--glow2 = love.graphics.newImage('images/specials/heath/glow2.png'),
 	fire_particle = love.graphics.newImage('images/specials/heath/fireparticle.png'),
 	boom1 = love.graphics.newImage('images/specials/heath/explode1.png'),
 	boom2 = love.graphics.newImage('images/specials/heath/explode2.png'),
@@ -96,7 +91,7 @@ function particle_effects:SmallFire(row, col, owner)
 	local new_particle_t = 0
 	local draw_t, draw_img = 0, 1
 	-- it pops up and then settles at y_dest. Then it fades out if removed
-	local draw_order = {1, 2, 3, 2, 4, 2, 5, 2}
+	local draw_order = {1, 2, 3}
 
 	local function update_func(_self, dt)
 		if self.turns_remaining == 1 then -- stop updating position after cleanup phase
@@ -117,8 +112,6 @@ function particle_effects:SmallFire(row, col, owner)
 		if draw_t >= 0.1 then -- swap image
 			draw_t = draw_t - 0.1
 			draw_img = draw_img % #draw_order + 1
-			--self.old_image = self.image
-			--self.old_image_transparency = 255
 			_self.image = Heath.special_images["fire" .. draw_order[draw_img] ]
 		end
 
@@ -138,29 +131,6 @@ function particle_effects:SmallFire(row, col, owner)
 			if _self.transparency == 0 then _self:remove() end
 		end
 	end
-	--[[
-	local draw_func = function(self, dt)
-		Pic.draw(self)
-		if self.old_image then
-			Pic.draw(self, nil, nil, nil, nil, nil, {255, 255, 255, self.old_image_transparency}, self.old_image)
-			self.old_image_transparency = self.old_image_transparency - 16
-		end
-	end
-	--]]
-	--[[
-	local draw_func = function(self, dt)
-		local trans = (self.transparency or 255)/255
-		--local glow2 = trans * ((math.sin(self.t * 20) + 1) * 127.5)
-		--local glow1 = trans * ((math.cos(self.t * 20) + 1) * 127.5)
-		local trans1 = trans * 255
-		--local trans2 = trans * ((math.sin(self.t * 20) + 1) * 127.5)
-		local trans2 = math.sin(self.t * 20) > 0 and 255 * trans or 0
-		Pic.draw(self, nil, nil, nil, nil, nil, {255, 255, 255, trans1})
-		Pic.draw(self, nil, nil, nil, nil, nil, {255, 255, 255, trans2}, heath.special_images.fire2)
-		--Pic.draw(self, nil, nil, nil, nil, nil, {255, 255, 255, glow1}, heath.special_images.glow1)
-		--Pic.draw(self, nil, nil, nil, nil, nil, {255, 255, 255, glow2}, heath.special_images.glow2)
-	end
-	--]]
 	return {
 		x = grid.x[col],
 		y = grid.y[row],

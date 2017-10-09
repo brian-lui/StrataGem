@@ -17,19 +17,16 @@ Character.meter_gain = {red = 4, blue = 4, green = 4, yellow = 4}
 
 Character.super_images = {
 	word = image.UI.super.red_word,
-	empty = love.graphics.newImage('images/characters/heathempty.png'),
-	full = love.graphics.newImage('images/characters/heathfull.png'),
-	glow = love.graphics.newImage('images/characters/heathfullglow.png')
+	empty = image.UI.super.red_empty,
+	full = image.UI.super.red_full,
+	glow = image.UI.super.red_glow,
+	overlay = love.graphics.newImage('images/dummy.png'),
 }
-
 Character.burst_images = {
 	partial = image.UI.burst.red_partial,
 	full = image.UI.burst.red_full,
 	glow = {image.UI.burst.red_glow1, image.UI.burst.red_glow2}
 }
-
-assert(image.UI.burst.red_partial)
-assert(Character.burst_images.partial)
 
 Character.MAX_MP = 64
 Character.SUPER_COST = 64
@@ -76,6 +73,8 @@ local function setupSuperMeter(self)
 		y = stage.super[self.ID].y, image = self.super_images.full})
 	self.super_glow = common.instance(Pic, game, {x = stage.super[self.ID].x,
 		y = stage.super[self.ID].y, image = self.super_images.glow})
+	self.super_overlay = common.instance(Pic, game, {x = stage.super[self.ID].x,
+		y = stage.super[self.ID].y, image = self.super_images.overlay})
 end
 
 -- initialize burst meter graphics

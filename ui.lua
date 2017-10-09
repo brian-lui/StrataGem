@@ -21,8 +21,8 @@ function Timer:init(game)
 	self.text_x = stage.x_mid
 	self.text_y = stage.height * 0.33
 
-	self.timerbase = common.instance(Pic, game, {x = stage.x_mid, y = stage.height * 0.5 - 80, image = image.UI.timer_bar})
-	self.timerbar = common.instance(Pic, game, {x = stage.x_mid, y = stage.height * 0.5 - 80, image = image.UI.timer_bar_full, transparency = 255})
+	self.timerbase = common.instance(Pic, game, {x = stage.x_mid, y = stage.height * 0.5 - 80, image = image.UI.timer_gauge})
+	self.timerbar = common.instance(Pic, game, {x = stage.x_mid, y = stage.height * 0.5 - 80, image = image.UI.timer_bar, transparency = 255})
 end
 
 function Timer:update()
@@ -110,6 +110,8 @@ function ui:drawSuper(player)
 		player.super_glow.transparency = math.ceil(math.sin(self.game.frame / 30) * 127.5 + 127.5)
 		player.super_glow:draw()
 	end
+
+	player.super_overlay:draw()
 end
 
 function ui:drawBurst(player)
