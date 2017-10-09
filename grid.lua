@@ -549,7 +549,7 @@ function Grid:generateExplodingGem(gem)
 	local soundfile_name = "sfx_gembreak" .. math.min(5, game.scoring_combo + 1)
 	game.particles.explodingGem.generate(game, gem)
 	local sfx = game.sound:newSFX(soundfile_name)
-	--sfx:setPosition((gem.column - 4.5) * 0.02, 0, 0)
+	sfx:setPosition((gem.column - 4.5) * 0.02, 0, 0)
 end
 
 function Grid:generateMatchParticles()
