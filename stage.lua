@@ -38,7 +38,8 @@ function stage:init(game)
 			glow_y = self.burst.P2.frame.y
 		}
 	end
-
+	print("p1 burst center", self.burst.P1[1].x, self.burst.P1[2].x, burst_width)
+	print("p1 frame center", self.burst.P1.frame.x)
 	self.super = {
 		P1 = {
 			x = self.x_mid - 8.5 * self.gem_width,
@@ -70,7 +71,9 @@ function stage:init(game)
 		P2 = {x = self.x_mid + (8 * self.gem_width), y = self.y_mid - (5.5 * self.gem_height)}
 	}
 
-	self.timer = {x = self.x_mid, y = self.height * 0.1}
+	self.timer = {x = self.x_mid, y = self.height * 0.3}
+
+	self.tub = {x = self.x_mid, y = self.height * 0.663}
 end
 
 function stage:isOnLeft()

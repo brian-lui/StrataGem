@@ -345,6 +345,9 @@ function Piece:dropIntoBasin(coords, received_from_opponent)
 
 	-- Generate uptweening gems
 	for i = 1, #self.gems do
+		local column = coords[i]
+		self.gems[i].column = column
+		self.gems[i].x = grid.x[column]
 		game.particles.upGem.generate(game, self.gems[i])
 	end
 
@@ -387,8 +390,6 @@ function Piece:dropIntoBasin(coords, received_from_opponent)
 		for i = 1, #self.gems do
 			local column = coords[i]
 			grid[1 + row_adj][column].gem = self.gems[i]
-			self.gems[i].x = grid.x[column]
-			self.gems[i].column = column
 			self.gems[i].y = grid.y[1 + row_adj]
 			self.tween_y = grid.y[1 + row_adj + 4]
 			self.gems[i].row = 1 + row_adj
@@ -399,8 +400,6 @@ function Piece:dropIntoBasin(coords, received_from_opponent)
 		for i = 1, #self.gems do
 			local column = coords[1]
 			grid[i + row_adj][column].gem = self.gems[i]
-			self.gems[i].x = grid.x[column]
-			self.gems[i].column = column
 			self.gems[i].y = grid.y[i + row_adj]
 			self.tween_y = grid.y[i + row_adj + 4]
 			self.gems[i].row = i + row_adj
@@ -410,6 +409,7 @@ function Piece:dropIntoBasin(coords, received_from_opponent)
 		end
 	end
 	player.played_pieces[#player.played_pieces+1] = this_played_pieces
+
 	self:breakUp()
 end
 

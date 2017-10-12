@@ -21,8 +21,8 @@ function Timer:init(game)
 	self.text_x = stage.x_mid
 	self.text_y = stage.height * 0.33
 
-	self.timerbase = common.instance(Pic, game, {x = stage.x_mid, y = stage.height * 0.5 - 80, image = image.UI.timer_gauge})
-	self.timerbar = common.instance(Pic, game, {x = stage.x_mid, y = stage.height * 0.5 - 80, image = image.UI.timer_bar, transparency = 255})
+	self.timerbase = common.instance(Pic, game, {x = stage.timer.x, y = stage.timer.y, image = image.UI.timer_gauge})
+	self.timerbar = common.instance(Pic, game, {x = stage.timer.x, y = stage.timer.y, image = image.UI.timer_bar, transparency = 255})
 end
 
 function Timer:update()
@@ -83,7 +83,7 @@ function ui:init(game)
 	self.redX = common.instance(Pic, game, {x = 0, y = 0, image = image.UI.redX})
 
 	-- Base tub image
-	self.tub_img = common.instance(Pic, game, {x = game.stage.x_mid, y = game.stage.height * 0.95 - 189, image = image.UI.tub})
+	self.tub_img = common.instance(Pic, game, {x = game.stage.tub.x, y = game.stage.tub.y, image = image.UI.tub})
 end
 
 -- returns the super drawables for player based on player MP, called every dt
