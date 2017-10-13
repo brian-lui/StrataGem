@@ -38,8 +38,7 @@ function stage:init(game)
 			glow_y = self.burst.P2.frame.y
 		}
 	end
-	print("p1 burst center", self.burst.P1[1].x, self.burst.P1[2].x, burst_width)
-	print("p1 frame center", self.burst.P1.frame.x)
+
 	self.super = {
 		P1 = {
 			x = self.x_mid - 8.5 * self.gem_width,
@@ -77,7 +76,7 @@ function stage:init(game)
 end
 
 function stage:isOnLeft()
-	return love.mouse.getX() < self.x_mid
+	return love.mouse.getX() < self.x_mid -- maybe we need to adjust this for stage resizing too haha
 end
 
 return common.class("Stage", stage)
