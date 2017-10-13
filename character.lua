@@ -28,6 +28,10 @@ Character.burst_images = {
 	glow = {image.UI.burst.red_glow1, image.UI.burst.red_glow2}
 }
 
+Character.sounds = {
+	bgm = "bgm_heath",
+}
+
 Character.MAX_MP = 64
 Character.SUPER_COST = 64
 Character.mp = 0

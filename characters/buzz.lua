@@ -23,4 +23,7 @@ Buzz.burst_images = {
 	glow = {image.UI.burst.blue_glow1, image.UI.burst.blue_glow2}
 }
 
+Buzz.sounds = {
+	bgm = "bgm_buzz",
+}
 return common.class("Buzz", Buzz, Character)

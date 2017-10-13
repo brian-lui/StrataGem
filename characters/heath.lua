@@ -42,6 +42,10 @@ Heath.special_images = {
 	boomparticle3 = love.graphics.newImage('images/specials/heath/boomparticle3.png'),
 }
 
+Heath.sounds = {
+	bgm = "bgm_heath",
+}
+
 function Heath:init(...)
 	Character.init(self, ...)
 	self.fire_columns = {}
