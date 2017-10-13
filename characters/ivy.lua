@@ -24,4 +24,8 @@ Ivy.burst_images = {
 	glow = {image.UI.burst.blue_glow1, image.UI.burst.blue_glow2}
 }
 
+Ivy.sounds = {
+	bgm = "bgm_ivy",
+}
+
 return common.class("Ivy", Ivy, Character)
