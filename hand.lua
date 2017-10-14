@@ -53,7 +53,7 @@ function Hand:getx(y)
 	local sign = self.owner.ID == "P1" and -1 or 1
 	if y == nil then print("Invalid y provided to getx!") return nil end
 	local start_x = stage.x_mid + (5.5 * stage.gem_width) * sign
-	local additional = (((y - stage.height * .35) / stage.height) ^ 2) * stage.height
+	local additional = (((y - stage.height * 0.35) / stage.height) ^ 2) * stage.height
 	return start_x + additional * sign
 end
 
