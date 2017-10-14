@@ -18,7 +18,7 @@ function Hand:init(game, player)
 		self[i] = {}
 		self[i].piece = nil
 		self[i].platform = nil
-		self[i].y = stage.height * 0.1375 * i + stage.height * 0.1875
+		self[i].y = stage.height * 0.1475 * i ^ 0.92 + stage.height * 0.1875
 		self[i].x = self:getx(self[i].y)
 	end
 	self[0].y = stage.height * 0.125 -- discard place is higher up

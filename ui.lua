@@ -19,7 +19,7 @@ function Timer:init(game)
 	self.text_scaling = function(t) return math.max(1 / (t * 2 + 0.4), 1) end
 	self.text_transparency = function(t) return math.min(255 * 2.5 * t, 255) end
 	self.text_x = stage.x_mid
-	self.text_y = stage.height * 0.33
+	self.text_y = stage.height * 0.28
 
 	self.timerbase = common.instance(Pic, game, {x = stage.timer.x, y = stage.timer.y, image = image.UI.timer_gauge})
 	self.timerbar = common.instance(Pic, game, {x = stage.timer.x, y = stage.timer.y, image = image.UI.timer_bar, transparency = 255})
