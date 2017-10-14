@@ -66,8 +66,8 @@ function stage:init(game)
 	}
 
 	self.character = {
-		P1 = {x = self.x_mid - (8 * self.gem_width), y = self.y_mid - (5.5 * self.gem_height)},
-		P2 = {x = self.x_mid + (8 * self.gem_width), y = self.y_mid - (5.5 * self.gem_height)}
+		P1 = {x = self.x_mid - (7.2 * self.gem_width), y = self.y_mid - (4.6 * self.gem_height)},
+		P2 = {x = self.x_mid + (7.2 * self.gem_width), y = self.y_mid - (4.6 * self.gem_height)}
 	}
 
 	self.timer = {x = self.x_mid, y = self.height * 0.3}

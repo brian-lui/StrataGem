@@ -18,7 +18,7 @@ function Hand:init(game, player)
 		self[i] = {}
 		self[i].piece = nil
 		self[i].platform = nil
-		self[i].y = stage.height * 0.1375 * i + stage.height * 0.1875
+		self[i].y = stage.height * 0.1475 * i ^ 0.92 + stage.height * 0.1875
 		self[i].x = self:getx(self[i].y)
 	end
 	self[0].y = stage.height * 0.125 -- discard place is higher up
@@ -52,13 +52,9 @@ function Hand:getx(y)
 	local stage = self.game.stage
 	local sign = self.owner.ID == "P1" and -1 or 1
 	if y == nil then print("Invalid y provided to getx!") return nil end
-	if y <= stage.height * 0.6 then
-		return stage.x_mid + (5.5 * stage.gem_width) * sign
-	else
-		local start_x = stage.x_mid + (5.5 * stage.gem_width) * sign
-		local additional = (((y - stage.height * 0.6) / stage.height) ^ 2) * stage.height
-		return start_x + additional * sign
-	end
+	local start_x = stage.x_mid + (5.5 * stage.gem_width) * sign
+	local additional = (((y - stage.height * 0.35) / stage.height) ^ 2) * stage.height
+	return start_x + additional * sign
 end
 
 function Hand:createGarbageAnimation()
