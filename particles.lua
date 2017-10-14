@@ -665,7 +665,7 @@ end
 
 function UpGem.generate(game, gem)
 	local p = common.instance(UpGem, game.particles, gem)
-	p:moveTo{y = -p.height, duration = 60, easing = "inQuad", exit = true}
+	p:moveTo{y = p.y - game.stage.height, duration = 60, easing = "inQuad", exit = true}
 end
 
 -- Remove all gems at end of turn, whether they finished tweening or not
