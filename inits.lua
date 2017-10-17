@@ -28,7 +28,7 @@ end
 window = {
 	width = 1920,
 	height = 1080,
-	resize = 0.5,
+	resize = 2/3,
 }
 
 ID = {

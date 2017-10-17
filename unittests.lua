@@ -2,6 +2,7 @@
 
 local common = require "class.commons"
 local Gem = require 'gem'
+local Piece = require 'piece'
 
 local colorAliases = {
 	r = "red",
@@ -85,10 +86,40 @@ local function overflow(game)
 end
 
 
+-- other test things here
+local function allRedGems(game)
+	local hands = {game.p1.hand, game.p2.hand}
+	for _, hand in pairs(hands) do
+		for i = 1, 5 do
+			if hand[i].piece then
+				for _, gem in pairs(hand[i].piece.gems) do
+					gem:setColor("red")
+				end
+			end
+		end
+	end
+end
+local function shuffleHands(game)
+	local hands = {game.p1.hand, game.p2.hand}
+	for _, hand in pairs(hands) do
+		for i = 1, 5 do
+			hand[i].piece = common.instance(Piece, game, {
+				location = hand[i],
+				hand_idx = i,
+				owner = hand.owner,
+				x = hand[i].x,
+				y = hand[i].y,
+			})
+		end
+	end
+end
+
 local Unittests = {
 	garbageMatch = garbageMatch,
 	multiCombo = multiCombo,
 	overflow = overflow,
+	allRedGems = allRedGems,
+	shuffleHands = shuffleHands,
 }
 
 return common.class("Unittests", Unittests)

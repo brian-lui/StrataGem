@@ -200,6 +200,10 @@ function Game:keypressed(key)
 		self.unittests.multiCombo(self)
 	elseif key == "v" then
 		self.unittests.overflow(self)
+	elseif key == "b" then
+		self.unittests.allRedGems(self)
+	elseif key == "n" then
+		self.unittests.shuffleHands(self)
 	elseif key == "m" then
 		self.debug_drawGemOwners = not self.debug_drawGemOwners
 		self.debug_drawParticleDestinations = not self.debug_drawParticleDestinations
