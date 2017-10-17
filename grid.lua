@@ -323,11 +323,36 @@ function Grid:generate1by1(column, banned_color1, banned_color2)
 	make_gem(row, column)
 end
 
--- TODO: Remove this? Gems shouldn't store their own grid coordinates
 -- move a gem from a spot on the grid to another spot
-local function moveGem(gem, row, column)
-	gem.row, gem.column = row, column
+-- state only, doesn't change the gem x and gem y, use moveGemAnim for that
+function Grid:moveGem(gem, row, column)
+	if self[row][column].gem then print("Warning: attempt to move gem to location with existing gem") end
+	local orig_row, orig_column = gem.row, gem.column
+	self[row][column].gem = gem
+	self[orig_row][orig_column] = false
+	gem.row = row
+	gem.column = column
+
 end
+
+-- animation part of moving gem to a row/column
+-- can call this from player functions
+function Grid:moveGemAnim(gem, row, column)
+	local target_x, target_y = self.x[column], self.y[row]
+	local dist = ((target_x - gem.x) ^ 2 + (target_y - gem.y) ^ 2) ^ 0.5
+	--local angle = math.atan2(target_y - gem.y, target_x - gem.x)
+	local speed = self.DROP_SPEED + self.DROP_MULTIPLE_SPEED * self.game.scoring_combo
+	local duration = math.abs(dist / speed)
+
+	gem:moveTo{
+		x = target_x,
+		y = target_y,
+		duration = duration,
+		exit = target_y > gem.y and {gem.landedInGrid, gem} or nil
+		-- only call landing function if it was moving downwards
+	}
+end
+
 
 function Grid:moveAllUp(player, rows_to_add)
 -- Moves all gems in the player's half up by rows_to_add.
@@ -341,7 +366,8 @@ function Grid:moveAllUp(player, rows_to_add)
 			self[r][c].gem = self[r+rows_to_add][c].gem
 			if self[r][c].gem then
 				self:moveGemAnim(self[r][c].gem, r, c)
-				moveGem(self[r][c].gem, r, c)
+				self[r][c].gem.row = r
+				self[r][c].gem.column = c
 			end
 		end
 	end
@@ -381,24 +407,6 @@ function Grid:isSettled()
 	if all_unmoved then self:updateGrid() end
 
 	return all_unmoved
-end
-
--- animation part of moving gem to a row/column
--- can call this from player functions
-function Grid:moveGemAnim(gem, row, column)
-	local target_x, target_y = self.x[column], self.y[row]
-	local dist = ((target_x - gem.x) ^ 2 + (target_y - gem.y) ^ 2) ^ 0.5
-	--local angle = math.atan2(target_y - gem.y, target_x - gem.x)
-	local speed = self.DROP_SPEED + self.DROP_MULTIPLE_SPEED * self.game.scoring_combo
-	local duration = math.abs(dist / speed)
-
-	gem:moveTo{
-		x = target_x,
-		y = target_y,
-		duration = duration,
-		exit = target_y > gem.y and {gem.landedInGrid, gem} or nil
-		-- only call landing function if it was moving downwards
-	}
 end
 
 -- instructions to animate the falling gems

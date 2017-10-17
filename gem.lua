@@ -33,6 +33,7 @@ function Gem:init(game, x, y, color, garbage)
 	self.pending = false -- piece that's been placed in basin but not activated
 end
 
+-- Returns a random color string result from a provided gem table
 function Gem.random(game, gem_table)
 	local rand_table = {}
 	local num = 0
@@ -46,6 +47,12 @@ function Gem.random(game, gem_table)
 
 	local rand = game.rng:random(num)
 	return rand_table[rand]
+end
+
+-- default colors are "red", "blue", "green", "yellow"
+function Gem:setColor(color)
+	self.color = color
+	self:newImage(gemImages[color:lower()]) -- this is a pic.lua method
 end
 
 function Gem:isStationary()
