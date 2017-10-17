@@ -28,6 +28,7 @@ function Hand:init(game, player)
 end
 
 -- make pieces at start of round. They are all then moved up 5 spaces
+-- gem_table is optional
 function Hand:makeInitialPieces(gem_table)
 	for i = 8, 10 do
 		self[i].piece = common.instance(Piece, self.game, {
@@ -36,7 +37,7 @@ function Hand:makeInitialPieces(gem_table)
 			owner = self.owner,
 			x = self[i].x,
 			y = self[i].y,
-			gem_table = gem_table,
+			--gem_table = gem_table,
 		})
 		self:movePiece(i, i-5)
 	end

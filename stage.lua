@@ -1,16 +1,17 @@
 local love = _G.love
 require 'utilities'
+require 'inits'
 local common = require "class.commons"
 local image = require 'image'
 
 local stage = {}
 
-local HALF_SUPER_WIDTH = 0.07 * 1920
-local HALF_SUPER_HEIGHT = 0.09 * 1080
+local HALF_SUPER_WIDTH = 0.07 * window.width
+local HALF_SUPER_HEIGHT = 0.09 * window.height
 
 function stage:init(game)
-	self.width = 1920
-	self.height = 1080
+	self.width = window.width
+	self.height = window.height
 	self.gem_width = image.red_gem:getWidth()
 	self.gem_height = image.red_gem:getHeight()
 	self.x_mid = self.width / 2
@@ -22,7 +23,8 @@ function stage:init(game)
 	self.burst = {P1 = {}, P2 = {}}
 	self.burst.P1.frame = {x = self.x_mid - (8.5 * self.gem_width), y = self.y_mid - 3 * self.gem_height}
 	self.burst.P2.frame = {x = self.x_mid + (8.5 * self.gem_width), y = self.y_mid - 3 * self.gem_height}
-	local burst_width = image.UI.burst.red_partial:getWidth()
+	 -- we asked artist to make the image size exactly double of the burst image
+	local burst_width = image.UI.burst.red_partial:getWidth() * 0.5
 
 	for i = 1, 2 do
 		self.burst.P1[i] = {

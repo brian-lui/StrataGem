@@ -65,8 +65,8 @@ end
 
 function Piece:addGems(gem_table)
 	for i = 1, self.size do
-		local gem = Gem.random(self.game, gem_table)
-		self.gems[i] = common.instance(Gem, self.game, self.x, self.y, gem)
+		local gem_color = Gem.random(self.game, gem_table)
+		self.gems[i] = common.instance(Gem, self.game, self.x, self.y, gem_color)
 	end
 	updatePieceGems(self)
 end
