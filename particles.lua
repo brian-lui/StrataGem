@@ -858,6 +858,20 @@ function Words.generateGo(game)
 	particles.dust.generateYellowFountain(game, x, y)
 end
 
+--[[ "no rush!" image that appears between 6th and 7th rows whenever a gem ends up in the 
+	6th row of a column (either by dropping or by being raised to that level from garbage)
+	takes the column it should be displayed in as an argument --]]
+function Words.generateNoRush(game, column)
+	print("press 'g' to call this function!")
+	--[[
+	suggested process:
+	-- upload the image and reference it in images.lua
+	-- calculate where the image should be displayed
+	-- press "g" to display it for 3 seconds without any animation first
+	-- then animate it as suggested by artist
+	--]]
+end
+
 Words = common.class("Words", Words, Pic)
 
 -------------------------------------------------------------------------------

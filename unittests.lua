@@ -114,12 +114,18 @@ local function shuffleHands(game)
 	end
 end
 
+local function displayNoRush(game)
+	local column = 6
+	game.particles.words.generateNoRush(game, column)
+end
+
 local Unittests = {
 	garbageMatch = garbageMatch,
 	multiCombo = multiCombo,
 	overflow = overflow,
 	allRedGems = allRedGems,
 	shuffleHands = shuffleHands,
+	displayNoRush = displayNoRush,
 }
 
 return common.class("Unittests", Unittests)

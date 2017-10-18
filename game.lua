@@ -192,6 +192,8 @@ function Game:keypressed(key)
 			player:addSuper(10000)
 			player:resetMP()
 		end
+	elseif key == "g" then
+		self.unittests.displayNoRush(self)
 	elseif key == "k" then self.canvas[6]:renderTo(function() love.graphics.clear() end)
 	elseif key == "z" then self:start("1P", "heath", "walter", self.background.Starfall, nil, 1)
 	elseif key == "x" then
