@@ -330,25 +330,14 @@ function Piece:deselect()
 	end
 end
 
+-- Transfers piece from player's hand into basin.
+-- No error checking, assumes this is a valid move! Be careful please.
 function Piece:dropIntoBasin(coords, received_from_opponent)
-	-- Transfers piece from player's hand into basin.
-	-- No error checking, assumes this is a valid move! Be careful please.
-	local game = self.game
-	local grid = game.grid
-	local player = self.owner
+	local game, grid, player, hand = self.game, self.game.grid, self.owner, self.owner.hand
 
-	-- not received_from_opponent means it's our piece placing,
-	-- so we need to send it to them
+	-- not received_from_opponent means it's our piece placing, so we need to send it to them
 	if game.type == "Netplay" and not received_from_opponent then
 		game.client.prepareDelta(game.client, self, coords, player.place_type)
-	end
-
-	-- Generate uptweening gems
-	for i = 1, #self.gems do
-		local column = coords[i]
-		self.gems[i].column = column
-		self.gems[i].x = grid.x[column]
-		game.particles.upGem.generate(game, self.gems[i])
 	end
 
 	-- place the gem into the holding area
@@ -362,12 +351,9 @@ function Piece:dropIntoBasin(coords, received_from_opponent)
 		local pending_gems = grid:getPendingGems(player)
 		for _, gem in pairs(pending_gems) do
 			if gem.row == 1 or gem.row == 2 then
-				grid[gem.row + 4][gem.column].gem = gem
-				grid[gem.row][gem.column].gem = false
-				gem.row = gem.row + 4
+				grid:moveGem(gem, gem.row + 4, gem.column)
 				gem.y = grid.y[gem.row]
-				gem.tweening = tween.new(0.01, gem, {})
-				-- a nil tween since we are showing the new location now
+				gem.tweening = tween.new(0.3, gem, {y = grid.y[gem.row + 4]}, "outBack")
 			end
 		end
 		player.cur_burst = player.cur_burst - player.current_double_cost
@@ -380,36 +366,29 @@ function Piece:dropIntoBasin(coords, received_from_opponent)
 		print("Not a valid dropped piece type!")
 	end
 
-	-- set ownership. gem ownership is used to calculate damage and meter gain
-	for i = 1, #self.gems do
-		self.gems[i]:setOwner(player)
+	local locations = {}
+	if self.horizontal then
+		for i = 1, #self.gems do locations[i] = {1 + row_adj, coords[i]} end
+	else
+		for i = 1, #self.gems do locations[i] = {i + row_adj, coords[i]} end
 	end
+	hand:movePieceToGrid(grid, self, locations)
+	hand:movePieceToGridAnim(grid, self, locations)
 
-	local this_played_pieces = {}
 	if self.horizontal then
 		for i = 1, #self.gems do
 			local column = coords[i]
-			grid[1 + row_adj][column].gem = self.gems[i]
-			self.gems[i].y = grid.y[1 + row_adj]
 			self.tween_y = grid.y[1 + row_adj + 4]
-			self.gems[i].row = 1 + row_adj
 			self.gems[i].tweening = tween.new(0.3, self.gems[i], {y = self.tween_y}, "outBack")
-			this_played_pieces[i] = self.gems[i]
 		end
 	elseif not self.horizontal then
 		for i = 1, #self.gems do
 			local column = coords[1]
-			grid[i + row_adj][column].gem = self.gems[i]
-			self.gems[i].y = grid.y[i + row_adj]
 			self.tween_y = grid.y[i + row_adj + 4]
-			self.gems[i].row = i + row_adj
 			self.gems[i].tweening = tween.new(0.3, self.gems[i], {y = self.tween_y}, "outBack")
-			if i ~= #self.gems then self.gems[i].no_yoshi_particle = true end
-			this_played_pieces[i] = self.gems[i]
 		end
 	end
-	player.played_pieces[#player.played_pieces+1] = this_played_pieces
-
+	player.played_pieces[#player.played_pieces+1] = self.gems
 	self:breakUp()
 end
 

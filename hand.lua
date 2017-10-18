@@ -133,6 +133,36 @@ function Hand:movePlatform(start_pos, end_pos)
 	self[0].platform = nil
 end
 
+-- moves a piece from the hand to the grid.
+-- rows and columns should be given as a table for each gem
+-- e.g. {{3, 4}, {6, 6}} to move piece to r3/c6, r4/c6
+function Hand:movePieceToGrid(grid, piece, locations)
+	for i = 1, #piece.gems do
+		local g, r, c = piece.gems[i], locations[i][1], locations[i][2]
+		g:setOwner(self.owner) -- set ownership
+		if grid[r][c].gem then -- check if gem exists in destination
+			print("warning: existing gem in destination (row " .. r .. ", column " .. c .. ")")
+		end
+		grid[r][c].gem = g
+		g.row, g.column = r, c
+		if not piece.horizontal and i ~= #piece.gems then
+			g.no_yoshi_particle = true
+		end
+	end	
+	self[piece.hand_idx].piece = nil
+	piece.hand_idx = nil
+end
+
+-- display-related changes for the above function
+function Hand:movePieceToGridAnim(grid, piece, locations)
+	for i = 1, #piece.gems do
+		local gem, r, c = piece.gems[i], locations[i][1], locations[i][2]
+		gem.x = grid.x[c] -- snap x-position to column first
+		self.game.particles.upGem.generate(self.game, gem) -- call upGem from current position
+		gem.y = grid.y[r]
+	end
+end
+
 -- creates the new pieces for the turn and clears damage.
 -- Takes optional gem_table for gem frequencies
 function Hand:getNewTurnPieces(gem_table)

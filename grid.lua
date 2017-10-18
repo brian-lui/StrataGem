@@ -325,14 +325,11 @@ end
 
 -- move a gem from a spot on the grid to another spot
 -- state only, doesn't change the gem x and gem y, use moveGemAnim for that
-function Grid:moveGem(gem, row, column)
-	if self[row][column].gem then print("Warning: attempt to move gem to location with existing gem") end
-	local orig_row, orig_column = gem.row, gem.column
-	self[row][column].gem = gem
-	self[orig_row][orig_column] = false
-	gem.row = row
-	gem.column = column
-
+function Grid:moveGem(gem, new_row, new_column)
+	if self[new_row][new_column].gem then print("Warning: attempt to move gem to location with existing gem") end
+	self[new_row][new_column].gem = gem
+	self[gem.row][gem.column].gem = false
+	gem.row, gem.column = new_row, new_column
 end
 
 -- animation part of moving gem to a row/column
