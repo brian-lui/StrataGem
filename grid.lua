@@ -13,6 +13,7 @@ function Grid:init(game)
 	self.game = game
 	self.columns = 8
 	self.rows = 14	-- 7-14 basin, 1-6 for rush/double/normal, 0 and 15 sentinels
+	self.visualrows = 14 -- 7-14 basin, 
 	self.x = {}
 	self.y = {}
 	self.active_rect = {}
@@ -26,7 +27,14 @@ function Grid:init(game)
 
 	local tub_bottom = stage.height * 0.95
 	for i = 0, self.rows + 1 do
-		self.y[i] = tub_bottom + (i - self.rows - 0.5) * stage.gem_height
+		if i == (1) or i == (2) then  --change the visual y used for the normal gem row
+			self.y[i] = tub_bottom + (i - self.rows + 1.5) * stage.gem_height
+		elseif i == (3) or i == (4) then --change the visual y used for rush gem row
+			self.y[i] = tub_bottom + (i - self.rows + 0.5) * stage.gem_height
+		else
+			self.y[i] = tub_bottom + (i - self.rows - 0.5) * stage.gem_height
+		end
+		-- self.y[i] = tub_bottom + (i - self.rows - 0.5) * stage.gem_height
 	end
 
 	for row = 0, self.rows + 1 do
