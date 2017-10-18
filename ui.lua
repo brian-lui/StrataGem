@@ -156,7 +156,7 @@ local function drawUnderGemShadow(self, piece)
 	end
 end
 
--- show the shadow at the top that indicates where the piece will be placed
+-- Show the shadow at the top that indicates where the piece will be placed upon mouse release.
 local function drawPlacementShadow(self, piece, shift)
 	local grid = self.game.grid
 	local _, place_type = piece:isDropValid(shift)

@@ -21,8 +21,8 @@ function stage:init(game)
 		P2 = {self.width * 0.8, 0, self.width * 0.2, self.height * 0.3},
 	}
 	self.burst = {P1 = {}, P2 = {}}
-	self.burst.P1.frame = {x = self.x_mid - (8.5 * self.gem_width), y = self.y_mid - 3 * self.gem_height}
-	self.burst.P2.frame = {x = self.x_mid + (8.5 * self.gem_width), y = self.y_mid - 3 * self.gem_height}
+	self.burst.P1.frame = {x = self.x_mid - (9.5 * self.gem_width), y = self.y_mid - 3 * self.gem_height}
+	self.burst.P2.frame = {x = self.x_mid + (9.5 * self.gem_width), y = self.y_mid - 3 * self.gem_height}
 	 -- we asked artist to make the image size exactly double of the burst image
 	local burst_width = image.UI.burst.red_partial:getWidth() * 0.5
 
@@ -43,12 +43,12 @@ function stage:init(game)
 
 	self.super = {
 		P1 = {
-			x = self.x_mid - 8.5 * self.gem_width,
+			x = self.x_mid - 9.5 * self.gem_width,
 			y = self.y_mid - self.gem_height,
 			word_y = self.y_mid + 0.5 * self.gem_height
 		},
 		P2 = {
-			x = self.x_mid + 8.5 * self.gem_width,
+			x = self.x_mid + 9.5 * self.gem_width,
 			y = self.y_mid - self.gem_height,
 			word_y = self.y_mid + 0.5 * self.gem_height
 		}
@@ -68,8 +68,8 @@ function stage:init(game)
 	}
 
 	self.character = {
-		P1 = {x = self.x_mid - (7.2 * self.gem_width), y = self.y_mid - (4.6 * self.gem_height)},
-		P2 = {x = self.x_mid + (7.2 * self.gem_width), y = self.y_mid - (4.6 * self.gem_height)}
+		P1 = {x = self.x_mid - (8.2 * self.gem_width), y = self.y_mid - (4.6 * self.gem_height)},
+		P2 = {x = self.x_mid + (8.2 * self.gem_width), y = self.y_mid - (4.6 * self.gem_height)}
 	}
 
 	self.timer = {x = self.x_mid, y = self.height * 0.3}
