@@ -23,4 +23,7 @@ Gail.burst_images = {
 	glow = {image.UI.burst.yellow_glow1, image.UI.burst.yellow_glow2}
 }
 
+Gail.sounds = {
+	bgm = "bgm_gail",
+}
 return common.class("Gail", Gail, Character)

@@ -23,4 +23,8 @@ Holly.burst_images = {
 	glow = {image.UI.burst.blue_glow1, image.UI.burst.blue_glow2}
 }
 
+Holly.sounds = {
+	bgm = "bgm_holly",
+}
+
 return common.class("Holly", Holly, Character)

@@ -22,4 +22,8 @@ Hailey.burst_images = {
 	full = image.UI.burst.blue_full,
 	glow = {image.UI.burst.blue_glow1, image.UI.burst.blue_glow2}
 }
+
+Hailey.sounds = {
+	bgm = "bgm_hailey",
+}
 return common.class("Hailey", Hailey, Character)
