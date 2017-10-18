@@ -13,7 +13,6 @@ function Grid:init(game)
 	self.game = game
 	self.columns = 8
 	self.rows = 14	-- 7-14 basin, 1-6 for rush/double/normal, 0 and 15 sentinels
-	self.visualrows = 14 -- 7-14 basin, 
 	self.x = {}
 	self.y = {}
 	self.active_rect = {}
