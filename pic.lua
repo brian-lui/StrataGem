@@ -50,8 +50,8 @@ function Pic:draw(h_flip, x, y, rotation, scale, RGBTable, img, quad)
 		love.graphics.draw(
 			img or self.image,
 			quad or self.quad,
-			x or self.x,
-			y or self.y,
+			(x or self.x) + (self.quad_x_offset or 0),
+			(y or self.y) + (self.quad_y_offset or 0),
 			rotation or self.rotation,
 			x_scale or 1,
 			y_scale or 1,
@@ -138,55 +138,34 @@ local function createMoveFunc(self, target)
 	end
 
 	-- create the move_func
-	local move_func
-	if target.curve then -- bezier provided, use curve:evaluate instead of x() and y()
-		if target.debug then
-			print("creating bezier curve")
-		end
+	local xy_func
+	if target.curve then
+		if target.debug then print("creating bezier curve") end
+		xy_func = function(_self) return _self.curve:evaluate(_self.t) end
 		self.curve = target.curve
-		move_func = function(_self, dt)
-			_self.t = _self.t + dt / target.duration
-			local complete = _self.tweening:update(dt)
-			_self.x, _self.y = _self.curve:evaluate(_self.t)
-			_self.rotation, _self.transparency = target.rotation(), target.transparency()
-			_self.scaling = target.scaling()
-			if target.debug then
-				target.debugCounter = ((target.debugCounter or 0) + 1) % 10
-				if target.debugCounter == 0 then
-					print("current x, current y:", _self.x, _self.y)
-				end
-			end
-			if complete then
-				if target.debug then
-					print("Tween ended")
-				end
-				return true
-			end
-		end
 	else
+		if target.debug then print("creating non-bezier move_func") end
+		xy_func = function() return target.x(), target.y() end
+	end
+	
+	local move_func = function(_self, dt)
+		_self.t = _self.t + dt / target.duration
+		local complete = _self.tweening:update(dt)
+		_self.x, _self.y = xy_func(_self)
+		_self.rotation, _self.transparency = target.rotation(), target.transparency()
+		_self.scaling = target.scaling()
 		if target.debug then
-			print("creating non-bezier move_func")
+			target.debugCounter = ((target.debugCounter or 0) + 1) % 10
+			if target.debugCounter == 0 then
+				print("current x, current y:", _self.x, _self.y)
+			end
 		end
-		move_func = function(_self, dt)
-			_self.t = _self.t + dt / target.duration
-			local complete = _self.tweening:update(dt)
-			_self.x, _self.y = target.x(), target.y()
-			_self.rotation, _self.transparency = target.rotation(), target.transparency()
-			_self.scaling = target.scaling()
-			if target.debug then
-				target.debugCounter = ((target.debugCounter or 0) + 1) % 10
-				if target.debugCounter == 0 then
-					print("current x, current y:", _self.x, _self.y)
-				end
-			end
-			if complete then
-				if target.debug then
-					print("Tween ended")
-				end
-				return true
-			end
+		if complete then
+			if target.debug then print("Tween ended") end
+			return true
 		end
 	end
+
 	return move_func
 end
 
@@ -204,6 +183,7 @@ end
 		here: if true, will instantly move from current position; false to move from end of previous position. only if queue is false
 		during: {frame_step, frame_start, func, args}, if any, to execute every dt_step while tweening.
 		exit: {func, args}, if any, to execute when the move finishes. Optional "true" to delete
+		quad: {percentage, x (bool), y(bool), x_anchor(0-1), y_anchor(0-1)} to tween a quad
 		debug: print some unhelpful debug info
 	Junk created: self.t, move_func, tweening, curve, exit, during. during_frame
 	Cleans up after itself when movement or tweening finished during Pic:update()
