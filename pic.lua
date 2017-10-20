@@ -64,7 +64,6 @@ function Pic:draw(h_flip, x, y, rotation, scale, RGBTable, img, quad)
 end
 
 function Pic:changeQuad(x, y, w, h)
-	--self.new_quad = love.graphics.newQuad(x, y, w, h, self.width, self.height)
 	self.quad = love.graphics.newQuad(x, y, w, h, self.width, self.height)
 	self.quad_y = self.y + y
 	self.quad_x = self.x + x
@@ -133,27 +132,70 @@ local function createMoveFunc(self, target)
 	self.exit = target.exit
 	self.t = 0
 	self.tweening = tween.new(target.duration, self, target.tween_target, target.easing)
-	if target.debug then
-		print("duration:", target.duration)
+	if target.debug then print("duration:", target.duration) end
+
+	-- set the x/y function depending on if it's a bezier or not
+	local xy_func = function() return target.x(), target.y() end
+	if target.curve then
+		if target.debug then print("creating bezier curve move func") end
+		xy_func = function(_self) return _self.curve:evaluate(_self.t) end
+		self.curve = target.curve
+	end
+
+	-- set the quad change function if provided
+	-- TODO: still buggy with x_percentage and y_percentage that aren't 1, fix later
+	local quad_func = nil
+	if target.quad then
+		local start_x_pct, end_x_pct, start_y_pct, end_y_pct = 0, 0, 0, 0
+		if target.quad.x then
+			if self.quad_x then start_x_pct = (self.quad_x / self.width) end
+			end_x_pct = target.quad.x_percentage
+		else
+			if self.quad_x then
+				start_x_pct = (self.quad_x / self.width)
+				end_x_pct = (self.quad_x / self.width)
+			else
+				start_x_pct, end_x_pct = 1, 1 
+			end
+		end
+
+		if target.quad.y then
+			if self.quad_y then start_y_pct = (self.quad_y / self.height) end
+			end_y_pct = target.quad.y_percentage
+		else
+			if self.quad_y then
+				start_y_pct = (self.quad_y / self.height)
+				end_y_pct = (self.quad_y / self.height)
+			else
+				start_y_pct, end_y_pct = 1, 1 
+			end
+		end
+
+		quad_func = function(_self, dt)
+			local cur_x_pct = (end_x_pct - start_x_pct) * _self.t + start_x_pct
+			local cur_width = cur_x_pct * _self.width
+			local cur_x = target.quad.x and target.quad.x_anchor * (1-_self.t) * _self.width or 0
+
+			local cur_y_pct = (end_y_pct - start_y_pct) * _self.t + start_y_pct
+			local cur_height = cur_y_pct * _self.height
+			local cur_y = target.quad.y and target.quad.y_anchor * (1-_self.t) * _self.height or 0
+
+			_self:changeQuad(cur_x, cur_y, cur_width, cur_height)
+			self.quad_x_offset = cur_x
+			self.quad_y_offset = cur_y
+		end
 	end
 
 	-- create the move_func
-	local xy_func
-	if target.curve then
-		if target.debug then print("creating bezier curve") end
-		xy_func = function(_self) return _self.curve:evaluate(_self.t) end
-		self.curve = target.curve
-	else
-		if target.debug then print("creating non-bezier move_func") end
-		xy_func = function() return target.x(), target.y() end
-	end
-	
 	local move_func = function(_self, dt)
 		_self.t = _self.t + dt / target.duration
 		local complete = _self.tweening:update(dt)
 		_self.x, _self.y = xy_func(_self)
 		_self.rotation, _self.transparency = target.rotation(), target.transparency()
 		_self.scaling = target.scaling()
+		if quad_func then
+			quad_func(_self, dt)
+		end
 		if target.debug then
 			target.debugCounter = ((target.debugCounter or 0) + 1) % 10
 			if target.debugCounter == 0 then
@@ -183,7 +225,7 @@ end
 		here: if true, will instantly move from current position; false to move from end of previous position. only if queue is false
 		during: {frame_step, frame_start, func, args}, if any, to execute every dt_step while tweening.
 		exit: {func, args}, if any, to execute when the move finishes. Optional "true" to delete
-		quad: {percentage, x (bool), y(bool), x_anchor(0-1), y_anchor(0-1)} to tween a quad
+		quad: {x = bool, y = bool, x_percentage = 0-1, y_percentage = 0-1, x_anchor = 0-1, y_anchor = 0-1} to tween a quad
 		debug: print some unhelpful debug info
 	Junk created: self.t, move_func, tweening, curve, exit, during. during_frame
 	Cleans up after itself when movement or tweening finished during Pic:update()
