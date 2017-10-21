@@ -195,13 +195,14 @@ function Game:keypressed(key)
 	elseif key == "g" then
 		self.unittests.displayNoRush(self)
 	elseif key == "k" then self.canvas[6]:renderTo(function() love.graphics.clear() end)
-	elseif key == "z" then self:start("1P", "heath", "walter", self.background.Starfall, nil, 1)
+	elseif key == "z" then self.unittests.resetWithSeed(self, nil)
+	elseif key == "f1" then self.unittests.resetWithSeed(self, 12345)
 	elseif key == "x" then
 		self.unittests.garbageMatch(self)
 	elseif key == "c" then
 		self.unittests.multiCombo(self)
 	elseif key == "v" then
-		self.unittests.overflow(self)
+		self.unittests.p2VerticalMatch(self)
 	elseif key == "b" then
 		self.unittests.allRedGems(self)
 	elseif key == "n" then

@@ -51,8 +51,8 @@ function Pic:draw(h_flip, x, y, rotation, scale, RGBTable, img, quad)
 		love.graphics.draw(
 			img or self.image,
 			quad or self.quad,
-			(x or self.x) + (self.quad_x_offset or 0),
-			(y or self.y) + (self.quad_y_offset or 0),
+			(x or self.x) + (self.quad_data and self.quad_data.x_offset or 0),
+			(y or self.y) + (self.quad_data and self.quad_data.y_offset or 0),
 			rotation or self.rotation,
 			x_scale or 1,
 			y_scale or 1,
@@ -107,8 +107,8 @@ end
 -- this is called from createMoveFunc and from some UI functions
 function Pic:changeQuad(x, y, w, h)
 	self.quad = love.graphics.newQuad(x, y, w, h, self.width, self.height)
-	self.quad_x_offset = x or 0 -- duplicated for now because some old backgrounds.lua code uses it in draw
-	self.quad_y_offset = y or 0
+	--self.quad_x_offset = x or 0 -- duplicated for now because some old backgrounds.lua code uses it in draw
+	--self.quad_y_offset = y or 0
 	self.quad_data = {
 		x_offset = x or 0,
 		y_offset = y or 0,

@@ -85,6 +85,16 @@ local function overflow(game)
 	nrow(game, 8, "RGGY    ")
 end
 
+local function p2VerticalMatch(game)
+	nrow(game, 8, "    BRBB")
+	for i = 1, 5 do
+		if game.p2.hand[i].piece then
+			for _, gem in pairs(game.p2.hand[i].piece.gems) do
+				gem:setColor("red")
+			end
+		end
+	end
+end
 
 -- other test things here
 local function allRedGems(game)
@@ -99,6 +109,7 @@ local function allRedGems(game)
 		end
 	end
 end
+
 local function shuffleHands(game)
 	local hands = {game.p1.hand, game.p2.hand}
 	for _, hand in pairs(hands) do
@@ -114,6 +125,10 @@ local function shuffleHands(game)
 	end
 end
 
+local function resetWithSeed(game, rng_seed)
+	game:start("1P", "heath", "walter", game.background.Starfall, rng_seed, 1)
+end
+
 local function displayNoRush(game)
 	local column = 6
 	game.particles.words.generateNoRush(game, column)
@@ -126,6 +141,8 @@ local Unittests = {
 	allRedGems = allRedGems,
 	shuffleHands = shuffleHands,
 	displayNoRush = displayNoRush,
+	resetWithSeed = resetWithSeed,
+	p2VerticalMatch = p2VerticalMatch,
 }
 
 return common.class("Unittests", Unittests)
