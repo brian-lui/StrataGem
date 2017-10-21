@@ -26,6 +26,7 @@ function Pic:init(game, tbl)
 	self.width = self.image:getWidth()
 	self.height = self.image:getHeight()
 	self.quad = love.graphics.newQuad(0, 0, self.width, self.height, self.width, self.height)
+	self.quad_data = {}
 	self.ID = ID.particle
 end
 
@@ -61,12 +62,6 @@ function Pic:draw(h_flip, x, y, rotation, scale, RGBTable, img, quad)
 			0
 		)
 	love.graphics.pop()
-end
-
-function Pic:changeQuad(x, y, w, h)
-	self.quad = love.graphics.newQuad(x, y, w, h, self.width, self.height)
-	self.quad_y = self.y + y
-	self.quad_x = self.x + x
 end
 
 function Pic:isStationary()
@@ -107,6 +102,23 @@ local function clearMove(self)
 	self.exit = nil
 end
 
+-- TODO: fix the background.lua so it initializes from pic.lua properly
+
+-- this is called from createMoveFunc and from some UI functions
+function Pic:changeQuad(x, y, w, h)
+	self.quad = love.graphics.newQuad(x, y, w, h, self.width, self.height)
+	self.quad_x_offset = x or 0 -- duplicated for now because some old backgrounds.lua code uses it in draw
+	self.quad_y_offset = y or 0
+	self.quad_data = {
+		x_offset = x or 0,
+		y_offset = y or 0,
+		x = self.x + (x or 0),
+		y = self.y + (y or 0),
+		x_pct = w / self.width,
+		y_pct = h / self.height,
+	}
+end
+
 -- create the move_func that's updated each pic:update()
 local function createMoveFunc(self, target)
 	-- convert numbers into function equivalents
@@ -143,46 +155,21 @@ local function createMoveFunc(self, target)
 	end
 
 	-- set the quad change function if provided
-	-- TODO: still buggy with x_percentage and y_percentage that aren't 1, fix later
 	local quad_func = nil
 	if target.quad then
-		local start_x_pct, end_x_pct, start_y_pct, end_y_pct = 0, 0, 0, 0
-		if target.quad.x then
-			if self.quad_x then start_x_pct = (self.quad_x / self.width) end
-			end_x_pct = target.quad.x_percentage
-		else
-			if self.quad_x then
-				start_x_pct = (self.quad_x / self.width)
-				end_x_pct = (self.quad_x / self.width)
-			else
-				start_x_pct, end_x_pct = 1, 1 
-			end
-		end
-
-		if target.quad.y then
-			if self.quad_y then start_y_pct = (self.quad_y / self.height) end
-			end_y_pct = target.quad.y_percentage
-		else
-			if self.quad_y then
-				start_y_pct = (self.quad_y / self.height)
-				end_y_pct = (self.quad_y / self.height)
-			else
-				start_y_pct, end_y_pct = 1, 1 
-			end
-		end
+		local start_x_pct = self.quad_data.x_pct or (target.quad.x and 0 or 1)
+		local end_x_pct = target.quad.x_percentage or 1
+		local start_y_pct = self.quad_data.y_pct or (target.quad.y and 0 or 1)
+		local end_y_pct = target.quad.y_percentage or 1
 
 		quad_func = function(_self, dt)
 			local cur_x_pct = (end_x_pct - start_x_pct) * _self.t + start_x_pct
 			local cur_width = cur_x_pct * _self.width
-			local cur_x = target.quad.x and target.quad.x_anchor * (1-_self.t) * _self.width or 0
-
+			local cur_x = target.quad.x and target.quad.x_anchor * (1-_self.t) * _self.width * end_x_pct or 0
 			local cur_y_pct = (end_y_pct - start_y_pct) * _self.t + start_y_pct
 			local cur_height = cur_y_pct * _self.height
-			local cur_y = target.quad.y and target.quad.y_anchor * (1-_self.t) * _self.height or 0
-
+			local cur_y = target.quad.y and target.quad.y_anchor * (1-_self.t) * _self.height * end_y_pct or 0
 			_self:changeQuad(cur_x, cur_y, cur_width, cur_height)
-			self.quad_x_offset = cur_x
-			self.quad_y_offset = cur_y
 		end
 	end
 
@@ -193,9 +180,7 @@ local function createMoveFunc(self, target)
 		_self.x, _self.y = xy_func(_self)
 		_self.rotation, _self.transparency = target.rotation(), target.transparency()
 		_self.scaling = target.scaling()
-		if quad_func then
-			quad_func(_self, dt)
-		end
+		if quad_func then quad_func(_self, dt) end
 		if target.debug then
 			target.debugCounter = ((target.debugCounter or 0) + 1) % 10
 			if target.debugCounter == 0 then
