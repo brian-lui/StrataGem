@@ -104,6 +104,10 @@ image.background.cloud = {
 	background = love.graphics.newImage('images/backgrounds/cloud/sky.png'),
 	thumbnail = love.graphics.newImage('images/charselect/skythumbnail.png'),
 }
+image.background.rabbitsnowstorm = {
+	background = love.graphics.newImage('images/backgrounds/rabbitsnowstorm/rabbitsnowstorm.png')
+}
+
 for i = 1, 6 do
 	image.background.cloud["bigcloud"..i] =	love.graphics.newImage('images/backgrounds/cloud/bigcloud'..i..'.png')
 	image.background.cloud["medcloud"..i] =	love.graphics.newImage('images/backgrounds/cloud/medcloud'..i..'.png')

@@ -50,6 +50,8 @@ function Background:init(game)
 	self.colors.background_image4 = common.instance(Pic, game, {x = stage.x_mid, y = stage.y_mid, image = image.background.colors.green})
 	self.colors.background_image5 = common.instance(Pic, game, {x = stage.x_mid, y = stage.y_mid, image = image.background.colors.yellow})
 	self.colors.solid_draw = Background.colors.background_image1
+
+	self.rabbitsnowstorm.background = common.instance(Pic, self.game, {x = stage.x_mid, y = stage.y_mid, image = image.background.rabbitsnowstorm.background})
 end
 
 -------------------------------------------------------------------------------
@@ -727,14 +729,36 @@ function Background.colors:reset()
 	self.colors.solid_draw = self.colors.background_image1
 end
 
+
+
+-------------------------------------------------------------------------------
+---------------------------- RABBIT IN A SNOWSTORM ----------------------------
+-------------------------------------------------------------------------------
+
+Background.rabbitsnowstorm = {
+	Background_ID = "RabbitSnowstorm",
+}
+
+function Background.rabbitsnowstorm:drawImages()
+	self.rabbitsnowstorm.background:draw()
+end
+
+function Background.rabbitsnowstorm:update()
+end
+
+function Background.rabbitsnowstorm:reset()
+end
+
+
 Background.list = {
+	{background = Background.rabbitsnowstorm, thumbnail = image.background.colors.thumbnail, full = image.background.colors.white},
 	{background = Background.colors, thumbnail = image.background.colors.thumbnail, full = image.background.colors.white},
 	{background = Background.cloud, thumbnail = image.background.cloud.thumbnail, full = image.background.cloud.background},
 	{background = Background.starfall, thumbnail = image.background.starfall.thumbnail, full = image.background.starfall.background},
 	{background = Background.seasons, thumbnail = image.seasons_background_thumbnail, full = image.seasons_background},
 }
 
-Background.current = Background.colors
+Background.current = Background.rabbitsnowstorm
 
 
 return common.class("Background", Background)
