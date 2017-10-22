@@ -4,21 +4,6 @@ local image = {
 	lookup = {},
 	dummy = love.graphics.newImage('images/dummy.png'),
 
-	-- backgrounds
-	seasons_background = love.graphics.newImage('images/backgrounds/seasons/background.png'),
-	seasons_background2 = love.graphics.newImage('images/backgrounds/seasons/background2.png'),
-	seasons_background_thumbnail = love.graphics.newImage('images/charselect/seasonthumbnail.png'),
-	seasons_greenleaf = love.graphics.newImage('images/backgrounds/seasons/greenleaf.png'),
-	seasons_orangeleaf = love.graphics.newImage('images/backgrounds/seasons/orangeleaf.png'),
-	seasons_redleaf = love.graphics.newImage('images/backgrounds/seasons/redleaf.png'),
-	seasons_yellowleaf = love.graphics.newImage('images/backgrounds/seasons/yellowleaf.png'),
-	seasons_sakura = love.graphics.newImage('images/backgrounds/seasons/sakura.png'),
-	seasons_tinysakura = love.graphics.newImage('images/backgrounds/seasons/tinysakura.png'),
-	seasons_snow1 = love.graphics.newImage('images/backgrounds/seasons/snow1.png'),
-	seasons_snow2 = love.graphics.newImage('images/backgrounds/seasons/snow2.png'),
-	seasons_snow3 = love.graphics.newImage('images/backgrounds/seasons/snow3.png'),
-	seasons_snow4 = love.graphics.newImage('images/backgrounds/seasons/snow4.png'),
-
 	-- Gems
 	red_gem = love.graphics.newImage('images/gems/redgem.png'),
 	blue_gem = love.graphics.newImage('images/gems/bluegem.png'),

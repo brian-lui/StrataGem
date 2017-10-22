@@ -33,7 +33,7 @@ window = {
 
 ID = {
 	reset = function(self)
-		self.gem, self.piece, self.particle, self.background = 0, 0, 0, 0
+		self.gem, self.piece, self.particle, self.background, self.background_particle = 0, 0, 0, 0, 0
 	end
 }
 

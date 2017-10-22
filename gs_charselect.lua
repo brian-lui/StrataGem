@@ -288,7 +288,7 @@ function charselect:mousemoved(x, y)
 end
 
 function charselect:update(dt)
-	self.current_background:update()
+	self.current_background:update(dt)
 	for _, v in pairs(self.objects) do v.tweening:update(dt) end
 end
 

@@ -41,7 +41,7 @@ end
 function gs_main:update(dt)
 	timeDip(self, function() self.phaseManager:run(self.timeStep) end)
 	self.particles:update(dt) -- variable fps
-	self.current_background:update() -- variable fps
+	self.current_background:update(dt) -- variable fps
 	self.ui.timer:update()
 	self.animations:updateAll(dt)
 	self.screenshake_frames = math.max(0, self.screenshake_frames - 1)

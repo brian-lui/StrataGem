@@ -184,8 +184,8 @@ function lobby:draw()
 	lobby.drawCurrentUsers(self)
 end
 
-function lobby:update()
-	self.current_background:update()
+function lobby:update(dt)
+	self.current_background:update(dt)
 end
 
 return lobby

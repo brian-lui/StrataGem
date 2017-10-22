@@ -84,7 +84,7 @@ function title:enter()
 end
 
 function title:update(dt)
-	self.current_background:update()
+	self.current_background:update(dt)
 	for name, v in pairs(self.objects) do
 		if v.tweening then
 			if v.tweening:update(dt) then
