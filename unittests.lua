@@ -126,7 +126,7 @@ local function shuffleHands(game)
 end
 
 local function resetWithSeed(game, rng_seed)
-	game:start("1P", "heath", "walter", game.background.RabbitSnowstorm, rng_seed, 1)
+	game:start("1P", "heath", "walter", "RabbitInASnowstorm", rng_seed, 1)
 end
 
 local function displayNoRush(game)

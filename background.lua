@@ -1,11 +1,7 @@
 local love = _G.love
 --[[
 	Draws the background, including animations.
-	Every background should have:
-	Background.XYZ:update()
-	Background.XYZ:drawImages()
-	Background.XYZ:reset()
-	Note that the "self" passed to these functions is Background, not Background.XYZ
+	Every background should have init(), draw(), update() methods.
 --]]
 
 local common = require "class.commons"
@@ -50,8 +46,6 @@ function Background:init(game)
 	self.colors.background_image4 = common.instance(Pic, game, {x = stage.x_mid, y = stage.y_mid, image = image.background.colors.green})
 	self.colors.background_image5 = common.instance(Pic, game, {x = stage.x_mid, y = stage.y_mid, image = image.background.colors.yellow})
 	self.colors.solid_draw = Background.colors.background_image1
-
-	self.rabbitsnowstorm.background = common.instance(Pic, self.game, {x = stage.x_mid, y = stage.y_mid, image = image.background.rabbitsnowstorm.background})
 end
 
 -------------------------------------------------------------------------------
@@ -730,35 +724,40 @@ function Background.colors:reset()
 end
 
 
-
--------------------------------------------------------------------------------
----------------------------- RABBIT IN A SNOWSTORM ----------------------------
--------------------------------------------------------------------------------
-
-Background.rabbitsnowstorm = {
-	Background_ID = "RabbitSnowstorm",
-}
-
-function Background.rabbitsnowstorm:drawImages()
-	self.rabbitsnowstorm.background:draw()
-end
-
-function Background.rabbitsnowstorm:update()
-end
-
-function Background.rabbitsnowstorm:reset()
-end
-
-
 Background.list = {
-	{background = Background.rabbitsnowstorm, thumbnail = image.background.colors.thumbnail, full = image.background.colors.white},
+	{background = "RabbitInASnowstorm", thumbnail = image.background.colors.thumbnail, full = image.background.colors.white},
 	{background = Background.colors, thumbnail = image.background.colors.thumbnail, full = image.background.colors.white},
 	{background = Background.cloud, thumbnail = image.background.cloud.thumbnail, full = image.background.cloud.background},
 	{background = Background.starfall, thumbnail = image.background.starfall.thumbnail, full = image.background.starfall.background},
 	{background = Background.seasons, thumbnail = image.seasons_background_thumbnail, full = image.seasons_background},
 }
 
-Background.current = Background.rabbitsnowstorm
 
+
+-------------------------------------------------------------------------------
+---------------------------- RABBIT IN A SNOWSTORM ----------------------------
+-------------------------------------------------------------------------------
+-- New coding format
+local RabbitInASnowstorm = {}
+function RabbitInASnowstorm:init(game)
+	self.background = common.instance(Pic, game, {x = game.stage.x_mid, y = game.stage.y_mid, image = image.background.rabbitsnowstorm.background})
+end
+
+function RabbitInASnowstorm:draw()
+	self.background:draw()
+	-- additional draws here
+end
+
+
+function RabbitInASnowstorm:update()
+	-- change background state here
+end
+
+RabbitInASnowstorm = common.class("RabbitInASnowstorm", RabbitInASnowstorm)
+
+
+
+
+Background.RabbitInASnowstorm = RabbitInASnowstorm
 
 return common.class("Background", Background)

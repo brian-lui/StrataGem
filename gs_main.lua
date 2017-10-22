@@ -41,7 +41,7 @@ end
 function gs_main:update(dt)
 	timeDip(self, function() self.phaseManager:run(self.timeStep) end)
 	self.particles:update(dt) -- variable fps
-	self.background.current.update(self.background) -- variable fps
+	self.current_background:update() -- variable fps
 	self.ui.timer:update()
 	self.animations:updateAll(dt)
 	self.screenshake_frames = math.max(0, self.screenshake_frames - 1)
@@ -57,11 +57,6 @@ function gs_main:update(dt)
 		self.particles.platformStar.generate(self, self.p1, "Star", 0.05, 0.21, 0.28)
 		self.particles.platformStar.generate(self, self.p2, "Star", 0.95, 0.79, 0.72)
 	end
-end
-
--- background and background effects
-function gs_main:drawBackground()
-	self.background.current.drawImages(self.background)
 end
 
 -- draw all the non-gem screen elements: super bar, sprite
@@ -90,7 +85,7 @@ function gs_main.screenshake(self, shake)
 end
 
 function gs_main:draw()
-	gs_main.drawBackground(self)
+	self.current_background:draw()
 
 	self.camera:set(1, 1)
 		if self.screenshake_frames > 0 then

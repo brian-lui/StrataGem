@@ -106,14 +106,13 @@ function Game:start(gametype, char1, char2, bkground, seed, side)
 	-- Spawn the appropriate ai to handle opponent (net input or actual AI)
 	self.ai = common.instance(require(gametype == "Netplay" and "ai_net" or "ai"), self, self.them_player)
 
-	for player in self:players() do
-		player:cleanup()
-	end
-	self.background.current = bkground
-	self.background.current.reset(self.background)
+	for player in self:players() do player:cleanup() end
 
 	self.type = gametype
 	self.statemanager:switch(require "gs_main")
+
+	print("bkground", bkground)
+	self.current_background = common.instance(self.background[bkground], self)
 end
 
 function Game:update(dt)

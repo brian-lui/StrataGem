@@ -13,6 +13,7 @@ function lobby:enter()
 		self.sound:stopBGM()
 		self.sound:newBGM("bgm_menu", true)
 	end
+	self.current_background = common.instance(self.background.RabbitInASnowstorm, self)
 
 	local stage = self.stage
 	self.clicked = false
@@ -144,16 +145,6 @@ function lobby:getClickedButton(x, y)
 	return false
 end
 
-
-function lobby:draw()
-	lobby.drawBackground(self)
-	lobby.drawScreenElements(self)
-end
-
-function lobby:drawBackground()
-	self.background.colors.drawImages(self.background)
-end
-
 function lobby:drawCurrentUsers()
 	local dude = self.current_users
 
@@ -179,8 +170,10 @@ function lobby:drawCurrentUsers()
 	love.graphics.pop()
 end
 
-function lobby:drawScreenElements()
+function lobby:draw()
 	local screen_elements = self.screen_elements
+
+	self.current_background:draw()
 	screen_elements.game_background:draw()
 	screen_elements.create:draw()
 	screen_elements.ranked_match:draw()
@@ -192,7 +185,7 @@ function lobby:drawScreenElements()
 end
 
 function lobby:update()
-	self.background.colors.update(self.background)
+	self.current_background:update()
 end
 
 return lobby

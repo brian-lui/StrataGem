@@ -10,7 +10,8 @@ function charselect:enter()
 		self.sound:stopBGM()
 		self.sound:newBGM("bgm_menu", true)
 	end
-		
+	self.current_background = common.instance(self.background.RabbitInASnowstorm, self)
+
 	self.current_char = nil
 	self.background_idx = 1
 
@@ -242,15 +243,8 @@ function charselect:enter()
 end
 
 function charselect:draw()
-	charselect.drawBackground(self)
-	charselect.drawScreenElements(self)
-end
+	self.current_background:draw()
 
-function charselect:drawBackground()
-	self.background.colors.drawImages(self.background)
-end
-
-function charselect:drawScreenElements()
 	local draw_order = {"Character", "CharacterText", "Background", "Portrait", "Button"}
 	for i = 1, #draw_order do
 		for _, v in pairs(self.objects) do
@@ -260,7 +254,6 @@ function charselect:drawScreenElements()
 end
 
 local pointIsInRect = require "utilities".pointIsInRect
-
 function charselect:mousepressed(x, y)
 	for _, button in pairs(self.buttons) do
 		if pointIsInRect(x, y, button.item:getRect()) and not self.clicked then
@@ -295,10 +288,8 @@ function charselect:mousemoved(x, y)
 end
 
 function charselect:update(dt)
-	self.background.colors.update(self.background)
-	for _, v in pairs(self.objects) do
-		v.tweening:update(dt)
-	end
+	self.current_background:update()
+	for _, v in pairs(self.objects) do v.tweening:update(dt) end
 end
 
 return charselect

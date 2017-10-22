@@ -10,6 +10,8 @@ local title = {}
 function title:enter()
 	self.clicked = nil
 	if self.sound:getCurrentBGM() ~= "bgm_menu" then self.sound:stopBGM() end
+	self.current_background = common.instance(self.background.RabbitInASnowstorm, self)
+
 	local stage = self.stage
 	local data = {
 		logo = {
@@ -82,8 +84,7 @@ function title:enter()
 end
 
 function title:update(dt)
-	--self:drawBackground()	-- TODO: Shouldn't this be in draw()?
-	self.background.seasons.update(self.background)
+	self.current_background:update()
 	for name, v in pairs(self.objects) do
 		if v.tweening then
 			if v.tweening:update(dt) then
@@ -99,24 +100,11 @@ function title:update(dt)
 end
 
 function title:draw()
-	title.drawBackground(self)
-	title.drawScreenElements(self)
-end
-
-function title:drawScreenElements()
-	--love.graphics.clear()
-	for _, v in pairs(self.objects) do
-		v:draw()
-	end
-end
-
-function title:drawBackground()
-	--love.graphics.clear()
-	self.background.seasons.drawImages(self.background)
+	self.current_background:draw()
+	for _, v in pairs(self.objects) do v:draw() end
 end
 
 local pointIsInRect = require "utilities".pointIsInRect
-
 function title:mousepressed(x, y)
 	for _, button in pairs(self.buttons) do
 		if pointIsInRect(x, y, button.item:getRect()) then

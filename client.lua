@@ -223,7 +223,7 @@ local function startMatch(self, recv)
 	self.match_start_time = love.timer.getTime()
 	local char1 = "heath" -- need to lookup the character name
 	local char2 = "walter" -- need to lookup the character name
-	local bkground = self.game.background.seasons
+	local bkground = "RabbitInASnowstorm"
 	self.queuing = false
 	self.playing = true
 	self.game:start("Netplay", char1, char2, bkground, recv.seed, recv.side)
