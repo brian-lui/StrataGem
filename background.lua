@@ -235,51 +235,8 @@ Background.list = {
 	{background = "RabbitInASnowstorm", thumbnail = image.background.colors.thumbnail, full = image.background.colors.white},
 	{background = Background.colors, thumbnail = image.background.colors.thumbnail, full = image.background.colors.white},
 	{background = Background.cloud, thumbnail = image.background.cloud.thumbnail, full = image.background.cloud.background},
-	--{background = Background.starfall, thumbnail = image.background.starfall.thumbnail, full = image.background.starfall.background},
 	{background = "Starfall", thumbnail = image.background.starfall.thumbnail, full = image.background.starfall.background},
 }
-
-
-
--------------------------------------------------------------------------------
------------------------------ PIC.LUA REPLACEMENT -----------------------------
--------------------------------------------------------------------------------
---[[ We modify pic.lua to use a background_particle instead of particle, and to
-	use the specified container ]]
-local BackgroundPic = {}
-function BackgroundPic:init(game, tbl)
-	self.game = game
-	self.queued_moves = {}
-	self.speed_x = 0
-	self.speed_y = 0
-	self.rotation = 0
-	self.speed_rotation = 0
-	self.scaling = 1
-	self.transparency = 255
-
-	for k, v in pairs(tbl) do
-		self[k] = v
-	end
-	if tbl.x == nil then print("No x-value received!") end
-	if tbl.y == nil then print("No y-value received!") end
-	if tbl.image == nil then print("No image received!") end
-
-	self.width = self.image:getWidth()
-	self.height = self.image:getHeight()
-	self.quad = love.graphics.newQuad(0, 0, self.width, self.height, self.width, self.height)
-	self.quad_data = {}
-
-	if self.container then
-		ID.background_particle = ID.background_particle + 1
-		self.ID = ID.background_particle
-		self.container[self.ID] = self
-	end
-end
-
-function BackgroundPic:remove()
-	if self.container then self.container[self.ID] = nil end
-end
-BackgroundPic = common.class("BackgroundPic", BackgroundPic, Pic)
 
 -------------------------------------------------------------------------------
 ---------------------------- RABBIT IN A SNOWSTORM ----------------------------
@@ -287,11 +244,12 @@ BackgroundPic = common.class("BackgroundPic", BackgroundPic, Pic)
 local RabbitInASnowstorm = {}
 function RabbitInASnowstorm:init(game)
 	self.game = game
-	self.background = common.instance(BackgroundPic, game, {
+	self.background = common.instance(Pic, game, {
 		x = game.stage.x_mid,
 		y = game.stage.y_mid,
 		image = image.background.rabbitsnowstorm.background,
 	})
+	ID.background_particle = 0
 end
 
 function RabbitInASnowstorm:update(dt)
@@ -308,7 +266,7 @@ RabbitInASnowstorm = common.class("RabbitInASnowstorm", RabbitInASnowstorm)
 local Starfall = {}
 function Starfall:init(game)
 	self.game = game
-	self.background = common.instance(BackgroundPic, game, {
+	self.background = common.instance(Pic, game, {
 		x = game.stage.x_mid,
 		y = game.stage.y_mid,
 		image = image.background.starfall.background
@@ -316,6 +274,7 @@ function Starfall:init(game)
 	self.star_timer_func = function() return math.random(70, 100) end
 	self.star_timer = self.star_timer_func()
 	self.stars = {} -- container for stars
+	ID.background_particle = 0
 end
 
 function Starfall:_generateStar()
@@ -338,8 +297,8 @@ function Starfall:_generateStar()
 	local end_x = start_x + stage.width * math.random(0.15, 0.15)
 	local end_y = stage.height + height
 
-	local star = common.instance(BackgroundPic, self.game,
-		{x = start_x, y = start_y, image = img, container = self.stars})
+	local star = common.instance(Pic, self.game,
+		{x = start_x, y = start_y, image = img, container = self.stars, counter = "background_particle"})
 	star:moveTo{duration = duration, x = end_x, y = end_y, rotation = rotation, exit = true}
 end
 

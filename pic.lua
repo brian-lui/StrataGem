@@ -6,9 +6,10 @@ local tween = require 'tween'
 local Pic = {}
 
 -- required: x, y, image
+-- container/counter to specify different container and ID counter
+-- doesn't assign the created instance to any container by default
 function Pic:init(game, tbl)
 	self.game = game
-	ID.particle = ID.particle + 1
 	self.queued_moves = {}
 	self.speed_x = 0
 	self.speed_y = 0
@@ -23,11 +24,20 @@ function Pic:init(game, tbl)
 	if tbl.x == nil then print("No x-value received!") end
 	if tbl.y == nil then print("No y-value received!") end
 	if tbl.image == nil then print("No image received!") end
+	if tbl.container then
+		if not tbl.counter then print("Container specified without counter ID!") end
+		ID[tbl.counter] = ID[tbl.counter] + 1
+		self.ID = ID[tbl.counter]
+		self.container[self.ID] = self
+	else
+		ID.particle = ID.particle + 1
+		self.ID = ID.particle
+	end
+
 	self.width = self.image:getWidth()
 	self.height = self.image:getHeight()
 	self.quad = love.graphics.newQuad(0, 0, self.width, self.height, self.width, self.height)
 	self.quad_data = {}
-	self.ID = ID.particle
 end
 
 function Pic:draw(h_flip, x, y, rotation, scale, RGBTable, img, quad)
@@ -69,7 +79,11 @@ function Pic:isStationary()
 end
 
 function Pic:remove()
-	self.game.particles.allParticles[self.ID] = nil
+	if self.container then
+		self.container[self.ID] = nil
+	else
+		self.game.particles.allParticles[self.ID] = nil
+	end
 end
 
 function Pic:getRect()
