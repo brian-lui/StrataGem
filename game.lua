@@ -111,7 +111,6 @@ function Game:start(gametype, char1, char2, bkground, seed, side)
 	self.type = gametype
 	self.statemanager:switch(require "gs_main")
 
-	print("bkground", bkground)
 	self.current_background = common.instance(self.background[bkground], self)
 end
 
