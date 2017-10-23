@@ -8,10 +8,6 @@ local pointIsInRect = require "utilities".pointIsInRect
 
 local gs_main = {}
 
-function gs_main:init()
-	self.timeStep, self.timeBucket = 1/60, 0
-end
-
 function gs_main:enter()
 	local canvas = {}
 	for i = 1, 5 do
