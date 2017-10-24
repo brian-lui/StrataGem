@@ -157,7 +157,8 @@ image.lobby = {
 	search_ranked = love.graphics.newImage('images/lobby/searchingranked.png'),
 	search_none = love.graphics.newImage('images/lobby/searchingnone.png'),
 	cancel_search = love.graphics.newImage('images/lobby/cancelsearchbutton.png'),
-	back = love.graphics.newImage('images/lobby/backbutton.png'),
+	back = love.graphics.newImage('images/lobby/back.png'),
+	backpush = love.graphics.newImage('images/lobby/backpush.png'),
 }
 
 image.charselect = {

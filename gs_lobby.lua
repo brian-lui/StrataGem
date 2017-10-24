@@ -1,69 +1,162 @@
 local love = _G.love
-
 local common = require "class.commons"
 local image = require "image"
 local Pic = require "pic"
-
 local pointIsInRect = require "utilities".pointIsInRect
 
 local lobby = {}
 
+--[[ create a clickable object
+	mandatory parameters: name, image, image_pushed, end_x, end_y, action
+	optional parameters: duration, transparency, start_x, start_y, easing,
+		exit, pushed, pushed_sfx, released, released_sfx
+--]]
+function lobby:_createButton(params)
+	if params.name == nil then print("No object name received!") end
+	if params.image_pushed == nil then print("No push image received!") end
+	local stage = self.stage
+	local button = common.instance(Pic, self, {
+		name = params.name,
+		x = params.start_x or params.end_x,
+		y = params.start_y or params.end_y,
+		transparency = params.start_transparency or 255,
+		image = params.image,
+		container = lobby.ui_clickable,
+		counter = "ui_element",
+	})
+	button:moveTo{duration = params.duration, x = params.end_x, y = params.end_y,
+		transparency = params.end_transparency or 255,
+		easing = params.easing or "linear", exit = params.exit}
+	button.pushed = params.pushed or function()
+		self.sound:newSFX(pushed_sfx or "button")
+		button:newImage(params.image_pushed)
+	end
+	button.released = params.released or function()
+		if released_sfx then self.sound:newSFX(released_sfx) end
+		button:newImage(params.image)
+	end
+	button.action = params.action
+	return button
+end
+
+--[[ creates an object that can be tweened but not clicked
+	mandatory parameters: name, image, end_x, end_y
+	optional parameters: duration, transparency, start_x, start_y, easing, exit
+--]]
+function lobby:_createImage(params)
+	if params.name == nil then print("No object name received!") end
+	local stage = self.stage
+	local button = common.instance(Pic, self, {
+		name = params.name,
+		x = params.start_x or params.end_x,
+		y = params.start_y or params.end_y,
+		transparency = params.transparency or 255,
+		image = params.image,
+		container = lobby.ui_static,
+		counter = "ui_element",
+	})
+	button:moveTo{duration = params.duration, x = params.end_x, y = params.end_y,
+		transparency = params.transparency, easing = params.easing, exit = params.exit}
+	return button
+end
+
 function lobby:enter()
+	lobby.clicked = nil
 	if self.sound:getCurrentBGM() ~= "bgm_menu" then
 		self.sound:stopBGM()
 		self.sound:newBGM("bgm_menu", true)
 	end
-	self.current_background = common.instance(self.background.RabbitInASnowstorm, self)
+	lobby.ui_clickable = {}
+	lobby.ui_static = {}
+	lobby.current_background = common.instance(self.background.rabbitsnowstorm, self)
+	lobby.current_users = {}
+	lobby.status_image = nil
 
 	local stage = self.stage
-	self.clicked = false
-	self.current_users = {}
+	--create custom game
+	lobby._createButton(self, {
+		name = "creategame",
+		image = image.lobby.create,
+		image_pushed = image.lobby.create,
+		duration = 30,
+		start_x = 0,
+		end_x = stage.width * 0.75,
+		start_y = stage.height * 0.9,
+		end_y = stage.height * 0.3,
+		easing = "inOutBounce",
+		action = function() lobby.createCustomGame(self) end,
+	})
 
-	local locations = {
-		ranked_match = {x = stage.width * 0.25, y = stage.height * 0.3},
-		create = {x = stage.width * 0.75, y = stage.height * 0.3},
-		game_background = {x = stage.x_mid, y = stage.height * 0.7},
-		search_ranked = {x = stage.x_mid, y = stage.height * 0.1},
-		search_none = {x = stage.x_mid, y = stage.height * 0.1},
-		cancel_search = {x = stage.width * 0.75, y = stage.height * 0.1},
-		back = {x = stage.width * 0.1, y = stage.height * 0.9},
-	}
+	-- queue in ranked match
+	lobby._createButton(self, {
+		name = "rankedmatch",
+		image = image.lobby.ranked_match,
+		image_pushed = image.lobby.ranked_match,
+		duration = 45,
+		start_x = stage.width,
+		end_x = stage.width * 0.25,
+		start_y = stage.height * 0.7,
+		end_y = stage.height * 0.3,
+		easing = "outElastic",
+		action = function() lobby.joinRankedQueue(self) end,
+	})
 
-	self.screen_elements = {
-		create = common.instance(Pic, self, {x = locations.create.x,
-			y = locations.create.y, image = image.lobby.create}),
-		ranked_match = common.instance(Pic, self, {x = locations.ranked_match.x,
-			y = locations.ranked_match.y, image = image.lobby.ranked_match}),
-		game_background = common.instance(Pic, self, {x = locations.game_background.x,
-			y = locations.game_background.y, image = image.lobby.game_background}),
-		search_ranked = common.instance(Pic, self, {x = locations.search_ranked.x,
-			y = locations.search_ranked.y, image = image.lobby.search_ranked}),
-		search_none = common.instance(Pic, self, {x = locations.search_none.x,
-			y = locations.search_none.y, image = image.lobby.search_none}),
-		cancel_search = common.instance(Pic, self, {x = locations.cancel_search.x,
-			y = locations.cancel_search.y, image = image.lobby.cancel_search}),
-		back = common.instance(Pic, self, {x = locations.back.x,
-			y = locations.back.y, image = image.lobby.back}),
-	}
-	self.screen_buttons = {
-		{item = self.screen_elements.create, action = lobby.createCustomGame},
-		{item = self.screen_elements.ranked_match, action = lobby.joinRankedQueue},
-		{item = self.screen_elements.cancel_search, action = lobby.cancelRankedQueue},
-		{item = self.screen_elements.back, action = lobby.goBack},
-	}
+	-- cancel ranked match search
+	lobby._createButton(self, {
+		name = "cancelsearch",
+		image = image.lobby.cancel_search,
+		image_pushed = image.lobby.cancel_search,
+		duration = 60,
+		start_x = stage.width * 0.2,
+		end_x = stage.width * 0.75,
+		start_y = stage.height * 0.2,
+		end_y = stage.height * 0.1,
+		easing = "inElastic",
+		action = function() lobby.cancelRankedQueue(self) end,
+	})
+
+	-- back button
+	lobby._createButton(self, {
+		name = "back",
+		image = image.lobby.back,
+		image_pushed = image.lobby.backpush,
+		duration = 15,
+		start_x = -image.lobby.back:getWidth(),
+		end_x = image.lobby.back:getWidth() * 0.5,
+		end_y = image.lobby.back:getHeight() * 0.5,
+		easing = "outQuad",
+		pushed_sfx = "button_back",
+		action = function() lobby.goBack(self) end,
+	})
+
+	-- status indicator image
+	lobby.status_image = lobby._createImage(self, {
+		name = "status",
+		image = image.lobby.search_none,
+		duration = 20,
+		start_x = stage.width * 0.9,
+		end_x = stage.x_mid,
+		start_y = stage.height * 0.4,
+		end_y = stage.height * 0.1,
+		easing = "inOutBounce",
+	})
+	lobby.status_image.status = "idle"
 end
 
 function lobby:updateUsers(all_dudes)
-	self.current_users = all_dudes
+	lobby.current_users = all_dudes
 end
 
 function lobby:createCustomGame()
+	print("TBD - Create custom game")
 end
 
 function lobby:joinCustomGame()
+	print("TBD - Join custom game")
 end
 
 function lobby:spectateGame()
+	print("TBD - Spectate game")
 end
 
 function lobby:joinRankedQueue()
@@ -107,46 +200,8 @@ function lobby:goBack()
 	self.statemanager:switch(require "gs_title")
 end
 
-function lobby:mousepressed(x, y)
-	for i = 1, #self.screen_buttons do
-		if pointIsInRect(x, y, self.screen_buttons[i].item:getRect()) then
-			self.clicked = self.screen_buttons[i]
-			return
-		end
-	end
-	self.clicked = false
-end
-
-function lobby:mousereleased(x, y)
-	for _, v in pairs(self.screen_buttons) do
-		if pointIsInRect(x, y, v.item:getRect()) and v == self.clicked then
-			v.action(self)
-			break
-		end
-	end
-	self.clicked = false
-end
-
-function lobby:mousemoved(x, y)
-	if self.clicked then
-		if not pointIsInRect(x, y, self.clicked.item:getRect()) then
-			self.clicked.released()
-			self.clicked = false
-		end
-	end		
-end
-
-function lobby:getClickedButton(x, y)
-	for _, v in pairs(self.screen_buttons) do
-		if pointIsInRect(x, y, v.item:getRect()) then
-			return v
-		end
-	end
-	return false
-end
-
-function lobby:drawCurrentUsers()
-	local dude = self.current_users
+function lobby:_drawCurrentUsers()
+	local dude = lobby.current_users
 
 	love.graphics.push("all")
 		local x = 150
@@ -170,22 +225,62 @@ function lobby:drawCurrentUsers()
 	love.graphics.pop()
 end
 
-function lobby:draw()
-	local screen_elements = self.screen_elements
+function lobby:update(dt)
+	lobby.current_background:update(dt)
+	for _, v in pairs(lobby.ui_clickable) do v:update(dt) end
+	for _, v in pairs(lobby.ui_static) do v:update(dt) end
 
-	self.current_background:draw()
-	screen_elements.game_background:draw()
-	screen_elements.create:draw()
-	screen_elements.ranked_match:draw()
-	--screen_elements.search_ranked:draw()
-	screen_elements.search_none:draw()
-	screen_elements.cancel_search:draw()
-	screen_elements.back:draw()
-	lobby.drawCurrentUsers(self)
+	local client = self.client
+	if client.queuing then
+		if lobby.status_image.status == "idle" then
+			lobby.status_image:newImage(image.lobby.search_ranked)
+			lobby.status_image.status = "queuing"
+		end
+	else
+		if lobby.status_image.status == "queuing" then
+			lobby.status_image:newImage(image.lobby.search_none)
+			lobby.status_image.status = "idle"
+		end
+	end
+
 end
 
-function lobby:update(dt)
-	self.current_background:update(dt)
+function lobby:draw()
+	lobby.current_background:draw()
+	for _, v in pairs(lobby.ui_static) do v:draw() end
+	for _, v in pairs(lobby.ui_clickable) do v:draw() end
+	lobby._drawCurrentUsers(self)
+end
+
+function lobby:mousepressed(x, y)
+	for _, button in pairs(lobby.ui_clickable) do
+		if pointIsInRect(x, y, button:getRect()) then
+			lobby.clicked = button
+			button.pushed()
+			return
+		end
+	end
+	lobby.clicked = false
+end
+
+function lobby:mousereleased(x, y)
+	for _, button in pairs(lobby.ui_clickable) do
+		button.released()
+		if pointIsInRect(x, y, button:getRect()) and lobby.clicked == button then
+			button.action()
+			break
+		end
+	end
+	lobby.clicked = false
+end
+
+function lobby:mousemoved(x, y)
+	if lobby.clicked then
+		if not pointIsInRect(x, y, lobby.clicked:getRect()) then
+			lobby.clicked.released()
+			lobby.clicked = false
+		end
+	end
 end
 
 return lobby

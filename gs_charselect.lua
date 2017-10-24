@@ -1,8 +1,7 @@
 local common = require "class.commons"
 local image = require 'image'
 local Pic = require 'pic'
-local tween = require 'tween'
-local spairs = require "utilities".spairs
+local pointIsInRect = require "utilities".pointIsInRect
 
 local charselect = {}
 function charselect:init()
@@ -26,7 +25,7 @@ function charselect:_createButton(params)
 		transparency = params.start_transparency or 255,
 		image = params.image,
 		container = charselect.ui_clickable,
-		counter = "background_particle",
+		counter = "ui_element",
 	})
 	button:moveTo{duration = params.duration, x = params.end_x, y = params.end_y,
 		transparency = params.end_transparency or 255,
@@ -57,7 +56,7 @@ function charselect:_createImage(params)
 		transparency = params.transparency or 255,
 		image = params.image,
 		container = charselect.ui_static,
-		counter = "background_particle",
+		counter = "ui_element",
 	})
 	button:moveTo{duration = params.duration, x = params.end_x, y = params.end_y,
 		transparency = params.transparency, easing = params.easing, exit = params.exit}
@@ -274,7 +273,6 @@ function charselect:draw()
 	for _, v in pairs(charselect.ui_clickable) do v:draw() end
 end
 
-local pointIsInRect = require "utilities".pointIsInRect
 function charselect:mousepressed(x, y)
 	for _, button in pairs(charselect.ui_clickable) do
 		if pointIsInRect(x, y, button:getRect()) then
