@@ -90,7 +90,8 @@ image.background.cloud = {
 	thumbnail = love.graphics.newImage('images/charselect/skythumbnail.png'),
 }
 image.background.rabbitsnowstorm = {
-	background = love.graphics.newImage('images/backgrounds/rabbitsnowstorm/rabbitsnowstorm.png')
+	background = love.graphics.newImage('images/backgrounds/rabbitsnowstorm/rabbitsnowstorm.png'),
+	thumbnail = love.graphics.newImage('images/charselect/rabbitthumbnail.png'),
 }
 
 for i = 1, 6 do

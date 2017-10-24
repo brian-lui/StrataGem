@@ -1,3 +1,12 @@
+--[[
+	Note to coders and code readers!
+	You can't call title._createButton by doing title:_createButton(...)
+	That will call it by passing in an instance of title, which doesn't work (?)
+	You have to call it with title._createButton(self, ...)
+	That passes in an instance of self, which works (???)
+	Look I didn't code this I just know how to use it, ok
+--]]
+
 local common = require "class.commons"
 local image = require 'image'
 local Pic = require 'pic'
@@ -6,8 +15,9 @@ local tween = require 'tween'
 local title = {}
 
 --[[ create a clickable object
-	mandatory parameters: name, image, image_pushed, end_x, end_y
-	optional parameters: duration, transparency, start_x, start_y, easing, exit
+	mandatory parameters: name, image, image_pushed, end_x, end_y, action
+	optional parameters: duration, transparency, start_x, start_y, easing,
+		exit, pushed, pushed_sfx, released, released_sfx
 --]]
 function title:_createButton(params)
 	if params.name == nil then print("No object name received!") end
@@ -25,12 +35,16 @@ function title:_createButton(params)
 	button:moveTo{duration = params.duration, x = params.end_x, y = params.end_y,
 		transparency = params.end_transparency or 255,
 		easing = params.easing or "linear", exit = params.exit}
-	button.pushed = function()
-		self.sound:newSFX("button")
+	button.pushed = params.pushed or function()
+		self.sound:newSFX(pushed_sfx or "button")
 		button:newImage(params.image_pushed)
 	end
-	button.released = function() button:newImage(params.image) end
+	button.released = params.released or function()
+		if released_sfx then self.sound:newSFX(released_sfx) end
+		button:newImage(params.image)
+	end
 	button.action = params.action
+	return button
 end
 
 --[[ creates an object that can be tweened but not clicked
@@ -51,6 +65,7 @@ function title:_createImage(params)
 	})
 	button:moveTo{duration = params.duration, x = params.end_x, y = params.end_y,
 		transparency = params.transparency, easing = params.easing, exit = params.exit}
+	return button
 end
 
 -- After the initial tween, we keep the icons here if returning to title screen
@@ -108,7 +123,7 @@ end
 function title:enter()
 	title.clicked = nil
 	if self.sound:getCurrentBGM() ~= "bgm_menu" then self.sound:stopBGM() end
-	title.current_background = common.instance(self.background.RabbitInASnowstorm, self)
+	title.current_background = common.instance(self.background.rabbitsnowstorm, self)
 end
 
 function title:update(dt)

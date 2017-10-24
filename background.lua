@@ -282,20 +282,25 @@ function Colors:draw()
 end
 Colors = common.class("Colors", Colors)
 
-local Background = {}
-Background.Clouds = Clouds
-Background.RabbitInASnowstorm = RabbitInASnowstorm
-Background.Starfall = Starfall
-Background.Colors = Colors
+local background = {}
+background.cloud = Clouds
+background.rabbitsnowstorm = RabbitInASnowstorm
+background.starfall = Starfall
+background.colors = Colors
 
--- we need this for the low quality charselect code. Eventually we should delete this
-local list = {}
-local function compare_func(a, b)
-	return Background[a].ID_number < Background[b].ID_number
+
+local bk_list, total = {}, 0
+for k in pairs(background) do
+	bk_list[#bk_list+1] = k
+	total = total + 1
+end
+background.total = total
+
+function background:idx_to_str(idx)
+	for _, v in pairs(bk_list) do
+		if self[v].ID_number == idx then return v end
+	end
+	return "no background"
 end
 
-for k, v in spairs(Background, compare_func) do
-	list[v.ID_number] = {background = k, thumbnail = v.thumbnail, full = v.full_pic}
-end
-Background.list = list
-return common.class("Background", Background)
+return common.class("background", background)
