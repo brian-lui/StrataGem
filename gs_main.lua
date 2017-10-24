@@ -227,7 +227,9 @@ function gs_main:drawText()
 		love.graphics.setFont(FONT.REGULAR)
 		if self.debug_drawGemOwners then
 			for gem in grid:gems() do
-				love.graphics.print(gem.owner, gem.x, gem.y)
+				love.graphics.print("OWN:" .. gem.owner, gem.x - gem.width * 0.4, gem.y - gem.height * 0.3)
+				love.graphics.print("ROW:" .. gem.row, gem.x - gem.width * 0.4, gem.y - gem.height * 0.1)
+				love.graphics.print("COL:" .. gem.column, gem.x - gem.width * 0.4, gem.y + gem.height * 0.1)
 			end
 		end
 		if self.debug_drawParticleDestinations then

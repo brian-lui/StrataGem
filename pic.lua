@@ -61,8 +61,8 @@ function Pic:draw(h_flip, x, y, rotation, scale, RGBTable, img, quad)
 		love.graphics.draw(
 			img or self.image,
 			quad or self.quad,
-			(x or self.x) + (self.quad_data and self.quad_data.x_offset or 0),
-			(y or self.y) + (self.quad_data and self.quad_data.y_offset or 0),
+			(x or self.x) + (self.quad_data.x_offset or 0),
+			(y or self.y) + (self.quad_data.y_offset or 0),
 			rotation or self.rotation,
 			x_scale or 1,
 			y_scale or 1,
