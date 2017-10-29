@@ -142,36 +142,26 @@ end
 
 assert(image.UI.burst.red_partial)
 
+local buttons = {"vscpu", "vscpupush", "netplay", "netplaypush", "back", "backpush",
+	"details", "detailspush", "start", "startpush", "leftarrow", "rightarrow",
+	"lobbycreatenew", "lobbyqueueranked", "lobbycancelsearch"}
+image.button = {}
+for _, v in pairs(buttons) do
+	image.button[v] = love.graphics.newImage('images/buttons/' .. v .. '.png')
+end	
+
 image.title = {
 	logo = love.graphics.newImage('images/title/logo.png'),
-	online = love.graphics.newImage('images/title/netplay.png'),
-	onlinepush = love.graphics.newImage('images/title/netplaypush.png'),
-	vscpu = love.graphics.newImage('images/title/vscpu.png'),
-	vscpupush = love.graphics.newImage('images/title/vscpupush.png'),
 }
 
 image.lobby = {
-	create = love.graphics.newImage('images/lobby/createlobbybutton.png'),
-	ranked_match = love.graphics.newImage('images/lobby/rankedmatchbutton.png'),
 	game_background = love.graphics.newImage('images/lobby/lobbygamebackground.png'),
 	search_ranked = love.graphics.newImage('images/lobby/searchingranked.png'),
 	search_none = love.graphics.newImage('images/lobby/searchingnone.png'),
-	cancel_search = love.graphics.newImage('images/lobby/cancelsearchbutton.png'),
-	back = love.graphics.newImage('images/lobby/back.png'),
-	backpush = love.graphics.newImage('images/lobby/backpush.png'),
 }
 
 image.charselect = {
-	-- UI elements
 	bk_frame = love.graphics.newImage('images/charselect/stageborder.png'), -- placeholder image
-	left_arrow = love.graphics.newImage('images/charselect/leftarrow.png'), -- placeholder image
-	left_arrow_push = love.graphics.newImage('images/charselect/leftarrow.png'), -- no image yet
-	right_arrow = love.graphics.newImage('images/charselect/rightarrow.png'), -- placeholder image
-	right_arrow_push = love.graphics.newImage('images/charselect/rightarrow.png'), -- no image yet
-	start = love.graphics.newImage('images/charselect/start.png'),
-	startpush = love.graphics.newImage('images/charselect/startpush.png'),
-	back = love.graphics.newImage('images/charselect/back.png'),
-	backpush = love.graphics.newImage('images/charselect/backpush.png'),
 }
 	-- characters
 local selectable_chars = {"heath", "walter", "gail", "holly", "wolfgang", "hailey", "diggory", "buzz", "ivy", "joy"}

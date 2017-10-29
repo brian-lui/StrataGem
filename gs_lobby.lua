@@ -13,7 +13,7 @@ local lobby = {}
 --]]
 function lobby:_createButton(params)
 	if params.name == nil then print("No object name received!") end
-	if params.image_pushed == nil then print("No push image received!") end
+	if params.image_pushed == nil then print("No push image received for " .. params.name .. "!") end
 	local stage = self.stage
 	local button = common.instance(Pic, self, {
 		name = params.name,
@@ -76,8 +76,8 @@ function lobby:enter()
 	--create custom game
 	lobby._createButton(self, {
 		name = "creategame",
-		image = image.lobby.create,
-		image_pushed = image.lobby.create,
+		image = image.button.lobbycreatenew,
+		image_pushed = image.button.lobbycreatenew,
 		duration = 30,
 		start_x = 0,
 		end_x = stage.width * 0.75,
@@ -90,8 +90,8 @@ function lobby:enter()
 	-- queue in ranked match
 	lobby._createButton(self, {
 		name = "rankedmatch",
-		image = image.lobby.ranked_match,
-		image_pushed = image.lobby.ranked_match,
+		image = image.button.lobbyqueueranked,
+		image_pushed = image.button.lobbyqueueranked,
 		duration = 45,
 		start_x = stage.width,
 		end_x = stage.width * 0.25,
@@ -104,8 +104,8 @@ function lobby:enter()
 	-- cancel ranked match search
 	lobby._createButton(self, {
 		name = "cancelsearch",
-		image = image.lobby.cancel_search,
-		image_pushed = image.lobby.cancel_search,
+		image = image.button.lobbycancelsearch,
+		image_pushed = image.button.lobbycancelsearch,
 		duration = 60,
 		start_x = stage.width * 0.2,
 		end_x = stage.width * 0.75,
@@ -118,12 +118,12 @@ function lobby:enter()
 	-- back button
 	lobby._createButton(self, {
 		name = "back",
-		image = image.lobby.back,
-		image_pushed = image.lobby.backpush,
+		image = image.button.back,
+		image_pushed = image.button.backpush,
 		duration = 15,
-		start_x = -image.lobby.back:getWidth(),
-		end_x = image.lobby.back:getWidth() * 0.5,
-		end_y = image.lobby.back:getHeight() * 0.5,
+		start_x = -image.button.back:getWidth(),
+		end_x = image.button.back:getWidth() * 0.5,
+		end_y = image.button.back:getHeight() * 0.5,
 		easing = "outQuad",
 		pushed_sfx = "button_back",
 		action = function() lobby.goBack(self) end,

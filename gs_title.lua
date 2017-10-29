@@ -21,7 +21,7 @@ local title = {}
 --]]
 function title:_createButton(params)
 	if params.name == nil then print("No object name received!") end
-	if params.image_pushed == nil then print("No push image received!") end
+	if params.image_pushed == nil then print("No push image received for " .. params.name .. "!") end
 	local stage = self.stage
 	local button = common.instance(Pic, self, {
 		name = params.name,
@@ -77,8 +77,8 @@ function title:init()
 	title.ui_static = {}
 	title._createButton(self, {
 		name = "vscpu",
-		image = image.title.vscpu,
-		image_pushed = image.title.vscpupush,
+		image = image.button.vscpu,
+		image_pushed = image.button.vscpupush,
 		duration = 60,
 		end_x = stage.width * 0.35,
 		start_y = stage.height * 1.2,
@@ -90,9 +90,9 @@ function title:init()
 		end,
 	})
 	title._createButton(self, {
-		name = "online",
-		image = image.title.online,
-		image_pushed = image.title.onlinepush,
+		name = "netplay",
+		image = image.button.netplay,
+		image_pushed = image.button.netplaypush,
 		duration = 60,
 		end_x = stage.width * 0.65,
 		start_y = stage.height * 1.2,

@@ -16,7 +16,7 @@ end
 --]]
 function charselect:_createButton(params)
 	if params.name == nil then print("No object name received!") end
-	if params.image_pushed == nil then print("No push image received!") end
+	if params.image_pushed == nil then print("No push image received for " .. params.name .. "!") end
 	local stage = self.stage
 	local button = common.instance(Pic, self, {
 		name = params.name,
@@ -110,11 +110,11 @@ function charselect:_createUIButtons()
 	-- start button
 	charselect._createButton(self, {
 		name = "start",
-		image = image.charselect.start,
-		image_pushed = image.charselect.startpush,
+		image = image.button.start,
+		image_pushed = image.button.startpush,
 		duration = 15,
 		end_x = stage.width * 0.25,
-		start_y = stage.height + image.charselect.start:getHeight(),
+		start_y = stage.height + image.button.start:getHeight(),
 		end_y = stage.height * 0.8,
 		easing = "outQuad",
 		action = function() 
@@ -132,12 +132,12 @@ function charselect:_createUIButtons()
 	-- back button
 	charselect._createButton(self, {
 		name = "back",
-		image = image.charselect.back,
-		image_pushed = image.charselect.backpush,
+		image = image.button.back,
+		image_pushed = image.button.backpush,
 		duration = 15,
-		start_x = -image.charselect.back:getWidth(),
-		end_x = image.charselect.back:getWidth() * 0.5,
-		end_y = image.charselect.back:getHeight() * 0.5,
+		start_x = -image.button.back:getWidth(),
+		end_x = image.button.back:getWidth() * 0.5,
+		end_y = image.button.back:getHeight() * 0.5,
 		easing = "outQuad",
 		pushed_sfx = "button_back",
 		action = function() self.statemanager:switch(require "gs_title") end,
@@ -146,8 +146,8 @@ function charselect:_createUIButtons()
 	-- left arrow for background select
 	charselect._createButton(self, {
 		name = "leftarrow",
-		image = image.charselect.left_arrow,
-		image_pushed = image.charselect.left_arrow_push,
+		image = image.button.leftarrow,
+		image_pushed = image.button.leftarrow,
 		duration = 60,
 		end_x = stage.width * 0.6,
 		end_y = stage.height * 0.8,
@@ -164,8 +164,8 @@ function charselect:_createUIButtons()
 	-- right arrow for background select
 	charselect._createButton(self, {
 		name = "rightarrow",
-		image = image.charselect.right_arrow,
-		image_pushed = image.charselect.right_arrow_push,
+		image = image.button.rightarrow,
+		image_pushed = image.button.rightarrow,
 		duration = 60,
 		end_x = stage.width * 0.9,
 		end_y = stage.height * 0.8,
@@ -256,7 +256,7 @@ function charselect:enter()
 	charselect._createUIButtons(self)
 	charselect._createUIImages(self)
 	charselect.my_character = nil -- selected character for gamestart
-	charselect.gametype = "1P" -- can change this later to re-use for online
+	charselect.gametype = "1P" -- can change this later to re-use for netplay
 	charselect.opponent_character = "walter" -- ditto
 end
 
