@@ -74,14 +74,13 @@ function Grid:simulateGravity()
 end
 
 -- place piece into simulated grid
-function Grid:simulatePlacePiece(piece, coords) -- only works with 2-gem piece
+function Grid:simulatePlacePiece(piece, coords)
 	if piece.horizontal then
 		for i = 1, #piece.gems do
 			local column = coords[i]
 			self[1][column].gem = piece.gems[i]
 		end
-
-	elseif not piece.horizontal then
+	else
 		for i = 1, #piece.gems do
 			local column = coords[1]
 			self[i][column].gem = piece.gems[i]

@@ -99,8 +99,14 @@ local function selectRandomColumn(piece, player)
 end
 
 -- takes a column index, and returns table of argument column and the next column
-local function getCoords(column)
-	return {column, column + 1}
+local function getCoords(piece, column)
+	local ret = {}
+	if piece.horizontal then
+		for i = 1, #piece.gems do ret[#ret+1] = column + i - 1 end
+	else
+		for i = 1, #piece.gems do ret[#ret+1] = column end
+	end
+	return ret
 end
 
 -- place piece into actual grid
@@ -129,13 +135,14 @@ local function generateScoreMatrices(grid, player)
 	for rotation = 1, 4 do -- a matrix for each orientation
 		rotateAll(player)
 		matrix[rotation] = {}
-		for piece = 1, #piece_list do -- i: total number of valid pieces
-			matrix[rotation][piece] = {}
+		for i = 1, #piece_list do -- i: total number of valid pieces
+			local piece = piece_list[i]
+			matrix[rotation][i] = {}
 			local start_col = player.start_col
 			local end_col = player.end_col
-			if piece_list[piece].horizontal then end_col = end_col - 1 end
+			if piece.horizontal then end_col = end_col - 1 end
 			for col = start_col, end_col do -- j: total valid columns
-				matrix[rotation][piece][col] = grid:simulateScore(piece_list[piece], getCoords(col))
+				matrix[rotation][i][col] = grid:simulateScore(piece, getCoords(piece, col))
 			end
 		end
 	end
@@ -175,7 +182,7 @@ function ai:evaluateActions()
 				piece:rotate()
 			end
 
-			placePiece(self, piece, getCoords(selected.column))
+			placePiece(self, piece, getCoords(piece, selected.column))
 		elseif player.cur_burst >= player.RUSH_COST then
 			local piece = selectRandomPiece(player)
 			if piece.horizontal then	-- Always do vertical rushes.
@@ -186,7 +193,7 @@ function ai:evaluateActions()
 		else
 			-- random play
 			local piece = selectRandomPiece(player)
-			local coords = getCoords(selectRandomColumn(piece, player))
+			local coords = getCoords(piece, selectRandomColumn(piece, player))
 
 			placePiece(self, piece, coords)
 		end
