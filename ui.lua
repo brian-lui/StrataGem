@@ -97,7 +97,6 @@ function ui:drawSuper(player)
 	local fill_percent = 0.12 + 0.76 * displayed_mp / player.MAX_MP
 	local img = player.super_meter_image
 	img:changeQuad(0, img.height * (1 - fill_percent), img.width, img.height * fill_percent)
-	img.y = self.game.stage.super[player.ID].y + img.height * (1 - fill_percent)
 
 	player.super_frame:draw()	-- super frame
 	img:draw()	-- super meter

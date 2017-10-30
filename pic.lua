@@ -116,13 +116,9 @@ local function clearMove(self)
 	self.exit = nil
 end
 
--- TODO: fix the background.lua so it initializes from pic.lua properly
-
 -- this is called from createMoveFunc and from some UI functions
 function Pic:changeQuad(x, y, w, h)
 	self.quad = love.graphics.newQuad(x, y, w, h, self.width, self.height)
-	--self.quad_x_offset = x or 0 -- duplicated for now because some old backgrounds.lua code uses it in draw
-	--self.quad_y_offset = y or 0
 	self.quad_data = {
 		x_offset = x or 0,
 		y_offset = y or 0,
