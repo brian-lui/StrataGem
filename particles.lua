@@ -862,6 +862,13 @@ end
 	6th row of a column (either by dropping or by being raised to that level from garbage)
 	takes the column it should be displayed in as an argument --]]
 function Words.generateNoRush(game, column)
+	-- local grid = self.grid
+	-- local sign = player.ID == "P1" and 1 or -1
+	local x = game.stage.width * 0.5--grid.columns[column]
+	local y = game.stage.height * 0.51
+	local todraw = image.words.no_rush_one_column
+	local p = common.instance(Words, game.particles, x, y, todraw, nil, nil, nil, nil, nil, true)
+	p:moveTo{duration = 90, easing = "outQuart"}
 	print("press 'g' to call this function!")
 	--[[
 	suggested process:
