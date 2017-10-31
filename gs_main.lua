@@ -62,13 +62,13 @@ end
 function gs_main:quitgame()
 	--[[
 	if not gs_main.ui_clickable.quitgame then
-		-- create quitgame
+		-- create quitgame, with drawthis to true
 		-- create quitgameframe
 		-- create quitgameyes
 		-- create quitgameno
 	else
-		-- move them onscreen
-		-- tween them
+		-- move them back onscreen
+		-- tween transparency back to 255
 	end
 	--]]
 	if self.type == "1P" then
@@ -76,13 +76,14 @@ function gs_main:quitgame()
 		print("I will code this later, currently it instantly leaves lol")
 		-- pause game
 		-- click yes leads to statemanager switch
-		-- click no unpauses game and moves them offscreen
+		-- click no:
+		-- unpauses game, set quitgame.drawthis to false, tween transparency to 0, moves them offscreen
 		self.statemanager:switch(require "gs_title")
 	elseif self.type == "Netplay" then
 		print("Netplay, ask if u wanna quit but don't pause game")
 		print("I will code this later, currently it instantly leaves lol")
 		-- click yes leads to statemanager switch
-		-- click no moves them offscreen
+		-- click no: set quitgame.drawthis to false, tween transparency to 0, moves them offscreen
 		self.statemanager:switch(require "gs_title")
 	end
 end
@@ -178,27 +179,6 @@ function gs_main.screenshake(self, shake)
 	local h_displacement = shake * (frame % 7 * 0.5 + frame % 13 * 0.25 + frame % 23 / 6 - 5)
 	local v_displacement = shake * (frame % 5 * 2/3 + frame % 11 * 0.25 + frame % 17 / 6 - 5)
 	self.camera:setPosition(h_displacement, v_displacement)
-end
-
-function gs_main:draw()
-	self.current_background:draw()
-
-	self.camera:set(1, 1)
-		if self.screenshake_frames > 0 then
-			gs_main.screenshake(self, self.screenshake_vel)
-		else
-			self.camera:setPosition(0, 0)
-		end
-
-		gs_main.drawScreenElements(self)
-		gs_main.drawGems(self)
-		--gs_main.drawAnimations(self)
-	self.camera:unset()
-
-	gs_main.drawText(self)
-
-	-- buttons
-	for _, v in pairs(gs_main.ui_clickable) do v:draw() end
 end
 
 -- draw gems and related objects (platforms, particles)
@@ -361,8 +341,33 @@ function gs_main:drawText()
 			love.graphics.print(p2hand.damage, p2hand[2].x + 60, p2hand[2].y)
 		end
 	love.graphics.pop()
+end
 
+function gs_main:draw()
+	self.current_background:draw()
 
+	self.camera:set(1, 1)
+		if self.screenshake_frames > 0 then
+			gs_main.screenshake(self, self.screenshake_vel)
+		else
+			self.camera:setPosition(0, 0)
+		end
+
+		gs_main.drawScreenElements(self)
+		gs_main.drawGems(self)
+		--gs_main.drawAnimations(self)
+	self.camera:unset()
+
+	gs_main.drawText(self)
+
+	-- buttons
+	for _, v in pairs(gs_main.ui_clickable) do v:draw() end
+	if gs_main.ui_clickable.quitgame and gs_main.ui_clickable.quitgame.drawthis then
+		gs_main.ui_clickable.quitgameframe:draw()
+		gs_main.ui_clickable.quitgame:draw()
+		gs_main.ui_clickable.quitgameyes:draw()
+		gs_main.ui_clickable.quitgameno:draw()
+	end
 end
 
 function gs_main:mousepressed(x, y)
