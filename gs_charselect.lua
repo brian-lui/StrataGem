@@ -221,7 +221,7 @@ function charselect:_createUIImages()
 	-- background_image_frame
 	charselect._createImage(self, {
 		name = "backgroundframe",
-		image = image.charselect.bk_frame,
+		image = image.unclickable.select_stageborder,
 		duration = 60,
 		end_x = stage.width * 0.75,
 		end_y = stage.height * 0.8,

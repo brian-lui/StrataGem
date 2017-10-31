@@ -1,22 +1,114 @@
 local love = _G.love
-
 local FONT = _G.FONT
-
 local common = require "class.commons"
-
+local image = require 'image'
+local Pic = require 'pic'
 local pointIsInRect = require "utilities".pointIsInRect
 
 local gs_main = {}
 
-function gs_main:enter()
+--[[ create a clickable object
+	mandatory parameters: name, image, image_pushed, end_x, end_y, action
+	optional parameters: duration, transparency, start_x, start_y, easing,
+		exit, pushed, pushed_sfx, released, released_sfx
+--]]
+function gs_main:_createButton(params)
+	if params.name == nil then print("No object name received!") end
+	if params.image_pushed == nil then print("No push image received for " .. params.name .. "!") end
+	local stage = self.stage
+	local button = common.instance(Pic, self, {
+		name = params.name,
+		x = params.start_x or params.end_x,
+		y = params.start_y or params.end_y,
+		transparency = params.start_transparency or 255,
+		image = params.image,
+		container = gs_main.ui_clickable,
+		counter = "ui_element",
+	})
+	button:moveTo{duration = params.duration, x = params.end_x, y = params.end_y,
+		transparency = params.end_transparency or 255,
+		easing = params.easing or "linear", exit = params.exit}
+	button.pushed = params.pushed or function()
+		self.sound:newSFX(pushed_sfx or "button")
+		button:newImage(params.image_pushed)
+	end
+	button.released = params.released or function()
+		if released_sfx then self.sound:newSFX(released_sfx) end
+		button:newImage(params.image)
+	end
+	button.action = params.action
+	return button
+end
+
+--[[ creates an object that can be tweened but not clicked
+	mandatory parameters: name, image, end_x, end_y
+	optional parameters: duration, transparency, start_x, start_y, easing, exit
+--]]
+function gs_main:_createImage(params)
+	if params.name == nil then print("No object name received!") end
+	local stage = self.stage
+	local button = common.instance(Pic, self, {
+		name = params.name,
+		x = params.start_x or params.end_x,
+		y = params.start_y or params.end_y,
+		transparency = params.transparency or 255,
+		image = params.image,
+		container = gs_main.ui_static,
+		counter = "ui_element",
+	})
+	button:moveTo{duration = params.duration, x = params.end_x, y = params.end_y,
+		transparency = params.transparency, easing = params.easing, exit = params.exit}
+	return button
+end
+
+function gs_main:quitgame()
+	if self.type == "1P" then
+		print("1P single player, pause game and ask if u wanna quit")
+		print("I will code this later, currently it instantly leaves lol")
+		-- create new images of main_quitframe, main_quitconfirm
+		-- create new buttons quitgameno/push, quitgameyes/push
+		self.statemanager:switch(require "gs_title")
+	elseif self.type == "Netplay" then
+		print("Netplay, ask if u wanna quit but don't pause game")
+		print("I will code this later, currently it instantly leaves lol")
+		-- create new images of main_quitframe, main_quitconfirm
+		-- create new buttons quitgameno/push, quitgameyes/push
+
+		self.statemanager:switch(require "gs_title")
+	end
+end
+
+function gs_main:init()
 	local canvas = {}
 	for i = 1, 5 do
 		canvas[i] = love.graphics.newCanvas()
 	end
 	self.canvas = canvas
 	self.camera = common.instance(require "camera")
+end
+
+function gs_main:enter()
+	local stage = self.stage
 	self.sound:stopBGM()
-	self.dying_gems = {} -- this creates the dying_gems table in Game. Sad!
+	gs_main.clicked = nil
+	gs_main.dying_gems = {} -- this creates the dying_gems table in Game. Sad!
+	gs_main.ui_clickable = {}
+	gs_main.ui_static = {}
+	gs_main._createImage(self, {
+		name = "tub",
+		image = image.UI.tub,
+		end_x = stage.tub.x,
+		end_y = stage.tub.y,
+	})
+
+	gs_main._createButton(self, {
+		name = "quit",
+		image = image.button.quitgame,
+		image_pushed = image.button.quitgamepush,
+		end_x = stage.width - image.button.quitgame:getWidth() * 0.5,
+		end_y = stage.height - image.button.quitgame:getHeight() * 0.5,
+		action = function() gs_main.quitgame(self) end,
+	})
 end
 
 local function timeDip(self, logic_function, ...)
@@ -60,8 +152,9 @@ function gs_main:drawScreenElements()
 	-- under-platform trails
 	for _, v in pairs(self.particles.allParticles.PlatformTinyStar) do v:draw() end
 	for _, v in pairs(self.particles.allParticles.PlatformStar) do v:draw() end
-
-	self.ui.tub_img:draw() -- tub
+	for _, v in pairs(gs_main.ui_static) do
+		if v.name == "tub" then v:draw() end
+	end
 	self.ui.timer:draw()	-- timer bar
 
 	for player in self:players() do
@@ -96,6 +189,9 @@ function gs_main:draw()
 	self.camera:unset()
 
 	gs_main.drawText(self)
+
+	-- buttons
+	for _, v in pairs(gs_main.ui_clickable) do v:draw() end
 end
 
 -- draw gems and related objects (platforms, particles)
@@ -281,6 +377,15 @@ function gs_main:mousepressed(x, y)
 	if pointIsInRect(x, y, table.unpack(self.stage.super[player.ID].rect)) then
 		player.super_clicked = true
 	end
+
+	for _, button in pairs(gs_main.ui_clickable) do
+		if pointIsInRect(x, y, button:getRect()) then
+			gs_main.clicked = button
+			button.pushed()
+			return
+		end
+	end
+	gs_main.clicked = nil
 end
 
 local QUICKCLICK_FRAMES = 15
@@ -303,12 +408,29 @@ function gs_main:mousereleased(x, y)
 
 	player.super_clicked = false
 	self.active_piece = false
+
+
+	for _, button in pairs(gs_main.ui_clickable) do
+		button.released()
+		if pointIsInRect(x, y, button:getRect()) and gs_main.clicked == button then
+			button.action()
+			break
+		end
+	end
+	gs_main.clicked = false
 end
 
 function gs_main:mousemoved(x, y)
 	if self.active_piece and self.phase == "Action" then
 		self.active_piece:moveTo{x = x, y = y}
 	end
+
+	if gs_main.clicked then
+		if not pointIsInRect(x, y, gs_main.clicked:getRect()) then
+			gs_main.clicked.released()
+			gs_main.clicked = false
+		end
+	end	
 end
 
 return gs_main

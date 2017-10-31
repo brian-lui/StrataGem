@@ -144,28 +144,25 @@ assert(image.UI.burst.red_partial)
 
 local buttons = {"vscpu", "vscpupush", "netplay", "netplaypush", "back", "backpush",
 	"details", "detailspush", "start", "startpush", "leftarrow", "rightarrow",
-	"lobbycreatenew", "lobbyqueueranked", "lobbycancelsearch"}
+	"lobbycreatenew", "lobbyqueueranked", "lobbycancelsearch", "quitgame", "quitgamepush",
+	"quitgameno", "quitgamenopush", "quitgameyes", "quitgameyespush"}
 image.button = {}
 for _, v in pairs(buttons) do
 	image.button[v] = love.graphics.newImage('images/buttons/' .. v .. '.png')
 end	
 
-image.title = {
-	logo = love.graphics.newImage('images/title/logo.png'),
-}
+local unclickables = {"title_logo", "lobby_gamebackground", "lobby_searchingnone",
+	"lobby_searchingranked", "select_stageborder", "main_quitframe", "main_quitconfirm"}
+image.unclickable = {}
+for _, v in pairs(unclickables) do
+	image.unclickable[v] = love.graphics.newImage('images/unclickables/' .. v .. '.png')
+end
 
-image.lobby = {
-	game_background = love.graphics.newImage('images/lobby/lobbygamebackground.png'),
-	search_ranked = love.graphics.newImage('images/lobby/searchingranked.png'),
-	search_none = love.graphics.newImage('images/lobby/searchingnone.png'),
-}
 
-image.charselect = {
-	bk_frame = love.graphics.newImage('images/charselect/stageborder.png'), -- placeholder image
-}
-	-- characters
+
+-- characters
 local selectable_chars = {"heath", "walter", "gail", "holly", "wolfgang", "hailey", "diggory", "buzz", "ivy", "joy"}
---local selectable_chars = {"heath", "walter", "gail", "buzz", "hailey"}
+image.charselect = {}
 for _, v in pairs(selectable_chars) do
 	image.charselect[v.."char"] = love.graphics.newImage('images/characters/'..v.."action.png")
 	image.charselect[v.."name"] = love.graphics.newImage('images/charselect/'..v.."name.png")

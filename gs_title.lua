@@ -105,7 +105,7 @@ function title:init()
 	})
 	title._createImage(self, {
 		name = "logo",
-		image = image.title.logo,
+		image = image.unclickable.title_logo,
 		duration = 45,
 		end_x = stage.width * 0.5,
 		start_y = 0,

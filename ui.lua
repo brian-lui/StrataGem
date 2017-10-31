@@ -82,8 +82,6 @@ function ui:init(game)
 	-- Red X shown on gems in invalid placement spots
 	self.redX = common.instance(Pic, game, {x = 0, y = 0, image = image.UI.redX})
 
-	-- Base tub image
-	self.tub_img = common.instance(Pic, game, {x = game.stage.tub.x, y = game.stage.tub.y, image = image.UI.tub})
 end
 
 -- returns the super drawables for player based on player MP, called every dt

@@ -132,7 +132,7 @@ function lobby:enter()
 	-- status indicator image
 	lobby.status_image = lobby._createImage(self, {
 		name = "status",
-		image = image.lobby.search_none,
+		image = image.unclickable.lobby_searchingnone,
 		duration = 20,
 		start_x = stage.width * 0.9,
 		end_x = stage.x_mid,
@@ -233,12 +233,12 @@ function lobby:update(dt)
 	local client = self.client
 	if client.queuing then
 		if lobby.status_image.status == "idle" then
-			lobby.status_image:newImage(image.lobby.search_ranked)
+			lobby.status_image:newImage(image.unclickable.lobby_searchingranked)
 			lobby.status_image.status = "queuing"
 		end
 	else
 		if lobby.status_image.status == "queuing" then
-			lobby.status_image:newImage(image.lobby.search_none)
+			lobby.status_image:newImage(image.unclickable.lobby_searchingnone)
 			lobby.status_image.status = "idle"
 		end
 	end
