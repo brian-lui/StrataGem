@@ -25,10 +25,17 @@ function Pic:init(game, tbl)
 	if tbl.y == nil then print("No y-value received!") end
 	if tbl.image == nil then print("No image received!") end
 	if tbl.container then
-		if not tbl.counter then print("Container specified without counter ID!") end
-		ID[tbl.counter] = ID[tbl.counter] + 1
-		self.ID = ID[tbl.counter]
-		self.container[self.ID] = self
+		if not tbl.name and not tbl.counter then
+			print ("Container specified without either name or counter!")
+		end
+		if not tbl.counter then
+			self.ID = tbl.name
+			self.container[tbl.name] = self
+		else
+			ID[tbl.counter] = ID[tbl.counter] + 1
+			self.ID = ID[tbl.counter]
+			self.container[self.ID] = self
+		end
 	else
 		ID.particle = ID.particle + 1
 		self.ID = ID.particle

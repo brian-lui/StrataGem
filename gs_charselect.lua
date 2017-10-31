@@ -25,7 +25,6 @@ function charselect:_createButton(params)
 		transparency = params.start_transparency or 255,
 		image = params.image,
 		container = charselect.ui_clickable,
-		counter = "ui_element",
 	})
 	button:moveTo{duration = params.duration, x = params.end_x, y = params.end_y,
 		transparency = params.end_transparency or 255,
@@ -56,7 +55,6 @@ function charselect:_createImage(params)
 		transparency = params.transparency or 255,
 		image = params.image,
 		container = charselect.ui_static,
-		counter = "ui_element",
 	})
 	button:moveTo{duration = params.duration, x = params.end_x, y = params.end_y,
 		transparency = params.transparency, easing = params.easing, exit = params.exit}

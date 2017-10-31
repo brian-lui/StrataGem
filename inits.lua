@@ -36,7 +36,6 @@ ID = {
 		self.gem = 0
 		self.piece = 0
 		self.particle = 0
-		self.ui_element = 0
 		self.background_particle = 0
 		self.character_select = 0
 	end
