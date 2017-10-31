@@ -60,18 +60,29 @@ function gs_main:_createImage(params)
 end
 
 function gs_main:quitgame()
+	--[[
+	if not gs_main.ui_clickable.quitgame then
+		-- create quitgame
+		-- create quitgameframe
+		-- create quitgameyes
+		-- create quitgameno
+	else
+		-- move them onscreen
+		-- tween them
+	end
+	--]]
 	if self.type == "1P" then
 		print("1P single player, pause game and ask if u wanna quit")
 		print("I will code this later, currently it instantly leaves lol")
-		-- create new images of main_quitframe, main_quitconfirm
-		-- create new buttons quitgameno/push, quitgameyes/push
+		-- pause game
+		-- click yes leads to statemanager switch
+		-- click no unpauses game and moves them offscreen
 		self.statemanager:switch(require "gs_title")
 	elseif self.type == "Netplay" then
 		print("Netplay, ask if u wanna quit but don't pause game")
 		print("I will code this later, currently it instantly leaves lol")
-		-- create new images of main_quitframe, main_quitconfirm
-		-- create new buttons quitgameno/push, quitgameyes/push
-
+		-- click yes leads to statemanager switch
+		-- click no moves them offscreen
 		self.statemanager:switch(require "gs_title")
 	end
 end
@@ -150,9 +161,7 @@ function gs_main:drawScreenElements()
 	-- under-platform trails
 	for _, v in pairs(self.particles.allParticles.PlatformTinyStar) do v:draw() end
 	for _, v in pairs(self.particles.allParticles.PlatformStar) do v:draw() end
-	for _, v in pairs(gs_main.ui_static) do
-		if v.name == "tub" then v:draw() end
-	end
+	gs_main.ui_static.tub:draw()
 	self.ui.timer:draw()	-- timer bar
 
 	for player in self:players() do
