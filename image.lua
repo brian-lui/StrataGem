@@ -186,6 +186,8 @@ image.words = {
 	rush = love.graphics.newImage('images/words/rush.png'),
 	ready = love.graphics.newImage('images/words/ready.png'),
 	go = love.graphics.newImage('images/words/go.png'),
+	no_rush_one_column = love.graphics.newImage('images/words/norushonecolumn.png'),
+	no_rush_full = love.graphics.newImage('images/words/norushfull.png'),
 
 	doublecast_cloud_h = love.graphics.newImage('images/words/doublecasthori.png'),
 	doublecast_cloud_v = love.graphics.newImage('images/words/doublecastvert.png'),
