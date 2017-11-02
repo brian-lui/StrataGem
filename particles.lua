@@ -15,6 +15,11 @@ function Particles:init(game)
 		created = {MP = {0, 0}, Damage = {0, 0}, Garbage = {0, 0},},
 		destroyed = {MP = {0, 0}, Damage = {0, 0}, Garbage = {0, 0},},
 	}
+	--check to see if no_rush is being animated. 0 no animation, 1 currently being animated, 2 mouse hovering over.
+	self.no_rush_check = {}
+	for i = 1, game.grid.columns do
+		self.no_rush_check[i] = 0 
+	end
 end
 
 function Particles:update(dt)
@@ -862,19 +867,35 @@ end
 	6th row of a column (either by dropping or by being raised to that level from garbage)
 	takes the column it should be displayed in as an argument --]]
 function Words.generateNoRush(game, column)
-	local grid = game.grid
-	-- local sign = player.ID == "P1" and 1 or -1
-	local x = grid.x[column]
-	local y = game.stage.height * 0.51
-	local todraw = image.words.no_rush_one_column
-	local p = common.instance(Words, game.particles, x, y, todraw, nil, nil, nil, nil, nil, true)
-	p:moveTo{duration = 20, quad = {x = true, x_percentage = 1, x_anchor = 0.5}}
-	p:moveTo{duration = 40}
-	for i = 1, 3 do
+	if game.particles.no_rush_check[column] == 0 then
+		game.particles.no_rush_check[column] = 1
+		local grid = game.grid
+		local x = grid.x[column]
+		local y = (grid.y[8] + grid.y[9]) / 2
+		local todraw = image.words.no_rush_one_column
+		local p = common.instance(Words, game.particles, x, y, todraw, nil, nil, nil, nil, nil, true)
+		p:moveTo{duration = 20, quad = {x = true, x_percentage = 1, x_anchor = 0.5}}
+		p:moveTo{duration = 40}
+		local blink = 0
+		local blinkCheck
+		blinkCheck = function(b)
+			local blink = b + 1
+			if game.particles.no_rush_check[column] == 2 then
+				blink = 2
+				game.particles.no_rush_check[column] = 1
+			end
+			if blink ~= 3 then 
+				
+				p:moveTo{duration = 15, transparency = 0}
+				p:moveTo{duration = 15, transparency = 255, exit = {blinkCheck, blink}}
+			else
+				p:moveTo{duration = 15, transparency = 0, exit = {function() game.particles.no_rush_check[column] = 0 end}}
+				p:moveTo{duration = 1, exit = true}
+			end
+		end
 		p:moveTo{duration = 15, transparency = 0}
-		p:moveTo{duration = 15, transparency = 255}
+		p:moveTo{duration = 15, transparency = 255, exit = {blinkCheck, blink}}	
 	end
-	p:moveTo{duration = 15, transparency = 0, exit = true}
 	print("press 'g' to call this function!")
 	--[[
 	suggested process:
