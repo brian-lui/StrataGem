@@ -101,7 +101,7 @@ function gs_main:enter()
 	local stage = self.stage
 	self.sound:stopBGM()
 	gs_main.clicked = nil
-	gs_main.dying_gems = {} -- this creates the dying_gems table in Game. Sad!
+	self.dying_gems = {} -- this creates the dying_gems table in Game. Sad!
 	gs_main.ui_clickable = {}
 	gs_main.ui_static = {}
 	gs_main._createImage(self, {
