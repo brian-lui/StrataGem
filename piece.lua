@@ -282,7 +282,14 @@ function Piece:isValidRush()
 	local row_ok = true
 	for i = 1, self.size do
 		local empty_row = grid:getFirstEmptyRow(cols[i])
-		if empty_row < self.game.RUSH_ROW then row_ok = false end
+		if empty_row < self.game.RUSH_ROW then 
+			row_ok = false 
+			if self.game.particles.no_rush_check[cols[i]] == 0 then
+				self.game.particles.words.generateNoRush(self.game, cols[i])
+			else
+				self.game.particles.no_rush_check[cols[i]] = 2
+			end
+		end
 	end
 	return enough_burst and row_ok
 end

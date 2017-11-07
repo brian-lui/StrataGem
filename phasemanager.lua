@@ -8,10 +8,13 @@ local PhaseManager = {}
 
 function PhaseManager:init(game)
 	self.game = game
-
 	self.super_play = nil
 	self.super_pause = 0
 	self.platformSpinDelayCounter = 15
+	self.no_rush = {}
+	for i = 1, 8 do --the 8 should be grid.column, but grid isn't initilized yet I don't think
+		self.no_rush[i] = true --whether no_rush is eligible for animation
+	end
 end
 
 function PhaseManager:intro(dt)
@@ -182,6 +185,13 @@ function PhaseManager:applyGravity(dt)
 		for player in game:players() do
 			player:afterGravity()
 		end
+		for i = 1, grid.columns do --checks if no_rush should be possible again
+			if not self.no_rush[i] then
+				if not grid[8][i].gem  then
+					self.no_rush[i] = true
+				end
+			end
+		end
 		game.phase = "CheckMatches"
 	end
 end
@@ -244,7 +254,7 @@ end
 
 function PhaseManager:resolvedMatches(dt)
 	local game = self.game
-
+	local grid = game.grid
 	if game.particles:getCount("onscreen", "Damage", 1) + game.particles:getCount("onscreen", "Damage", 2) > 0 then
 		for player in game:players() do player.hand:update(dt) end
 	else	-- all damage particles finished
@@ -255,6 +265,14 @@ function PhaseManager:resolvedMatches(dt)
 		end
 		game.scoring_combo = 0
 		game.grid:setAllGemOwners(0)
+		for i = 1, grid.columns do --checks if should generate no rush
+			if self.no_rush[i] then
+				if grid[8][i].gem then
+					game.particles.words.generateNoRush(self.game, i)
+					self.no_rush[i] = false	
+				end
+			end
+		end
 		game.phase = "PlatformSpinDelay"
 	end
 end
@@ -316,6 +334,14 @@ function PhaseManager:platformsMoving(dt)
 				grid:setGarbageMatchFlags()
 				game.phase = "Gravity"
 			else
+				for i = 1, grid.columns do --checks if should generate no rush
+					if self.no_rush[i] then
+						if grid[8][i].gem then
+							game.particles.words.generateNoRush(self.game, i)
+							self.no_rush[i] = false	
+						end
+					end
+				end
 				game.phase = "Cleanup"
 			end
 		end
