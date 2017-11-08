@@ -16,7 +16,7 @@ local soundfiles = {
 	sfx_superactivate = {filename = "sound/superactivate.ogg"},
 
 	bgm_menu = {filename = "music/menu.ogg", loop_from = 34.758, loop_to = 1.655},
-	bgm_heath = {filename = "music/heath.ogg", loop_from = 77.332, loop_to = 1.333},
+	bgm_heath = {filename = "music/heath.ogg", loop_from = 79.666, loop_to = 3.666},
 	bgm_buzz = {filename = "music/buzz.ogg", loop_from = 70.235, loop_to = 1.058},
 	bgm_gail = {filename = "music/gail.ogg", loop_from = 61.714, loop_to = 6.857},
 	bgm_hailey = {filename = "music/hailey.ogg", loop_from = 72.000, loop_to = 2.666},
