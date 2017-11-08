@@ -826,7 +826,7 @@ end
 function Words.generateReady(game)
 	local stage = game.stage
 	local particles = game.particles
-	local x = stage.width * -0.4
+	local x = stage.width * -0.2
 	local y = stage.height * 0.3
 	local todraw = image.words.ready
 	local h, w = todraw:getHeight(), todraw:getWidth()
@@ -840,8 +840,8 @@ function Words.generateReady(game)
 			p.x + (math.random()-0.5)*w, stage.height*0.3 + (math.random()-0.5)*h)
 	end
 	p:moveTo{duration = 60, x = 0.5 * stage.width, transparency = 510,
-		during = {{5, 0, generate_big}, {2, 0, generate_small}}, easing = "outQuart"}
-	p:moveTo{duration = 60, x = 1.4 * stage.width, transparency = 0,
+		during = {{5, 0, generate_big}, {2, 0, generate_small}}, easing = "outElastic"}
+	p:moveTo{duration = 30, x = 1.4 * stage.width, transparency = 0,
 		during = {{5, 0, generate_big}, {2, 0, generate_small}}, easing = "inQuad", exit = true}
 end
 
@@ -852,7 +852,8 @@ function Words.generateGo(game)
 	local todraw = image.words.go
 	local p = common.instance(Words, game.particles, x, y, todraw)
 	p.scaling = 0.1
-	p:moveTo{duration = 36, scaling = 1, easing = "outQuart"}
+	p:moveTo{duration = 20, scaling = 1, easing = "outQuart"}
+	p:wait(10)
 	p:moveTo{duration = 18, transparency = 0, easing = "linear", exit = true}
 
 	local particles = game.particles
@@ -860,7 +861,10 @@ function Words.generateGo(game)
 	particles.wordEffects.generateGoStar(game, x, y, stage.width * 0.25, stage.height * -1.2)
 	particles.wordEffects.generateGoStar(game, x, y, stage.width * -0.25, stage.height * -0.4)
 	particles.wordEffects.generateGoStar(game, x, y, stage.width * -0.25, stage.height * -1.2)
-	particles.dust.generateYellowFountain(game, x, y)
+	--particles.dust.generateYellowFountain(game, x, y)
+	for i = 1, 51, 10 do
+		game.queue:add(i, particles.dust.generateYellowFountain, game, x, y)
+	end
 end
 
 --[[ "no rush!" image that appears between 6th and 7th rows whenever a gem ends up in the 

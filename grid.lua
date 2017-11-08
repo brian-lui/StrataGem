@@ -6,7 +6,7 @@ local deepcpy = require "utilities".deepcpy
 local Grid = {}
 
 local window = _G.window -- TODO: Remove global
-Grid.DROP_SPEED = window.height / 90 -- pixels per frame for loose gems to drop
+Grid.DROP_SPEED = window.height / 50 -- pixels per frame for loose gems to drop
 Grid.DROP_MULTIPLE_SPEED = window.height / 180 -- multiplier for scoring_combo
 
 function Grid:init(game)
