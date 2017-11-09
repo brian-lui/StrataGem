@@ -44,13 +44,14 @@ function Timer:update()
 end
 
 local function drawTimerText(self)
+	local multiplier = 2 -- how much to speed it up relative to an actual second
 	local time_remaining = (self.game.time_to_next * self.game.timeStep)
 
-	if time_remaining <= 3 and time_remaining > 0 then
-		local time_int = math.ceil(time_remaining)
+	if time_remaining <= (3 / multiplier) and time_remaining > 0 then
+		local time_int = math.ceil(time_remaining * multiplier)
 		local todraw = image.UI.timer[time_int]
 		local w, h = todraw:getWidth(), todraw:getHeight()
-		local t = time_int - time_remaining
+		local t = time_int - time_remaining * multiplier
 		local scale = self.text_scaling(t)
 
 		love.graphics.push("all")
