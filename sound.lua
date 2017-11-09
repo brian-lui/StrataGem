@@ -14,6 +14,8 @@ local soundfiles = {
 	sfx_rush = {filename = "sound/rush.ogg"},
 	sfx_doublecast = {filename = "sound/doublecast.ogg"},
 	sfx_superactivate = {filename = "sound/superactivate.ogg"},
+	sfx_starbreak = {filename = "sound/starbreak.ogg"},
+	sfx_trashrow = {filename = "sound/trashrow.ogg"},
 
 	bgm_menu = {filename = "music/menu.ogg", loop_from = 34.758, loop_to = 1.655},
 	bgm_heath = {filename = "music/heath.ogg", loop_from = 79.666, loop_to = 3.666},

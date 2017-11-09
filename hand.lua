@@ -76,7 +76,7 @@ function Hand:createGarbageAnimation()
 	end
 	self.game.grid:addBottomRow(self.owner) -- add a penalty row TODO: callback function this later
 	self.owner.pieces_fallen = self.owner.pieces_fallen + 1 -- to determine garbage ownership
-
+	self.game.queue:add(45, self.game.sound.newSFX, self.game.sound, "sfx_trashrow") -- TODO: this is hacky and sucky
 end
 
 -- moves a piece from location to location, as integers
@@ -201,6 +201,7 @@ function Hand:destroyPlatformsAnim()
 	for i = 1, math.min(5, self.damage * 0.25) do
 		self.game.particles.explodingPlatform.generate(self.game, self[i].platform)
 	end
+	self.game.sound:newSFX("sfx_starbreak")
 end
 
 -- Checks whether a player's pieces have stopped moving.
