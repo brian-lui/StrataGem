@@ -28,6 +28,7 @@ function PhaseManager:intro(dt)
 	if game.frame == 120 then
 		game.sound:newBGM(game.p1.sounds.bgm, true)
 		game.particles.words.generateGo(self.game)
+		game.sound:newSFX("sfx_gofountain")
 		game.phase = "Action"
 	end
 end
