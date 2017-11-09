@@ -125,7 +125,7 @@ end
 
 image.UI.super = {}
 for _, c in pairs(super_colors) do
-	image.UI.super[c.."_word"] = love.graphics.newImage('images/ui/super'..c..'.png')
+	image.UI.super[c.."_word"] = love.graphics.newImage('images/words/supertext'..c..'.png')
 	image.UI.super[c.."_empty"] = love.graphics.newImage('images/ui/'..c..'superempty.png')
 	image.UI.super[c.."_full"] = love.graphics.newImage('images/ui/'..c..'superfull.png')
 	image.UI.super[c.."_glow"] = love.graphics.newImage('images/ui/'..c..'superglow.png')
@@ -165,7 +165,7 @@ local selectable_chars = {"heath", "walter", "gail", "holly", "wolfgang", "haile
 image.charselect = {}
 for _, v in pairs(selectable_chars) do
 	image.charselect[v.."char"] = love.graphics.newImage('images/characters/'..v.."action.png")
-	image.charselect[v.."name"] = love.graphics.newImage('images/charselect/'..v.."name.png")
+	image.charselect[v.."name"] = love.graphics.newImage('images/words/'..v.."name.png")
 	image.charselect[v.."ring"] = love.graphics.newImage('images/charselect/'..v.."ring.png")
 end
 
