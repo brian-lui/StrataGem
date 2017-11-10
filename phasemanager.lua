@@ -371,10 +371,12 @@ PhaseManager.lookup = {
 }
 
 function PhaseManager:run(...)
-	local todo = PhaseManager.lookup[self.game.phase]
-	assert(todo, "You did a typo for the current phase idiot - " .. self.game.phase)
-	todo(self, ...)
-	self.game.queue:update()
+	if not self.game.paused then
+		local todo = PhaseManager.lookup[self.game.phase]
+		assert(todo, "You did a typo for the current phase idiot - " .. self.game.phase)
+		todo(self, ...)
+		self.game.queue:update()
+	end
 end
 
 return common.class("PhaseManager", PhaseManager)

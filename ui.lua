@@ -99,7 +99,7 @@ function ui:drawSuper(player)
 	local displayed_mp = math.min(player.MAX_MP, player.turn_start_mp + destroyedParticles)
 	local fill_percent = 0.12 + 0.76 * displayed_mp / player.MAX_MP
 	local img = player.super_meter_image
-	img:changeQuad(0, img.height * (1 - fill_percent), img.width, img.height * fill_percent)
+	img:setQuad(0, img.height * (1 - fill_percent), img.width, img.height * fill_percent)
 
 	player.super_frame:draw()	-- super frame
 	img:draw()	-- super meter
@@ -118,33 +118,33 @@ end
 
 function ui:drawBurst(player)
 	local max_segs = 2
-	local segment_width = player.MAX_BURST / max_segs
-	local full_segs = math.min(player.cur_burst / segment_width, max_segs)
+	local full_segs = (player.cur_burst / player.MAX_BURST) * max_segs
+	local full_segs_int = math.floor(full_segs)
 	local part_fill_percent = full_segs % 1
 
-	local flip = player.ID == "P2"
 	-- update partial fill block length
 	if part_fill_percent > 0 then
-		local part_fill_block = player.burst_partial[math.floor(full_segs) + 1]
-		local width = math.floor(part_fill_block.width * part_fill_percent)
-		part_fill_block:changeQuad(0, 0, width, part_fill_block.height)
+		local part_fill_block = player.burst_partial[full_segs_int + 1]
+		local width = part_fill_block.width * part_fill_percent
+		local start = player.ID == "P2" and part_fill_block.width - width or 0
+		part_fill_block:setQuad(start, 0, width, part_fill_block.height)
 	end
 
-	player.burst_frame:draw()	-- frame
+	player.burst_frame:draw()
 
 	-- super meter
 	for i = 1, max_segs do
 		if full_segs >= i then
-			player.burst_block[i]:draw(flip)
-		elseif full_segs + 1 > i then	-- partial fill
-			player.burst_partial[i]:draw(flip, player.burst_block[i].quad_x, player.burst_block[i].quad_y)
+			player.burst_block[i]:draw()
+		elseif full_segs + 1 > i then
+			player.burst_partial[i]:draw()
 		end
 	end
 
 	-- glow
 	if full_segs >= 1 then
-		player.burst_glow[math.floor(full_segs)].transparency = math.ceil(math.sin(self.game.frame / 30) * 127.5 + 127.5)
-		player.burst_glow[math.floor(full_segs)]:draw()
+		player.burst_glow[full_segs_int].transparency = math.sin(self.game.frame / 30) * 127.5 + 127.5
+		player.burst_glow[full_segs_int]:draw()
 	end
 end
 
@@ -288,8 +288,8 @@ function ui:putPendingAtTop()
 				effect.func = self.game.particles.wordEffects.generateRushCloud
 				exit = {gem.landedInStagingArea, gem, "rush", self.game:playerByIndex(piece.foe)}
 			end
-			gem:moveTo{y = self.game.stage.height * -0.1}
-			gem:moveTo{y = target_y, duration = 24, easing = "outQuart", exit = exit}
+			gem:change{y = self.game.stage.height * -0.1}
+			gem:change{y = target_y, duration = 24, easing = "outQuart", exit = exit}
 		end
 		if #effect > 0 then
 			local h = effect[1].row == effect[2].row

@@ -124,7 +124,7 @@ local function clearMove(self)
 end
 
 -- this is called from createMoveFunc and from some UI functions
-function Pic:changeQuad(x, y, w, h)
+function Pic:setQuad(x, y, w, h)
 	self.quad = love.graphics.newQuad(x, y, w, h, self.width, self.height)
 	self.quad_data = {
 		x_offset = x or 0,
@@ -186,7 +186,7 @@ local function createMoveFunc(self, target)
 			local cur_y_pct = (end_y_pct - start_y_pct) * _self.t + start_y_pct
 			local cur_height = cur_y_pct * _self.height
 			local cur_y = target.quad.y and target.quad.y_anchor * (1-_self.t) * _self.height * end_y_pct or 0
-			_self:changeQuad(cur_x, cur_y, cur_width, cur_height)
+			_self:setQuad(cur_x, cur_y, cur_width, cur_height)
 		end
 	end
 
@@ -232,7 +232,7 @@ end
 	Junk created: self.t, move_func, tweening, curve, exit, during. during_frame
 	Cleans up after itself when movement or tweening finished during Pic:update()
 --]]
-function Pic:moveTo(target)
+function Pic:change(target)
 	target.easing = target.easing or "linear"
 	target.tween_target = target.tween_target or {t = 1}
 	if target.queue ~= false then
@@ -248,6 +248,7 @@ function Pic:moveTo(target)
 		self.x = target.x or self.x
 		self.y = target.y or self.y
 		self.rotation = target.rotation or self.rotation
+		self.transparency = target.transparency or self.transparency
 		if target.debug then print("Instantly moving image") end
 	elseif not self.move_func then -- no active tween, apply this immediately
 		self.move_func = createMoveFunc(self, target)
@@ -282,7 +283,7 @@ end
 
 -- queues a wait during the move animation, in frames.
 function Pic:wait(frames)
-	self:moveTo{duration = frames}
+	self:change{duration = frames}
 end
 
 function Pic:resolve()

@@ -71,9 +71,9 @@ function Piece:addGems(gem_table)
 	updatePieceGems(self)
 end
 
-function Piece:moveTo(target)
+function Piece:change(target)
 	self.queued_moves = self.queued_moves or {}
-	Pic.moveTo(self, target)
+	Pic.change(self, target)
 	updatePieceGems(self)
 end
 
@@ -332,7 +332,7 @@ function Piece:deselect()
 	if valid and not self.game.frozen and go_ahead and char_ability_ok and self.game.phase == "Action" then
 		player.place_type = place_type
 		self:dropIntoBasin(cols)
-	else -- snap back to original place. Can't use moveTo because it interferes with rotate tween
+	else -- snap back to original place. Can't use change because it interferes with rotate tween
 		self.x, self.y = player.hand[self.hand_idx].x, player.hand[self.hand_idx].y
 	end
 end

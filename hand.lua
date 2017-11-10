@@ -91,7 +91,7 @@ function Hand:movePiece(start_pos, end_pos)
 	local to_move = self[start_pos].piece
 	to_move.hand_idx = end_pos
 	to_move:resolve()
-	to_move:moveTo{
+	to_move:change{
 		x = function() return self:getx(to_move.y) end,
 		y = self[end_pos].y,
 		duration = duration,
@@ -117,7 +117,7 @@ function Hand:movePlatform(start_pos, end_pos)
 	-- anims
 	local dist = self.game.stage.height * 0.1375 * (end_pos - start_pos)
 	local duration = math.abs(dist / Hand.PLATFORM_SPEED)
-	self[start_pos].platform:moveTo{
+	self[start_pos].platform:change{
 		x = function() return self:getx(self[end_pos].platform.y) end,
 		y = self[end_pos].y,
 		duration = duration,

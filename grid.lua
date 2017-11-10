@@ -324,7 +324,7 @@ function Grid:generate1by1(column, banned_color1, banned_color2)
 	local duration = distance / speed
 	local make_gem = function(r, c)
 		self[r][c].gem = common.instance(Gem, self.game, self.x[c], self.y[r+1], make_color, true)
-		self[r][c].gem:moveTo{x = self.x[c], y = self.y[r], duration = duration}
+		self[r][c].gem:change{x = self.x[c], y = self.y[r], duration = duration}
 	end
 	make_gem(row, column)
 end
@@ -347,7 +347,7 @@ function Grid:moveGemAnim(gem, row, column)
 	local speed = self.DROP_SPEED + self.DROP_MULTIPLE_SPEED * self.game.scoring_combo
 	local duration = math.abs(dist / speed)
 
-	gem:moveTo{
+	gem:change{
 		x = target_x,
 		y = target_y,
 		duration = duration,
