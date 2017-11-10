@@ -28,6 +28,7 @@ function PhaseManager:intro(dt)
 	if game.frame == 120 then
 		game.sound:newBGM(game.p1.sounds.bgm, true)
 		game.particles.words.generateGo(self.game)
+		game.sound:newSFX("sfx_gofountain")
 		game.phase = "Action"
 	end
 end
@@ -46,11 +47,7 @@ function PhaseManager:action(dt)
 	self.game.ui:update(dt)
 
 	game.time_to_next = game.time_to_next - 1
-	--if game.type == "1P" then
-		if not ai.finished then
-			ai:evaluateActions(game.them_player)
-		end
-	--end
+	if not ai.finished then ai:evaluateActions(game.them_player) end
 	if game.time_to_next <= 0 and ai.finished then
 		love.mousereleased(love.mouse.getPosition())
 		game.particles.wordEffects.clear(game.particles)
@@ -60,68 +57,9 @@ function PhaseManager:action(dt)
 			if not client.our_delta[game.turn] then	-- If local player hasn't acted, send empty turn
 				client:prepareDelta("blank")
 			end
-		end--elseif game.type == "1P" then
-			ai:performQueuedAction()	-- TODO: Expand this to netplay and have the ai read from the net
-		--end
-	end
-
---[==[
-
-	-- This part checks that the state is the same
-	-- We do it in this phase so that players don't need to wait
-	-- Send it 50 frames after turn start, hope this removes the state bug?!
-	if not client.synced and game.type == "Netplay" then
-		if not client.sent_state then
-			print("Queueing state-send")
-			client:sendState(game.STATE_SEND_WAIT)
-			client.sent_state = true
 		end
-
-		if client.received_state and client.opponent_received_state then
-			-- all state sending is done, now compare them and raise an error if different
-			print("Frame: " .. game.frame, "Time: " .. love.timer.getTime() - client.match_start_time,"States successfully exchanged")
-
-			-- time adjustment for lag
-			local our_frames_behind = client.their_state[game.turn].frame - client.our_state[game.turn].frame
-			print("Frame: " .. game.frame, "Time: " .. love.timer.getTime() - client.match_start_time,"Our frames behind:", our_frames_behind)
-			-- If we are behind in frames, it means we processed state more slowly
-			-- We need to catch up (our_frames_behind) frames.
-			-- Therefore, we add to time bucket (our_frames_behind * timestep).
-			if our_frames_behind > 0 then
-				print("Need to speed up by " .. our_frames_behind .. " frames")
-				client.giving_frameback = our_frames_behind
-			end
-
-			if client:compareStates() then
-				print("Frame: " .. game.frame, "Time: " .. love.timer.getTime() - client.match_start_time, "States match!")
-				print("Player 1 meter: " .. game.p1.mp, "Player 2 meter: " .. game.p2.mp)
-				client.synced = true
-			else
-				print("Frame: " .. game.frame, "Time: " .. love.timer.getTime() - client.match_start_time, "Desync.")
-				print("Game turn: " .. game.turn)
-				print("Our state:")
-				for k, v in spairs(client.our_state[game.turn]) do print(k, v) end
-				print("Their state:")
-				for k, v in spairs(client.their_state[game.turn]) do print(k, v) end
-				print("Desynced due to states not matching!")
-
-				print("hey send garcia1000 ourstate.txt and theirstate.txt please")
-				print("File path is:")
-				print( love.filesystem.getSaveDirectory() )
-				local write1 = inspect(client.our_state[game.turn])
-				local write2 = inspect(client.their_state[game.turn])
-				love.filesystem.write("ourstate.txt", write1)
-				love.filesystem.write("theirstate.txt", write2)
-
-				game.phase = "GameOver"
-				--[[
-				Need to do more stuff here
-				--]]
-			end
-		end
+		ai:performQueuedAction()	-- TODO: Expand this to netplay and have the ai read from the net
 	end
-
---]==]
 end
 
 function PhaseManager:resolve(dt)

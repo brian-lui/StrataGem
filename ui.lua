@@ -18,6 +18,7 @@ function Timer:init(game)
 
 	self.text_scaling = function(t) return math.max(1 / (t * 2 + 0.4), 1) end
 	self.text_transparency = function(t) return math.min(255 * 2.5 * t, 255) end
+	self.time_remaining_int = 0
 	self.text_x = stage.x_mid
 	self.text_y = stage.height * 0.28
 
@@ -45,19 +46,22 @@ end
 
 local function drawTimerText(self)
 	local multiplier = 2 -- how much to speed it up relative to an actual second
+	local previous_time_remaining_int = self.time_remaining_int
 	local time_remaining = (self.game.time_to_next * self.game.timeStep)
+	self.time_remaining_int = math.ceil(time_remaining * multiplier)
 
 	if time_remaining <= (3 / multiplier) and time_remaining > 0 then
-		local time_int = math.ceil(time_remaining * multiplier)
-		local todraw = image.UI.timer[time_int]
+		local todraw = image.UI.timer[self.time_remaining_int]
 		local w, h = todraw:getWidth(), todraw:getHeight()
-		local t = time_int - time_remaining * multiplier
+		local t = self.time_remaining_int - time_remaining * multiplier
 		local scale = self.text_scaling(t)
-
 		love.graphics.push("all")
 			love.graphics.setColor(255, 255, 255, self.text_transparency(t))
 			love.graphics.draw(todraw, self.text_x, self.text_y, 0, scale, scale, w/2, h/2)
 		love.graphics.pop()
+		if self.time_remaining_int < previous_time_remaining_int then
+			self.game.sound:newSFX("sfx_countdown"..self.time_remaining_int)
+		end
 	end
 end
 
