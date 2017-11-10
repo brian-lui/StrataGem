@@ -87,7 +87,12 @@ function gs_main:quitGameCancel()
 end
 
 function gs_main:init()
-	self.canvas = {love.graphics.newCanvas(), love.graphics.newCanvas()}
+	-- canvas is not currently used. We can use it for dimming the screen when
+	-- clicking on the options menu
+	self.canvas = {
+		background = love.graphics.newCanvas(),
+		foreground = love.graphics.newCanvas(),
+	}
 	self.camera = common.instance(require "camera")
 end
 
