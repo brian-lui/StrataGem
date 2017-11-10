@@ -147,11 +147,11 @@ function DamageParticle.generate(game, gem)
 			p:remove()
 		end
 		if drop_duration == 0 then
-			p:moveTo{duration = duration, rotation = rotation, curve = curve,
+			p:change{duration = duration, rotation = rotation, curve = curve,
 				exit = {exit_2}}
 		else
-			p:moveTo{duration = duration, rotation = rotation, curve = curve, exit = {exit_1}}
-			p:moveTo{duration = drop_duration, x = drop_x, y = drop_y, exit = {exit_2}}
+			p:change{duration = duration, rotation = rotation, curve = curve, exit = {exit_1}}
+			p:change{duration = drop_duration, x = drop_x, y = drop_y, exit = {exit_2}}
 		end
 
 		-- create damage trails
@@ -193,11 +193,11 @@ function DamageTrailParticle.generate(game, trail)
 	local p = common.instance(DamageTrailParticle, game.particles, trail.gem)
 	p.particle_type = "DamageTrail"
 	if trail.drop_duration then
-		p:moveTo{duration = trail.duration, rotation = trail.rotation, curve = trail.curve}
-		p:moveTo{duration = trail.drop_duration, x = trail.drop_x, y = trail.drop_y,
+		p:change{duration = trail.duration, rotation = trail.rotation, curve = trail.curve}
+		p:change{duration = trail.drop_duration, x = trail.drop_x, y = trail.drop_y,
 			exit = true}
 	else
-		p:moveTo{duration = trail.duration, rotation = trail.rotation,
+		p:change{duration = trail.duration, rotation = trail.rotation,
 			curve = trail.curve, exit = true}
 	end
 end
@@ -241,7 +241,7 @@ function SuperParticle.generate(game, gem, num_particles)
 
 		-- move particle
 		local duration = (0.9 + 0.2 * math.random()) * 90
-		p:moveTo{duration = duration, curve = curve, easing = "inQuad", exit = true}
+		p:change{duration = duration, curve = curve, easing = "inQuad", exit = true}
 	end
 end
 
@@ -291,7 +291,7 @@ function GarbageParticles.generate(game, gem)
 		local p = common.instance(GarbageParticles, game.particles, gem) -- HELP
 		local duration = 54 + math.random() * 12
 		local rotation = math.random() * 5
-		p:moveTo{duration = duration, rotation = rotation, curve = curve, exit = true}
+		p:change{duration = duration, rotation = rotation, curve = curve, exit = true}
 
 		-- create damage trails
 		for i = 1, 3 do
@@ -327,7 +327,7 @@ end
 
 function PopParticle.generate(game, gem)
 	local p = common.instance(PopParticle, game.particles, gem)
-	p:moveTo{duration = 30, transparency = 0, scaling = 4, exit = true}
+	p:change{duration = 30, transparency = 0, scaling = 4, exit = true}
 end
 
 PopParticle = common.class("PopParticle", PopParticle, Pic)
@@ -350,11 +350,11 @@ end
 
 function ExplodingGem.generate(game, gem)
 	local p = common.instance(ExplodingGem, game.particles, gem)
-	p:moveTo{duration = game.GEM_EXPLODE_FRAMES, transparency = 255}
+	p:change{duration = game.GEM_EXPLODE_FRAMES, transparency = 255}
 	if gem.owner == 3 then
-		p:moveTo{duration = game.GEM_FADE_FRAMES, exit = true}
+		p:change{duration = game.GEM_FADE_FRAMES, exit = true}
 	else
-		p:moveTo{duration = game.GEM_FADE_FRAMES, transparency = 0, scaling = 2,
+		p:change{duration = game.GEM_FADE_FRAMES, transparency = 0, scaling = 2,
 			exit = true}
 	end
 end
@@ -394,7 +394,7 @@ function ExplodingPlatform.generate(game, platform)
 			return y + p.t * moves[i].y + p.t^2 * height
 		end
 
-		p:moveTo{
+		p:change{
 			duration = duration,
 			rotation = moves[i].rotation,
 			x = x + moves[i].x,
@@ -453,9 +453,9 @@ function PlatformStar.generate(game, player, star_type, left, right_min, right_m
 	local rotation = 0.03 * duration
 	if star_type == "TinyStar" then rotation = 0.06 * duration end
 	if player.ID == "P2" then rotation = -rotation end
-	p:moveTo{duration = duration * 0.5, curve = curve, rotation = rotation * 0.5}
-	p:moveTo{duration = duration * 0.2, y = stage.height * 0.3, rotation = rotation * 0.7}
-	p:moveTo{duration = duration * 0.15, y = stage.height * 0.15, rotation = rotation * 0.85,
+	p:change{duration = duration * 0.5, curve = curve, rotation = rotation * 0.5}
+	p:change{duration = duration * 0.2, y = stage.height * 0.3, rotation = rotation * 0.7}
+	p:change{duration = duration * 0.15, y = stage.height * 0.15, rotation = rotation * 0.85,
 		transparency = 0, exit = true}
 end
 
@@ -492,9 +492,9 @@ function Dust.generateStarburst(game, gem, n)
 	 		local y_func = function() return y + p.t * y_vel * j end
 	 		--local y_func2 = function() return y + y_vel * (1 + p.t * 0.2) + acc * (1 + p.t * 0.2)^2 end
 
-	 		p:moveTo{duration = duration, rotation = rotation, x = x_func,
+	 		p:change{duration = duration, rotation = rotation, x = x_func,
 	 			y = y_func, scaling = 1 + j * 0.2}
- 			p:moveTo{duration = duration * 3, transparency = 0, exit = true}
+ 			p:change{duration = duration * 3, transparency = 0, exit = true}
 	 	end
  	end
 end
@@ -507,9 +507,9 @@ function Dust.generateYoshi(game, gem)
 	for _, sign in pairs(yoshi) do
 		local p = common.instance(Dust, game.particles, x, y, img, "OverDust")
 		p.scaling = 0.5
-		p:moveTo{x = x + game.stage.width * 0.05 * sign, y = y - game.stage.height * 0.02,
+		p:change{x = x + game.stage.width * 0.05 * sign, y = y - game.stage.height * 0.02,
 			duration = 30, rotation = sign, scaling = 0.8, easing = "outQuart"}
-		p:moveTo{duration = 30, scaling = 1, transparency = 0, rotation = 1.25 * sign, exit = true}
+		p:change{duration = 30, scaling = 1, transparency = 0, rotation = 1.25 * sign, exit = true}
 	end
 end
 
@@ -531,8 +531,8 @@ function Dust.generateFountain(game, gem, n)
  		local y_func = function() return y + p.t * y_vel + p.t^2 * acc end
  		local y_func2 = function() return y + y_vel * (1 + p.t * 0.2) + acc * (1 + p.t * 0.2)^2 end
 
- 		p:moveTo{duration = duration, rotation = rotation, x = x1, y = y_func}
- 		p:moveTo{duration = duration * 0.2, rotation = rotation * 1.2, x = x2,
+ 		p:change{duration = duration, rotation = rotation, x = x1, y = y_func}
+ 		p:change{duration = duration * 0.2, rotation = rotation * 1.2, x = x2,
  			y = y_func2, transparency = 0, exit = true}
  	end
 end
@@ -555,8 +555,8 @@ function Dust.generateBigFountain(game, gem, n)
  		local y_func = function() return y + p.t * y_vel + p.t^2 * acc end
  		local y_func2 = function() return y + y_vel * (1 + p.t * 0.5) + acc * (1 + p.t * 0.5)^2 end
 
- 		p:moveTo{duration = duration, rotation = rotation, x = x1, y = y_func}
- 		p:moveTo{duration = duration * 0.5, rotation = rotation * 1.5, x = x2,
+ 		p:change{duration = duration, rotation = rotation, x = x1, y = y_func}
+ 		p:change{duration = duration * 0.5, rotation = rotation * 1.5, x = x2,
  			y = y_func2, transparency = 0, exit = true}
  	end
 end
@@ -577,7 +577,7 @@ function Dust.generateStarFountain(game, gem, n)
  		local p = common.instance(Dust, game.particles, gem.x, gem.y, todraw, p_type)
  		local x1 = x + x_vel
  		local y_func = function() return y + p.t * y_vel + p.t^2 * acc end
- 		p:moveTo{duration = duration, rotation = rotation, x = x1, y = y_func, exit = true}
+ 		p:change{duration = duration, rotation = rotation, x = x1, y = y_func, exit = true}
 
  		-- create trails
  		for frames = 1, 3 do
@@ -586,7 +586,7 @@ function Dust.generateStarFountain(game, gem, n)
 			local trail_y = function() return y + trail.t * y_vel + trail.t^2 * acc end
 			trail.scaling = 1.25 - (frames * 0.25)
 			trail:wait(frames * 2)
-			trail:moveTo{duration = duration, rotation = rotation, x = x1, y = trail_y, exit = true}
+			trail:change{duration = duration, rotation = rotation, x = x1, y = trail_y, exit = true}
  		end
  	end
 end
@@ -607,7 +607,7 @@ function Dust.generateYellowFountain(game, x, y)
 	 	local p = common.instance(Dust, game.particles, x, y, todraw, p_type)
 	 	local x1 = x + x_vel
 	 	local y_func = function() return y + p.t * y_vel + p.t^2 * acc end
-	 	p:moveTo{duration = duration, rotation = rotation, x = x1, y = y_func, exit = true}
+	 	p:change{duration = duration, rotation = rotation, x = x1, y = y_func, exit = true}
 
 		-- create trails
  		for frames = 1, 3 do
@@ -616,7 +616,7 @@ function Dust.generateYellowFountain(game, x, y)
 			local trail_y = function() return y + trail.t * y_vel + trail.t^2 * acc end
 			trail.scaling = 1.25 - (frames * 0.25)
 			trail:wait(frames * 2)
-			trail:moveTo{duration = duration, rotation = rotation, x = x1, y = trail_y, exit = true}
+			trail:change{duration = duration, rotation = rotation, x = x1, y = trail_y, exit = true}
  		end
  	end
 end
@@ -630,8 +630,8 @@ function Dust.generateFalling(game, gem, x_drift, y_drift)
  	local p_type = (math.random(1, 2) == 2) and "Dust" or "OverDust"
 
  	local p = common.instance(Dust, game.particles, x, y, todraw, p_type)
- 	p:moveTo{duration = duration, rotation = rotation, y = y + 0.13 * game.stage.height}
- 	p:moveTo{duration = duration * 0.3, rotation = rotation * 1.3, transparency = 0,
+ 	p:change{duration = duration, rotation = rotation, y = y + 0.13 * game.stage.height}
+ 	p:change{duration = duration * 0.3, rotation = rotation * 1.3, transparency = 0,
  		y = y + 1.3 * (0.13 * game.stage.height), exit = true}
 end
 
@@ -650,7 +650,7 @@ function Dust.generatePlatformSpin(game, x, y, speed)
 	local function y_func()
 		return y + p.t * y_vel + p.t^2 * acc
 	end
-	p:moveTo{duration = duration, rotation = rotation, x = x + x_vel, y = y_func, transparency = 0, exit = true}
+	p:change{duration = duration, rotation = rotation, x = x + x_vel, y = y_func, transparency = 0, exit = true}
 end
 
 Dust = common.class("Dust", Dust, Pic)
@@ -670,7 +670,7 @@ end
 
 function UpGem.generate(game, gem)
 	local p = common.instance(UpGem, game.particles, gem)
-	p:moveTo{y = p.y - game.stage.height, duration = 60, easing = "inQuad", exit = true}
+	p:change{y = p.y - game.stage.height, duration = 60, easing = "inQuad", exit = true}
 end
 
 -- Remove all gems at end of turn, whether they finished tweening or not
@@ -701,7 +701,7 @@ function WordEffects.generateDoublecastCloud(game, gem1, gem2, horizontal)
 	local p = common.instance(WordEffects, game.particles, (gem1.x + gem2.x) * 0.5, (gem1.y + gem2.y) * 0.5, todraw)
 	p.rotation = horizontal and 0 or math.pi * 0.5
 	p.transparency = 0
-	p:moveTo{duration = 20, transparency = 255, easing = "inCubic"}
+	p:change{duration = 20, transparency = 255, easing = "inCubic"}
 	p.update = function(_self, dt)
 		Pic.update(_self, dt)
 		_self.x, _self.y = (gem1.x + gem2.x) * 0.5, (gem1.y + gem2.y) * 0.5
@@ -715,8 +715,8 @@ function WordEffects.generateRushCloud(game, gem1, gem2, horizontal)
 	local todraw = horizontal and image.words.rush_cloud_h or image.words.rush_cloud_v
 	local p = common.instance(WordEffects, game.particles, (gem1.x + gem2.x) * 0.5, (gem1.y + gem2.y) * 0.5, todraw)
 	p.transparency = 0
-	p:moveTo{duration = 20, transparency = 255, easing = "inCubic"}
-	p:moveTo{duration = 600, during = {8, 0, WordEffects.generateRushParticle, game, gem1, gem2, horizontal}}
+	p:change{duration = 20, transparency = 255, easing = "inCubic"}
+	p:change{duration = 600, during = {8, 0, WordEffects.generateRushParticle, game, gem1, gem2, horizontal}}
 	p.update = function(_self, dt)
 		Pic.update(_self, dt)
 		_self.x, _self.y = (gem1.x + gem2.x) * 0.5, (gem1.y + gem2.y) * 0.5
@@ -740,7 +740,7 @@ function WordEffects.generateRushParticle(game, gem1, gem2, horizontal)
 
 	local p = common.instance(WordEffects, game.particles, x + x_drift, y + y_adj, todraw)
 	p.rotation = (x_drift / image.GEM_WIDTH) / (math.pi * 2)
-	p:moveTo{duration = 18, scaling = 0.7, exit = true}
+	p:change{duration = 18, scaling = 0.7, exit = true}
 end
 
 -- falling stars accompanying Ready at start of match. Called from Words.Ready
@@ -748,14 +748,14 @@ function WordEffects.generateReadyParticle(game, size, x, y)
 	local todraw = image.lookup.words_ready(size)
 	local p = common.instance(WordEffects, game.particles, x, y, todraw)
 	local y_func = function() return y + (p.t*3)^2 * 0.15 * game.stage.height end
-	p:moveTo{duration = 120, y = y_func, exit = true}
+	p:change{duration = 120, y = y_func, exit = true}
 end
 
 -- large gold star accompanying Go at start of match. Called from Words.Go
 function WordEffects.generateGoStar(game, x, y, x_vel, y_vel)
 	local p = common.instance(WordEffects, game.particles, x, y, image.words.go_star)
 	local y_func = function() return y + p.t * y_vel + (p.t)^2 * 3 * game.stage.height end
-	p:moveTo{duration = 120, x = x + x_vel, y = y_func, exit = true}
+	p:change{duration = 120, x = x + x_vel, y = y_func, exit = true}
 end
 
 -- DoublecastCloud, RushCloud, RushParticle, ReadyParticle, GoStar
@@ -808,8 +808,8 @@ function Words.generateDoublecast(game, player)
 	local todraw = image.words.doublecast
 	local p = common.instance(Words, game.particles, x, y, todraw, nil, nil, nil, nil, nil, true)
 	p.scaling = 5
-	p:moveTo{duration = 60, scaling = 1, easing = "outQuart"}
-	p:moveTo{duration = 60, transparency = 0, easing = "inExpo", exit = true}
+	p:change{duration = 60, scaling = 1, easing = "outQuart"}
+	p:change{duration = 60, transparency = 0, easing = "inExpo", exit = true}
 end
 
 function Words.generateRush(game, player)
@@ -819,8 +819,8 @@ function Words.generateRush(game, player)
 	local todraw = image.words.rush
 	local p = common.instance(Words, game.particles, x, y, todraw, nil, nil, nil, nil, nil, true)
 	p.rotation = 0.25
-	p:moveTo{duration = 60, x = game.stage.width * (0.5 + sign * 0.2), rotation = 0, easing = "outBounce"}
-	p:moveTo{duration = 60, x = game.stage.width * (0.5 + sign * 0.9), rotation = 0.5, easing = "inBack", exit = true}
+	p:change{duration = 60, x = game.stage.width * (0.5 + sign * 0.2), rotation = 0, easing = "outBounce"}
+	p:change{duration = 60, x = game.stage.width * (0.5 + sign * 0.9), rotation = 0.5, easing = "inBack", exit = true}
 end
 
 function Words.generateReady(game)
@@ -839,9 +839,9 @@ function Words.generateReady(game)
 		particles.wordEffects.generateReadyParticle(game, "small",
 			p.x + (math.random()-0.5)*w, stage.height*0.3 + (math.random()-0.5)*h)
 	end
-	p:moveTo{duration = 60, x = 0.5 * stage.width, transparency = 510,
+	p:change{duration = 60, x = 0.5 * stage.width, transparency = 510,
 		during = {{5, 0, generate_big}, {2, 0, generate_small}}, easing = "outElastic"}
-	p:moveTo{duration = 30, x = 1.4 * stage.width, transparency = 0,
+	p:change{duration = 30, x = 1.4 * stage.width, transparency = 0,
 		during = {{5, 0, generate_big}, {2, 0, generate_small}}, easing = "inQuad", exit = true}
 end
 
@@ -852,9 +852,9 @@ function Words.generateGo(game)
 	local todraw = image.words.go
 	local p = common.instance(Words, game.particles, x, y, todraw)
 	p.scaling = 0.1
-	p:moveTo{duration = 20, scaling = 1, easing = "outQuart"}
+	p:change{duration = 20, scaling = 1, easing = "outQuart"}
 	p:wait(10)
-	p:moveTo{duration = 18, transparency = 0, easing = "linear", exit = true}
+	p:change{duration = 18, transparency = 0, easing = "linear", exit = true}
 
 	local particles = game.particles
 	particles.wordEffects.generateGoStar(game, x, y, stage.width * 0.25, stage.height * -0.4)
@@ -878,8 +878,8 @@ function Words.generateNoRush(game, column)
 		local y = (grid.y[8] + grid.y[9]) / 2
 		local todraw = image.words.no_rush_one_column
 		local p = common.instance(Words, game.particles, x, y, todraw, nil, nil, nil, nil, nil, true)
-		p:moveTo{duration = 20, quad = {x = true, x_percentage = 1, x_anchor = 0.5}}
-		p:moveTo{duration = 40}
+		p:change{duration = 20, quad = {x = true, x_percentage = 1, x_anchor = 0.5}}
+		p:change{duration = 40}
 		local blink = 0
 		local blinkCheck
 		blinkCheck = function(b)
@@ -890,15 +890,15 @@ function Words.generateNoRush(game, column)
 			end
 			if blink ~= 3 then 
 				
-				p:moveTo{duration = 15, transparency = 0}
-				p:moveTo{duration = 15, transparency = 255, exit = {blinkCheck, blink}}
+				p:change{duration = 15, transparency = 0}
+				p:change{duration = 15, transparency = 255, exit = {blinkCheck, blink}}
 			else
-				p:moveTo{duration = 15, transparency = 0, exit = {function() game.particles.no_rush_check[column] = 0 end}}
-				p:moveTo{duration = 1, exit = true}
+				p:change{duration = 15, transparency = 0, exit = {function() game.particles.no_rush_check[column] = 0 end}}
+				p:change{duration = 1, exit = true}
 			end
 		end
-		p:moveTo{duration = 15, transparency = 0}
-		p:moveTo{duration = 15, transparency = 255, exit = {blinkCheck, blink}}	
+		p:change{duration = 15, transparency = 0}
+		p:change{duration = 15, transparency = 255, exit = {blinkCheck, blink}}	
 	end
 	print("press 'g' to call this function!")
 	--[[

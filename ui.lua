@@ -99,7 +99,7 @@ function ui:drawSuper(player)
 	local displayed_mp = math.min(player.MAX_MP, player.turn_start_mp + destroyedParticles)
 	local fill_percent = 0.12 + 0.76 * displayed_mp / player.MAX_MP
 	local img = player.super_meter_image
-	img:changeQuad(0, img.height * (1 - fill_percent), img.width, img.height * fill_percent)
+	img:setQuad(0, img.height * (1 - fill_percent), img.width, img.height * fill_percent)
 
 	player.super_frame:draw()	-- super frame
 	img:draw()	-- super meter
@@ -127,7 +127,7 @@ function ui:drawBurst(player)
 		local part_fill_block = player.burst_partial[full_segs_int + 1]
 		local width = part_fill_block.width * part_fill_percent
 		local start = player.ID == "P2" and part_fill_block.width - width or 0
-		part_fill_block:changeQuad(start, 0, width, part_fill_block.height)
+		part_fill_block:setQuad(start, 0, width, part_fill_block.height)
 	end
 
 	player.burst_frame:draw()
@@ -288,8 +288,8 @@ function ui:putPendingAtTop()
 				effect.func = self.game.particles.wordEffects.generateRushCloud
 				exit = {gem.landedInStagingArea, gem, "rush", self.game:playerByIndex(piece.foe)}
 			end
-			gem:moveTo{y = self.game.stage.height * -0.1}
-			gem:moveTo{y = target_y, duration = 24, easing = "outQuart", exit = exit}
+			gem:change{y = self.game.stage.height * -0.1}
+			gem:change{y = target_y, duration = 24, easing = "outQuart", exit = exit}
 		end
 		if #effect > 0 then
 			local h = effect[1].row == effect[2].row

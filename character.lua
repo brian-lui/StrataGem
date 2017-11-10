@@ -177,9 +177,9 @@ function Character:superSlideIn()
 		y = stage.height * 0.5,
 		flip = sign == -1
 	})
-	shadow:moveTo{duration = 30, x = stage.width * (0.5 + 0.025 * sign), easing = "outQuart"}
+	shadow:change{duration = 30, x = stage.width * (0.5 + 0.025 * sign), easing = "outQuart"}
 	shadow:wait(25)
-	shadow:moveTo{duration = 5, transparency = 0, exit = true}
+	shadow:change{duration = 5, transparency = 0, exit = true}
 	local portrait = common.instance(particles.superFreezeEffects, particles, {
 		image = self.action_image,
 		draw_order = 3,
@@ -187,9 +187,9 @@ function Character:superSlideIn()
 		y = stage.height * 0.5,
 		flip = sign == -1
 	})
-	portrait:moveTo{duration = 30, x = stage.width * (0.5 + 0.025 * sign), easing = "outQuart"}
+	portrait:change{duration = 30, x = stage.width * (0.5 + 0.025 * sign), easing = "outQuart"}
 	portrait:wait(25)
-	portrait:moveTo{duration = 5, transparency = 0, exit = true}
+	portrait:change{duration = 5, transparency = 0, exit = true}
 
 	local top_fuzz = common.instance(particles.superFreezeEffects, particles, {
 		image = self.super_fuzz_image,
@@ -197,9 +197,9 @@ function Character:superSlideIn()
 		x = stage.width * 0.5,
 		y = self.super_fuzz_image:getHeight() * -0.5
 	})
-	top_fuzz:moveTo{duration = 21, y = 0, easing = "outQuart"}
+	top_fuzz:change{duration = 21, y = 0, easing = "outQuart"}
 	top_fuzz:wait(40)
-	top_fuzz:moveTo{duration = 5, transparency = 0, exit = true}
+	top_fuzz:change{duration = 5, transparency = 0, exit = true}
 
 	local bottom_fuzz = common.instance(particles.superFreezeEffects, particles, {
 		image = self.super_fuzz_image,
@@ -207,9 +207,9 @@ function Character:superSlideIn()
 		x = stage.width * 0.5,
 		y = self.super_fuzz_image:getHeight() * 0.5 + stage.height,
 	})
-	bottom_fuzz:moveTo{duration = 21, y = stage.height, easing = "outQuart"}
+	bottom_fuzz:change{duration = 21, y = stage.height, easing = "outQuart"}
 	bottom_fuzz:wait(40)
-	bottom_fuzz:moveTo{duration = 5, transparency = 0, exit = true}
+	bottom_fuzz:change{duration = 5, transparency = 0, exit = true}
 	self.game.sound:newSFX("sfx_superactivate")
 end
 

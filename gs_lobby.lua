@@ -23,7 +23,7 @@ function lobby:_createButton(params)
 		image = params.image,
 		container = lobby.ui_clickable,
 	})
-	button:moveTo{duration = params.duration, x = params.end_x, y = params.end_y,
+	button:change{duration = params.duration, x = params.end_x, y = params.end_y,
 		transparency = params.end_transparency or 255,
 		easing = params.easing or "linear", exit = params.exit}
 	button.pushed = params.pushed or function()
@@ -53,7 +53,7 @@ function lobby:_createImage(params)
 		image = params.image,
 		container = lobby.ui_static,
 	})
-	button:moveTo{duration = params.duration, x = params.end_x, y = params.end_y,
+	button:change{duration = params.duration, x = params.end_x, y = params.end_y,
 		transparency = params.end_transparency or 255, easing = params.easing, exit = params.exit}
 	return button
 end

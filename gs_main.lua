@@ -25,7 +25,7 @@ function gs_main:_createButton(params)
 		container = gs_main.ui_clickable,
 	})
 
-	button:moveTo{duration = params.duration, x = params.end_x, y = params.end_y,
+	button:change{duration = params.duration, x = params.end_x, y = params.end_y,
 		transparency = params.end_transparency or 255,
 		easing = params.easing or "linear", exit = params.exit}
 	button.pushed = params.pushed or function()
@@ -56,7 +56,7 @@ function gs_main:_createImage(params)
 		container = gs_main.ui_static,
 	})
 
-	button:moveTo{duration = params.duration, x = params.end_x, y = params.end_y,
+	button:change{duration = params.duration, x = params.end_x, y = params.end_y,
 		transparency = params.end_transparency or 255, easing = params.easing, exit = params.exit}
 	return button
 end
@@ -66,24 +66,24 @@ function gs_main:quitGame()
 	gs_main.quit_menu_open = true
 	if self.type == "1P" then self.paused = true end
 
-	gs_main.ui_clickable.quitgameyes:moveTo{x = stage.width * 0.45, y = stage.height * 0.6}
-	gs_main.ui_clickable.quitgameyes:moveTo{duration = 15, transparency = 255}
-	gs_main.ui_clickable.quitgameno:moveTo{x = stage.width * 0.55, y = stage.height * 0.6}
-	gs_main.ui_clickable.quitgameno:moveTo{duration = 15, transparency = 255}
-	gs_main.ui_static.quitgameconfirm:moveTo{duration = 15, transparency = 255}
-	gs_main.ui_static.quitgameframe:moveTo{duration = 15, transparency = 255}
+	gs_main.ui_clickable.quitgameyes:change{x = stage.width * 0.45, y = stage.height * 0.6}
+	gs_main.ui_clickable.quitgameyes:change{duration = 15, transparency = 255}
+	gs_main.ui_clickable.quitgameno:change{x = stage.width * 0.55, y = stage.height * 0.6}
+	gs_main.ui_clickable.quitgameno:change{duration = 15, transparency = 255}
+	gs_main.ui_static.quitgameconfirm:change{duration = 15, transparency = 255}
+	gs_main.ui_static.quitgameframe:change{duration = 15, transparency = 255}
 end
 
 function gs_main:quitGameCancel()
 	local stage = self.stage
 	gs_main.quit_menu_open = false
 	if self.type == "1P" then self.paused = false end
-	gs_main.ui_clickable.quitgameyes:moveTo{duration = 10, transparency = 0}
-	gs_main.ui_clickable.quitgameyes:moveTo{x = -stage.width, y = -stage.height}
-	gs_main.ui_clickable.quitgameno:moveTo{duration = 10, transparency = 0}
-	gs_main.ui_clickable.quitgameno:moveTo{x = -stage.width, y = -stage.height}
-	gs_main.ui_static.quitgameconfirm:moveTo{duration = 10, transparency = 0}
-	gs_main.ui_static.quitgameframe:moveTo{duration = 10, transparency = 0}
+	gs_main.ui_clickable.quitgameyes:change{duration = 10, transparency = 0}
+	gs_main.ui_clickable.quitgameyes:change{x = -stage.width, y = -stage.height}
+	gs_main.ui_clickable.quitgameno:change{duration = 10, transparency = 0}
+	gs_main.ui_clickable.quitgameno:change{x = -stage.width, y = -stage.height}
+	gs_main.ui_static.quitgameconfirm:change{duration = 10, transparency = 0}
+	gs_main.ui_static.quitgameframe:change{duration = 10, transparency = 0}
 end
 
 function gs_main:init()
@@ -482,7 +482,7 @@ end
 
 function gs_main:mousemoved(x, y)
 	if self.active_piece and self.phase == "Action" then
-		self.active_piece:moveTo{x = x, y = y}
+		self.active_piece:change{x = x, y = y}
 	end
 
 	if gs_main.clicked then

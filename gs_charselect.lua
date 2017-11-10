@@ -26,7 +26,7 @@ function charselect:_createButton(params)
 		image = params.image,
 		container = charselect.ui_clickable,
 	})
-	button:moveTo{duration = params.duration, x = params.end_x, y = params.end_y,
+	button:change{duration = params.duration, x = params.end_x, y = params.end_y,
 		transparency = params.end_transparency or 255,
 		easing = params.easing or "linear", exit = params.exit}
 	button.pushed = params.pushed or function()
@@ -56,7 +56,7 @@ function charselect:_createImage(params)
 		image = params.image,
 		container = charselect.ui_static,
 	})
-	button:moveTo{duration = params.duration, x = params.end_x, y = params.end_y,
+	button:change{duration = params.duration, x = params.end_x, y = params.end_y,
 		transparency = params.end_transparency or 255, easing = params.easing, exit = params.exit}
 	return button
 end
@@ -196,7 +196,7 @@ function charselect:_createUIImages()
 	charselect.displayed_character.reset = function(c)
 		c.x = stage.width * 0.20
 		c.transparency = 60
-		c:moveTo{duration = 6, x = stage.width * 0.25, transparency = 255, easing = "outQuart"}
+		c:change{duration = 6, x = stage.width * 0.25, transparency = 255, easing = "outQuart"}
 	end
 
 	-- large portrait text with dummy pic
@@ -213,7 +213,7 @@ function charselect:_createUIImages()
 	charselect.displayed_character_text.reset = function(c)
 		c.y = stage.height * 0.7
 		c.transparency = 60
-		c:moveTo{duration = 6, y = stage.height * 0.65, transparency = 255, easing = "outQuart"}
+		c:change{duration = 6, y = stage.height * 0.65, transparency = 255, easing = "outQuart"}
 	end
 
 	-- background_image_frame
