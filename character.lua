@@ -90,7 +90,7 @@ local function setupBurstMeter(self)
 	self.burst_block = {}
 	self.burst_partial = {}
 	self.burst_glow = {}
-	for i = 1, 2 do
+	for i = 1, 2 do -- two segments for super meter
 		self.burst_block[i] = common.instance(Pic, self.game, {x = stage.burst[self.ID][i].x,
 			y = stage.burst[self.ID][i].y, image = self.burst_images.full})
 		self.burst_partial[i] = common.instance(Pic, self.game, {x = stage.burst[self.ID][i].x,

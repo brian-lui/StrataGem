@@ -23,8 +23,7 @@ function stage:init(game)
 	self.burst = {P1 = {}, P2 = {}}
 	self.burst.P1.frame = {x = self.x_mid - (9.5 * self.gem_width), y = self.y_mid - 3 * self.gem_height}
 	self.burst.P2.frame = {x = self.x_mid + (9.5 * self.gem_width), y = self.y_mid - 3 * self.gem_height}
-	 -- we asked artist to make the image size exactly double of the burst image
-	local burst_width = image.UI.burst.red_partial:getWidth() * 0.5
+	local burst_width = image.UI.burst.red_partial:getWidth()
 
 	for i = 1, 2 do
 		self.burst.P1[i] = {

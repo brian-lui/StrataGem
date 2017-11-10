@@ -118,33 +118,33 @@ end
 
 function ui:drawBurst(player)
 	local max_segs = 2
-	local segment_width = player.MAX_BURST / max_segs
-	local full_segs = math.min(player.cur_burst / segment_width, max_segs)
+	local full_segs = (player.cur_burst / player.MAX_BURST) * max_segs
+	local full_segs_int = math.floor(full_segs)
 	local part_fill_percent = full_segs % 1
 
-	local flip = player.ID == "P2"
 	-- update partial fill block length
 	if part_fill_percent > 0 then
-		local part_fill_block = player.burst_partial[math.floor(full_segs) + 1]
-		local width = math.floor(part_fill_block.width * part_fill_percent)
-		part_fill_block:changeQuad(0, 0, width, part_fill_block.height)
+		local part_fill_block = player.burst_partial[full_segs_int + 1]
+		local width = part_fill_block.width * part_fill_percent
+		local start = player.ID == "P2" and part_fill_block.width - width or 0
+		part_fill_block:changeQuad(start, 0, width, part_fill_block.height)
 	end
 
-	player.burst_frame:draw()	-- frame
+	player.burst_frame:draw()
 
 	-- super meter
 	for i = 1, max_segs do
 		if full_segs >= i then
-			player.burst_block[i]:draw(flip)
-		elseif full_segs + 1 > i then	-- partial fill
-			player.burst_partial[i]:draw(flip, player.burst_block[i].quad_x, player.burst_block[i].quad_y)
+			player.burst_block[i]:draw()
+		elseif full_segs + 1 > i then
+			player.burst_partial[i]:draw()
 		end
 	end
 
 	-- glow
 	if full_segs >= 1 then
-		player.burst_glow[math.floor(full_segs)].transparency = math.ceil(math.sin(self.game.frame / 30) * 127.5 + 127.5)
-		player.burst_glow[math.floor(full_segs)]:draw()
+		player.burst_glow[full_segs_int].transparency = math.sin(self.game.frame / 30) * 127.5 + 127.5
+		player.burst_glow[full_segs_int]:draw()
 	end
 end
 
