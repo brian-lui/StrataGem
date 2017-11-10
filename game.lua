@@ -157,6 +157,7 @@ function Game:reset()
 	self.rng:setSeed(os.time())	-- TODO: This probably causes desyncs
 	self.orig_rng_seed = self.rng:getSeed() -- for debugging
 	self.frame = 0
+	self.paused = false
 end
 
 function Game:keypressed(key)

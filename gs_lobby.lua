@@ -8,8 +8,8 @@ local lobby = {}
 
 --[[ create a clickable object
 	mandatory parameters: name, image, image_pushed, end_x, end_y, action
-	optional parameters: duration, transparency, start_x, start_y, easing,
-		exit, pushed, pushed_sfx, released, released_sfx
+	optional parameters: duration, start_transparency, end_transparency,
+		start_x, start_y, easing, exit, pushed, pushed_sfx, released, released_sfx
 --]]
 function lobby:_createButton(params)
 	if params.name == nil then print("No object name received!") end
@@ -40,7 +40,7 @@ end
 
 --[[ creates an object that can be tweened but not clicked
 	mandatory parameters: name, image, end_x, end_y
-	optional parameters: duration, transparency, start_x, start_y, easing, exit
+	optional parameters: duration, start_transparency, end_transparency, start_x, start_y, easing, exit
 --]]
 function lobby:_createImage(params)
 	if params.name == nil then print("No object name received!") end
@@ -49,12 +49,12 @@ function lobby:_createImage(params)
 		name = params.name,
 		x = params.start_x or params.end_x,
 		y = params.start_y or params.end_y,
-		transparency = params.transparency or 255,
+		transparency = params.start_transparency or 255,
 		image = params.image,
 		container = lobby.ui_static,
 	})
 	button:moveTo{duration = params.duration, x = params.end_x, y = params.end_y,
-		transparency = params.transparency, easing = params.easing, exit = params.exit}
+		transparency = params.end_transparency or 255, easing = params.easing, exit = params.exit}
 	return button
 end
 

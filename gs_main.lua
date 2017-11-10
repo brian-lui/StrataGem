@@ -9,8 +9,8 @@ local gs_main = {}
 
 --[[ create a clickable object
 	mandatory parameters: name, image, image_pushed, end_x, end_y, action
-	optional parameters: duration, transparency, start_x, start_y, easing,
-		exit, pushed, pushed_sfx, released, released_sfx
+	optional parameters: duration, start_transparency, end_transparency,
+		start_x, start_y, easing, exit, pushed, pushed_sfx, released, released_sfx
 --]]
 function gs_main:_createButton(params)
 	if params.name == nil then print("No object name received!") end
@@ -24,6 +24,7 @@ function gs_main:_createButton(params)
 		image = params.image,
 		container = gs_main.ui_clickable,
 	})
+
 	button:moveTo{duration = params.duration, x = params.end_x, y = params.end_y,
 		transparency = params.end_transparency or 255,
 		easing = params.easing or "linear", exit = params.exit}
@@ -41,7 +42,7 @@ end
 
 --[[ creates an object that can be tweened but not clicked
 	mandatory parameters: name, image, end_x, end_y
-	optional parameters: duration, transparency, start_x, start_y, easing, exit
+	optional parameters: duration, start_transparency, end_transparency, start_x, start_y, easing, exit
 --]]
 function gs_main:_createImage(params)
 	if params.name == nil then print("No object name received!") end
@@ -50,50 +51,43 @@ function gs_main:_createImage(params)
 		name = params.name,
 		x = params.start_x or params.end_x,
 		y = params.start_y or params.end_y,
-		transparency = params.transparency or 255,
+		transparency = params.start_transparency or 255,
 		image = params.image,
 		container = gs_main.ui_static,
 	})
+
 	button:moveTo{duration = params.duration, x = params.end_x, y = params.end_y,
-		transparency = params.transparency, easing = params.easing, exit = params.exit}
+		transparency = params.end_transparency or 255, easing = params.easing, exit = params.exit}
 	return button
 end
 
-function gs_main:quitgame()
-	--[[
-	if not gs_main.ui_clickable.quitgame then
-		-- create quitgame, with drawthis to true
-		-- create quitgameframe
-		-- create quitgameyes
-		-- create quitgameno
-	else
-		-- move them back onscreen
-		-- tween transparency back to 255
-	end
-	--]]
-	if self.type == "1P" then
-		print("1P single player, pause game and ask if u wanna quit")
-		print("I will code this later, currently it instantly leaves lol")
-		-- pause game
-		-- click yes leads to statemanager switch
-		-- click no:
-		-- unpauses game, set quitgame.drawthis to false, tween transparency to 0, moves them offscreen
-		self.statemanager:switch(require "gs_title")
-	elseif self.type == "Netplay" then
-		print("Netplay, ask if u wanna quit but don't pause game")
-		print("I will code this later, currently it instantly leaves lol")
-		-- click yes leads to statemanager switch
-		-- click no: set quitgame.drawthis to false, tween transparency to 0, moves them offscreen
-		self.statemanager:switch(require "gs_title")
-	end
+function gs_main:quitGame()
+	local stage = self.stage
+	gs_main.quit_menu_open = true
+	if self.type == "1P" then self.paused = true end
+
+	gs_main.ui_clickable.quitgameyes:moveTo{x = stage.width * 0.45, y = stage.height * 0.6}
+	gs_main.ui_clickable.quitgameyes:moveTo{duration = 15, transparency = 255}
+	gs_main.ui_clickable.quitgameno:moveTo{x = stage.width * 0.55, y = stage.height * 0.6}
+	gs_main.ui_clickable.quitgameno:moveTo{duration = 15, transparency = 255}
+	gs_main.ui_static.quitgameconfirm:moveTo{duration = 15, transparency = 255}
+	gs_main.ui_static.quitgameframe:moveTo{duration = 15, transparency = 255}
+end
+
+function gs_main:quitGameCancel()
+	local stage = self.stage
+	gs_main.quit_menu_open = false
+	if self.type == "1P" then self.paused = false end
+	gs_main.ui_clickable.quitgameyes:moveTo{duration = 10, transparency = 0}
+	gs_main.ui_clickable.quitgameyes:moveTo{x = -stage.width, y = -stage.height}
+	gs_main.ui_clickable.quitgameno:moveTo{duration = 10, transparency = 0}
+	gs_main.ui_clickable.quitgameno:moveTo{x = -stage.width, y = -stage.height}
+	gs_main.ui_static.quitgameconfirm:moveTo{duration = 10, transparency = 0}
+	gs_main.ui_static.quitgameframe:moveTo{duration = 10, transparency = 0}
 end
 
 function gs_main:init()
-	local canvas = {}
-	for i = 1, 5 do
-		canvas[i] = love.graphics.newCanvas()
-	end
-	self.canvas = canvas
+	self.canvas = {love.graphics.newCanvas(), love.graphics.newCanvas()}
 	self.camera = common.instance(require "camera")
 end
 
@@ -104,6 +98,7 @@ function gs_main:enter()
 	self.dying_gems = {} -- this creates the dying_gems table in Game. Sad!
 	gs_main.ui_clickable = {}
 	gs_main.ui_static = {}
+	gs_main.quit_menu_open = false
 	gs_main._createImage(self, {
 		name = "tub",
 		image = image.UI.tub,
@@ -111,13 +106,66 @@ function gs_main:enter()
 		end_y = stage.tub.y,
 	})
 
+	local settings_image, settings_imagepush
+	if self.type == "1P" then
+		settings_image = image.button.pause
+		settings_imagepush = image.button.pausepush
+	elseif self.type == "Netplay" then
+		settings_image = image.button.stop
+		settings_imagepush = image.button.stoppush
+	else
+		print("invalid game type!")
+	 end
+
 	gs_main._createButton(self, {
-		name = "quit",
-		image = image.button.quitgame,
-		image_pushed = image.button.quitgamepush,
-		end_x = stage.width - image.button.quitgame:getWidth() * 0.5,
-		end_y = stage.height - image.button.quitgame:getHeight() * 0.5,
-		action = function() gs_main.quitgame(self) end,
+		name = "settings",
+		image = settings_image,
+		image_pushed = settings_imagepush,
+		end_x = stage.width * 0.5,
+		end_y = stage.height - settings_image:getHeight() * 0.5,
+		action = function()
+			if not gs_main.quit_menu_open then gs_main.quitGame(self) end
+		end,
+	})
+
+	gs_main._createImage(self, {
+		name = "quitgameconfirm",
+		image = image.unclickable.main_quitconfirm,
+		end_x = stage.width * 0.5,
+		end_y = stage.height * 0.4,
+		end_transparency = 0,
+	})
+
+	gs_main._createImage(self, {
+		name = "quitgameframe",
+		image = image.unclickable.main_quitframe,
+		end_x = stage.width * 0.5,
+		end_y = stage.height * 0.5,
+		end_transparency = 0,
+	})
+
+	gs_main._createButton(self, {
+		name = "quitgameyes",
+		image = image.button.quitgameyes,
+		image_pushed = image.button.quitgameyespush,
+		end_x = -stage.width,
+		end_y = -stage.height,
+		end_transparency = 0,
+		action = function()
+			if gs_main.quit_menu_open then self.statemanager:switch(require "gs_title") end
+		end,
+	})
+
+	gs_main._createButton(self, {
+		name = "quitgameno",
+		image = image.button.quitgameno,
+		image_pushed = image.button.quitgamenopush,
+		end_x = -stage.width,
+		end_y = -stage.height,
+		end_transparency = 0,
+		action = function()
+			if gs_main.quit_menu_open then gs_main.quitGameCancel(self) end
+		end,
 	})
 end
 
@@ -144,6 +192,8 @@ function gs_main:update(dt)
 	self.animations:updateAll(dt)
 	self.screenshake_frames = math.max(0, self.screenshake_frames - 1)
 	self.timeBucket = self.timeBucket + dt
+	for _, v in pairs(gs_main.ui_clickable) do v:update(dt) end
+	for _, v in pairs(gs_main.ui_static) do v:update(dt) end
 
 	-- Testing trail stars
 	-- TODO: put this in the right place
@@ -343,9 +393,16 @@ function gs_main:drawText()
 	love.graphics.pop()
 end
 
+function gs_main:drawButtons()
+	gs_main.ui_static.quitgameframe:draw()
+	gs_main.ui_static.quitgameconfirm:draw()
+	gs_main.ui_clickable.quitgameyes:draw()
+	gs_main.ui_clickable.quitgameno:draw()
+	gs_main.ui_clickable.settings:draw()
+end
+
 function gs_main:draw()
 	self.current_background:draw()
-
 	self.camera:set(1, 1)
 		if self.screenshake_frames > 0 then
 			gs_main.screenshake(self, self.screenshake_vel)
@@ -357,17 +414,8 @@ function gs_main:draw()
 		gs_main.drawGems(self)
 		--gs_main.drawAnimations(self)
 	self.camera:unset()
-
 	gs_main.drawText(self)
-
-	-- buttons
-	for _, v in pairs(gs_main.ui_clickable) do v:draw() end
-	if gs_main.ui_clickable.quitgame and gs_main.ui_clickable.quitgame.drawthis then
-		gs_main.ui_clickable.quitgameframe:draw()
-		gs_main.ui_clickable.quitgame:draw()
-		gs_main.ui_clickable.quitgameyes:draw()
-		gs_main.ui_clickable.quitgameno:draw()
-	end
+	gs_main.drawButtons(self)
 end
 
 function gs_main:mousepressed(x, y)

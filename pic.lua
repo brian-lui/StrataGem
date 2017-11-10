@@ -248,6 +248,7 @@ function Pic:moveTo(target)
 		self.x = target.x or self.x
 		self.y = target.y or self.y
 		self.rotation = target.rotation or self.rotation
+		self.transparency = target.transparency or self.transparency
 		if target.debug then print("Instantly moving image") end
 	elseif not self.move_func then -- no active tween, apply this immediately
 		self.move_func = createMoveFunc(self, target)
