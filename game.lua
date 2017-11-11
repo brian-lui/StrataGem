@@ -1,3 +1,4 @@
+local Pic = require 'pic'
 local love = _G.love
 local common = require "classcommons"
 
@@ -159,6 +160,52 @@ function Game:reset()
 	self.frame = 0
 	self.paused = false
 end
+
+-- General button and image object creation functions
+
+function Game:_createButton(params, gamestate)
+	if params.name == nil then print("No object name received!") end
+	if params.image_pushed == nil then print("No push image received for " .. params.name .. "!") end
+	local stage = self.stage
+	local button = common.instance(Pic, self, {
+		name = params.name,
+		x = params.start_x or params.end_x,
+		y = params.start_y or params.end_y,
+		transparency = params.start_transparency or 255,
+		image = params.image,
+		container = params.container or gamestate.ui_clickable,
+	})
+	button:change{duration = params.duration, x = params.end_x, y = params.end_y,
+		transparency = params.end_transparency or 255,
+		easing = params.easing or "linear", exit = params.exit}
+	button.pushed = params.pushed or function()
+		self.sound:newSFX(pushed_sfx or "button")
+		button:newImage(params.image_pushed)
+	end
+	button.released = params.released or function()
+		if released_sfx then self.sound:newSFX(released_sfx) end
+		button:newImage(params.image)
+	end
+	button.action = params.action
+	return button
+end
+
+function Game:_createImage(params, gamestate)
+	if params.name == nil then print("No object name received!") end
+	local stage = self.stage
+	local button = common.instance(Pic, self, {
+		name = params.name,
+		x = params.start_x or params.end_x,
+		y = params.start_y or params.end_y,
+		transparency = params.start_transparency or 255,
+		image = params.image,
+		container = params.container or gamestate.ui_static,
+	})
+	button:change{duration = params.duration, x = params.end_x, y = params.end_y,
+		transparency = params.end_transparency or 255, easing = params.easing, exit = params.exit}
+	return button
+end
+
 
 function Game:keypressed(key)
 	local grid = self.grid

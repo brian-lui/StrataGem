@@ -22,7 +22,7 @@ function gs_main:_createButton(params)
 		y = params.start_y or params.end_y,
 		transparency = params.start_transparency or 255,
 		image = params.image,
-		container = gs_main.ui_clickable,
+		container = params.container or gs_main.ui_clickable,
 	})
 
 	button:change{duration = params.duration, x = params.end_x, y = params.end_y,
@@ -53,7 +53,7 @@ function gs_main:_createImage(params)
 		y = params.start_y or params.end_y,
 		transparency = params.start_transparency or 255,
 		image = params.image,
-		container = gs_main.ui_static,
+		container = params.container or gs_main.ui_static,
 	})
 
 	button:change{duration = params.duration, x = params.end_x, y = params.end_y,

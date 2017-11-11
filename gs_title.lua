@@ -20,30 +20,7 @@ local title = {}
 		start_x, start_y, easing, exit, pushed, pushed_sfx, released, released_sfx
 --]]
 function title:_createButton(params)
-	if params.name == nil then print("No object name received!") end
-	if params.image_pushed == nil then print("No push image received for " .. params.name .. "!") end
-	local stage = self.stage
-	local button = common.instance(Pic, self, {
-		name = params.name,
-		x = params.start_x or params.end_x,
-		y = params.start_y or params.end_y,
-		transparency = params.start_transparency or 255,
-		image = params.image,
-		container = params.container or title.ui_clickable,
-	})
-	button:change{duration = params.duration, x = params.end_x, y = params.end_y,
-		transparency = params.end_transparency or 255,
-		easing = params.easing or "linear", exit = params.exit}
-	button.pushed = params.pushed or function()
-		self.sound:newSFX(pushed_sfx or "button")
-		button:newImage(params.image_pushed)
-	end
-	button.released = params.released or function()
-		if released_sfx then self.sound:newSFX(released_sfx) end
-		button:newImage(params.image)
-	end
-	button.action = params.action
-	return button
+	self:_createButton(params, title)
 end
 
 --[[ creates an object that can be tweened but not clicked
@@ -52,19 +29,7 @@ end
 		container, start_x, start_y, easing, exit
 --]]
 function title:_createImage(params)
-	if params.name == nil then print("No object name received!") end
-	local stage = self.stage
-	local button = common.instance(Pic, self, {
-		name = params.name,
-		x = params.start_x or params.end_x,
-		y = params.start_y or params.end_y,
-		transparency = params.start_transparency or 255,
-		image = params.image,
-		container = params.container or title.ui_static,
-	})
-	button:change{duration = params.duration, x = params.end_x, y = params.end_y,
-		transparency = params.end_transparency or 255, easing = params.easing, exit = params.exit}
-	return button
+	self:_createImage(params, title)
 end
 
 -- After the initial tween, we keep the icons here if returning to title screen
