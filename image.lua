@@ -145,7 +145,8 @@ assert(image.UI.burst.red_partial)
 local buttons = {"vscpu", "vscpupush", "netplay", "netplaypush", "back", "backpush",
 	"details", "detailspush", "start", "startpush", "leftarrow", "rightarrow",
 	"lobbycreatenew", "lobbyqueueranked", "lobbycancelsearch", "pause", "pausepush",
-	"stop", "stoppush", "quitgameno", "quitgamenopush", "quitgameyes", "quitgameyespush"}
+	"stop", "stoppush", "settings", "settingspush", "quitgameno", "quitgamenopush",
+	"quitgameyes", "quitgameyespush"}
 image.button = {}
 for _, v in pairs(buttons) do
 	image.button[v] = love.graphics.newImage('images/buttons/' .. v .. '.png')

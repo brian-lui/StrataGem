@@ -16,7 +16,7 @@ local title = {}
 
 --[[ create a clickable object
 	mandatory parameters: name, image, image_pushed, end_x, end_y, action
-	optional parameters: duration, start_transparency, end_transparency,
+	optional parameters: duration, start_transparency, end_transparency, container,
 		start_x, start_y, easing, exit, pushed, pushed_sfx, released, released_sfx
 --]]
 function title:_createButton(params)
@@ -29,7 +29,7 @@ function title:_createButton(params)
 		y = params.start_y or params.end_y,
 		transparency = params.start_transparency or 255,
 		image = params.image,
-		container = title.ui_clickable,
+		container = params.container or title.ui_clickable,
 	})
 	button:change{duration = params.duration, x = params.end_x, y = params.end_y,
 		transparency = params.end_transparency or 255,
@@ -48,7 +48,8 @@ end
 
 --[[ creates an object that can be tweened but not clicked
 	mandatory parameters: name, image, end_x, end_y
-	optional parameters: duration, start_transparency, end_transparency, start_x, start_y, easing, exit
+	optional parameters: duration, start_transparency, end_transparency,
+		container, start_x, start_y, easing, exit
 --]]
 function title:_createImage(params)
 	if params.name == nil then print("No object name received!") end
@@ -59,7 +60,7 @@ function title:_createImage(params)
 		y = params.start_y or params.end_y,
 		transparency = params.start_transparency or 255,
 		image = params.image,
-		container = title.ui_static,
+		container = params.container or title.ui_static,
 	})
 	button:change{duration = params.duration, x = params.end_x, y = params.end_y,
 		transparency = params.end_transparency or 255, easing = params.easing, exit = params.exit}
@@ -73,6 +74,9 @@ function title:init()
 	self.timeStep, self.timeBucket = 1/60, 0
 	title.ui_clickable = {}
 	title.ui_static = {}
+	title.ui_overlay_clickable = {}
+	title.ui_overlay_static = {}
+
 	title._createButton(self, {
 		name = "vscpu",
 		image = image.button.vscpu,
@@ -115,45 +119,151 @@ function title:init()
 				self.sound:newBGM("bgm_menu", true)
 			end
 		end},
-	})	
+	})
+
+	title._createButton(self, {
+		name = "settings",
+		image = image.button.settings,
+		image_pushed = image.button.settingspush,
+		end_x = stage.width - image.button.settings:getWidth() * 0.5,
+		end_y = stage.height - image.button.settings:getHeight() * 0.5,
+		action = function()
+			if not title.settings_menu_open then title.openSettings(self) end
+		end,
+	})
+
+	title._createImage(self, {
+		name = "quitgameconfirm",
+		container = title.ui_overlay_static,
+		image = image.unclickable.main_quitconfirm,
+		end_x = stage.width * 0.5,
+		end_y = stage.height * 0.4,
+		end_transparency = 0,
+	})
+
+	title._createImage(self, {
+		name = "quitgameframe",
+		container = title.ui_overlay_static,
+		image = image.unclickable.main_quitframe,
+		end_x = stage.width * 0.5,
+		end_y = stage.height * 0.5,
+		end_transparency = 0,
+	})
+
+	title._createButton(self, {
+		name = "quitgameyes",
+		container = title.ui_overlay_clickable,
+		image = image.button.quitgameyes,
+		image_pushed = image.button.quitgameyespush,
+		end_x = -stage.width,
+		end_y = -stage.height,
+		end_transparency = 0,
+		action = function()
+			if title.settings_menu_open then love.event.quit() end
+		end,
+	})
+
+	title._createButton(self, {
+		name = "quitgameno",
+		container = title.ui_overlay_clickable,
+		image = image.button.quitgameno,
+		image_pushed = image.button.quitgamenopush,
+		end_x = -stage.width,
+		end_y = -stage.height,
+		end_transparency = 0,
+		action = function()
+			if title.settings_menu_open then title.openSettingsCancel(self) end
+		end,
+	})
+
 end
 
 function title:enter()
 	title.clicked = nil
+	title.settings_menu_open = false
 	if self.sound:getCurrentBGM() ~= "bgm_menu" then self.sound:stopBGM() end
 	title.current_background = common.instance(self.background.rabbitsnowstorm, self)
 end
 
+function title:openSettings()
+	local stage = self.stage
+	title.settings_menu_open = true
+
+	title.ui_overlay_clickable.quitgameyes:change{x = stage.width * 0.45, y = stage.height * 0.6}
+	title.ui_overlay_clickable.quitgameyes:change{duration = 15, transparency = 255}
+	title.ui_overlay_clickable.quitgameno:change{x = stage.width * 0.55, y = stage.height * 0.6}
+	title.ui_overlay_clickable.quitgameno:change{duration = 15, transparency = 255}
+	title.ui_overlay_static.quitgameconfirm:change{duration = 15, transparency = 255}
+	title.ui_overlay_static.quitgameframe:change{duration = 15, transparency = 255}
+end
+
+function title:openSettingsCancel()
+	local stage = self.stage
+	title.settings_menu_open = false
+
+	title.ui_overlay_clickable.quitgameyes:change{duration = 10, transparency = 0}
+	title.ui_overlay_clickable.quitgameyes:change{x = -stage.width, y = -stage.height}
+	title.ui_overlay_clickable.quitgameno:change{duration = 10, transparency = 0}
+	title.ui_overlay_clickable.quitgameno:change{x = -stage.width, y = -stage.height}
+	title.ui_overlay_static.quitgameconfirm:change{duration = 10, transparency = 0}
+	title.ui_overlay_static.quitgameframe:change{duration = 10, transparency = 0}
+end
+
 function title:update(dt)
 	title.current_background:update(dt)
-	for _, v in pairs(title.ui_clickable) do v:update(dt) end
 	for _, v in pairs(title.ui_static) do v:update(dt) end
+	for _, v in pairs(title.ui_clickable) do v:update(dt) end
+	for _, v in pairs(title.ui_overlay_static) do v:update(dt) end
+	for _, v in pairs(title.ui_overlay_clickable) do v:update(dt) end
 end
 
 function title:draw()
 	title.current_background:draw()
 	for _, v in pairs(title.ui_static) do v:draw() end
 	for _, v in pairs(title.ui_clickable) do v:draw() end
+	title.ui_overlay_static.quitgameframe:draw()
+	title.ui_overlay_static.quitgameconfirm:draw()
+	for _, v in pairs(title.ui_overlay_clickable) do v:draw() end
 end
 
 local pointIsInRect = require "utilities".pointIsInRect
 function title:mousepressed(x, y)
-	for _, button in pairs(title.ui_clickable) do
-		if pointIsInRect(x, y, button:getRect()) then
-			title.clicked = button
-			button.pushed()
-			return
+	if title.settings_menu_open then
+		for _, button in pairs(title.ui_overlay_clickable) do
+			if pointIsInRect(x, y, button:getRect()) then
+				title.clicked = button
+				button.pushed()
+				return
+			end
+		end
+	else
+		for _, button in pairs(title.ui_clickable) do
+			if pointIsInRect(x, y, button:getRect()) then
+				title.clicked = button
+				button.pushed()
+				return
+			end
 		end
 	end
 	title.clicked = false
 end
 
 function title:mousereleased(x, y)
-	for _, button in pairs(title.ui_clickable) do
-		button.released()
-		if pointIsInRect(x, y, button:getRect()) and title.clicked == button then
-			button.action()
-			break
+	if title.settings_menu_open then
+		for _, button in pairs(title.ui_overlay_clickable) do
+			button.released()
+			if pointIsInRect(x, y, button:getRect()) and title.clicked == button then
+				button.action()
+				break
+			end
+		end
+	else
+		for _, button in pairs(title.ui_clickable) do
+			button.released()
+			if pointIsInRect(x, y, button:getRect()) and title.clicked == button then
+				button.action()
+				break
+			end
 		end
 	end
 	title.clicked = false
