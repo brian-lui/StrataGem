@@ -1,8 +1,8 @@
 --[[
 	Note to coders and code readers!
-	You can't call title._createButton by doing title:_createButton(...)
+	You can't call title.createButton by doing title:createButton(...)
 	That will call it by passing in an instance of title, which doesn't work (?)
-	You have to call it with title._createButton(self, ...)
+	You have to call it with title.createButton(self, ...)
 	That passes in an instance of self, which works (???)
 	Look I didn't code this I just know how to use it, ok
 --]]
@@ -14,22 +14,13 @@ local tween = require 'tween'
 
 local title = {}
 
---[[ create a clickable object
-	mandatory parameters: name, image, image_pushed, end_x, end_y, action
-	optional parameters: duration, start_transparency, end_transparency, container,
-		start_x, start_y, easing, exit, pushed, pushed_sfx, released, released_sfx
---]]
-function title:_createButton(params)
-	self:_createButton(params, title)
+-- refer to game.lua for instructions for createButton and createImage
+function title:createButton(params)
+	return self:_createButton(params, title)
 end
 
---[[ creates an object that can be tweened but not clicked
-	mandatory parameters: name, image, end_x, end_y
-	optional parameters: duration, start_transparency, end_transparency,
-		container, start_x, start_y, easing, exit
---]]
-function title:_createImage(params)
-	self:_createImage(params, title)
+function title:createImage(params)
+	return self:_createImage(params, title)
 end
 
 -- After the initial tween, we keep the icons here if returning to title screen
@@ -42,7 +33,7 @@ function title:init()
 	title.ui_overlay_clickable = {}
 	title.ui_overlay_static = {}
 
-	title._createButton(self, {
+	title.createButton(self, {
 		name = "vscpu",
 		image = image.button.vscpu,
 		image_pushed = image.button.vscpupush,
@@ -56,7 +47,7 @@ function title:init()
 			self.statemanager:switch(require "gs_charselect")
 		end,
 	})
-	title._createButton(self, {
+	title.createButton(self, {
 		name = "netplay",
 		image = image.button.netplay,
 		image_pushed = image.button.netplaypush,
@@ -70,7 +61,7 @@ function title:init()
 			self.statemanager:switch(require "gs_lobby") self.client:connect()
 		end,
 	})
-	title._createImage(self, {
+	title.createImage(self, {
 		name = "logo",
 		image = image.unclickable.title_logo,
 		duration = 45,
@@ -86,7 +77,7 @@ function title:init()
 		end},
 	})
 
-	title._createButton(self, {
+	title.createButton(self, {
 		name = "settings",
 		image = image.button.settings,
 		image_pushed = image.button.settingspush,
@@ -97,7 +88,7 @@ function title:init()
 		end,
 	})
 
-	title._createImage(self, {
+	title.createImage(self, {
 		name = "quitgameconfirm",
 		container = title.ui_overlay_static,
 		image = image.unclickable.main_quitconfirm,
@@ -106,7 +97,7 @@ function title:init()
 		end_transparency = 0,
 	})
 
-	title._createImage(self, {
+	title.createImage(self, {
 		name = "quitgameframe",
 		container = title.ui_overlay_static,
 		image = image.unclickable.main_quitframe,
@@ -115,7 +106,7 @@ function title:init()
 		end_transparency = 0,
 	})
 
-	title._createButton(self, {
+	title.createButton(self, {
 		name = "quitgameyes",
 		container = title.ui_overlay_clickable,
 		image = image.button.quitgameyes,
@@ -128,7 +119,7 @@ function title:init()
 		end,
 	})
 
-	title._createButton(self, {
+	title.createButton(self, {
 		name = "quitgameno",
 		container = title.ui_overlay_clickable,
 		image = image.button.quitgameno,
@@ -191,56 +182,16 @@ function title:draw()
 	for _, v in pairs(title.ui_overlay_clickable) do v:draw() end
 end
 
-local pointIsInRect = require "utilities".pointIsInRect
 function title:mousepressed(x, y)
-	if title.settings_menu_open then
-		for _, button in pairs(title.ui_overlay_clickable) do
-			if pointIsInRect(x, y, button:getRect()) then
-				title.clicked = button
-				button.pushed()
-				return
-			end
-		end
-	else
-		for _, button in pairs(title.ui_clickable) do
-			if pointIsInRect(x, y, button:getRect()) then
-				title.clicked = button
-				button.pushed()
-				return
-			end
-		end
-	end
-	title.clicked = false
+	self:_mousepressed(x, y, title)
 end
 
 function title:mousereleased(x, y)
-	if title.settings_menu_open then
-		for _, button in pairs(title.ui_overlay_clickable) do
-			button.released()
-			if pointIsInRect(x, y, button:getRect()) and title.clicked == button then
-				button.action()
-				break
-			end
-		end
-	else
-		for _, button in pairs(title.ui_clickable) do
-			button.released()
-			if pointIsInRect(x, y, button:getRect()) and title.clicked == button then
-				button.action()
-				break
-			end
-		end
-	end
-	title.clicked = false
+	self:_mousereleased(x, y, title)
 end
 
 function title:mousemoved(x, y)
-	if title.clicked then
-		if not pointIsInRect(x, y, title.clicked:getRect()) then
-			title.clicked.released()
-			title.clicked = false
-		end
-	end
+	self:_mousemoved(x, y, title)
 end
 
 return title

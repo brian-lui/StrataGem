@@ -7,58 +7,13 @@ local pointIsInRect = require "utilities".pointIsInRect
 
 local gs_main = {}
 
---[[ create a clickable object
-	mandatory parameters: name, image, image_pushed, end_x, end_y, action
-	optional parameters: duration, start_transparency, end_transparency,
-		start_x, start_y, easing, exit, pushed, pushed_sfx, released, released_sfx
---]]
+-- refer to game.lua for instructions for _createButton and _createImage
 function gs_main:_createButton(params)
-	if params.name == nil then print("No object name received!") end
-	if params.image_pushed == nil then print("No push image received for " .. params.name .. "!") end
-	local stage = self.stage
-	local button = common.instance(Pic, self, {
-		name = params.name,
-		x = params.start_x or params.end_x,
-		y = params.start_y or params.end_y,
-		transparency = params.start_transparency or 255,
-		image = params.image,
-		container = params.container or gs_main.ui_clickable,
-	})
-
-	button:change{duration = params.duration, x = params.end_x, y = params.end_y,
-		transparency = params.end_transparency or 255,
-		easing = params.easing or "linear", exit = params.exit}
-	button.pushed = params.pushed or function()
-		self.sound:newSFX(pushed_sfx or "button")
-		button:newImage(params.image_pushed)
-	end
-	button.released = params.released or function()
-		if released_sfx then self.sound:newSFX(released_sfx) end
-		button:newImage(params.image)
-	end
-	button.action = params.action
-	return button
+	return self:_createButton(params, gs_main)
 end
 
---[[ creates an object that can be tweened but not clicked
-	mandatory parameters: name, image, end_x, end_y
-	optional parameters: duration, start_transparency, end_transparency, start_x, start_y, easing, exit
---]]
 function gs_main:_createImage(params)
-	if params.name == nil then print("No object name received!") end
-	local stage = self.stage
-	local button = common.instance(Pic, self, {
-		name = params.name,
-		x = params.start_x or params.end_x,
-		y = params.start_y or params.end_y,
-		transparency = params.start_transparency or 255,
-		image = params.image,
-		container = params.container or gs_main.ui_static,
-	})
-
-	button:change{duration = params.duration, x = params.end_x, y = params.end_y,
-		transparency = params.end_transparency or 255, easing = params.easing, exit = params.exit}
-	return button
+	return self:_createImage(params, gs_main)
 end
 
 function gs_main:quitGame()
@@ -103,6 +58,9 @@ function gs_main:enter()
 	self.dying_gems = {} -- this creates the dying_gems table in Game. Sad!
 	gs_main.ui_clickable = {}
 	gs_main.ui_static = {}
+	gs_main.ui_overlay_clickable = {}
+	gs_main.ui_overlay_static = {}
+
 	gs_main.quit_menu_open = false
 	gs_main._createImage(self, {
 		name = "tub",
@@ -443,14 +401,7 @@ function gs_main:mousepressed(x, y)
 		player.super_clicked = true
 	end
 
-	for _, button in pairs(gs_main.ui_clickable) do
-		if pointIsInRect(x, y, button:getRect()) then
-			gs_main.clicked = button
-			button.pushed()
-			return
-		end
-	end
-	gs_main.clicked = nil
+	self:_mousepressed(x, y, gs_main)
 end
 
 local QUICKCLICK_FRAMES = 15
@@ -474,15 +425,7 @@ function gs_main:mousereleased(x, y)
 	player.super_clicked = false
 	self.active_piece = false
 
-
-	for _, button in pairs(gs_main.ui_clickable) do
-		button.released()
-		if pointIsInRect(x, y, button:getRect()) and gs_main.clicked == button then
-			button.action()
-			break
-		end
-	end
-	gs_main.clicked = false
+	self:_mousereleased(x, y, gs_main)
 end
 
 function gs_main:mousemoved(x, y)
@@ -490,12 +433,7 @@ function gs_main:mousemoved(x, y)
 		self.active_piece:change{x = x, y = y}
 	end
 
-	if gs_main.clicked then
-		if not pointIsInRect(x, y, gs_main.clicked:getRect()) then
-			gs_main.clicked.released()
-			gs_main.clicked = false
-		end
-	end	
+	self:_mousemoved(x, y, gs_main)
 end
 
 return gs_main

@@ -9,56 +9,13 @@ function charselect:init()
 		"wolfgang", "hailey", "diggory", "buzz", "ivy", "joy"}	
 end
 
---[[ create a clickable object
-	mandatory parameters: name, image, image_pushed, end_x, end_y, action
-	optional parameters: duration, start_transparency, end_transparency,
-		start_x, start_y, easing, exit, pushed, pushed_sfx, released, released_sfx
---]]
+-- refer to game.lua for instructions for _createButton and _createImage
 function charselect:_createButton(params)
-	if params.name == nil then print("No object name received!") end
-	if params.image_pushed == nil then print("No push image received for " .. params.name .. "!") end
-	local stage = self.stage
-	local button = common.instance(Pic, self, {
-		name = params.name,
-		x = params.start_x or params.end_x,
-		y = params.start_y or params.end_y,
-		transparency = params.start_transparency or 255,
-		image = params.image,
-		container = charselect.ui_clickable,
-	})
-	button:change{duration = params.duration, x = params.end_x, y = params.end_y,
-		transparency = params.end_transparency or 255,
-		easing = params.easing or "linear", exit = params.exit}
-	button.pushed = params.pushed or function()
-		self.sound:newSFX(pushed_sfx or "button")
-		button:newImage(params.image_pushed)
-	end
-	button.released = params.released or function()
-		if released_sfx then self.sound:newSFX(released_sfx) end
-		button:newImage(params.image)
-	end
-	button.action = params.action
-	return button
+	return self:_createButton(params, charselect)
 end
 
---[[ creates an object that can be tweened but not clicked
-	mandatory parameters: name, image, end_x, end_y
-	optional parameters: duration, start_transparency, end_transparency, start_x, start_y, easing, exit
---]]
 function charselect:_createImage(params)
-	if params.name == nil then print("No object name received!") end
-	local stage = self.stage
-	local button = common.instance(Pic, self, {
-		name = params.name,
-		x = params.start_x or params.end_x,
-		y = params.start_y or params.end_y,
-		transparency = params.start_transparency or 255,
-		image = params.image,
-		container = charselect.ui_static,
-	})
-	button:change{duration = params.duration, x = params.end_x, y = params.end_y,
-		transparency = params.end_transparency or 255, easing = params.easing, exit = params.exit}
-	return button
+	return self:_createImage(params, charselect)
 end
 
 -- creates the clickable buttons for selecting characters
@@ -138,7 +95,7 @@ function charselect:_createUIButtons()
 		end_y = image.button.back:getHeight() * 0.6,
 		easing = "outQuad",
 		pushed_sfx = "button_back",
-		action = function() self.statemanager:switch(require "gs_title") end,
+		action = function() self.statemanager:switch(require "gs_charselect") end,
 	})
 
 	-- left arrow for background select
@@ -248,6 +205,9 @@ function charselect:enter()
 	end
 	charselect.ui_clickable = {}
 	charselect.ui_static = {}
+	charselect.ui_overlay_clickable = {}
+	charselect.ui_overlay_static = {}
+
 	charselect.current_background = common.instance(self.background.rabbitsnowstorm, self)
 	charselect.game_background = 1 -- what's chosen for the maingame background
 	charselect._createCharacterButtons(self)
@@ -272,34 +232,15 @@ function charselect:draw()
 end
 
 function charselect:mousepressed(x, y)
-	for _, button in pairs(charselect.ui_clickable) do
-		if pointIsInRect(x, y, button:getRect()) then
-			charselect.clicked = button
-			button.pushed()
-			return
-		end
-	end
-	charselect.clicked = false
+	self:_mousepressed(x, y, charselect)
 end
 
 function charselect:mousereleased(x, y)
-	for _, button in pairs(charselect.ui_clickable) do
-		button.released()
-		if pointIsInRect(x, y, button:getRect()) and charselect.clicked == button then
-			button.action()
-			break
-		end
-	end
-	charselect.clicked = false
+	self:_mousereleased(x, y, charselect)
 end
 
 function charselect:mousemoved(x, y)
-	if charselect.clicked then
-		if not pointIsInRect(x, y, charselect.clicked:getRect()) then
-			charselect.clicked.released()
-			charselect.clicked = false
-		end
-	end
+	self:_mousemoved(x, y, charselect)
 end
 
 return charselect
