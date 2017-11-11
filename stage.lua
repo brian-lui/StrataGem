@@ -73,7 +73,7 @@ function stage:init(game)
 
 	self.timer = {x = self.x_mid, y = self.height * 0.3}
 
-	self.tub = {x = self.x_mid, y = self.height * 0.663}
+	self.tub = {x = self.x_mid, y = self.height * 0.646}
 end
 
 function stage:isOnLeft()
