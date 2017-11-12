@@ -151,18 +151,9 @@ function gs_main:update(dt)
 	self.animations:updateAll(dt)
 	self.screenshake_frames = math.max(0, self.screenshake_frames - 1)
 	self.timeBucket = self.timeBucket + dt
-	for _, v in pairs(gs_main.ui.clickable) do v:update(dt) end
-	for _, v in pairs(gs_main.ui.static) do v:update(dt) end
 
-	-- Testing trail stars
-	-- TODO: put this in the right place
-	if self.frame % 10 == 0 then
-		self.particles.platformStar.generate(self, self.p1, "TinyStar", 0.05, 0.2, 0.29)
-		self.particles.platformStar.generate(self, self.p2, "TinyStar", 0.95, 0.8, 0.71)
-	end
-	if self.frame % 42 == 0 then
-		self.particles.platformStar.generate(self, self.p1, "Star", 0.05, 0.21, 0.28)
-		self.particles.platformStar.generate(self, self.p2, "Star", 0.95, 0.79, 0.72)
+	for _, tbl in pairs(gs_main.ui) do
+		for _, v in pairs(tbl) do v:update(dt) end
 	end
 end
 

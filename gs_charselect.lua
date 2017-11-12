@@ -219,8 +219,9 @@ end
 
 function charselect:update(dt)
 	charselect.current_background:update(dt)
-	for _, v in pairs(charselect.ui.clickable) do v:update(dt) end
-	for _, v in pairs(charselect.ui.static) do v:update(dt) end
+	for _, tbl in pairs(charselect.ui) do
+		for _, v in pairs(tbl) do v:update(dt) end
+	end
 end
 
 function charselect:draw()

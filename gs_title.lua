@@ -164,10 +164,9 @@ end
 
 function title:update(dt)
 	title.current_background:update(dt)
-	for _, v in pairs(title.ui.static) do v:update(dt) end
-	for _, v in pairs(title.ui.clickable) do v:update(dt) end
-	for _, v in pairs(title.ui.popup_static) do v:update(dt) end
-	for _, v in pairs(title.ui.popup_clickable) do v:update(dt) end
+	for _, tbl in pairs(title.ui) do
+		for _, v in pairs(tbl) do v:update(dt) end
+	end
 end
 
 function title:draw()

@@ -183,9 +183,13 @@ end
 
 function lobby:update(dt)
 	lobby.current_background:update(dt)
+	for _, tbl in pairs(lobby.ui) do
+		for _, v in pairs(tbl) do v:update(dt) end
+	end
+--[[
 	for _, v in pairs(lobby.ui.clickable) do v:update(dt) end
 	for _, v in pairs(lobby.ui.static) do v:update(dt) end
-
+--]]
 	local client = self.client
 	if client.queuing then
 		if lobby.status_image.status == "idle" then
