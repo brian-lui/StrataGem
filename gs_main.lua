@@ -69,13 +69,11 @@ function gs_main:enter()
 		end_y = stage.tub.y,
 	})
 
-	local settings_image, settings_imagepush
+	local settings_image
 	if self.type == "1P" then
 		settings_image = image.button.pause
-		settings_imagepush = image.button.pausepush
 	elseif self.type == "Netplay" then
 		settings_image = image.button.stop
-		settings_imagepush = image.button.stoppush
 	else
 		print("invalid game type!")
 	 end
@@ -83,9 +81,9 @@ function gs_main:enter()
 	gs_main._createButton(self, {
 		name = "settings",
 		image = settings_image,
-		image_pushed = settings_imagepush,
-		end_x = stage.width * 0.5,
-		end_y = stage.height - settings_image:getHeight() * 0.5,
+		image_pushed = settings_image,
+		end_x = stage.settings_button.x,
+		end_y = stage.settings_button.y,
 		action = function()
 			if not gs_main.quit_menu_open then gs_main.quitGame(self) end
 		end,
