@@ -203,10 +203,8 @@ function charselect:enter()
 		self.sound:stopBGM()
 		self.sound:newBGM("bgm_menu", true)
 	end
-	charselect.ui_clickable = {}
-	charselect.ui_static = {}
-	charselect.ui_overlay_clickable = {}
-	charselect.ui_overlay_static = {}
+
+	charselect.ui = {clickable = {}, static = {}, popup_clickable = {}, popup_static = {}}
 
 	charselect.current_background = common.instance(self.background.rabbitsnowstorm, self)
 	charselect.game_background = 1 -- what's chosen for the maingame background
@@ -221,14 +219,14 @@ end
 
 function charselect:update(dt)
 	charselect.current_background:update(dt)
-	for _, v in pairs(charselect.ui_clickable) do v:update(dt) end
-	for _, v in pairs(charselect.ui_static) do v:update(dt) end
+	for _, v in pairs(charselect.ui.clickable) do v:update(dt) end
+	for _, v in pairs(charselect.ui.static) do v:update(dt) end
 end
 
 function charselect:draw()
 	charselect.current_background:draw()
-	for _, v in pairs(charselect.ui_static) do v:draw() end
-	for _, v in pairs(charselect.ui_clickable) do v:draw() end
+	for _, v in pairs(charselect.ui.static) do v:draw() end
+	for _, v in pairs(charselect.ui.clickable) do v:draw() end
 end
 
 function charselect:mousepressed(x, y)

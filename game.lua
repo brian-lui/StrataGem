@@ -176,7 +176,7 @@ function Game:_createButton(params, gamestate)
 		y = params.start_y or params.end_y,
 		transparency = params.start_transparency or 255,
 		image = params.image,
-		container = params.container or gamestate.ui_clickable,
+		container = params.container or gamestate.ui.clickable,
 	})
 	button:change{duration = params.duration, x = params.end_x, y = params.end_y,
 		transparency = params.end_transparency or 255,
@@ -206,7 +206,7 @@ function Game:_createImage(params, gamestate)
 		y = params.start_y or params.end_y,
 		transparency = params.start_transparency or 255,
 		image = params.image,
-		container = params.container or gamestate.ui_static,
+		container = params.container or gamestate.ui.static,
 	})
 	button:change{duration = params.duration, x = params.end_x, y = params.end_y,
 		transparency = params.end_transparency or 255, easing = params.easing, exit = params.exit}
@@ -218,7 +218,7 @@ local pointIsInRect = require "utilities".pointIsInRect
 --default mousepressed function if not specified by a sub-state
 function Game:_mousepressed(x, y, gamestate)
 	if gamestate.settings_menu_open then
-		for _, button in pairs(gamestate.ui_overlay_clickable) do
+		for _, button in pairs(gamestate.ui.popup_clickable) do
 			if pointIsInRect(x, y, button:getRect()) then
 				gamestate.clicked = button
 				button.pushed()
@@ -226,7 +226,7 @@ function Game:_mousepressed(x, y, gamestate)
 			end
 		end
 	else
-		for _, button in pairs(gamestate.ui_clickable) do
+		for _, button in pairs(gamestate.ui.clickable) do
 			if pointIsInRect(x, y, button:getRect()) then
 				gamestate.clicked = button
 				button.pushed()
@@ -240,7 +240,7 @@ end
 -- default mousereleased function if not specified by a sub-state
 function Game:_mousereleased(x, y, gamestate)
 	if gamestate.settings_menu_open then
-		for _, button in pairs(gamestate.ui_overlay_clickable) do
+		for _, button in pairs(gamestate.ui.popup_clickable) do
 			button.released()
 			if pointIsInRect(x, y, button:getRect()) and gamestate.clicked == button then
 				button.action()
@@ -248,7 +248,7 @@ function Game:_mousereleased(x, y, gamestate)
 			end
 		end
 	else
-		for _, button in pairs(gamestate.ui_clickable) do
+		for _, button in pairs(gamestate.ui.clickable) do
 			button.released()
 			if pointIsInRect(x, y, button:getRect()) and gamestate.clicked == button then
 				button.action()

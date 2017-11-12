@@ -28,10 +28,7 @@ end
 function title:init()
 	local stage = self.stage	
 	self.timeStep, self.timeBucket = 1/60, 0
-	title.ui_clickable = {}
-	title.ui_static = {}
-	title.ui_overlay_clickable = {}
-	title.ui_overlay_static = {}
+	title.ui = {clickable = {}, static = {}, popup_clickable = {}, popup_static = {}}
 
 	title.createButton(self, {
 		name = "vscpu",
@@ -90,7 +87,7 @@ function title:init()
 
 	title.createImage(self, {
 		name = "quitgameconfirm",
-		container = title.ui_overlay_static,
+		container = title.ui.popup_static,
 		image = image.unclickable.main_quitconfirm,
 		end_x = stage.width * 0.5,
 		end_y = stage.height * 0.4,
@@ -99,7 +96,7 @@ function title:init()
 
 	title.createImage(self, {
 		name = "quitgameframe",
-		container = title.ui_overlay_static,
+		container = title.ui.popup_static,
 		image = image.unclickable.main_quitframe,
 		end_x = stage.width * 0.5,
 		end_y = stage.height * 0.5,
@@ -108,7 +105,7 @@ function title:init()
 
 	title.createButton(self, {
 		name = "quitgameyes",
-		container = title.ui_overlay_clickable,
+		container = title.ui.popup_clickable,
 		image = image.button.quitgameyes,
 		image_pushed = image.button.quitgameyespush,
 		end_x = -stage.width,
@@ -121,7 +118,7 @@ function title:init()
 
 	title.createButton(self, {
 		name = "quitgameno",
-		container = title.ui_overlay_clickable,
+		container = title.ui.popup_clickable,
 		image = image.button.quitgameno,
 		image_pushed = image.button.quitgamenopush,
 		end_x = -stage.width,
@@ -145,41 +142,41 @@ function title:openSettings()
 	local stage = self.stage
 	title.settings_menu_open = true
 
-	title.ui_overlay_clickable.quitgameyes:change{x = stage.width * 0.45, y = stage.height * 0.6}
-	title.ui_overlay_clickable.quitgameyes:change{duration = 15, transparency = 255}
-	title.ui_overlay_clickable.quitgameno:change{x = stage.width * 0.55, y = stage.height * 0.6}
-	title.ui_overlay_clickable.quitgameno:change{duration = 15, transparency = 255}
-	title.ui_overlay_static.quitgameconfirm:change{duration = 15, transparency = 255}
-	title.ui_overlay_static.quitgameframe:change{duration = 15, transparency = 255}
+	title.ui.popup_clickable.quitgameyes:change{x = stage.width * 0.45, y = stage.height * 0.6}
+	title.ui.popup_clickable.quitgameyes:change{duration = 15, transparency = 255}
+	title.ui.popup_clickable.quitgameno:change{x = stage.width * 0.55, y = stage.height * 0.6}
+	title.ui.popup_clickable.quitgameno:change{duration = 15, transparency = 255}
+	title.ui.popup_static.quitgameconfirm:change{duration = 15, transparency = 255}
+	title.ui.popup_static.quitgameframe:change{duration = 15, transparency = 255}
 end
 
 function title:openSettingsCancel()
 	local stage = self.stage
 	title.settings_menu_open = false
 
-	title.ui_overlay_clickable.quitgameyes:change{duration = 10, transparency = 0}
-	title.ui_overlay_clickable.quitgameyes:change{x = -stage.width, y = -stage.height}
-	title.ui_overlay_clickable.quitgameno:change{duration = 10, transparency = 0}
-	title.ui_overlay_clickable.quitgameno:change{x = -stage.width, y = -stage.height}
-	title.ui_overlay_static.quitgameconfirm:change{duration = 10, transparency = 0}
-	title.ui_overlay_static.quitgameframe:change{duration = 10, transparency = 0}
+	title.ui.popup_clickable.quitgameyes:change{duration = 10, transparency = 0}
+	title.ui.popup_clickable.quitgameyes:change{x = -stage.width, y = -stage.height}
+	title.ui.popup_clickable.quitgameno:change{duration = 10, transparency = 0}
+	title.ui.popup_clickable.quitgameno:change{x = -stage.width, y = -stage.height}
+	title.ui.popup_static.quitgameconfirm:change{duration = 10, transparency = 0}
+	title.ui.popup_static.quitgameframe:change{duration = 10, transparency = 0}
 end
 
 function title:update(dt)
 	title.current_background:update(dt)
-	for _, v in pairs(title.ui_static) do v:update(dt) end
-	for _, v in pairs(title.ui_clickable) do v:update(dt) end
-	for _, v in pairs(title.ui_overlay_static) do v:update(dt) end
-	for _, v in pairs(title.ui_overlay_clickable) do v:update(dt) end
+	for _, v in pairs(title.ui.static) do v:update(dt) end
+	for _, v in pairs(title.ui.clickable) do v:update(dt) end
+	for _, v in pairs(title.ui.popup_static) do v:update(dt) end
+	for _, v in pairs(title.ui.popup_clickable) do v:update(dt) end
 end
 
 function title:draw()
 	title.current_background:draw()
-	for _, v in pairs(title.ui_static) do v:draw() end
-	for _, v in pairs(title.ui_clickable) do v:draw() end
-	title.ui_overlay_static.quitgameframe:draw()
-	title.ui_overlay_static.quitgameconfirm:draw()
-	for _, v in pairs(title.ui_overlay_clickable) do v:draw() end
+	for _, v in pairs(title.ui.static) do v:draw() end
+	for _, v in pairs(title.ui.clickable) do v:draw() end
+	title.ui.popup_static.quitgameframe:draw()
+	title.ui.popup_static.quitgameconfirm:draw()
+	for _, v in pairs(title.ui.popup_clickable) do v:draw() end
 end
 
 function title:mousepressed(x, y)

@@ -21,10 +21,8 @@ function lobby:enter()
 		self.sound:stopBGM()
 		self.sound:newBGM("bgm_menu", true)
 	end
-	lobby.ui_clickable = {}
-	lobby.ui_static = {}
-	lobby.ui_overlay_clickable = {}
-	lobby.ui_overlay_static = {}
+
+	lobby.ui = {clickable = {}, static = {}, popup_clickable = {}, popup_static = {}}
 
 	lobby.current_background = common.instance(self.background.rabbitsnowstorm, self)
 	lobby.current_users = {}
@@ -185,8 +183,8 @@ end
 
 function lobby:update(dt)
 	lobby.current_background:update(dt)
-	for _, v in pairs(lobby.ui_clickable) do v:update(dt) end
-	for _, v in pairs(lobby.ui_static) do v:update(dt) end
+	for _, v in pairs(lobby.ui.clickable) do v:update(dt) end
+	for _, v in pairs(lobby.ui.static) do v:update(dt) end
 
 	local client = self.client
 	if client.queuing then
@@ -205,8 +203,8 @@ end
 
 function lobby:draw()
 	lobby.current_background:draw()
-	for _, v in pairs(lobby.ui_static) do v:draw() end
-	for _, v in pairs(lobby.ui_clickable) do v:draw() end
+	for _, v in pairs(lobby.ui.static) do v:draw() end
+	for _, v in pairs(lobby.ui.clickable) do v:draw() end
 	lobby._drawCurrentUsers(self)
 end
 

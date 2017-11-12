@@ -21,24 +21,24 @@ function gs_main:quitGame()
 	gs_main.quit_menu_open = true
 	if self.type == "1P" then self.paused = true end
 
-	gs_main.ui_clickable.quitgameyes:change{x = stage.width * 0.45, y = stage.height * 0.6}
-	gs_main.ui_clickable.quitgameyes:change{duration = 15, transparency = 255}
-	gs_main.ui_clickable.quitgameno:change{x = stage.width * 0.55, y = stage.height * 0.6}
-	gs_main.ui_clickable.quitgameno:change{duration = 15, transparency = 255}
-	gs_main.ui_static.quitgameconfirm:change{duration = 15, transparency = 255}
-	gs_main.ui_static.quitgameframe:change{duration = 15, transparency = 255}
+	gs_main.ui.clickable.quitgameyes:change{x = stage.width * 0.45, y = stage.height * 0.6}
+	gs_main.ui.clickable.quitgameyes:change{duration = 15, transparency = 255}
+	gs_main.ui.clickable.quitgameno:change{x = stage.width * 0.55, y = stage.height * 0.6}
+	gs_main.ui.clickable.quitgameno:change{duration = 15, transparency = 255}
+	gs_main.ui.static.quitgameconfirm:change{duration = 15, transparency = 255}
+	gs_main.ui.static.quitgameframe:change{duration = 15, transparency = 255}
 end
 
 function gs_main:quitGameCancel()
 	local stage = self.stage
 	gs_main.quit_menu_open = false
 	if self.type == "1P" then self.paused = false end
-	gs_main.ui_clickable.quitgameyes:change{duration = 10, transparency = 0}
-	gs_main.ui_clickable.quitgameyes:change{x = -stage.width, y = -stage.height}
-	gs_main.ui_clickable.quitgameno:change{duration = 10, transparency = 0}
-	gs_main.ui_clickable.quitgameno:change{x = -stage.width, y = -stage.height}
-	gs_main.ui_static.quitgameconfirm:change{duration = 10, transparency = 0}
-	gs_main.ui_static.quitgameframe:change{duration = 10, transparency = 0}
+	gs_main.ui.clickable.quitgameyes:change{duration = 10, transparency = 0}
+	gs_main.ui.clickable.quitgameyes:change{x = -stage.width, y = -stage.height}
+	gs_main.ui.clickable.quitgameno:change{duration = 10, transparency = 0}
+	gs_main.ui.clickable.quitgameno:change{x = -stage.width, y = -stage.height}
+	gs_main.ui.static.quitgameconfirm:change{duration = 10, transparency = 0}
+	gs_main.ui.static.quitgameframe:change{duration = 10, transparency = 0}
 end
 
 function gs_main:init()
@@ -56,10 +56,8 @@ function gs_main:enter()
 	self.sound:stopBGM()
 	gs_main.clicked = nil
 	self.dying_gems = {} -- this creates the dying_gems table in Game. Sad!
-	gs_main.ui_clickable = {}
-	gs_main.ui_static = {}
-	gs_main.ui_overlay_clickable = {}
-	gs_main.ui_overlay_static = {}
+
+	gs_main.ui = {clickable = {}, static = {}, popup_clickable = {}, popup_static = {}}
 
 	gs_main.quit_menu_open = false
 	gs_main._createImage(self, {
@@ -153,8 +151,8 @@ function gs_main:update(dt)
 	self.animations:updateAll(dt)
 	self.screenshake_frames = math.max(0, self.screenshake_frames - 1)
 	self.timeBucket = self.timeBucket + dt
-	for _, v in pairs(gs_main.ui_clickable) do v:update(dt) end
-	for _, v in pairs(gs_main.ui_static) do v:update(dt) end
+	for _, v in pairs(gs_main.ui.clickable) do v:update(dt) end
+	for _, v in pairs(gs_main.ui.static) do v:update(dt) end
 
 	-- Testing trail stars
 	-- TODO: put this in the right place
@@ -173,7 +171,7 @@ function gs_main:drawScreenElements()
 	-- under-platform trails
 	for _, v in pairs(self.particles.allParticles.PlatformTinyStar) do v:draw() end
 	for _, v in pairs(self.particles.allParticles.PlatformStar) do v:draw() end
-	gs_main.ui_static.tub:draw()
+	gs_main.ui.static.tub:draw()
 	self.ui.timer:draw()	-- timer bar
 
 	for player in self:players() do
@@ -355,11 +353,11 @@ function gs_main:drawText()
 end
 
 function gs_main:drawButtons()
-	gs_main.ui_static.quitgameframe:draw()
-	gs_main.ui_static.quitgameconfirm:draw()
-	gs_main.ui_clickable.quitgameyes:draw()
-	gs_main.ui_clickable.quitgameno:draw()
-	gs_main.ui_clickable.settings:draw()
+	gs_main.ui.static.quitgameframe:draw()
+	gs_main.ui.static.quitgameconfirm:draw()
+	gs_main.ui.clickable.quitgameyes:draw()
+	gs_main.ui.clickable.quitgameno:draw()
+	gs_main.ui.clickable.settings:draw()
 end
 
 function gs_main:draw()
