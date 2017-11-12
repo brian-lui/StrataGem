@@ -194,7 +194,7 @@ end
 function Sound:newBGM(sound_name, is_looping)
 	self.current_bgm = self.object.generate(self.game, sound_name, true)
 	if is_looping then self.current_bgm:setLooping(true) end
-	self.current_bgm:setVolume(0.2) -- placeholder
+	self.current_bgm:setVolume(0.4) -- placeholder
 	return self.current_bgm
 end
 
