@@ -1,8 +1,8 @@
 --[[
 	Note to coders and code readers!
-	You can't call title._createButton by doing title:_createButton(...)
+	You can't call title.createButton by doing title:createButton(...)
 	That will call it by passing in an instance of title, which doesn't work (?)
-	You have to call it with title._createButton(self, ...)
+	You have to call it with title.createButton(self, ...)
 	That passes in an instance of self, which works (???)
 	Look I didn't code this I just know how to use it, ok
 --]]
@@ -14,56 +14,13 @@ local tween = require 'tween'
 
 local title = {}
 
---[[ create a clickable object
-	mandatory parameters: name, image, image_pushed, end_x, end_y, action
-	optional parameters: duration, start_transparency, end_transparency,
-		start_x, start_y, easing, exit, pushed, pushed_sfx, released, released_sfx
---]]
-function title:_createButton(params)
-	if params.name == nil then print("No object name received!") end
-	if params.image_pushed == nil then print("No push image received for " .. params.name .. "!") end
-	local stage = self.stage
-	local button = common.instance(Pic, self, {
-		name = params.name,
-		x = params.start_x or params.end_x,
-		y = params.start_y or params.end_y,
-		transparency = params.start_transparency or 255,
-		image = params.image,
-		container = title.ui_clickable,
-	})
-	button:change{duration = params.duration, x = params.end_x, y = params.end_y,
-		transparency = params.end_transparency or 255,
-		easing = params.easing or "linear", exit = params.exit}
-	button.pushed = params.pushed or function()
-		self.sound:newSFX(pushed_sfx or "button")
-		button:newImage(params.image_pushed)
-	end
-	button.released = params.released or function()
-		if released_sfx then self.sound:newSFX(released_sfx) end
-		button:newImage(params.image)
-	end
-	button.action = params.action
-	return button
+-- refer to game.lua for instructions for createButton and createImage
+function title:createButton(params)
+	return self:_createButton(params, title)
 end
 
---[[ creates an object that can be tweened but not clicked
-	mandatory parameters: name, image, end_x, end_y
-	optional parameters: duration, start_transparency, end_transparency, start_x, start_y, easing, exit
---]]
-function title:_createImage(params)
-	if params.name == nil then print("No object name received!") end
-	local stage = self.stage
-	local button = common.instance(Pic, self, {
-		name = params.name,
-		x = params.start_x or params.end_x,
-		y = params.start_y or params.end_y,
-		transparency = params.start_transparency or 255,
-		image = params.image,
-		container = title.ui_static,
-	})
-	button:change{duration = params.duration, x = params.end_x, y = params.end_y,
-		transparency = params.end_transparency or 255, easing = params.easing, exit = params.exit}
-	return button
+function title:createImage(params)
+	return self:_createImage(params, title)
 end
 
 -- After the initial tween, we keep the icons here if returning to title screen
@@ -71,9 +28,9 @@ end
 function title:init()
 	local stage = self.stage	
 	self.timeStep, self.timeBucket = 1/60, 0
-	title.ui_clickable = {}
-	title.ui_static = {}
-	title._createButton(self, {
+	title.ui = {clickable = {}, static = {}, popup_clickable = {}, popup_static = {}}
+
+	title.createButton(self, {
 		name = "vscpu",
 		image = image.button.vscpu,
 		image_pushed = image.button.vscpupush,
@@ -87,7 +44,7 @@ function title:init()
 			self.statemanager:switch(require "gs_charselect")
 		end,
 	})
-	title._createButton(self, {
+	title.createButton(self, {
 		name = "netplay",
 		image = image.button.netplay,
 		image_pushed = image.button.netplaypush,
@@ -101,7 +58,7 @@ function title:init()
 			self.statemanager:switch(require "gs_lobby") self.client:connect()
 		end,
 	})
-	title._createImage(self, {
+	title.createImage(self, {
 		name = "logo",
 		image = image.unclickable.title_logo,
 		duration = 45,
@@ -115,57 +72,122 @@ function title:init()
 				self.sound:newBGM("bgm_menu", true)
 			end
 		end},
-	})	
+	})
+
+	title.createButton(self, {
+		name = "settings",
+		image = image.button.settings,
+		image_pushed = image.button.settingspush,
+		end_x = stage.width - image.button.settings:getWidth() * 0.5,
+		end_y = stage.height - image.button.settings:getHeight() * 0.5,
+		action = function()
+			if not title.settings_menu_open then title.openSettings(self) end
+		end,
+	})
+
+	title.createImage(self, {
+		name = "quitgameconfirm",
+		container = title.ui.popup_static,
+		image = image.unclickable.main_quitconfirm,
+		end_x = stage.width * 0.5,
+		end_y = stage.height * 0.4,
+		end_transparency = 0,
+	})
+
+	title.createImage(self, {
+		name = "quitgameframe",
+		container = title.ui.popup_static,
+		image = image.unclickable.main_quitframe,
+		end_x = stage.width * 0.5,
+		end_y = stage.height * 0.5,
+		end_transparency = 0,
+	})
+
+	title.createButton(self, {
+		name = "quitgameyes",
+		container = title.ui.popup_clickable,
+		image = image.button.quitgameyes,
+		image_pushed = image.button.quitgameyespush,
+		end_x = -stage.width,
+		end_y = -stage.height,
+		end_transparency = 0,
+		action = function()
+			if title.settings_menu_open then love.event.quit() end
+		end,
+	})
+
+	title.createButton(self, {
+		name = "quitgameno",
+		container = title.ui.popup_clickable,
+		image = image.button.quitgameno,
+		image_pushed = image.button.quitgamenopush,
+		end_x = -stage.width,
+		end_y = -stage.height,
+		end_transparency = 0,
+		action = function()
+			if title.settings_menu_open then title.openSettingsCancel(self) end
+		end,
+	})
+
 end
 
 function title:enter()
 	title.clicked = nil
+	title.settings_menu_open = false
 	if self.sound:getCurrentBGM() ~= "bgm_menu" then self.sound:stopBGM() end
 	title.current_background = common.instance(self.background.rabbitsnowstorm, self)
 end
 
+function title:openSettings()
+	local stage = self.stage
+	title.settings_menu_open = true
+
+	title.ui.popup_clickable.quitgameyes:change{x = stage.width * 0.45, y = stage.height * 0.6}
+	title.ui.popup_clickable.quitgameyes:change{duration = 15, transparency = 255}
+	title.ui.popup_clickable.quitgameno:change{x = stage.width * 0.55, y = stage.height * 0.6}
+	title.ui.popup_clickable.quitgameno:change{duration = 15, transparency = 255}
+	title.ui.popup_static.quitgameconfirm:change{duration = 15, transparency = 255}
+	title.ui.popup_static.quitgameframe:change{duration = 15, transparency = 255}
+end
+
+function title:openSettingsCancel()
+	local stage = self.stage
+	title.settings_menu_open = false
+
+	title.ui.popup_clickable.quitgameyes:change{duration = 10, transparency = 0}
+	title.ui.popup_clickable.quitgameyes:change{x = -stage.width, y = -stage.height}
+	title.ui.popup_clickable.quitgameno:change{duration = 10, transparency = 0}
+	title.ui.popup_clickable.quitgameno:change{x = -stage.width, y = -stage.height}
+	title.ui.popup_static.quitgameconfirm:change{duration = 10, transparency = 0}
+	title.ui.popup_static.quitgameframe:change{duration = 10, transparency = 0}
+end
+
 function title:update(dt)
 	title.current_background:update(dt)
-	for _, v in pairs(title.ui_clickable) do v:update(dt) end
-	for _, v in pairs(title.ui_static) do v:update(dt) end
+	for _, tbl in pairs(title.ui) do
+		for _, v in pairs(tbl) do v:update(dt) end
+	end
 end
 
 function title:draw()
 	title.current_background:draw()
-	for _, v in pairs(title.ui_static) do v:draw() end
-	for _, v in pairs(title.ui_clickable) do v:draw() end
+	for _, v in pairs(title.ui.static) do v:draw() end
+	for _, v in pairs(title.ui.clickable) do v:draw() end
+	title.ui.popup_static.quitgameframe:draw()
+	title.ui.popup_static.quitgameconfirm:draw()
+	for _, v in pairs(title.ui.popup_clickable) do v:draw() end
 end
 
-local pointIsInRect = require "utilities".pointIsInRect
 function title:mousepressed(x, y)
-	for _, button in pairs(title.ui_clickable) do
-		if pointIsInRect(x, y, button:getRect()) then
-			title.clicked = button
-			button.pushed()
-			return
-		end
-	end
-	title.clicked = false
+	self:_mousepressed(x, y, title)
 end
 
 function title:mousereleased(x, y)
-	for _, button in pairs(title.ui_clickable) do
-		button.released()
-		if pointIsInRect(x, y, button:getRect()) and title.clicked == button then
-			button.action()
-			break
-		end
-	end
-	title.clicked = false
+	self:_mousereleased(x, y, title)
 end
 
 function title:mousemoved(x, y)
-	if title.clicked then
-		if not pointIsInRect(x, y, title.clicked:getRect()) then
-			title.clicked.released()
-			title.clicked = false
-		end
-	end
+	self:_mousemoved(x, y, title)
 end
 
 return title

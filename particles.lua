@@ -24,10 +24,10 @@ end
 
 function Particles:update(dt)
 	for _, particle_tbl in pairs(self.allParticles) do
-		for _, particle in pairs(particle_tbl) do
-			particle:update(dt)
-		end
+		for _, particle in pairs(particle_tbl) do particle:update(dt) end
 	end
+	if self.game.frame % 10 == 0 then self.platformStar.generate(self.game, "TinyStar") end
+	if self.game.frame % 42 == 0 then self.platformStar.generate(self.game, "Star") end
 end
 
 -- returns the number of particles in a specificed self.allParticles subtable.
@@ -413,9 +413,6 @@ ExplodingPlatform = common.class("ExplodingPlatform", ExplodingPlatform, Pic)
 	Generates the stars underneath the platforms. They follow a bezier curve
 	for the first half, then become linear.
 	star_type: either "Star" or "TinyStar"
-	left: the left-most x to generate particles from, as a percentage of self.stage width.
-	right_min: the left-most x that particles end up moving to.
-	right_max: the right-most x that particles end up moving to.
  --]]
 local PlatformStar = {}
 function PlatformStar:init(manager, x, y, _image, particle_type)
@@ -429,33 +426,46 @@ function PlatformStar:remove()
 	self.manager.allParticles[self.particle_type][self.ID] = nil
 end
 
-function PlatformStar.generate(game, player, star_type, left, right_min, right_max)
+function PlatformStar.generate(game, star_type)
 	local stage = game.stage
- 	-- generate particle
-	local star = star_type .. player.ID
-	local rand = math.random(1, #image.lookup.platform_star[star])
-	local todraw = image.lookup.platform_star[star][rand]
-	local x = math.random(left * stage.width, right_max * stage.width)
+	local left, right_min, right_max = 0.05, 0.2, 0.29 -- % of screen width for TinyStar
+	if star_type == "Star" then left, right_min, right_max = 0.05, 0.21, 0.22 end
+
 	local y = stage.height
-	local p = common.instance(PlatformStar, game.particles, x, y, todraw, "Platform" .. star_type)
-
-	-- create bezier curve for bottom half movement
-	local curve_right_min = math.max(right_min * stage.width, x)
-	local curve_right = math.random(curve_right_min, right_max * stage.width)
-	if player.ID == "P2" then
-		curve_right_min = math.min(right_min * stage.width, x)
-		curve_right = math.random(right_max * stage.width, curve_right_min)
-	end
-	local curve = love.math.newBezierCurve(x, y, curve_right, y * 0.75, curve_right, stage.y_mid)
-
-	-- create move functions
 	local duration = 360
 	local rotation = 0.03 * duration
 	if star_type == "TinyStar" then rotation = 0.06 * duration end
-	if player.ID == "P2" then rotation = -rotation end
+
+ 	-- p1 star
+	local star = star_type .. "P1"
+	local rand = math.random(1, #image.lookup.platform_star[star])
+	local todraw = image.lookup.platform_star[star][rand]
+	local x = math.random(left * stage.width, right_max * stage.width)
+	-- bezier curve for bottom half movement
+	local curve_right_min = math.max(right_min * stage.width, x)
+	local curve_right = math.random(curve_right_min, right_max * stage.width)
+	local curve = love.math.newBezierCurve(x, y, curve_right, y * 0.75, curve_right, stage.y_mid)
+	local p = common.instance(PlatformStar, game.particles, x, y, todraw, "Platform" .. star_type)
+	--move functions
 	p:change{duration = duration * 0.5, curve = curve, rotation = rotation * 0.5}
 	p:change{duration = duration * 0.2, y = stage.height * 0.3, rotation = rotation * 0.7}
 	p:change{duration = duration * 0.15, y = stage.height * 0.15, rotation = rotation * 0.85,
+		transparency = 0, exit = true}
+
+	-- p2 star
+	star = star_type .. "P2"
+	rand = math.random(1, #image.lookup.platform_star[star])
+	todraw = image.lookup.platform_star[star][rand]
+	x = math.random((1-left) * stage.width, (1-right_max) * stage.width)
+	-- bezier curve for bottom half movement
+	curve_right_min = math.min((1-right_min) * stage.width, x)
+	curve_right = math.random((1-right_max) * stage.width, curve_right_min)
+	curve = love.math.newBezierCurve(x, y, curve_right, y * 0.75, curve_right, stage.y_mid)
+	p = common.instance(PlatformStar, game.particles, x, y, todraw, "Platform" .. star_type)
+	--move functions
+	p:change{duration = duration * 0.5, curve = curve, rotation = -rotation * 0.5}
+	p:change{duration = duration * 0.2, y = stage.height * 0.3, rotation = -rotation * 0.7}
+	p:change{duration = duration * 0.15, y = stage.height * 0.15, rotation = -rotation * 0.85,
 		transparency = 0, exit = true}
 end
 

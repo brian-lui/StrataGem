@@ -7,58 +7,13 @@ local pointIsInRect = require "utilities".pointIsInRect
 
 local gs_main = {}
 
---[[ create a clickable object
-	mandatory parameters: name, image, image_pushed, end_x, end_y, action
-	optional parameters: duration, start_transparency, end_transparency,
-		start_x, start_y, easing, exit, pushed, pushed_sfx, released, released_sfx
---]]
+-- refer to game.lua for instructions for _createButton and _createImage
 function gs_main:_createButton(params)
-	if params.name == nil then print("No object name received!") end
-	if params.image_pushed == nil then print("No push image received for " .. params.name .. "!") end
-	local stage = self.stage
-	local button = common.instance(Pic, self, {
-		name = params.name,
-		x = params.start_x or params.end_x,
-		y = params.start_y or params.end_y,
-		transparency = params.start_transparency or 255,
-		image = params.image,
-		container = gs_main.ui_clickable,
-	})
-
-	button:change{duration = params.duration, x = params.end_x, y = params.end_y,
-		transparency = params.end_transparency or 255,
-		easing = params.easing or "linear", exit = params.exit}
-	button.pushed = params.pushed or function()
-		self.sound:newSFX(pushed_sfx or "button")
-		button:newImage(params.image_pushed)
-	end
-	button.released = params.released or function()
-		if released_sfx then self.sound:newSFX(released_sfx) end
-		button:newImage(params.image)
-	end
-	button.action = params.action
-	return button
+	return self:_createButton(params, gs_main)
 end
 
---[[ creates an object that can be tweened but not clicked
-	mandatory parameters: name, image, end_x, end_y
-	optional parameters: duration, start_transparency, end_transparency, start_x, start_y, easing, exit
---]]
 function gs_main:_createImage(params)
-	if params.name == nil then print("No object name received!") end
-	local stage = self.stage
-	local button = common.instance(Pic, self, {
-		name = params.name,
-		x = params.start_x or params.end_x,
-		y = params.start_y or params.end_y,
-		transparency = params.start_transparency or 255,
-		image = params.image,
-		container = gs_main.ui_static,
-	})
-
-	button:change{duration = params.duration, x = params.end_x, y = params.end_y,
-		transparency = params.end_transparency or 255, easing = params.easing, exit = params.exit}
-	return button
+	return self:_createImage(params, gs_main)
 end
 
 function gs_main:quitGame()
@@ -66,24 +21,24 @@ function gs_main:quitGame()
 	gs_main.quit_menu_open = true
 	if self.type == "1P" then self.paused = true end
 
-	gs_main.ui_clickable.quitgameyes:change{x = stage.width * 0.45, y = stage.height * 0.6}
-	gs_main.ui_clickable.quitgameyes:change{duration = 15, transparency = 255}
-	gs_main.ui_clickable.quitgameno:change{x = stage.width * 0.55, y = stage.height * 0.6}
-	gs_main.ui_clickable.quitgameno:change{duration = 15, transparency = 255}
-	gs_main.ui_static.quitgameconfirm:change{duration = 15, transparency = 255}
-	gs_main.ui_static.quitgameframe:change{duration = 15, transparency = 255}
+	gs_main.ui.clickable.quitgameyes:change{x = stage.width * 0.45, y = stage.height * 0.6}
+	gs_main.ui.clickable.quitgameyes:change{duration = 15, transparency = 255}
+	gs_main.ui.clickable.quitgameno:change{x = stage.width * 0.55, y = stage.height * 0.6}
+	gs_main.ui.clickable.quitgameno:change{duration = 15, transparency = 255}
+	gs_main.ui.static.quitgameconfirm:change{duration = 15, transparency = 255}
+	gs_main.ui.static.quitgameframe:change{duration = 15, transparency = 255}
 end
 
 function gs_main:quitGameCancel()
 	local stage = self.stage
 	gs_main.quit_menu_open = false
 	if self.type == "1P" then self.paused = false end
-	gs_main.ui_clickable.quitgameyes:change{duration = 10, transparency = 0}
-	gs_main.ui_clickable.quitgameyes:change{x = -stage.width, y = -stage.height}
-	gs_main.ui_clickable.quitgameno:change{duration = 10, transparency = 0}
-	gs_main.ui_clickable.quitgameno:change{x = -stage.width, y = -stage.height}
-	gs_main.ui_static.quitgameconfirm:change{duration = 10, transparency = 0}
-	gs_main.ui_static.quitgameframe:change{duration = 10, transparency = 0}
+	gs_main.ui.clickable.quitgameyes:change{duration = 10, transparency = 0}
+	gs_main.ui.clickable.quitgameyes:change{x = -stage.width, y = -stage.height}
+	gs_main.ui.clickable.quitgameno:change{duration = 10, transparency = 0}
+	gs_main.ui.clickable.quitgameno:change{x = -stage.width, y = -stage.height}
+	gs_main.ui.static.quitgameconfirm:change{duration = 10, transparency = 0}
+	gs_main.ui.static.quitgameframe:change{duration = 10, transparency = 0}
 end
 
 function gs_main:init()
@@ -101,8 +56,9 @@ function gs_main:enter()
 	self.sound:stopBGM()
 	gs_main.clicked = nil
 	self.dying_gems = {} -- this creates the dying_gems table in Game. Sad!
-	gs_main.ui_clickable = {}
-	gs_main.ui_static = {}
+
+	gs_main.ui = {clickable = {}, static = {}, popup_clickable = {}, popup_static = {}}
+
 	gs_main.quit_menu_open = false
 	gs_main._createImage(self, {
 		name = "tub",
@@ -111,13 +67,11 @@ function gs_main:enter()
 		end_y = stage.tub.y,
 	})
 
-	local settings_image, settings_imagepush
+	local settings_image
 	if self.type == "1P" then
 		settings_image = image.button.pause
-		settings_imagepush = image.button.pausepush
 	elseif self.type == "Netplay" then
 		settings_image = image.button.stop
-		settings_imagepush = image.button.stoppush
 	else
 		print("invalid game type!")
 	 end
@@ -125,9 +79,9 @@ function gs_main:enter()
 	gs_main._createButton(self, {
 		name = "settings",
 		image = settings_image,
-		image_pushed = settings_imagepush,
-		end_x = stage.width * 0.5,
-		end_y = stage.height - settings_image:getHeight() * 0.5,
+		image_pushed = settings_image,
+		end_x = stage.settings_button.x,
+		end_y = stage.settings_button.y,
 		action = function()
 			if not gs_main.quit_menu_open then gs_main.quitGame(self) end
 		end,
@@ -197,18 +151,9 @@ function gs_main:update(dt)
 	self.animations:updateAll(dt)
 	self.screenshake_frames = math.max(0, self.screenshake_frames - 1)
 	self.timeBucket = self.timeBucket + dt
-	for _, v in pairs(gs_main.ui_clickable) do v:update(dt) end
-	for _, v in pairs(gs_main.ui_static) do v:update(dt) end
 
-	-- Testing trail stars
-	-- TODO: put this in the right place
-	if self.frame % 10 == 0 then
-		self.particles.platformStar.generate(self, self.p1, "TinyStar", 0.05, 0.2, 0.29)
-		self.particles.platformStar.generate(self, self.p2, "TinyStar", 0.95, 0.8, 0.71)
-	end
-	if self.frame % 42 == 0 then
-		self.particles.platformStar.generate(self, self.p1, "Star", 0.05, 0.21, 0.28)
-		self.particles.platformStar.generate(self, self.p2, "Star", 0.95, 0.79, 0.72)
+	for _, tbl in pairs(gs_main.ui) do
+		for _, v in pairs(tbl) do v:update(dt) end
 	end
 end
 
@@ -217,7 +162,7 @@ function gs_main:drawScreenElements()
 	-- under-platform trails
 	for _, v in pairs(self.particles.allParticles.PlatformTinyStar) do v:draw() end
 	for _, v in pairs(self.particles.allParticles.PlatformStar) do v:draw() end
-	gs_main.ui_static.tub:draw()
+	gs_main.ui.static.tub:draw()
 	self.ui.timer:draw()	-- timer bar
 
 	for player in self:players() do
@@ -399,11 +344,11 @@ function gs_main:drawText()
 end
 
 function gs_main:drawButtons()
-	gs_main.ui_static.quitgameframe:draw()
-	gs_main.ui_static.quitgameconfirm:draw()
-	gs_main.ui_clickable.quitgameyes:draw()
-	gs_main.ui_clickable.quitgameno:draw()
-	gs_main.ui_clickable.settings:draw()
+	gs_main.ui.static.quitgameframe:draw()
+	gs_main.ui.static.quitgameconfirm:draw()
+	gs_main.ui.clickable.quitgameyes:draw()
+	gs_main.ui.clickable.quitgameno:draw()
+	gs_main.ui.clickable.settings:draw()
 end
 
 function gs_main:draw()
@@ -443,14 +388,7 @@ function gs_main:mousepressed(x, y)
 		player.super_clicked = true
 	end
 
-	for _, button in pairs(gs_main.ui_clickable) do
-		if pointIsInRect(x, y, button:getRect()) then
-			gs_main.clicked = button
-			button.pushed()
-			return
-		end
-	end
-	gs_main.clicked = nil
+	self:_mousepressed(x, y, gs_main)
 end
 
 local QUICKCLICK_FRAMES = 15
@@ -474,15 +412,7 @@ function gs_main:mousereleased(x, y)
 	player.super_clicked = false
 	self.active_piece = false
 
-
-	for _, button in pairs(gs_main.ui_clickable) do
-		button.released()
-		if pointIsInRect(x, y, button:getRect()) and gs_main.clicked == button then
-			button.action()
-			break
-		end
-	end
-	gs_main.clicked = false
+	self:_mousereleased(x, y, gs_main)
 end
 
 function gs_main:mousemoved(x, y)
@@ -490,12 +420,7 @@ function gs_main:mousemoved(x, y)
 		self.active_piece:change{x = x, y = y}
 	end
 
-	if gs_main.clicked then
-		if not pointIsInRect(x, y, gs_main.clicked:getRect()) then
-			gs_main.clicked.released()
-			gs_main.clicked = false
-		end
-	end	
+	self:_mousemoved(x, y, gs_main)
 end
 
 return gs_main
