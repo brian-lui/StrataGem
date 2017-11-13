@@ -11,11 +11,11 @@ end
 
 -- refer to game.lua for instructions for _createButton and _createImage
 function charselect:_createButton(params)
-	return self:_createButton(params, charselect)
+	return self:_createButton(charselect, params)
 end
 
 function charselect:_createImage(params)
-	return self:_createImage(params, charselect)
+	return self:_createImage(charselect, params)
 end
 
 -- creates the clickable buttons for selecting characters

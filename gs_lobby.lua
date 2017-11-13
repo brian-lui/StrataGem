@@ -8,11 +8,11 @@ local lobby = {}
 
 -- refer to game.lua for instructions for _createButton and _createImage
 function lobby:_createButton(params)
-	return self:_createButton(params, lobby)
+	return self:_createButton(lobby, params)
 end
 
 function lobby:_createImage(params)
-	return self:_createImage(params, lobby)
+	return self:_createImage(lobby, params)
 end
 
 function lobby:enter()
