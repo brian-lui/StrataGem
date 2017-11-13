@@ -8,6 +8,7 @@ local Pic = {}
 -- required: x, y, image
 -- container/counter to specify different container and ID counter
 -- doesn't assign the created instance to any container by default
+-- TODO: If needed, initialize self.RGB and make it changeable with the change() method
 function Pic:init(game, tbl)
 	self.game = game
 	self.queued_moves = {}
@@ -47,36 +48,39 @@ function Pic:init(game, tbl)
 	self.quad_data = {}
 end
 
-function Pic:draw(h_flip, x, y, rotation, scale, RGBTable, img, quad)
+--[[ Takes the following optional table arguments: 
+		h_flip: whether to draw the image flipped around the horizontal axis
+		x, y: x or y position to draw the image at
+		rotation: rotation number to draw
+		scale: scaling to draw
+		RGBTable: colors to draw, given as {red, green, blue, alpha}
+		img: image to draw
+--]]
+function Pic:draw(params)
+	params = params or {}
 	love.graphics.push("all")
-		local x_scale = scale or self.scaling
-		local y_scale = scale or self.scaling
-
-		local rgbt = {255, 255, 255}
-		if self.RGB then
-			rgbt = self.RGB
-		end
+		local x_scale = params.scale or self.scaling
+		local y_scale = params.scale or self.scaling
+		local rgbt = self.RGB or {255, 255, 255}
 		rgbt[4] = self.transparency or 255
 
-		if RGBTable then
-			love.graphics.setColor(RGBTable)
+		if params.RGBTable then
+			love.graphics.setColor(params.RGBTable)
 		elseif self.transparency then
 			love.graphics.setColor(rgbt)
 		end
-		if h_flip or self.flip then x_scale = x_scale * -1 end
+		if params.h_flip then x_scale = x_scale * -1 end
 
 		love.graphics.draw(
-			img or self.image,
-			quad or self.quad,
-			(x or self.x) + (self.quad_data.x_offset or 0),
-			(y or self.y) + (self.quad_data.y_offset or 0),
-			rotation or self.rotation,
+			params.img or self.image,
+			self.quad,
+			(params.x or self.x) + (self.quad_data.x_offset or 0),
+			(params.y or self.y) + (self.quad_data.y_offset or 0),
+			params.rotation or self.rotation,
 			x_scale or 1,
 			y_scale or 1,
 			self.width / 2, -- origin x
 			self.height / 2, -- origin y
-			0,
-			0
 		)
 	love.graphics.pop()
 end

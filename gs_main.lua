@@ -147,7 +147,7 @@ function gs_main:update(dt)
 	timeDip(self, function() self.phaseManager:run(self.timeStep) end)
 	self.particles:update(dt) -- variable fps
 	self.current_background:update(dt) -- variable fps
-	self.ui.timer:update()
+	self.ui.timer:update(dt)
 	self.animations:updateAll(dt)
 	self.screenshake_frames = math.max(0, self.screenshake_frames - 1)
 	self.timeBucket = self.timeBucket + dt
@@ -168,7 +168,7 @@ function gs_main:drawScreenElements()
 	for player in self:players() do
 		self.ui:drawBurst(player)	-- burst meter
 		self.ui:drawSuper(player)	-- super meter
-		player.animation:draw(player.ID == "P2") -- sprite
+		player.animation:draw{h_flip = player.ID == "P2"} -- sprite
 	end
 end
 
@@ -233,7 +233,7 @@ function gs_main:drawGems()
 		love.graphics.setStencilTest("equal", 0)
 		for gem, r in self.grid:gems() do
 			if self.phase == "Action" and r <= 6 then
-				gem:draw(nil, nil, {255, 255, 255, 192})
+				gem:draw{RGBTable = {255, 255, 255, 192}}
 			else
 				gem:draw()
 			end
