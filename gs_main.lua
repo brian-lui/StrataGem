@@ -18,27 +18,27 @@ end
 
 function gs_main:quitGame()
 	local stage = self.stage
-	gs_main.quit_menu_open = true
+	self.settings_menu_open = true
 	if self.type == "1P" then self.paused = true end
 
-	gs_main.ui.clickable.quitgameyes:change{x = stage.width * 0.45, y = stage.height * 0.6}
-	gs_main.ui.clickable.quitgameyes:change{duration = 15, transparency = 255}
-	gs_main.ui.clickable.quitgameno:change{x = stage.width * 0.55, y = stage.height * 0.6}
-	gs_main.ui.clickable.quitgameno:change{duration = 15, transparency = 255}
-	gs_main.ui.static.quitgameconfirm:change{duration = 15, transparency = 255}
-	gs_main.ui.static.quitgameframe:change{duration = 15, transparency = 255}
+	gs_main.ui.popup_clickable.quitgameyes:change{x = stage.width * 0.45, y = stage.height * 0.6}
+	gs_main.ui.popup_clickable.quitgameyes:change{duration = 15, transparency = 255}
+	gs_main.ui.popup_clickable.quitgameno:change{x = stage.width * 0.55, y = stage.height * 0.6}
+	gs_main.ui.popup_clickable.quitgameno:change{duration = 15, transparency = 255}
+	gs_main.ui.popup_static.quitgameconfirm:change{duration = 15, transparency = 255}
+	gs_main.ui.popup_static.quitgameframe:change{duration = 15, transparency = 255}
 end
 
 function gs_main:quitGameCancel()
 	local stage = self.stage
-	gs_main.quit_menu_open = false
+	self.settings_menu_open = false
 	if self.type == "1P" then self.paused = false end
-	gs_main.ui.clickable.quitgameyes:change{duration = 10, transparency = 0}
-	gs_main.ui.clickable.quitgameyes:change{x = -stage.width, y = -stage.height}
-	gs_main.ui.clickable.quitgameno:change{duration = 10, transparency = 0}
-	gs_main.ui.clickable.quitgameno:change{x = -stage.width, y = -stage.height}
-	gs_main.ui.static.quitgameconfirm:change{duration = 10, transparency = 0}
-	gs_main.ui.static.quitgameframe:change{duration = 10, transparency = 0}
+	gs_main.ui.popup_clickable.quitgameyes:change{duration = 10, transparency = 0}
+	gs_main.ui.popup_clickable.quitgameyes:change{x = -stage.width, y = -stage.height}
+	gs_main.ui.popup_clickable.quitgameno:change{duration = 10, transparency = 0}
+	gs_main.ui.popup_clickable.quitgameno:change{x = -stage.width, y = -stage.height}
+	gs_main.ui.popup_static.quitgameconfirm:change{duration = 10, transparency = 0}
+	gs_main.ui.popup_static.quitgameframe:change{duration = 10, transparency = 0}
 end
 
 function gs_main:init()
@@ -59,7 +59,7 @@ function gs_main:enter()
 
 	gs_main.ui = {clickable = {}, static = {}, popup_clickable = {}, popup_static = {}}
 
-	gs_main.quit_menu_open = false
+	self.settings_menu_open = false
 	gs_main._createImage(self, {
 		name = "tub",
 		image = image.UI.tub,
@@ -83,12 +83,13 @@ function gs_main:enter()
 		end_x = stage.settings_button.x,
 		end_y = stage.settings_button.y,
 		action = function()
-			if not gs_main.quit_menu_open then gs_main.quitGame(self) end
+			if not self.settings_menu_open then gs_main.quitGame(self) end
 		end,
 	})
 
 	gs_main._createImage(self, {
 		name = "quitgameconfirm",
+		container = gs_main.ui.popup_static,
 		image = image.unclickable.main_quitconfirm,
 		end_x = stage.width * 0.5,
 		end_y = stage.height * 0.4,
@@ -97,6 +98,7 @@ function gs_main:enter()
 
 	gs_main._createImage(self, {
 		name = "quitgameframe",
+		container = gs_main.ui.popup_static,
 		image = image.unclickable.main_quitframe,
 		end_x = stage.width * 0.5,
 		end_y = stage.height * 0.5,
@@ -105,25 +107,27 @@ function gs_main:enter()
 
 	gs_main._createButton(self, {
 		name = "quitgameyes",
+		container = gs_main.ui.popup_clickable,
 		image = image.button.quitgameyes,
 		image_pushed = image.button.quitgameyespush,
 		end_x = -stage.width,
 		end_y = -stage.height,
 		end_transparency = 0,
 		action = function()
-			if gs_main.quit_menu_open then self.statemanager:switch(require "gs_title") end
+			if self.settings_menu_open then self.statemanager:switch(require "gs_title") end
 		end,
 	})
 
 	gs_main._createButton(self, {
 		name = "quitgameno",
+		container = gs_main.ui.popup_clickable,
 		image = image.button.quitgameno,
 		image_pushed = image.button.quitgamenopush,
 		end_x = -stage.width,
 		end_y = -stage.height,
 		end_transparency = 0,
 		action = function()
-			if gs_main.quit_menu_open then gs_main.quitGameCancel(self) end
+			if self.settings_menu_open then gs_main.quitGameCancel(self) end
 		end,
 	})
 end
@@ -344,10 +348,10 @@ function gs_main:drawText()
 end
 
 function gs_main:drawButtons()
-	gs_main.ui.static.quitgameframe:draw()
-	gs_main.ui.static.quitgameconfirm:draw()
-	gs_main.ui.clickable.quitgameyes:draw()
-	gs_main.ui.clickable.quitgameno:draw()
+	gs_main.ui.popup_static.quitgameframe:draw()
+	gs_main.ui.popup_static.quitgameconfirm:draw()
+	gs_main.ui.popup_clickable.quitgameyes:draw()
+	gs_main.ui.popup_clickable.quitgameno:draw()
 	gs_main.ui.clickable.settings:draw()
 end
 

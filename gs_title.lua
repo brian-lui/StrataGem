@@ -81,7 +81,7 @@ function title:init()
 		end_x = stage.width - image.button.settings:getWidth() * 0.5,
 		end_y = stage.height - image.button.settings:getHeight() * 0.5,
 		action = function()
-			if not title.settings_menu_open then title.openSettings(self) end
+			if not self.settings_menu_open then title.openSettings(self) end
 		end,
 	})
 
@@ -112,7 +112,7 @@ function title:init()
 		end_y = -stage.height,
 		end_transparency = 0,
 		action = function()
-			if title.settings_menu_open then love.event.quit() end
+			if self.settings_menu_open then love.event.quit() end
 		end,
 	})
 
@@ -125,7 +125,7 @@ function title:init()
 		end_y = -stage.height,
 		end_transparency = 0,
 		action = function()
-			if title.settings_menu_open then title.openSettingsCancel(self) end
+			if self.settings_menu_open then title.openSettingsCancel(self) end
 		end,
 	})
 
@@ -133,14 +133,14 @@ end
 
 function title:enter()
 	title.clicked = nil
-	title.settings_menu_open = false
+	self.settings_menu_open = false
 	if self.sound:getCurrentBGM() ~= "bgm_menu" then self.sound:stopBGM() end
 	title.current_background = common.instance(self.background.rabbitsnowstorm, self)
 end
 
 function title:openSettings()
 	local stage = self.stage
-	title.settings_menu_open = true
+	self.settings_menu_open = true
 
 	title.ui.popup_clickable.quitgameyes:change{x = stage.width * 0.45, y = stage.height * 0.6}
 	title.ui.popup_clickable.quitgameyes:change{duration = 15, transparency = 255}
@@ -152,7 +152,7 @@ end
 
 function title:openSettingsCancel()
 	local stage = self.stage
-	title.settings_menu_open = false
+	self.settings_menu_open = false
 
 	title.ui.popup_clickable.quitgameyes:change{duration = 10, transparency = 0}
 	title.ui.popup_clickable.quitgameyes:change{x = -stage.width, y = -stage.height}
@@ -170,9 +170,11 @@ function title:update(dt)
 end
 
 function title:draw()
-	title.current_background:draw()
-	for _, v in pairs(title.ui.static) do v:draw() end
-	for _, v in pairs(title.ui.clickable) do v:draw() end
+	local darkened = self.settings_menu_open
+	title.current_background:draw{darkened = darkened}
+	for _, v in pairs(title.ui.static) do v:draw{darkened = darkened} end
+	for _, v in pairs(title.ui.clickable) do v:draw{darkened = darkened} end
+
 	title.ui.popup_static.quitgameframe:draw()
 	title.ui.popup_static.quitgameconfirm:draw()
 	for _, v in pairs(title.ui.popup_clickable) do v:draw() end

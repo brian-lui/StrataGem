@@ -159,6 +159,7 @@ function Game:reset()
 	self.orig_rng_seed = self.rng:getSeed() -- for debugging
 	self.frame = 0
 	self.paused = false
+	self.settings_menu_open = false
 end
 
 --[[ create a clickable object
@@ -217,7 +218,7 @@ local pointIsInRect = require "utilities".pointIsInRect
 
 --default mousepressed function if not specified by a sub-state
 function Game:_mousepressed(x, y, gamestate)
-	if gamestate.settings_menu_open then
+	if self.settings_menu_open then	
 		for _, button in pairs(gamestate.ui.popup_clickable) do
 			if pointIsInRect(x, y, button:getRect()) then
 				gamestate.clicked = button
@@ -239,7 +240,7 @@ end
 
 -- default mousereleased function if not specified by a sub-state
 function Game:_mousereleased(x, y, gamestate)
-	if gamestate.settings_menu_open then
+	if self.settings_menu_open then	
 		for _, button in pairs(gamestate.ui.popup_clickable) do
 			button.released()
 			if pointIsInRect(x, y, button:getRect()) and gamestate.clicked == button then
