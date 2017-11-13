@@ -80,7 +80,7 @@ function Pic:draw(params)
 			x_scale or 1,
 			y_scale or 1,
 			self.width / 2, -- origin x
-			self.height / 2, -- origin y
+			self.height / 2 -- origin y
 		)
 	love.graphics.pop()
 end

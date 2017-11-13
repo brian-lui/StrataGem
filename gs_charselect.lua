@@ -45,6 +45,7 @@ function charselect:_createCharacterButtons()
 			end_y = end_y,
 			start_transparency = 195,
 			easing = "inOutSine",
+			pushed_sfx = "sfx_buttoncharacter",
 			action = function() 
 				if charselect.my_character ~= char then
 					charselect.my_character = char
@@ -94,8 +95,8 @@ function charselect:_createUIButtons()
 		end_x = image.button.back:getWidth() * 0.6,
 		end_y = image.button.back:getHeight() * 0.6,
 		easing = "outQuad",
-		pushed_sfx = "button_back",
-		action = function() self.statemanager:switch(require "gs_charselect") end,
+		pushed_sfx = "sfx_buttonback",
+		action = function() self.statemanager:switch(require "gs_title") end,
 	})
 
 	-- left arrow for background select

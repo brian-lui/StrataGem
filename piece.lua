@@ -117,6 +117,7 @@ function Piece:rotate()
 	local new_rotation = self.rotation
 	self.rotation = self.rotation - (0.5 * math.pi)
 	self._rotateTween = tween.new(1, self, {rotation = new_rotation}, 'outExpo')
+
 	self.game.sound:newSFX("sfx_gemrotate")
 end
 

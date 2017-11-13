@@ -81,7 +81,7 @@ function lobby:enter()
 		end_x = image.button.back:getWidth() * 0.6,
 		end_y = image.button.back:getHeight() * 0.6,
 		easing = "outQuad",
-		pushed_sfx = "button_back",
+		pushed_sfx = "sfx_buttonback",
 		action = function() lobby.goBack(self) end,
 	})
 
@@ -152,7 +152,6 @@ function lobby:goBack()
 			client.connected = false
 		end
 	end
-	self.sound:newSFX("button_back")
 	self.statemanager:switch(require "gs_title")
 end
 

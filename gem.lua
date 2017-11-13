@@ -96,9 +96,12 @@ function Gem:landedInStagingArea(place_type, owner)
 		if player.place_type == "double" then
 			particles.words.generateDoublecast(self.game, player)
 			self.game.sound:newSFX("sfx_doublecast")
+			self.game.sound:newSFX("sfx_fountaindoublecast")
+
 		elseif player.place_type == "rush" then
 			particles.words.generateRush(self.game, player)
 			self.game.sound:newSFX("sfx_rush")
+			self.game.sound:newSFX("sfx_fountainrush")
 		end
 	end
 	if place_type == "double" then

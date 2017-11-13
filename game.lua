@@ -182,11 +182,11 @@ function Game:_createButton(params, gamestate)
 		transparency = params.end_transparency or 255,
 		easing = params.easing or "linear", exit = params.exit}
 	button.pushed = params.pushed or function()
-		self.sound:newSFX(pushed_sfx or "button")
+		self.sound:newSFX(params.pushed_sfx or "sfx_button")
 		button:newImage(params.image_pushed)
 	end
 	button.released = params.released or function()
-		if released_sfx then self.sound:newSFX(released_sfx) end
+		if released_sfx then self.sound:newSFX(params.released_sfx) end
 		button:newImage(params.image)
 	end
 	button.action = params.action
