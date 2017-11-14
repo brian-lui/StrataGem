@@ -3,10 +3,16 @@ local image = require 'image'
 local Pic = require 'pic'
 local pointIsInRect = require "utilities".pointIsInRect
 
-local charselect = {}
+local charselect = {name = "charselect"}
 function charselect:init()
 	charselect.selectable_chars = {"heath", "walter", "gail", "holly",
-		"wolfgang", "hailey", "diggory", "buzz", "ivy", "joy"}	
+		"wolfgang", "hailey", "diggory", "buzz", "ivy", "joy"}
+	charselect.ui = {clickable = {}, static = {}, popup_clickable = {}, popup_static = {}}
+	self:_createSettingsMenu(charselect, {
+		exitstate = "gs_title",
+		settings_icon = image.button.back,
+		settings_iconpush = image.button.backpush,
+	})
 end
 
 -- refer to game.lua for instructions for _createButton and _createImage
@@ -21,6 +27,7 @@ end
 -- creates the clickable buttons for selecting characters
 function charselect:_createCharacterButtons()
 	local stage = self.stage
+	charselect.clicked = nil
 	local end_x, end_y
 	for i = 1, #charselect.selectable_chars do
 		local char = charselect.selectable_chars[i]
@@ -83,20 +90,6 @@ function charselect:_createUIButtons()
 				self:start(gametype, char1, char2, bkground, nil, 1)
 			end
 		end,
-	})
-
-	-- back button
-	charselect._createButton(self, {
-		name = "back",
-		image = image.button.back,
-		image_pushed = image.button.backpush,
-		duration = 15,
-		start_x = -image.button.back:getWidth(),
-		end_x = image.button.back:getWidth() * 0.6,
-		end_y = image.button.back:getHeight() * 0.6,
-		easing = "outQuad",
-		pushed_sfx = "sfx_buttonback",
-		action = function() self.statemanager:switch(require "gs_title") end,
 	})
 
 	-- left arrow for background select
@@ -205,8 +198,6 @@ function charselect:enter()
 		self.sound:newBGM("bgm_menu", true)
 	end
 
-	charselect.ui = {clickable = {}, static = {}, popup_clickable = {}, popup_static = {}}
-
 	charselect.current_background = common.instance(self.background.rabbitsnowstorm, self)
 	charselect.game_background = 1 -- what's chosen for the maingame background
 	charselect._createCharacterButtons(self)
@@ -217,6 +208,13 @@ function charselect:enter()
 	charselect.opponent_character = "walter" -- ditto
 end
 
+function charselect:openSettingsMenu()
+	self:_openSettingsMenu(charselect)
+end
+
+function charselect:closeSettingsMenu()
+	self:_closeSettingsMenu(charselect)
+end
 
 function charselect:update(dt)
 	charselect.current_background:update(dt)
@@ -226,9 +224,11 @@ function charselect:update(dt)
 end
 
 function charselect:draw()
-	charselect.current_background:draw()
-	for _, v in pairs(charselect.ui.static) do v:draw() end
-	for _, v in pairs(charselect.ui.clickable) do v:draw() end
+	local darkened = self.settings_menu_open
+	charselect.current_background:draw{darkened = darkened}
+	for _, v in pairs(charselect.ui.static) do v:draw{darkened = darkened} end
+	for _, v in pairs(charselect.ui.clickable) do v:draw{darkened = darkened} end
+	self:_drawSettingsMenu(charselect)
 end
 
 function charselect:mousepressed(x, y)

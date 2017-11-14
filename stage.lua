@@ -75,7 +75,12 @@ function stage:init(game)
 	self.timertext = {x = self.x_mid, y = self.height * 0.28}
 
 	self.tub = {x = self.x_mid, y = self.height * 0.646}
-	self.settings_button = {x = self.x_mid, y = self.height * 0.957}
+	self.settings_button = {
+		gs_main = {x = self.x_mid, y = self.height * 0.957},
+		title = {x = self.width * 0.92, y = self.height * 0.92},
+		charselect = {x = self.width * 0.05, y = self.height * 0.08},
+		lobby = {x = self.width * 0.05, y = self.height * 0.08},
+	}
 end
 
 function stage:isOnLeft()

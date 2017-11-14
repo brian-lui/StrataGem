@@ -5,7 +5,18 @@ local image = require 'image'
 local Pic = require 'pic'
 local pointIsInRect = require "utilities".pointIsInRect
 
-local gs_main = {}
+local gs_main = {name = "gs_main"}
+
+function gs_main:init()
+	-- canvas is not currently used. We can use it for dimming the screen when
+	-- clicking on the options menu
+	self.canvas = {
+		background = love.graphics.newCanvas(),
+		foreground = love.graphics.newCanvas(),
+	}
+	self.camera = common.instance(require "camera")
+	gs_main.ui = {clickable = {}, static = {}, popup_clickable = {}, popup_static = {}}
+end
 
 -- refer to game.lua for instructions for _createButton and _createImage
 function gs_main:_createButton(params)
@@ -41,31 +52,8 @@ function gs_main:quitGameCancel()
 	gs_main.ui.popup_static.settingsframe:change{duration = 10, transparency = 0}
 end
 
-function gs_main:init()
-	-- canvas is not currently used. We can use it for dimming the screen when
-	-- clicking on the options menu
-	self.canvas = {
-		background = love.graphics.newCanvas(),
-		foreground = love.graphics.newCanvas(),
-	}
-	self.camera = common.instance(require "camera")
-end
-
 function gs_main:enter()
 	local stage = self.stage
-	self.sound:stopBGM()
-	gs_main.clicked = nil
-	self.dying_gems = {} -- this creates the dying_gems table in Game. Sad!
-
-	gs_main.ui = {clickable = {}, static = {}, popup_clickable = {}, popup_static = {}}
-
-	self.settings_menu_open = false
-	gs_main._createImage(self, {
-		name = "tub",
-		image = image.UI.tub,
-		end_x = stage.tub.x,
-		end_y = stage.tub.y,
-	})
 
 	local settings_image
 	if self.type == "1P" then
@@ -74,62 +62,36 @@ function gs_main:enter()
 		settings_image = image.button.stop
 	else
 		print("invalid game type!")
-	 end
+	end
 
-	gs_main._createButton(self, {
-		name = "settings",
-		image = settings_image,
-		image_pushed = settings_image,
-		end_x = stage.settings_button.x,
-		end_y = stage.settings_button.y,
-		action = function()
-			if not self.settings_menu_open then gs_main.quitGame(self) end
-		end,
+	self:_createSettingsMenu(gs_main, {
+		exitstate = "gs_title",
+		settings_icon = settings_image,
+		settings_iconpush = settings_image,
 	})
 
-	gs_main._createImage(self, {
-		name = "settingstext",
-		container = gs_main.ui.popup_static,
-		image = image.unclickable.settingstext,
-		end_x = stage.width * 0.5,
-		end_y = stage.height * 0.4,
-		end_transparency = 0,
-	})
+	self.sound:stopBGM()
+	gs_main.clicked = nil
+	self.dying_gems = {} -- this creates the dying_gems table in Game. Sad!
+	gs_main.current_background = common.instance(self.background[self.current_background_name], self)
+	self.settings_menu_open = false
 
 	gs_main._createImage(self, {
-		name = "settingsframe",
-		container = gs_main.ui.popup_static,
-		image = image.unclickable.settingsframe,
-		end_x = stage.width * 0.5,
-		end_y = stage.height * 0.5,
-		end_transparency = 0,
+		name = "tub",
+		image = image.UI.tub,
+		end_x = stage.tub.x,
+		end_y = stage.tub.y,
 	})
+end
 
-	gs_main._createButton(self, {
-		name = "confirm",
-		container = gs_main.ui.popup_clickable,
-		image = image.button.confirm,
-		image_pushed = image.button.confirmpush,
-		end_x = -stage.width,
-		end_y = -stage.height,
-		end_transparency = 0,
-		action = function()
-			if self.settings_menu_open then self.statemanager:switch(require "gs_title") end
-		end,
-	})
+function gs_main:openSettingsMenu()
+	if self.type == "1P" then self.paused = true end
+	self:_openSettingsMenu(gs_main)
+end
 
-	gs_main._createButton(self, {
-		name = "cancel",
-		container = gs_main.ui.popup_clickable,
-		image = image.button.cancel,
-		image_pushed = image.button.cancelpush,
-		end_x = -stage.width,
-		end_y = -stage.height,
-		end_transparency = 0,
-		action = function()
-			if self.settings_menu_open then gs_main.quitGameCancel(self) end
-		end,
-	})
+function gs_main:closeSettingsMenu()
+	if self.type == "1P" then self.paused = false end
+	self:_closeSettingsMenu(gs_main)
 end
 
 local function timeDip(self, logic_function, ...)
@@ -150,7 +112,7 @@ end
 function gs_main:update(dt)
 	timeDip(self, function() self.phaseManager:run(self.timeStep) end)
 	self.particles:update(dt) -- variable fps
-	self.current_background:update(dt) -- variable fps
+	gs_main.current_background:update(dt) -- variable fps
 	self.ui.timer:update(dt)
 	self.animations:updateAll(dt)
 	self.screenshake_frames = math.max(0, self.screenshake_frames - 1)
@@ -356,7 +318,8 @@ function gs_main:drawButtons()
 end
 
 function gs_main:draw()
-	self.current_background:draw()
+	local darkened = self.settings_menu_open
+	gs_main.current_background:draw()
 	self.camera:set(1, 1)
 		if self.screenshake_frames > 0 then
 			gs_main.screenshake(self, self.screenshake_vel)

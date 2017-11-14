@@ -12,7 +12,7 @@ local image = require 'image'
 local Pic = require 'pic'
 local tween = require 'tween'
 
-local title = {}
+local title = {name = "title"}
 
 -- refer to game.lua for instructions for createButton and createImage
 function title:createButton(params)
@@ -104,10 +104,7 @@ function title:draw()
 	title.current_background:draw{darkened = darkened}
 	for _, v in pairs(title.ui.static) do v:draw{darkened = darkened} end
 	for _, v in pairs(title.ui.clickable) do v:draw{darkened = darkened} end
-
-	title.ui.popup_static.settingsframe:draw()
-	title.ui.popup_static.settingstext:draw()
-	for _, v in pairs(title.ui.popup_clickable) do v:draw() end
+	self:_drawSettingsMenu(title)
 end
 
 function title:mousepressed(x, y)
