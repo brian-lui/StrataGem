@@ -145,15 +145,15 @@ assert(image.UI.burst.red_partial)
 local buttons = {"vscpu", "vscpupush", "netplay", "netplaypush", "back", "backpush",
 	"details", "detailspush", "start", "startpush", "leftarrow", "rightarrow",
 	"lobbycreatenew", "lobbyqueueranked", "lobbycancelsearch", "pause", "stop",
-	"settings", "settingspush", "quitgameno", "quitgamenopush", "quitgameyes",
-	"quitgameyespush"}
+	"settings", "settingspush", "cancel", "cancelpush", "confirm",
+	"confirmpush"}
 image.button = {}
 for _, v in pairs(buttons) do
 	image.button[v] = love.graphics.newImage('images/buttons/' .. v .. '.png')
 end	
 
 local unclickables = {"title_logo", "lobby_gamebackground", "lobby_searchingnone",
-	"lobby_searchingranked", "select_stageborder", "main_quitframe", "main_quitconfirm"}
+	"lobby_searchingranked", "select_stageborder", "settingsframe", "settingstext"}
 image.unclickable = {}
 for _, v in pairs(unclickables) do
 	image.unclickable[v] = love.graphics.newImage('images/unclickables/' .. v .. '.png')

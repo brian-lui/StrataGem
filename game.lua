@@ -1,6 +1,7 @@
 local Pic = require 'pic'
 local love = _G.love
 local common = require "classcommons"
+local image = require 'image'
 
 --[==================[
 QUEUE COMPONENT
@@ -159,6 +160,7 @@ function Game:reset()
 	self.orig_rng_seed = self.rng:getSeed() -- for debugging
 	self.frame = 0
 	self.paused = false
+	self.settings_menu_open = false
 end
 
 --[[ create a clickable object
@@ -166,7 +168,8 @@ end
 	optional parameters: duration, start_transparency, end_transparency,
 		start_x, start_y, easing, exit, pushed, pushed_sfx, released, released_sfx
 --]]
-function Game:_createButton(params, gamestate)
+function Game:_createButton(gamestate, params)
+	params = params or {}
 	if params.name == nil then print("No object name received!") end
 	if params.image_pushed == nil then print("No push image received for " .. params.name .. "!") end
 	local stage = self.stage
@@ -182,11 +185,11 @@ function Game:_createButton(params, gamestate)
 		transparency = params.end_transparency or 255,
 		easing = params.easing or "linear", exit = params.exit}
 	button.pushed = params.pushed or function()
-		self.sound:newSFX(pushed_sfx or "button")
+		self.sound:newSFX(params.pushed_sfx or "sfx_button")
 		button:newImage(params.image_pushed)
 	end
 	button.released = params.released or function()
-		if released_sfx then self.sound:newSFX(released_sfx) end
+		if released_sfx then self.sound:newSFX(params.released_sfx) end
 		button:newImage(params.image)
 	end
 	button.action = params.action
@@ -197,7 +200,8 @@ end
 	mandatory parameters: name, image, end_x, end_y
 	optional parameters: duration, start_transparency, end_transparency, start_x, start_y, easing, exit
 --]]
-function Game:_createImage(params, gamestate)
+function Game:_createImage(gamestate, params)
+	params = params or {}
 	if params.name == nil then print("No object name received!") end
 	local stage = self.stage
 	local button = common.instance(Pic, self, {
@@ -213,11 +217,106 @@ function Game:_createImage(params, gamestate)
 	return button
 end
 
+-- creates the pop-up settings menu overlays with default parameters
+function Game:_openSettingsMenu(gamestate, params)
+	local stage = self.stage
+	self.settings_menu_open = true
+	gamestate.ui.popup_clickable.confirm:change{x = stage.width * 0.45, y = stage.height * 0.6}
+	gamestate.ui.popup_clickable.confirm:change{duration = 15, transparency = 255}
+	gamestate.ui.popup_clickable.cancel:change{x = stage.width * 0.55, y = stage.height * 0.6}
+	gamestate.ui.popup_clickable.cancel:change{duration = 15, transparency = 255}
+	gamestate.ui.popup_static.settingstext:change{duration = 15, transparency = 255}
+	gamestate.ui.popup_static.settingsframe:change{duration = 15, transparency = 255}
+end
+
+function Game:_closeSettingsMenu(gamestate, params)
+	local stage = self.stage
+	self.settings_menu_open = false
+	gamestate.ui.popup_clickable.confirm:change{duration = 10, transparency = 0}
+	gamestate.ui.popup_clickable.confirm:change{x = -stage.width, y = -stage.height}
+	gamestate.ui.popup_clickable.cancel:change{duration = 10, transparency = 0}
+	gamestate.ui.popup_clickable.cancel:change{x = -stage.width, y = -stage.height}
+	gamestate.ui.popup_static.settingstext:change{duration = 10, transparency = 0}
+	gamestate.ui.popup_static.settingsframe:change{duration = 10, transparency = 0}	
+end
+
+--[[	optional arguments:
+	settings_icon: image for the settings icon (defaults to image.button.settings)
+	settings_iconpush: image for the pushed settings icon (defaults to image.button.settingspush)
+	settings_text: image for the text display (defaults to image.unclickable.settingstext)
+	exitstate: state to exit upon confirm (e.g. "gs_gamestate", "gs_main", "gs_lobby")
+		Defaults to quitting the game if not provided
+--]]
+function Game:_createSettingsMenu(gamestate, params)
+	params = params or {}
+	local stage = self.stage
+	local settings_icon = params.settings_icon or image.button.settings
+	local settings_pushed_icon = params.settings_iconpush or image.button.settingspush
+	local settings_text = params.settings_text or image.unclickable.settingstext
+
+	self:_createButton(gamestate, {
+		name = "settings",
+		image = settings_icon,
+		image_pushed = settings_pushed_icon,
+		end_x = stage.width - image.button.settings:getWidth() * 0.5,
+		end_y = stage.height - image.button.settings:getHeight() * 0.5,
+		action = function()
+			if not self.settings_menu_open then gamestate.openSettingsMenu(self) end
+		end,
+	})
+	self:_createImage(gamestate, {
+		name = "settingstext",
+		container = gamestate.ui.popup_static,
+		image = settings_text,
+		end_x = stage.width * 0.5,
+		end_y = stage.height * 0.4,
+		end_transparency = 0,
+	})
+	self:_createImage(gamestate, {
+		name = "settingsframe",
+		container = gamestate.ui.popup_static,
+		image = image.unclickable.settingsframe,
+		end_x = stage.width * 0.5,
+		end_y = stage.height * 0.5,
+		end_transparency = 0,
+	})
+	self:_createButton(gamestate, {
+		name = "cancel",
+		container = gamestate.ui.popup_clickable,
+		image = image.button.cancel,
+		image_pushed = image.button.cancelpush,
+		end_x = -stage.width,
+		end_y = -stage.height,
+		end_transparency = 0,
+		action = function()
+			if self.settings_menu_open then gamestate.closeSettingsMenu(self) end
+		end,
+	})
+	self:_createButton(gamestate, {
+		name = "confirm",
+		container = gamestate.ui.popup_clickable,
+		image = image.button.confirm,
+		image_pushed = image.button.confirmpush,
+		end_x = -stage.width,
+		end_y = -stage.height,
+		end_transparency = 0,
+		action = function()
+			if self.settings_menu_open then
+				if params.exitstate then
+					self.statemanager:switch(require (params.exitstate))
+				else
+					love.event.quit()
+				end
+			end
+		end,
+	})
+end
+
 local pointIsInRect = require "utilities".pointIsInRect
 
 --default mousepressed function if not specified by a sub-state
 function Game:_mousepressed(x, y, gamestate)
-	if gamestate.settings_menu_open then
+	if self.settings_menu_open then	
 		for _, button in pairs(gamestate.ui.popup_clickable) do
 			if pointIsInRect(x, y, button:getRect()) then
 				gamestate.clicked = button
@@ -239,7 +338,7 @@ end
 
 -- default mousereleased function if not specified by a sub-state
 function Game:_mousereleased(x, y, gamestate)
-	if gamestate.settings_menu_open then
+	if self.settings_menu_open then	
 		for _, button in pairs(gamestate.ui.popup_clickable) do
 			button.released()
 			if pointIsInRect(x, y, button:getRect()) and gamestate.clicked == button then

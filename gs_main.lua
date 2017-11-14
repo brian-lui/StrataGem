@@ -9,36 +9,36 @@ local gs_main = {}
 
 -- refer to game.lua for instructions for _createButton and _createImage
 function gs_main:_createButton(params)
-	return self:_createButton(params, gs_main)
+	return self:_createButton(gs_main, params)
 end
 
 function gs_main:_createImage(params)
-	return self:_createImage(params, gs_main)
+	return self:_createImage(gs_main, params)
 end
 
 function gs_main:quitGame()
 	local stage = self.stage
-	gs_main.quit_menu_open = true
+	self.settings_menu_open = true
 	if self.type == "1P" then self.paused = true end
 
-	gs_main.ui.clickable.quitgameyes:change{x = stage.width * 0.45, y = stage.height * 0.6}
-	gs_main.ui.clickable.quitgameyes:change{duration = 15, transparency = 255}
-	gs_main.ui.clickable.quitgameno:change{x = stage.width * 0.55, y = stage.height * 0.6}
-	gs_main.ui.clickable.quitgameno:change{duration = 15, transparency = 255}
-	gs_main.ui.static.quitgameconfirm:change{duration = 15, transparency = 255}
-	gs_main.ui.static.quitgameframe:change{duration = 15, transparency = 255}
+	gs_main.ui.popup_clickable.confirm:change{x = stage.width * 0.45, y = stage.height * 0.6}
+	gs_main.ui.popup_clickable.confirm:change{duration = 15, transparency = 255}
+	gs_main.ui.popup_clickable.cancel:change{x = stage.width * 0.55, y = stage.height * 0.6}
+	gs_main.ui.popup_clickable.cancel:change{duration = 15, transparency = 255}
+	gs_main.ui.popup_static.settingstext:change{duration = 15, transparency = 255}
+	gs_main.ui.popup_static.settingsframe:change{duration = 15, transparency = 255}
 end
 
 function gs_main:quitGameCancel()
 	local stage = self.stage
-	gs_main.quit_menu_open = false
+	self.settings_menu_open = false
 	if self.type == "1P" then self.paused = false end
-	gs_main.ui.clickable.quitgameyes:change{duration = 10, transparency = 0}
-	gs_main.ui.clickable.quitgameyes:change{x = -stage.width, y = -stage.height}
-	gs_main.ui.clickable.quitgameno:change{duration = 10, transparency = 0}
-	gs_main.ui.clickable.quitgameno:change{x = -stage.width, y = -stage.height}
-	gs_main.ui.static.quitgameconfirm:change{duration = 10, transparency = 0}
-	gs_main.ui.static.quitgameframe:change{duration = 10, transparency = 0}
+	gs_main.ui.popup_clickable.confirm:change{duration = 10, transparency = 0}
+	gs_main.ui.popup_clickable.confirm:change{x = -stage.width, y = -stage.height}
+	gs_main.ui.popup_clickable.cancel:change{duration = 10, transparency = 0}
+	gs_main.ui.popup_clickable.cancel:change{x = -stage.width, y = -stage.height}
+	gs_main.ui.popup_static.settingstext:change{duration = 10, transparency = 0}
+	gs_main.ui.popup_static.settingsframe:change{duration = 10, transparency = 0}
 end
 
 function gs_main:init()
@@ -59,7 +59,7 @@ function gs_main:enter()
 
 	gs_main.ui = {clickable = {}, static = {}, popup_clickable = {}, popup_static = {}}
 
-	gs_main.quit_menu_open = false
+	self.settings_menu_open = false
 	gs_main._createImage(self, {
 		name = "tub",
 		image = image.UI.tub,
@@ -83,47 +83,51 @@ function gs_main:enter()
 		end_x = stage.settings_button.x,
 		end_y = stage.settings_button.y,
 		action = function()
-			if not gs_main.quit_menu_open then gs_main.quitGame(self) end
+			if not self.settings_menu_open then gs_main.quitGame(self) end
 		end,
 	})
 
 	gs_main._createImage(self, {
-		name = "quitgameconfirm",
-		image = image.unclickable.main_quitconfirm,
+		name = "settingstext",
+		container = gs_main.ui.popup_static,
+		image = image.unclickable.settingstext,
 		end_x = stage.width * 0.5,
 		end_y = stage.height * 0.4,
 		end_transparency = 0,
 	})
 
 	gs_main._createImage(self, {
-		name = "quitgameframe",
-		image = image.unclickable.main_quitframe,
+		name = "settingsframe",
+		container = gs_main.ui.popup_static,
+		image = image.unclickable.settingsframe,
 		end_x = stage.width * 0.5,
 		end_y = stage.height * 0.5,
 		end_transparency = 0,
 	})
 
 	gs_main._createButton(self, {
-		name = "quitgameyes",
-		image = image.button.quitgameyes,
-		image_pushed = image.button.quitgameyespush,
+		name = "confirm",
+		container = gs_main.ui.popup_clickable,
+		image = image.button.confirm,
+		image_pushed = image.button.confirmpush,
 		end_x = -stage.width,
 		end_y = -stage.height,
 		end_transparency = 0,
 		action = function()
-			if gs_main.quit_menu_open then self.statemanager:switch(require "gs_title") end
+			if self.settings_menu_open then self.statemanager:switch(require "gs_title") end
 		end,
 	})
 
 	gs_main._createButton(self, {
-		name = "quitgameno",
-		image = image.button.quitgameno,
-		image_pushed = image.button.quitgamenopush,
+		name = "cancel",
+		container = gs_main.ui.popup_clickable,
+		image = image.button.cancel,
+		image_pushed = image.button.cancelpush,
 		end_x = -stage.width,
 		end_y = -stage.height,
 		end_transparency = 0,
 		action = function()
-			if gs_main.quit_menu_open then gs_main.quitGameCancel(self) end
+			if self.settings_menu_open then gs_main.quitGameCancel(self) end
 		end,
 	})
 end
@@ -147,7 +151,7 @@ function gs_main:update(dt)
 	timeDip(self, function() self.phaseManager:run(self.timeStep) end)
 	self.particles:update(dt) -- variable fps
 	self.current_background:update(dt) -- variable fps
-	self.ui.timer:update()
+	self.ui.timer:update(dt)
 	self.animations:updateAll(dt)
 	self.screenshake_frames = math.max(0, self.screenshake_frames - 1)
 	self.timeBucket = self.timeBucket + dt
@@ -168,7 +172,7 @@ function gs_main:drawScreenElements()
 	for player in self:players() do
 		self.ui:drawBurst(player)	-- burst meter
 		self.ui:drawSuper(player)	-- super meter
-		player.animation:draw(player.ID == "P2") -- sprite
+		player.animation:draw{h_flip = player.ID == "P2"} -- sprite
 	end
 end
 
@@ -233,7 +237,7 @@ function gs_main:drawGems()
 		love.graphics.setStencilTest("equal", 0)
 		for gem, r in self.grid:gems() do
 			if self.phase == "Action" and r <= 6 then
-				gem:draw(nil, nil, {255, 255, 255, 192})
+				gem:draw{RGBTable = {255, 255, 255, 192}}
 			else
 				gem:draw()
 			end
@@ -344,10 +348,10 @@ function gs_main:drawText()
 end
 
 function gs_main:drawButtons()
-	gs_main.ui.static.quitgameframe:draw()
-	gs_main.ui.static.quitgameconfirm:draw()
-	gs_main.ui.clickable.quitgameyes:draw()
-	gs_main.ui.clickable.quitgameno:draw()
+	gs_main.ui.popup_static.settingsframe:draw()
+	gs_main.ui.popup_static.settingstext:draw()
+	gs_main.ui.popup_clickable.confirm:draw()
+	gs_main.ui.popup_clickable.cancel:draw()
 	gs_main.ui.clickable.settings:draw()
 end
 

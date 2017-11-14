@@ -96,9 +96,12 @@ function Gem:landedInStagingArea(place_type, owner)
 		if player.place_type == "double" then
 			particles.words.generateDoublecast(self.game, player)
 			self.game.sound:newSFX("sfx_doublecast")
+			self.game.sound:newSFX("sfx_fountaindoublecast")
+
 		elseif player.place_type == "rush" then
 			particles.words.generateRush(self.game, player)
 			self.game.sound:newSFX("sfx_rush")
+			self.game.sound:newSFX("sfx_fountainrush")
 		end
 	end
 	if place_type == "double" then
@@ -110,20 +113,17 @@ function Gem:landedInStagingArea(place_type, owner)
 	end
 end
 
-function Gem:draw(pivot_x, pivot_y, RGBTable, rotation, displace_x, displace_y)
+-- custom function to handle rotation around pivot
+function Gem:draw(params)
+	params = params or {}
 	love.graphics.push("all")
-		if RGBTable then love.graphics.setColor(RGBTable) end
-
-		love.graphics.translate(pivot_x or self.x, pivot_y or self.y)
-		love.graphics.translate(-self.width / 2, -self.height / 2)
-
-		if rotation then love.graphics.rotate(rotation) end
-
-		love.graphics.translate(displace_x or 0, displace_y or 0)
-
+		if params.RGBTable then love.graphics.setColor(params.RGBTable) end
+		love.graphics.translate(params.pivot_x or self.x, params.pivot_y or self.y)
+		love.graphics.translate(-self.width * 0.5, -self.height * 0.5)
+		if params.rotation then love.graphics.rotate(params.rotation) end
+		love.graphics.translate(params.displace_x or 0, params.displace_y or 0)
 		-- reverse the rotation so the gem always maintains its orientation
-		if rotation then love.graphics.rotate(-rotation) end
-
+		if params.rotation then love.graphics.rotate(-params.rotation) end
 		love.graphics.draw(self.image, self.quad)
 	love.graphics.pop()
 end

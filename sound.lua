@@ -1,26 +1,7 @@
 local love = _G.love
 local common = require "class.commons"
 
--- sfx as string to filename
--- can put into its own module if it gets big
 local soundfiles = {
-	sfx_gembreak1 = {filename = "sound/gembreak1.ogg"},
-	sfx_gembreak2 = {filename = "sound/gembreak2.ogg"},
-	sfx_gembreak3 = {filename = "sound/gembreak3.ogg"},
-	sfx_gembreak4 = {filename = "sound/gembreak4.ogg"},
-	sfx_gembreak5 = {filename = "sound/gembreak5.ogg"},
-	sfx_gemrotate = {filename = "sound/gemrotate.ogg"},
-	sfx_gemdrop = {filename = "sound/gemdrop.ogg"},
-	sfx_rush = {filename = "sound/rush.ogg"},
-	sfx_doublecast = {filename = "sound/doublecast.ogg"},
-	sfx_superactivate = {filename = "sound/superactivate.ogg"},
-	sfx_starbreak = {filename = "sound/starbreak.ogg"},
-	sfx_trashrow = {filename = "sound/trashrow.ogg"},
-	sfx_countdown3 = {filename = "sound/countdown3.ogg"},
-	sfx_countdown2 = {filename = "sound/countdown2.ogg"},
-	sfx_countdown1 = {filename = "sound/countdown1.ogg"},
-	sfx_gofountain = {filename = "sound/gofountain.ogg"},
-
 	bgm_menu = {filename = "music/menu.ogg", loop_from = 34.758, loop_to = 1.655},
 	bgm_heath = {filename = "music/heath.ogg", loop_from = 79.666, loop_to = 3.666},
 	bgm_buzz = {filename = "music/buzz.ogg", loop_from = 70.235, loop_to = 1.058},
@@ -28,10 +9,16 @@ local soundfiles = {
 	bgm_hailey = {filename = "music/hailey.ogg", loop_from = 72.000, loop_to = 2.666},
 	bgm_holly = {filename = "music/holly.ogg", loop_from = 82.000, loop_to = 2.000},
 	bgm_ivy = {filename = "music/ivy.ogg", loop_from = 65.142, loop_to = 3.428},
-
-	button = {filename = "sound/button.ogg"},
-	button_back = {filename = "sound/buttonback.ogg"},
 }
+
+local sfx_files = {"button", "buttonback", "buttonsuper", "buttonbacksuper",
+	"buttoncharacter", "gembreak1", "gembreak2", "gembreak3", "gembreak4",
+	"gembreak5", "gemrotate", "gemdrop", "rush", "doublecast", "fountaingo",
+	"fountainrush", "fountaindoublecast", "superactivate", "starbreak",
+	"trashrow", "countdown3", "countdown2", "countdown1"}
+for _, v in pairs(sfx_files) do
+	soundfiles["sfx_" .. v] = {filename = "sound/" .. v .. ".ogg"}
+end
 
 -------------------------------------------------------------------------------
 local SoundObject = {}

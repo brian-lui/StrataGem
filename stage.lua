@@ -72,6 +72,7 @@ function stage:init(game)
 	}
 
 	self.timer = {x = self.x_mid, y = self.height * 0.3}
+	self.timertext = {x = self.x_mid, y = self.height * 0.28}
 
 	self.tub = {x = self.x_mid, y = self.height * 0.646}
 	self.settings_button = {x = self.x_mid, y = self.height * 0.957}

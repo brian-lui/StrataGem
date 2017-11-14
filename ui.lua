@@ -10,8 +10,6 @@ TIMER COMPONENT
 
 local Timer = {}
 
-Timer.FADE_SPEED = 15
-
 function Timer:init(game)
 	local stage = game.stage
 	self.game = game
@@ -19,56 +17,51 @@ function Timer:init(game)
 	self.text_scaling = function(t) return math.max(1 / (t * 2 + 0.4), 1) end
 	self.text_transparency = function(t) return math.min(255 * 2.5 * t, 255) end
 	self.time_remaining_int = 0
-	self.text_x = stage.x_mid
-	self.text_y = stage.height * 0.28
-
-	self.timerbase = common.instance(Pic, game, {x = stage.timer.x, y = stage.timer.y, image = image.UI.timer_gauge})
-	self.timerbar = common.instance(Pic, game, {x = stage.timer.x, y = stage.timer.y, image = image.UI.timer_bar, transparency = 255})
+	self.text_multiplier = 2 -- how much to speed it up relative to an actual second
+	self.FADE_SPEED = 15 -- transparency/frame to fade out at timer end
+	self.timerbase = common.instance(Pic, game,
+		{x = stage.timer.x, y = stage.timer.y, image = image.UI.timer_gauge})
+	self.timerbar = common.instance(Pic, game,
+		{x = stage.timer.x, y = stage.timer.y, image = image.UI.timer_bar})
+	self.timertext = common.instance(Pic, game,
+		{x = stage.timertext.x, y = stage.timertext.y, image = image.dummy})
 end
 
-function Timer:update()
+function Timer:update(dt)
 	-- set percentage of timer to show
-	local percent = (self.game.time_to_next / self.game.INIT_TIME_TO_NEXT)
-	local timerBarWidth = self.timerbar.width
-	local timerBarHeight = self.timerbar.height
-	local bar_width = percent * timerBarWidth
-	self.draw_offset = (1 - percent) * 0.5 * timerBarWidth
-	self.timerbar.quad = love.graphics.newQuad(0, 0, bar_width, timerBarHeight, timerBarWidth, timerBarHeight)
+	local w = (self.game.time_to_next / self.game.INIT_TIME_TO_NEXT) * self.timerbar.width
+	local x_offset = (self.timerbar.width - w) * 0.5
+	self.timerbar:setQuad(x_offset, 0, w, self.timerbar.height)
 
-	-- fade in/out
-	if percent == 0 then
+	if self.game.time_to_next == 0 then -- fade out
 		self.timerbar.transparency = math.max(self.timerbar.transparency - self.FADE_SPEED, 0)
-	else
+	else -- fade in
 		self.timerbar.transparency = math.min(self.timerbar.transparency + self.FADE_SPEED, 255)
 	end
-	self.timerbase.transparency = self.transparency
-end
+	self.timerbase.transparency = self.timerbar.transparency
 
-local function drawTimerText(self)
-	local multiplier = 2 -- how much to speed it up relative to an actual second
+	-- update the timer text (3/2/1 countdown)
 	local previous_time_remaining_int = self.time_remaining_int
 	local time_remaining = (self.game.time_to_next * self.game.timeStep)
-	self.time_remaining_int = math.ceil(time_remaining * multiplier)
+	self.time_remaining_int = math.ceil(time_remaining * self.text_multiplier)
 
-	if time_remaining <= (3 / multiplier) and time_remaining > 0 then
-		local todraw = image.UI.timer[self.time_remaining_int]
-		local w, h = todraw:getWidth(), todraw:getHeight()
-		local t = self.time_remaining_int - time_remaining * multiplier
-		local scale = self.text_scaling(t)
-		love.graphics.push("all")
-			love.graphics.setColor(255, 255, 255, self.text_transparency(t))
-			love.graphics.draw(todraw, self.text_x, self.text_y, 0, scale, scale, w/2, h/2)
-		love.graphics.pop()
+	if time_remaining <= (3 / self.text_multiplier) and time_remaining > 0 then
+		local t = self.time_remaining_int - time_remaining * self.text_multiplier
+		self.timertext.scaling = self.text_scaling(t)
+		self.timertext.transparency = self.text_transparency(t)
 		if self.time_remaining_int < previous_time_remaining_int then
+			self.timertext:newImage(image.UI.timer[self.time_remaining_int])
 			self.game.sound:newSFX("sfx_countdown"..self.time_remaining_int)
 		end
+	else
+		self.timertext.transparency = 0
 	end
 end
 
 function Timer:draw()
 	self.timerbase:draw()
-	self.timerbar:draw(nil, self.draw_offset + self.timerbar.x) -- centered timer bar
-	drawTimerText(self)
+	self.timerbar:draw()
+	self.timertext:draw()
 end
 
 Timer = common.class("Timer", Timer)
@@ -154,7 +147,7 @@ local function drawUnderGemShadow(self, piece)
 	for i = 1, piece.size do
 		local gem_shadow_x = piece.gems[i].x + 0.1 * stage.gem_width
 		local gem_shadow_y = piece.gems[i].y + 0.1 * stage.gem_height
-		piece.gems[i]:draw(gem_shadow_x, gem_shadow_y, {0, 0, 0, 24})
+		piece.gems[i]:draw{pivot_x = gem_shadow_x, pivot_y = gem_shadow_y, RGBTable = {0, 0, 0, 24}}
 	end
 end
 
@@ -179,17 +172,9 @@ local function drawPlacementShadow(self, piece, shift)
 			show[i].y = grid.y[i + row_adj]
 		end
 		if show[i].x and show[i].y then
-			piece.gems[i]:draw(show[i].x, show[i].y, {0, 0, 0, 128})
+			piece.gems[i]:draw{pivot_x = show[i].x, pivot_y = show[i].y, RGBTable = {0, 0, 0, 128}}
 		end
 	end
-end
-
--- draws the gem shadows indicating where the piece will land.
-local function drawDoublecastGemShadow(self, gem, row)
-	local dropped_row = row --self.game.grid:getFirstEmptyRow(gem.column)
-	-- gem:draw takes a y value relative to the gem's y-value
-	local dropped_y = self.game.grid.y[dropped_row] - gem.y
-	gem:draw(nil, nil, {255, 255, 255, 160}, nil, 0, dropped_y)
 end
 
 -- draws the gem shadows indicating where the piece will land.
@@ -214,9 +199,14 @@ local function drawDestinationShadow(self, piece, shift, account_for_doublecast)
 		toshow[i].x = grid.x[ drop_locs[i][1] ] -- tub c column
 		toshow[i].y = grid.y[ drop_locs[i][2] ] -- tub r row
 		if toshow[i].x and toshow[i].y then
-			piece.gems[i]:draw(toshow[i].x, toshow[i].y, {255, 255, 255, 160})
+			piece.gems[i]:draw{pivot_x = toshow[i].x, pivot_y = toshow[i].y, RGBTable = {255, 255, 255, 160}}
 		end
 	end
+end
+
+-- draws the gem shadows indicating where the piece will land.
+local function drawDoublecastGemShadow(self, gem, row)
+	gem:draw{RGBTable = {255, 255, 255, 160}, displace_y = self.game.grid.y[row] - gem.y}
 end
 
 -- show all the possible shadows!
@@ -255,7 +245,7 @@ function ui:showX(piece)
 
 	for i = piece.size, 1, -1 do
 		if (legal or midline) and not valid then
-			self.redX:draw(nil, piece.gems[i].x, piece.gems[i].y)
+			self.redX:draw{x = piece.gems[i].x, y = piece.gems[i].y}
 		end
 	end
 end

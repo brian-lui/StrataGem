@@ -17,6 +17,7 @@ function GemPlatform:init(game, owner, location)
 	self.getx = owner.hand.getx
 	self.transparency, self.redness, self.rotation = 255, 0, 0
 	self.spin = 0	-- radians per frame
+	self.h_shake, self.v_shake = 0, 0 -- screenshake from particles hitting platform
 end
 
 function GemPlatform:draw()
@@ -33,7 +34,7 @@ function GemPlatform:draw()
 		Pic.draw(self)
 		if self.redness > 0 then
 			local redRGB = {255, 255, 255, math.min(self.redness, self.transparency)}
-			Pic.draw(self, nil, nil, nil, nil, nil, redRGB, image.UI.platform_red)
+			Pic.draw(self, {RGBTable = redRGB, img = image.UI.platform_red})
 		end
 	love.graphics.pop()
 end

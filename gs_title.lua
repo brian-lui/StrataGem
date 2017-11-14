@@ -16,11 +16,11 @@ local title = {}
 
 -- refer to game.lua for instructions for createButton and createImage
 function title:createButton(params)
-	return self:_createButton(params, title)
+	return self:_createButton(title, params)
 end
 
 function title:createImage(params)
-	return self:_createImage(params, title)
+	return self:_createImage(title, params)
 end
 
 -- After the initial tween, we keep the icons here if returning to title screen
@@ -29,6 +29,7 @@ function title:init()
 	local stage = self.stage	
 	self.timeStep, self.timeBucket = 1/60, 0
 	title.ui = {clickable = {}, static = {}, popup_clickable = {}, popup_static = {}}
+	self:_createSettingsMenu(title)
 
 	title.createButton(self, {
 		name = "vscpu",
@@ -74,92 +75,21 @@ function title:init()
 		end},
 	})
 
-	title.createButton(self, {
-		name = "settings",
-		image = image.button.settings,
-		image_pushed = image.button.settingspush,
-		end_x = stage.width - image.button.settings:getWidth() * 0.5,
-		end_y = stage.height - image.button.settings:getHeight() * 0.5,
-		action = function()
-			if not title.settings_menu_open then title.openSettings(self) end
-		end,
-	})
-
-	title.createImage(self, {
-		name = "quitgameconfirm",
-		container = title.ui.popup_static,
-		image = image.unclickable.main_quitconfirm,
-		end_x = stage.width * 0.5,
-		end_y = stage.height * 0.4,
-		end_transparency = 0,
-	})
-
-	title.createImage(self, {
-		name = "quitgameframe",
-		container = title.ui.popup_static,
-		image = image.unclickable.main_quitframe,
-		end_x = stage.width * 0.5,
-		end_y = stage.height * 0.5,
-		end_transparency = 0,
-	})
-
-	title.createButton(self, {
-		name = "quitgameyes",
-		container = title.ui.popup_clickable,
-		image = image.button.quitgameyes,
-		image_pushed = image.button.quitgameyespush,
-		end_x = -stage.width,
-		end_y = -stage.height,
-		end_transparency = 0,
-		action = function()
-			if title.settings_menu_open then love.event.quit() end
-		end,
-	})
-
-	title.createButton(self, {
-		name = "quitgameno",
-		container = title.ui.popup_clickable,
-		image = image.button.quitgameno,
-		image_pushed = image.button.quitgamenopush,
-		end_x = -stage.width,
-		end_y = -stage.height,
-		end_transparency = 0,
-		action = function()
-			if title.settings_menu_open then title.openSettingsCancel(self) end
-		end,
-	})
-
 end
 
 function title:enter()
 	title.clicked = nil
-	title.settings_menu_open = false
+	self.settings_menu_open = false
 	if self.sound:getCurrentBGM() ~= "bgm_menu" then self.sound:stopBGM() end
 	title.current_background = common.instance(self.background.rabbitsnowstorm, self)
 end
 
-function title:openSettings()
-	local stage = self.stage
-	title.settings_menu_open = true
-
-	title.ui.popup_clickable.quitgameyes:change{x = stage.width * 0.45, y = stage.height * 0.6}
-	title.ui.popup_clickable.quitgameyes:change{duration = 15, transparency = 255}
-	title.ui.popup_clickable.quitgameno:change{x = stage.width * 0.55, y = stage.height * 0.6}
-	title.ui.popup_clickable.quitgameno:change{duration = 15, transparency = 255}
-	title.ui.popup_static.quitgameconfirm:change{duration = 15, transparency = 255}
-	title.ui.popup_static.quitgameframe:change{duration = 15, transparency = 255}
+function title:openSettingsMenu()
+	self:_openSettingsMenu(title)
 end
 
-function title:openSettingsCancel()
-	local stage = self.stage
-	title.settings_menu_open = false
-
-	title.ui.popup_clickable.quitgameyes:change{duration = 10, transparency = 0}
-	title.ui.popup_clickable.quitgameyes:change{x = -stage.width, y = -stage.height}
-	title.ui.popup_clickable.quitgameno:change{duration = 10, transparency = 0}
-	title.ui.popup_clickable.quitgameno:change{x = -stage.width, y = -stage.height}
-	title.ui.popup_static.quitgameconfirm:change{duration = 10, transparency = 0}
-	title.ui.popup_static.quitgameframe:change{duration = 10, transparency = 0}
+function title:closeSettingsMenu()
+	self:_closeSettingsMenu(title)
 end
 
 function title:update(dt)
@@ -170,11 +100,13 @@ function title:update(dt)
 end
 
 function title:draw()
-	title.current_background:draw()
-	for _, v in pairs(title.ui.static) do v:draw() end
-	for _, v in pairs(title.ui.clickable) do v:draw() end
-	title.ui.popup_static.quitgameframe:draw()
-	title.ui.popup_static.quitgameconfirm:draw()
+	local darkened = self.settings_menu_open
+	title.current_background:draw{darkened = darkened}
+	for _, v in pairs(title.ui.static) do v:draw{darkened = darkened} end
+	for _, v in pairs(title.ui.clickable) do v:draw{darkened = darkened} end
+
+	title.ui.popup_static.settingsframe:draw()
+	title.ui.popup_static.settingstext:draw()
 	for _, v in pairs(title.ui.popup_clickable) do v:draw() end
 end
 

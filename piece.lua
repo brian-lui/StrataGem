@@ -117,6 +117,7 @@ function Piece:rotate()
 	local new_rotation = self.rotation
 	self.rotation = self.rotation - (0.5 * math.pi)
 	self._rotateTween = tween.new(1, self, {rotation = new_rotation}, 'outExpo')
+
 	self.game.sound:newSFX("sfx_gemrotate")
 end
 
@@ -151,7 +152,8 @@ function Piece:draw()
 			else
 				displace_y = stage.gem_height * (i - (1 + self.size) * 0.5)
 			end
-			self.gems[i]:draw(self.x, self.y, nil, self.rotation, displace_x, displace_y)
+			self.gems[i]:draw{pivot_x = self.x, pivot_y = self.y, rotation = self.rotation,
+				displace_x = displace_x, displace_y = displace_y}
 		end
 	love.graphics.pop()
 end
