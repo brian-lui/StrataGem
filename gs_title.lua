@@ -80,7 +80,13 @@ end
 function title:enter()
 	title.clicked = nil
 	self.settings_menu_open = false
-	if self.sound:getCurrentBGM() ~= "bgm_menu" then self.sound:stopBGM() end
+	if self.sound:getCurrentBGM() ~= "bgm_menu" then
+		self.sound:stopBGM()
+		title.ui.static.logo:change{duration = 45,
+			exit = {function() if self.sound:getCurrentBGM() ~= "bgm_menu" then
+			 	self.sound:newBGM("bgm_menu", true)
+			end end}}
+	end
 	title.current_background = common.instance(self.background.rabbitsnowstorm, self)
 end
 

@@ -238,7 +238,6 @@ function gs_main:drawGems()
 
 	-- uptween gems
 	for _, v in pairs(allParticles.UpGem) do v:draw() end
-
 end
 
 -- draw text items

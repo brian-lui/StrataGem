@@ -58,10 +58,10 @@ function Game:init()
 	self.debug_drawGamestate = true
 	self.debug_drawDamage = true
 	self.debug_drawGrid = true
-
+	
+	self.rng = love.math.newRandomGenerator()
 	self.unittests = common.instance(require "unittests", self) -- debug testing
 	self.phaseManager = common.instance(require "phasemanager", self)
-	self.rng = love.math.newRandomGenerator()
 	self.sound = common.instance(require "sound", self)
 	self.stage = common.instance(require "stage", self)	-- playing field area and grid
 	self.grid = common.instance(require "grid", self)
@@ -251,7 +251,6 @@ function Game:_createSettingsMenu(gamestate, params)
 	local settings_pushed_icon = params.settings_iconpush or image.button.settingspush
 	local settings_text = params.settings_text or image.unclickable.settingstext
 
-	for k, v in pairs(stage.settings_button) do print(k, v) end
 	self:_createButton(gamestate, {
 		name = "settings",
 		image = settings_icon,
