@@ -20,7 +20,7 @@ function GemPlatform:init(game, owner, location)
 	self.h_shake, self.v_shake = 0, 0 -- screenshake from particles hitting platform
 end
 
-function GemPlatform:draw()
+function GemPlatform:draw(...)
 	local frame = self.game.frame
 	--screen shake translation
 	local h_shake, v_shake = 0, 0
@@ -31,7 +31,7 @@ function GemPlatform:draw()
 
 	love.graphics.push("all")
 		love.graphics.translate(h_shake, v_shake)
-		Pic.draw(self)
+		Pic.draw(self, ...)
 		if self.redness > 0 then
 			local redRGB = {255, 255, 255, math.min(self.redness, self.transparency)}
 			Pic.draw(self, {RGBTable = redRGB, img = image.UI.platform_red})

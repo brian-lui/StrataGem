@@ -23,4 +23,7 @@ Diggory.burst_images = {
 	glow = {image.UI.burst.blue_glow1, image.UI.burst.blue_glow2}
 }
 
+Diggory.sounds = {
+	bgm = "bgm_diggory",
+}
 return common.class("Diggory", Diggory, Character)

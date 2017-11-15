@@ -86,7 +86,7 @@ end
 -- shown super meter is less than the actual super meter when super particles are on screen
 -- as particles disappear, they visually go into the super meter
 
-function ui:drawSuper(player)
+function ui:drawSuper(player, ...)
 	local destroyedParticles = self.game.particles:getCount("destroyed", "MP", player.playerNum)
 
 	local displayed_mp = math.min(player.MAX_MP, player.turn_start_mp + destroyedParticles)
@@ -94,22 +94,22 @@ function ui:drawSuper(player)
 	local img = player.super_meter_image
 	img:setQuad(0, img.height * (1 - fill_percent), img.width, img.height * fill_percent)
 
-	player.super_frame:draw()	-- super frame
-	img:draw()	-- super meter
+	player.super_frame:draw(...)	-- super frame
+	img:draw(...)	-- super meter
 
 	if player.supering then
 		player.super_glow.transparency = 255
-		player.super_glow:draw()
-		player.super_word:draw()
+		player.super_glow:draw(...)
+		player.super_word:draw(...)
 	elseif displayed_mp >= player.SUPER_COST then
 		player.super_glow.transparency = math.ceil(math.sin(self.game.frame / 30) * 127.5 + 127.5)
-		player.super_glow:draw()
+		player.super_glow:draw(...)
 	end
 
-	player.super_overlay:draw()
+	player.super_overlay:draw(...)
 end
 
-function ui:drawBurst(player)
+function ui:drawBurst(player, ...)
 	local max_segs = 2
 	local full_segs = (player.cur_burst / player.MAX_BURST) * max_segs
 	local full_segs_int = math.floor(full_segs)
@@ -123,21 +123,21 @@ function ui:drawBurst(player)
 		part_fill_block:setQuad(start, 0, width, part_fill_block.height)
 	end
 
-	player.burst_frame:draw()
+	player.burst_frame:draw(...)
 
 	-- super meter
 	for i = 1, max_segs do
 		if full_segs >= i then
-			player.burst_block[i]:draw()
+			player.burst_block[i]:draw(...)
 		elseif full_segs + 1 > i then
-			player.burst_partial[i]:draw()
+			player.burst_partial[i]:draw(...)
 		end
 	end
 
 	-- glow
 	if full_segs >= 1 then
 		player.burst_glow[full_segs_int].transparency = math.sin(self.game.frame / 30) * 127.5 + 127.5
-		player.burst_glow[full_segs_int]:draw()
+		player.burst_glow[full_segs_int]:draw(...)
 	end
 end
 

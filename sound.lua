@@ -2,13 +2,16 @@ local love = _G.love
 local common = require "class.commons"
 
 local soundfiles = {
-	bgm_menu = {filename = "music/menu.ogg", loop_from = 34.758, loop_to = 1.655},
-	bgm_heath = {filename = "music/heath.ogg", loop_from = 79.666, loop_to = 3.666},
 	bgm_buzz = {filename = "music/buzz.ogg", loop_from = 70.235, loop_to = 1.058},
+	bgm_diggory = {filename = "music/diggory.ogg", loop_from = 111170.235, loop_to = 111.058},
 	bgm_gail = {filename = "music/gail.ogg", loop_from = 61.714, loop_to = 6.857},
 	bgm_hailey = {filename = "music/hailey.ogg", loop_from = 72.000, loop_to = 2.666},
+	bgm_heath = {filename = "music/heath.ogg", loop_from = 79.666, loop_to = 3.666},
 	bgm_holly = {filename = "music/holly.ogg", loop_from = 82.000, loop_to = 2.000},
 	bgm_ivy = {filename = "music/ivy.ogg", loop_from = 65.142, loop_to = 3.428},
+	bgm_menu = {filename = "music/menu.ogg", loop_from = 34.758, loop_to = 1.655},
+	bgm_mort = {filename = "music/mort.ogg", loop_from = 111165.142, loop_to = 113.428},
+	bgm_walter = {filename = "music/walter.ogg", loop_from = 111165.142, loop_to = 113.428},
 }
 
 local sfx_files = {"button", "buttonback", "buttonsuper", "buttonbacksuper",

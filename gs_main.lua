@@ -8,12 +8,6 @@ local pointIsInRect = require "utilities".pointIsInRect
 local gs_main = {name = "gs_main"}
 
 function gs_main:init()
-	-- canvas is not currently used. We can use it for dimming the screen when
-	-- clicking on the options menu
-	self.canvas = {
-		background = love.graphics.newCanvas(),
-		foreground = love.graphics.newCanvas(),
-	}
 	self.camera = common.instance(require "camera")
 	gs_main.ui = {clickable = {}, static = {}, popup_clickable = {}, popup_static = {}}
 end
@@ -25,31 +19,6 @@ end
 
 function gs_main:_createImage(params)
 	return self:_createImage(gs_main, params)
-end
-
-function gs_main:quitGame()
-	local stage = self.stage
-	self.settings_menu_open = true
-	if self.type == "1P" then self.paused = true end
-
-	gs_main.ui.popup_clickable.confirm:change{x = stage.width * 0.45, y = stage.height * 0.6}
-	gs_main.ui.popup_clickable.confirm:change{duration = 15, transparency = 255}
-	gs_main.ui.popup_clickable.cancel:change{x = stage.width * 0.55, y = stage.height * 0.6}
-	gs_main.ui.popup_clickable.cancel:change{duration = 15, transparency = 255}
-	gs_main.ui.popup_static.settingstext:change{duration = 15, transparency = 255}
-	gs_main.ui.popup_static.settingsframe:change{duration = 15, transparency = 255}
-end
-
-function gs_main:quitGameCancel()
-	local stage = self.stage
-	self.settings_menu_open = false
-	if self.type == "1P" then self.paused = false end
-	gs_main.ui.popup_clickable.confirm:change{duration = 10, transparency = 0}
-	gs_main.ui.popup_clickable.confirm:change{x = -stage.width, y = -stage.height}
-	gs_main.ui.popup_clickable.cancel:change{duration = 10, transparency = 0}
-	gs_main.ui.popup_clickable.cancel:change{x = -stage.width, y = -stage.height}
-	gs_main.ui.popup_static.settingstext:change{duration = 10, transparency = 0}
-	gs_main.ui.popup_static.settingsframe:change{duration = 10, transparency = 0}
 end
 
 function gs_main:enter()
@@ -82,6 +51,41 @@ function gs_main:enter()
 		end_x = stage.tub.x,
 		end_y = stage.tub.y,
 	})
+
+	-- burst meter objects
+	local BURST_SEGMENTS = 2
+	for player in self:players() do
+		local ID = player.ID
+		local burst_frame_img = ID == "P1" and image.UI.gauge_gold or image.UI.gauge_silver
+		gs_main._createImage(self, {
+			name = ID .. "burstframe",
+			image = burst_frame_img,
+			end_x = stage.burst[ID].frame.x,
+			end_y = stage.burst[ID].frame.y,
+		})
+
+		for i = 1, BURST_SEGMENTS do
+			gs_main._createImage(self, {
+				name = ID .. "burstblock" .. i,
+				image = player.burst_images.full,
+				end_x = stage.burst[ID][i].x,
+				end_y = stage.burst[ID][i].y,
+			})
+			gs_main._createImage(self, {
+				name = ID .. "burstpartial" .. i,
+				image = player.burst_images.partial,
+				end_x = stage.burst[ID][i].x,
+				end_y = stage.burst[ID][i].y,
+			})
+			gs_main._createImage(self, {
+				name = ID .. "burstglow" .. i,
+				image = player.burst_images.glow[i],
+				end_x = stage.burst[ID][i].glow_x,
+				end_y = stage.burst[ID][i].glow_y,
+			})
+		end
+
+
 end
 
 function gs_main:openSettingsMenu()
@@ -124,16 +128,16 @@ function gs_main:update(dt)
 end
 
 -- draw all the non-gem screen elements: super bar, sprite
-function gs_main:drawScreenElements()
+function gs_main:drawScreenElements(...)
 	-- under-platform trails
-	for _, v in pairs(self.particles.allParticles.PlatformTinyStar) do v:draw() end
-	for _, v in pairs(self.particles.allParticles.PlatformStar) do v:draw() end
-	gs_main.ui.static.tub:draw()
-	self.ui.timer:draw()	-- timer bar
+	for _, v in pairs(self.particles.allParticles.PlatformTinyStar) do v:draw(...) end
+	for _, v in pairs(self.particles.allParticles.PlatformStar) do v:draw(...) end
+	gs_main.ui.static.tub:draw(...)
+	self.ui.timer:draw(...)	-- timer bar
 
 	for player in self:players() do
-		self.ui:drawBurst(player)	-- burst meter
-		self.ui:drawSuper(player)	-- super meter
+		self.ui:drawBurst(player, ...)	-- burst meter TODO: darkened
+		self.ui:drawSuper(player, ...)	-- super meter
 		player.animation:draw{h_flip = player.ID == "P2"} -- sprite
 	end
 end
@@ -148,21 +152,21 @@ function gs_main.screenshake(self, shake)
 end
 
 -- draw gems and related objects (platforms, particles)
-function gs_main:drawGems()
+function gs_main:drawGems(...)
 	local allParticles = self.particles.allParticles
 	-- gem platforms
 	for player in self:players() do
 		for i = 0, #player.hand do
 			if player.hand[i].platform then
-				player.hand[i].platform:draw()
+				player.hand[i].platform:draw(...)
 			end
 		end
 	end
 
 	-- under-gem particles
-	for _, instance in pairs(allParticles.WordEffects) do instance:draw() end
-	for _, instance in pairs(allParticles.Dust) do instance:draw() end
-	for _, instance in pairs(allParticles.Pop) do instance:draw() end
+	for _, instance in pairs(allParticles.WordEffects) do instance:draw(...) end
+	for _, instance in pairs(allParticles.Dust) do instance:draw(...) end
+	for _, instance in pairs(allParticles.Pop) do instance:draw(...) end
 
 
 	-- hand gems and pending-garbage gems
@@ -170,12 +174,12 @@ function gs_main:drawGems()
 		for i = 1, player.hand_size do
 			if player.hand[i].piece and player.hand[i].piece ~= self.active_piece then
 				for _ = 1, player.hand[i].piece.size do
-						player.hand[i].piece:draw()
+						player.hand[i].piece:draw(...)
 				end
 			end
 		end
 		for i = 1, #player.hand.garbage do
-			player.hand.garbage[i]:draw()
+			player.hand.garbage[i]:draw(...)
 		end
 	end
 
@@ -199,26 +203,26 @@ function gs_main:drawGems()
 		love.graphics.setStencilTest("equal", 0)
 		for gem, r in self.grid:gems() do
 			if self.phase == "Action" and r <= 6 then
-				gem:draw{RGBTable = {255, 255, 255, 192}}
+				gem:draw{RGBTable = {255, 255, 255, 192}} -- TODO: make this darkened too
 			else
-				gem:draw()
+				gem:draw(...)
 			end
 		end
 		love.graphics.setStencilTest()
 	love.graphics.pop()
 
 	-- over-gem particles
-	for _, v in pairs(allParticles.SuperParticles) do v:draw() end
-	for _, v in pairs(allParticles.DamageTrail) do v:draw() end
-	for _, v in pairs(allParticles.GarbageParticles) do v:draw() end
-	for _, v in pairs(allParticles.Damage) do v:draw() end
-	for _, v in pairs(allParticles.ExplodingGem) do v:draw() end
-	for _, v in pairs(allParticles.PieEffects) do v:draw() end
-	for _, v in pairs(allParticles.CharEffects) do v:draw() end
+	for _, v in pairs(allParticles.SuperParticles) do v:draw(...) end
+	for _, v in pairs(allParticles.DamageTrail) do v:draw(...) end
+	for _, v in pairs(allParticles.GarbageParticles) do v:draw(...) end
+	for _, v in pairs(allParticles.Damage) do v:draw(...) end
+	for _, v in pairs(allParticles.ExplodingGem) do v:draw(...) end
+	for _, v in pairs(allParticles.PieEffects) do v:draw(...) end
+	for _, v in pairs(allParticles.CharEffects) do v:draw(...) end
 	for i = 1, 3 do
 		for _, v in pairs(allParticles.SuperFreezeEffects) do
 			if v.draw_order == i then
-				v:draw()
+				v:draw(...)
 			end
 		end
 	end
@@ -226,26 +230,26 @@ function gs_main:drawGems()
 	-- draw the gem when it's been grabbed by the player
 	if self.active_piece then
 		self.ui:showShadows(self.active_piece)
-		self.active_piece:draw()
+		self.active_piece:draw(...)
 		self.ui:showX(self.active_piece)
 	end
 
 	-- over-dust
-	for _, v in pairs(allParticles.OverDust) do v:draw() end
+	for _, v in pairs(allParticles.OverDust) do v:draw(...) end
 
 	-- exploded platform pieces
-	for _, v in pairs(allParticles.ExplodingPlatform) do v:draw() end
+	for _, v in pairs(allParticles.ExplodingPlatform) do v:draw(...) end
 
 	-- uptween gems
-	for _, v in pairs(allParticles.UpGem) do v:draw() end
+	for _, v in pairs(allParticles.UpGem) do v:draw(...) end
 end
 
 -- draw text items
-function gs_main:drawText()
+function gs_main:drawText(...)
 	local grid = self.grid
 	-- words
 	for _, v in pairs(self.particles.allParticles.Words) do
-		v:draw()
+		v:draw(...)
 	end
 
 	-- debug: row/column display
@@ -308,17 +312,25 @@ function gs_main:drawText()
 	love.graphics.pop()
 end
 
-function gs_main:drawButtons()
-	gs_main.ui.popup_static.settingsframe:draw()
-	gs_main.ui.popup_static.settingstext:draw()
-	gs_main.ui.popup_clickable.confirm:draw()
-	gs_main.ui.popup_clickable.cancel:draw()
-	gs_main.ui.clickable.settings:draw()
+function gs_main:drawButtons(...)
+	gs_main.ui.popup_static.settingsframe:draw(...)
+	gs_main.ui.popup_static.settingstext:draw(...)
+	gs_main.ui.popup_clickable.confirm:draw(...)
+	gs_main.ui.popup_clickable.cancel:draw(...)
+	gs_main.ui.clickable.settings:draw(...)
+end
+
+function gs_main:drawStatic(...)
+	local draws = {"tub", "P1burstframe", "P2burstframe", "P1burstblock1",
+		"P1burstblock2", "P2burstblock1", "P2burstblock2", "P1burstpartial1",
+		"P1burstpartial2", "P2burstpartial1", "P2burstpartial2", "P1burstglow1",
+		"P2burstglow2"}
+	for i = 1, #draws do gs_main.ui.static[ draws[i] ]:draw(...) end
 end
 
 function gs_main:draw()
 	local darkened = self.settings_menu_open
-	gs_main.current_background:draw()
+	gs_main.current_background:draw{darkened = darkened}
 	self.camera:set(1, 1)
 		if self.screenshake_frames > 0 then
 			gs_main.screenshake(self, self.screenshake_vel)
@@ -326,11 +338,14 @@ function gs_main:draw()
 			self.camera:setPosition(0, 0)
 		end
 
-		gs_main.drawScreenElements(self)
-		gs_main.drawGems(self)
-		--gs_main.drawAnimations(self)
+		--for _, v in pairs(gs_main.ui.static) do v:draw{darkened = darkened} end
+		self:drawStatic{darkened = darkened}
+		for _, v in pairs(gs_main.ui.clickable) do v:draw{darkened = darkened} end
+		gs_main.drawScreenElements(self, {darkened = darkened})
+		gs_main.drawGems(self, {darkened = darkened})
+		--gs_main.drawAnimations(self, {darkened = darkened})
 	self.camera:unset()
-	gs_main.drawText(self)
+	gs_main.drawText(self, {darkened = darkened})
 	gs_main.drawButtons(self)
 end
 

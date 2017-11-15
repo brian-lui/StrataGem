@@ -23,4 +23,7 @@ Walter.burst_images = {
 	glow = {image.UI.burst.blue_glow1, image.UI.burst.blue_glow2}
 }
 
+Walter.sounds = {
+	bgm = "bgm_walter",
+}
 return common.class("Walter", Walter, Character)

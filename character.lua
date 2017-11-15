@@ -65,32 +65,24 @@ function Character:init(playerNum, game)
 	self:setup()
 end
 
--- initialize super meter graphics
-local function setupSuperMeter(self)
-	local game = self.game
-	local stage = game.stage
-	self.super_frame = common.instance(Pic, game, {x = stage.super[self.ID].x,
-		y = stage.super[self.ID].y, image = self.super_images.empty})
-	self.super_word = common.instance(Pic, game, {x = stage.super[self.ID].x,
-		y = stage.super[self.ID].word_y, image = self.super_images.word})
-	self.super_meter_image = common.instance(Pic, game, {x = stage.super[self.ID].x,
-		y = stage.super[self.ID].y, image = self.super_images.full})
-	self.super_glow = common.instance(Pic, game, {x = stage.super[self.ID].x,
-		y = stage.super[self.ID].y, image = self.super_images.glow})
-	self.super_overlay = common.instance(Pic, game, {x = stage.super[self.ID].x,
-		y = stage.super[self.ID].y, image = self.super_images.overlay})
+function Character:addSuper(amt)
+	self.mp = math.min(self.mp + amt, self.MAX_MP)
 end
 
--- initialize burst meter graphics
-local function setupBurstMeter(self)
+-- do those things to set up the character. Called at start of match
+function Character:setup()
 	local stage = self.game.stage
-	local burst_frame = self.ID == "P1" and image.UI.gauge_gold or image.UI.gauge_silver
+
+	self.hand = common.instance(Hand, self.game, self)
+	self.hand:makeInitialPieces()
+--[[
+	-- burst meter
+	local burst_frame_img = self.ID == "P1" and image.UI.gauge_gold or image.UI.gauge_silver
+	local BURST_SEGMENTS = 2
 	self.burst_frame = common.instance(Pic, self.game, {x = stage.burst[self.ID].frame.x,
-		y = stage.burst[self.ID].frame.y, image = burst_frame})
-	self.burst_block = {}
-	self.burst_partial = {}
-	self.burst_glow = {}
-	for i = 1, 2 do -- two segments for super meter
+		y = stage.burst[self.ID].frame.y, image = burst_frame_img})
+	self.burst_block, self.burst_partial, self.burst_glow = {}, {}, {}
+	for i = 1, BURST_SEGMENTS do
 		self.burst_block[i] = common.instance(Pic, self.game, {x = stage.burst[self.ID][i].x,
 			y = stage.burst[self.ID][i].y, image = self.burst_images.full})
 		self.burst_partial[i] = common.instance(Pic, self.game, {x = stage.burst[self.ID][i].x,
@@ -98,25 +90,23 @@ local function setupBurstMeter(self)
 		self.burst_glow[i] = common.instance(Pic, self.game, {x = stage.burst[self.ID][i].glow_x,
 			y = stage.burst[self.ID][i].glow_y, image = self.burst_images.glow[i]})
 	end
-end
+--]]
+	-- super meter
+	self.super_frame = common.instance(Pic, self.game, {x = stage.super[self.ID].x,
+		y = stage.super[self.ID].y, image = self.super_images.empty})
+	self.super_word = common.instance(Pic, self.game, {x = stage.super[self.ID].x,
+		y = stage.super[self.ID].word_y, image = self.super_images.word})
+	self.super_meter_image = common.instance(Pic, self.game, {x = stage.super[self.ID].x,
+		y = stage.super[self.ID].y, image = self.super_images.full})
+	self.super_glow = common.instance(Pic, self.game, {x = stage.super[self.ID].x,
+		y = stage.super[self.ID].y, image = self.super_images.glow})
+	self.super_overlay = common.instance(Pic, self.game, {x = stage.super[self.ID].x,
+		y = stage.super[self.ID].y, image = self.super_images.overlay})
 
--- placeholder, waiting for animations
-local function createCharacterAnimation(self)
+	-- character animation placeholder, waiting for animations
 	self.animation = common.instance(Pic, self.game, {x = self.game.stage.character[self.ID].x,
 	y = self.game.stage.character[self.ID].y, image = self.small_image})
-end
 
-function Character:addSuper(amt)
-	self.mp = math.min(self.mp + amt, self.MAX_MP)
-end
-
--- do those things to set up the character. Called at start of match
-function Character:setup()
-	self.hand = common.instance(Hand, self.game, self)
-	self.hand:makeInitialPieces()
-	setupBurstMeter(self)
-	setupSuperMeter(self)
-	createCharacterAnimation(self)
 end
 
 function Character:actionPhase(dt)
