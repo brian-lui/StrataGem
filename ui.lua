@@ -141,16 +141,8 @@ function ui:updateBurst(player, gamestate)
 
 	-- glow
 	local glow_amount = math.sin(self.game.frame / 30) * 127.5 + 127.5
-	if full_segs_int == 0 then
-		gamestate.ui.static[ID .. "burstglow1"].transparency = 0
-		gamestate.ui.static[ID .. "burstglow2"].transparency = 0
-	elseif full_segs_int == 1 then
-		gamestate.ui.static[ID .. "burstglow1"].transparency = glow_amount
-		gamestate.ui.static[ID .. "burstglow2"].transparency = 0
-	elseif full_segs_int == 2 then
-		gamestate.ui.static[ID .. "burstglow1"].transparency = 0
-		gamestate.ui.static[ID .. "burstglow2"].transparency = glow_amount
-	end
+	gamestate.ui.static[ID .. "burstglow1"].transparency = full_segs_int == 1 and glow_amount or 0
+	gamestate.ui.static[ID .. "burstglow2"].transparency = full_segs_int == 2 and glow_amount or 0
 end
 
 function ui:drawBurst(player, ...)
