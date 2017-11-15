@@ -120,6 +120,14 @@ function Piece:rotate()
 
 	self.game.sound:newSFX("sfx_gemrotate")
 end
+-- same as rotate, but animations not shown
+function Piece:ai_rotate()
+	self.horizontal = not self.horizontal
+	if self.horizontal then
+		self.gems = reverseTable(self.gems)
+	end
+	self.rotation_index = (self.rotation_index + 1) % 4
+end
 
 function Piece:breakUp()
 	local player = self.owner
