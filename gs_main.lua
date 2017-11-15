@@ -84,8 +84,7 @@ function gs_main:enter()
 				end_y = stage.burst[ID][i].glow_y,
 			})
 		end
-
-
+	end
 end
 
 function gs_main:openSettingsMenu()
@@ -136,7 +135,8 @@ function gs_main:drawScreenElements(...)
 	self.ui.timer:draw(...)	-- timer bar
 
 	for player in self:players() do
-		self.ui:drawBurst(player, ...)	-- burst meter TODO: darkened
+		--self.ui:drawBurst(player, ...)	-- burst meter TODO: darkened
+		self.ui:updateBurst(player, gs_main)
 		self.ui:drawSuper(player, ...)	-- super meter
 		player.animation:draw{h_flip = player.ID == "P2"} -- sprite
 	end
@@ -324,7 +324,7 @@ function gs_main:drawStatic(...)
 	local draws = {"tub", "P1burstframe", "P2burstframe", "P1burstblock1",
 		"P1burstblock2", "P2burstblock1", "P2burstblock2", "P1burstpartial1",
 		"P1burstpartial2", "P2burstpartial1", "P2burstpartial2", "P1burstglow1",
-		"P2burstglow2"}
+		"P1burstglow2", "P2burstglow1", "P2burstglow2"}
 	for i = 1, #draws do gs_main.ui.static[ draws[i] ]:draw(...) end
 end
 
@@ -338,8 +338,7 @@ function gs_main:draw()
 			self.camera:setPosition(0, 0)
 		end
 
-		--for _, v in pairs(gs_main.ui.static) do v:draw{darkened = darkened} end
-		self:drawStatic{darkened = darkened}
+		gs_main.drawStatic(self, {darkened = darkened})
 		for _, v in pairs(gs_main.ui.clickable) do v:draw{darkened = darkened} end
 		gs_main.drawScreenElements(self, {darkened = darkened})
 		gs_main.drawGems(self, {darkened = darkened})
