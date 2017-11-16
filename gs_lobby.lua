@@ -4,8 +4,16 @@ local image = require "image"
 local Pic = require "pic"
 local pointIsInRect = require "utilities".pointIsInRect
 
-local lobby = {}
+local lobby = {name = "lobby"}
 
+function lobby:init()
+	lobby.ui = {clickable = {}, static = {}, popup_clickable = {}, popup_static = {}}
+	self:_createSettingsMenu(lobby, {
+		exitstate = "gs_title",
+		settings_icon = image.button.back,
+		settings_iconpush = image.button.backpush,
+	})
+end
 -- refer to game.lua for instructions for _createButton and _createImage
 function lobby:_createButton(params)
 	return self:_createButton(lobby, params)
@@ -16,19 +24,17 @@ function lobby:_createImage(params)
 end
 
 function lobby:enter()
+	local stage = self.stage
 	lobby.clicked = nil
 	if self.sound:getCurrentBGM() ~= "bgm_menu" then
 		self.sound:stopBGM()
 		self.sound:newBGM("bgm_menu", true)
 	end
 
-	lobby.ui = {clickable = {}, static = {}, popup_clickable = {}, popup_static = {}}
-
 	lobby.current_background = common.instance(self.background.rabbitsnowstorm, self)
 	lobby.current_users = {}
 	lobby.status_image = nil
 
-	local stage = self.stage
 	--create custom game
 	lobby._createButton(self, {
 		name = "creategame",
@@ -71,20 +77,6 @@ function lobby:enter()
 		action = function() lobby.cancelRankedQueue(self) end,
 	})
 
-	-- back button
-	lobby._createButton(self, {
-		name = "back",
-		image = image.button.back,
-		image_pushed = image.button.backpush,
-		duration = 15,
-		start_x = -image.button.back:getWidth(),
-		end_x = image.button.back:getWidth() * 0.6,
-		end_y = image.button.back:getHeight() * 0.6,
-		easing = "outQuad",
-		pushed_sfx = "sfx_buttonback",
-		action = function() lobby.goBack(self) end,
-	})
-
 	-- status indicator image
 	lobby.status_image = lobby._createImage(self, {
 		name = "status",
@@ -97,6 +89,14 @@ function lobby:enter()
 		easing = "inOutBounce",
 	})
 	lobby.status_image.status = "idle"
+end
+
+function lobby:openSettingsMenu()
+	self:_openSettingsMenu(lobby)
+end
+
+function lobby:closeSettingsMenu()
+	self:_closeSettingsMenu(lobby)
 end
 
 function lobby:updateUsers(all_dudes)
@@ -185,10 +185,7 @@ function lobby:update(dt)
 	for _, tbl in pairs(lobby.ui) do
 		for _, v in pairs(tbl) do v:update(dt) end
 	end
---[[
-	for _, v in pairs(lobby.ui.clickable) do v:update(dt) end
-	for _, v in pairs(lobby.ui.static) do v:update(dt) end
---]]
+
 	local client = self.client
 	if client.queuing then
 		if lobby.status_image.status == "idle" then
@@ -205,10 +202,12 @@ function lobby:update(dt)
 end
 
 function lobby:draw()
-	lobby.current_background:draw()
-	for _, v in pairs(lobby.ui.static) do v:draw() end
-	for _, v in pairs(lobby.ui.clickable) do v:draw() end
+	local darkened = self.settings_menu_open
+	lobby.current_background:draw{darkened = darkened}
+	for _, v in pairs(lobby.ui.static) do v:draw{darkened = darkened} end
+	for _, v in pairs(lobby.ui.clickable) do v:draw{darkened = darkened} end
 	lobby._drawCurrentUsers(self)
+	self:_drawSettingsMenu(lobby)
 end
 
 function lobby:mousepressed(x, y)

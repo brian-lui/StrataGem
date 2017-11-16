@@ -120,6 +120,14 @@ function Piece:rotate()
 
 	self.game.sound:newSFX("sfx_gemrotate")
 end
+-- same as rotate, but animations not shown
+function Piece:ai_rotate()
+	self.horizontal = not self.horizontal
+	if self.horizontal then
+		self.gems = reverseTable(self.gems)
+	end
+	self.rotation_index = (self.rotation_index + 1) % 4
+end
 
 function Piece:breakUp()
 	local player = self.owner
@@ -133,7 +141,8 @@ function Piece:breakUp()
 end
 
 -- draw gems with displacement depending on piece horizontal/vertical
-function Piece:draw()
+function Piece:draw(...)
+	local args = {...}
 	local frame = self.game.frame
 	local stage = self.game.stage
 	--screen shake translation
@@ -152,8 +161,16 @@ function Piece:draw()
 			else
 				displace_y = stage.gem_height * (i - (1 + self.size) * 0.5)
 			end
-			self.gems[i]:draw{pivot_x = self.x, pivot_y = self.y, rotation = self.rotation,
+			local gem_params = {pivot_x = self.x, pivot_y = self.y, rotation = self.rotation,
 				displace_x = displace_x, displace_y = displace_y}
+			for k, v in pairs(args) do
+				if gem_params[k] then
+					print("warning, overwriting original gem parameters in piece draw operation!")
+				else
+					gem_params[k] = v
+				end
+			end
+			self.gems[i]:draw(gem_params)
 		end
 	love.graphics.pop()
 end

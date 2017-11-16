@@ -58,10 +58,10 @@ function Game:init()
 	self.debug_drawGamestate = true
 	self.debug_drawDamage = true
 	self.debug_drawGrid = true
-
+	
+	self.rng = love.math.newRandomGenerator()
 	self.unittests = common.instance(require "unittests", self) -- debug testing
 	self.phaseManager = common.instance(require "phasemanager", self)
-	self.rng = love.math.newRandomGenerator()
 	self.sound = common.instance(require "sound", self)
 	self.stage = common.instance(require "stage", self)	-- playing field area and grid
 	self.grid = common.instance(require "grid", self)
@@ -80,14 +80,11 @@ end
 
 function Game:start(gametype, char1, char2, bkground, seed, side)
 	ID:reset()
-
 	self:reset()
 	self.sound:reset()
 	self.grid:reset()
 	self.particles:reset()
-	if seed then
-		self.rng:setSeed(seed)
-	end
+	if seed then self.rng:setSeed(seed)	end
 
 	self.p1 = common.instance(require("characters." .. char1), 1, self)
 	self.p2 = common.instance(require("characters." .. char2), 2, self)
@@ -111,8 +108,8 @@ function Game:start(gametype, char1, char2, bkground, seed, side)
 	for player in self:players() do player:cleanup() end
 
 	self.type = gametype
+	self.current_background_name = bkground
 	self.statemanager:switch(require "gs_main")
-	self.current_background = common.instance(self.background[bkground], self)
 end
 
 function Game:update(dt)
@@ -244,7 +241,7 @@ end
 	settings_icon: image for the settings icon (defaults to image.button.settings)
 	settings_iconpush: image for the pushed settings icon (defaults to image.button.settingspush)
 	settings_text: image for the text display (defaults to image.unclickable.settingstext)
-	exitstate: state to exit upon confirm (e.g. "gs_gamestate", "gs_main", "gs_lobby")
+	exitstate: state to exit upon confirm (e.g. "gs_title", "gs_gamestate", "gs_main", "gs_lobby")
 		Defaults to quitting the game if not provided
 --]]
 function Game:_createSettingsMenu(gamestate, params)
@@ -258,8 +255,8 @@ function Game:_createSettingsMenu(gamestate, params)
 		name = "settings",
 		image = settings_icon,
 		image_pushed = settings_pushed_icon,
-		end_x = stage.width - image.button.settings:getWidth() * 0.5,
-		end_y = stage.height - image.button.settings:getHeight() * 0.5,
+		end_x = stage.settings_button[gamestate.name].x,
+		end_y = stage.settings_button[gamestate.name].y,
 		action = function()
 			if not self.settings_menu_open then gamestate.openSettingsMenu(self) end
 		end,
@@ -303,6 +300,7 @@ function Game:_createSettingsMenu(gamestate, params)
 		action = function()
 			if self.settings_menu_open then
 				if params.exitstate then
+					self.settings_menu_open = false
 					self.statemanager:switch(require (params.exitstate))
 				else
 					love.event.quit()
@@ -310,6 +308,15 @@ function Game:_createSettingsMenu(gamestate, params)
 			end
 		end,
 	})
+end
+
+function Game:_drawSettingsMenu(gamestate, params)
+	if self.settings_menu_open then
+		params = params or {}
+		gamestate.ui.popup_static.settingsframe:draw()
+		gamestate.ui.popup_static.settingstext:draw()
+		for _, v in pairs(gamestate.ui.popup_clickable) do v:draw() end
+	end
 end
 
 local pointIsInRect = require "utilities".pointIsInRect

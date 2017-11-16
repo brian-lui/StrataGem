@@ -12,7 +12,7 @@ local image = require 'image'
 local Pic = require 'pic'
 local tween = require 'tween'
 
-local title = {}
+local title = {name = "title"}
 
 -- refer to game.lua for instructions for createButton and createImage
 function title:createButton(params)
@@ -80,7 +80,13 @@ end
 function title:enter()
 	title.clicked = nil
 	self.settings_menu_open = false
-	if self.sound:getCurrentBGM() ~= "bgm_menu" then self.sound:stopBGM() end
+	if self.sound:getCurrentBGM() ~= "bgm_menu" then
+		self.sound:stopBGM()
+		title.ui.static.logo:change{duration = 45,
+			exit = {function() if self.sound:getCurrentBGM() ~= "bgm_menu" then
+			 	self.sound:newBGM("bgm_menu", true)
+			end end}}
+	end
 	title.current_background = common.instance(self.background.rabbitsnowstorm, self)
 end
 
@@ -104,10 +110,7 @@ function title:draw()
 	title.current_background:draw{darkened = darkened}
 	for _, v in pairs(title.ui.static) do v:draw{darkened = darkened} end
 	for _, v in pairs(title.ui.clickable) do v:draw{darkened = darkened} end
-
-	title.ui.popup_static.settingsframe:draw()
-	title.ui.popup_static.settingstext:draw()
-	for _, v in pairs(title.ui.popup_clickable) do v:draw() end
+	self:_drawSettingsMenu(title)
 end
 
 function title:mousepressed(x, y)

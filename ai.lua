@@ -126,7 +126,7 @@ local function generateScoreMatrices(grid, player)
 	local function rotateAll()
 		for i = 1, player.hand_size do
 			if player.hand[i].piece then
-				player.hand[i].piece:rotate()
+				player.hand[i].piece:ai_rotate()
 			end
 		end
 	end
