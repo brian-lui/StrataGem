@@ -12,12 +12,12 @@ function gs_main:init()
 	gs_main.ui = {clickable = {}, static = {}, popup_clickable = {}, popup_static = {}}
 end
 
--- refer to game.lua for instructions for _createButton and _createImage
-function gs_main:_createButton(params)
+-- refer to game.lua for instructions for createButton and createImage
+function gs_main:createButton(params)
 	return self:_createButton(gs_main, params)
 end
 
-function gs_main:_createImage(params)
+function gs_main:createImage(params)
 	return self:_createImage(gs_main, params)
 end
 
@@ -45,19 +45,20 @@ function gs_main:enter()
 	gs_main.current_background = common.instance(self.background[self.current_background_name], self)
 	self.settings_menu_open = false
 
-	gs_main._createImage(self, {
+	gs_main.createImage(self, {
 		name = "tub",
 		image = image.UI.tub,
 		end_x = stage.tub.x,
 		end_y = stage.tub.y,
 	})
 
-	-- burst meter objects
 	local BURST_SEGMENTS = 2
 	for player in self:players() do
 		local ID = player.ID
+
+		-- burst meter objects
 		local burst_frame_img = ID == "P1" and image.UI.gauge_gold or image.UI.gauge_silver
-		gs_main._createImage(self, {
+		gs_main.createImage(self, {
 			name = ID .. "burstframe",
 			image = burst_frame_img,
 			end_x = stage.burst[ID].frame.x,
@@ -65,25 +66,76 @@ function gs_main:enter()
 		})
 
 		for i = 1, BURST_SEGMENTS do
-			gs_main._createImage(self, {
+			gs_main.createImage(self, {
 				name = ID .. "burstblock" .. i,
 				image = player.burst_images.full,
 				end_x = stage.burst[ID][i].x,
 				end_y = stage.burst[ID][i].y,
 			})
-			gs_main._createImage(self, {
+			gs_main.createImage(self, {
 				name = ID .. "burstpartial" .. i,
 				image = player.burst_images.partial,
 				end_x = stage.burst[ID][i].x,
 				end_y = stage.burst[ID][i].y,
 			})
-			gs_main._createImage(self, {
+			gs_main.createImage(self, {
 				name = ID .. "burstglow" .. i,
 				image = player.burst_images.glow[i],
 				end_x = stage.burst[ID][i].glow_x,
 				end_y = stage.burst[ID][i].glow_y,
 			})
 		end
+
+		-- super meter objects
+		local super_function = function() print("opposite guy button pushed!") end
+		if self.me_player.ID == ID then
+			super_function = function()
+				if player.mp >= player.SUPER_COST and self.phase == "Action" then 
+					if player.supering then
+						player:deactivateSuper()
+					else
+						player:activateSuper()
+					end
+				end
+			end
+ 		end
+
+		gs_main.createButton(self, {
+			name = ID .. "super",
+			image = player.super_images.empty,
+			image_pushed = player.super_images.empty,
+			end_x = stage.super[ID].x,
+			end_y = stage.super[ID].y,
+			pushed_sfx = "sfx_dummy",
+			action = super_function,
+		})
+		gs_main.createImage(self, {
+			name = ID .. "superword",
+			image = player.super_images.word,
+			end_x = stage.super[ID].x,
+			end_y = stage.super[ID].word_y,
+		})
+		gs_main.createImage(self, {
+			name = ID .. "supermeter",
+			image = player.super_images.full,
+			end_x = stage.super[ID].x,
+			end_y = stage.super[ID].y,
+		})
+		gs_main.createImage(self, {
+			name = ID .. "superglow",
+			image = player.super_images.glow,
+			end_x = stage.super[ID].x,
+			end_y = stage.super[ID].y,
+		})
+		gs_main.createImage(self, {
+			name = ID .. "superoverlay",
+			image = player.super_images.overlay,
+			end_x = stage.super[ID].x,
+			end_y = stage.super[ID].y,
+		})
+
+
+--]]
 	end
 end
 
@@ -117,6 +169,8 @@ function gs_main:update(dt)
 	self.particles:update(dt) -- variable fps
 	gs_main.current_background:update(dt) -- variable fps
 	self.ui.timer:update(dt)
+	self.ui:updateBursts(gs_main)
+	self.ui:updateSupers(gs_main)	
 	self.animations:updateAll(dt)
 	self.screenshake_frames = math.max(0, self.screenshake_frames - 1)
 	self.timeBucket = self.timeBucket + dt
@@ -135,9 +189,6 @@ function gs_main:drawScreenElements(...)
 	self.ui.timer:draw(...)	-- timer bar
 
 	for player in self:players() do
-		--self.ui:drawBurst(player, ...)	-- burst meter TODO: darkened
-		self.ui:updateBurst(player, gs_main)
-		self.ui:drawSuper(player, ...)	-- super meter
 		player.animation:draw{h_flip = player.ID == "P2"} -- sprite
 	end
 end
@@ -319,13 +370,18 @@ function gs_main:drawButtons(...)
 	gs_main.ui.popup_clickable.cancel:draw(...)
 	gs_main.ui.clickable.settings:draw(...)
 end
-
-function gs_main:drawStatic(...)
+function gs_main:drawUI(...)
 	local draws = {"tub", "P1burstframe", "P2burstframe", "P1burstblock1",
 		"P1burstblock2", "P2burstblock1", "P2burstblock2", "P1burstpartial1",
 		"P1burstpartial2", "P2burstpartial1", "P2burstpartial2", "P1burstglow1",
-		"P1burstglow2", "P2burstglow1", "P2burstglow2"}
+		"P1burstglow2", "P2burstglow1", "P2burstglow2", "P1superword", "P2superword",
+		"P1supermeter", "P2supermeter", "P1superoverlay", "P2superoverlay",
+		"P1superglow", "P2superglow"}
+
+	gs_main.ui.clickable.P1super:draw(...)
+	gs_main.ui.clickable.P2super:draw(...)
 	for i = 1, #draws do gs_main.ui.static[ draws[i] ]:draw(...) end
+	gs_main.ui.clickable.settings:draw(...)
 end
 
 function gs_main:draw()
@@ -338,8 +394,7 @@ function gs_main:draw()
 			self.camera:setPosition(0, 0)
 		end
 
-		gs_main.drawStatic(self, {darkened = darkened})
-		for _, v in pairs(gs_main.ui.clickable) do v:draw{darkened = darkened} end
+		gs_main.drawUI(self, {darkened = darkened})
 		gs_main.drawScreenElements(self, {darkened = darkened})
 		gs_main.drawGems(self, {darkened = darkened})
 		--gs_main.drawAnimations(self, {darkened = darkened})
@@ -381,12 +436,8 @@ function gs_main:mousereleased(x, y)
 		local quickclick = self.frame - self.lastClickedFrame < QUICKCLICK_FRAMES
 		local nomove = math.abs(x - self.lastClickedX) < self.stage.width * QUICKCLICK_MAX_MOVE and
 			math.abs(y - self.lastClickedY) < self.stage.height * QUICKCLICK_MAX_MOVE
-		
 		if quickclick and nomove then self.active_piece:rotate() end
 		if self.phase == "Action" then print("deselect now") self.active_piece:deselect() end
-	elseif player.super_clicked and self.phase == "Action" and not self.supering and 
-	pointIsInRect(x, y, table.unpack(self.stage.super[player.ID].rect)) then
-		player:activateSuper()
 	end
 
 	player.super_clicked = false

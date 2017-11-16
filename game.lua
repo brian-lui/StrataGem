@@ -124,8 +124,8 @@ end
 
 function Game:players()
 	local p = {self.p1, self.p2}
-  local i = 0
-  return function()
+	local i = 0
+	return function()
 		i = i + 1
 		return p[i]
 	end
