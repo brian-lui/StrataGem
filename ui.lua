@@ -74,106 +74,70 @@ local ui = {}
 
 function ui:init(game)
 	self.game = game
-
 	self.timer = common.instance(Timer, game)
-
 	-- Red X shown on gems in invalid placement spots
 	self.redX = common.instance(Pic, game, {x = 0, y = 0, image = image.UI.redX})
-
 end
 
--- returns the super drawables for player based on player MP, called every dt
+-- updates the super drawables for player based on player MP
 -- shown super meter is less than the actual super meter when super particles are on screen
 -- as particles disappear, they visually go into the super meter
+function ui:updateSupers(gamestate)
+	for player in self.game:players() do
+		local destroyed_particles = self.game.particles:getCount("destroyed", "MP", player.playerNum)
+		local displayed_mp = math.min(player.MAX_MP, player.turn_start_mp + destroyed_particles)
+		local fill_percent = 0.12 + 0.76 * displayed_mp / player.MAX_MP
+		local meter = gamestate.ui.static[player.ID .. "supermeter"]
+		meter:setQuad(0, meter.height * (1 - fill_percent), meter.width, meter.height * fill_percent)
 
-function ui:drawSuper(player, ...)
-	local destroyedParticles = self.game.particles:getCount("destroyed", "MP", player.playerNum)
-
-	local displayed_mp = math.min(player.MAX_MP, player.turn_start_mp + destroyedParticles)
-	local fill_percent = 0.12 + 0.76 * displayed_mp / player.MAX_MP
-	local img = player.super_meter_image
-	img:setQuad(0, img.height * (1 - fill_percent), img.width, img.height * fill_percent)
-
-	player.super_frame:draw(...)	-- super frame
-	img:draw(...)	-- super meter
-
-	if player.supering then
-		player.super_glow.transparency = 255
-		player.super_glow:draw(...)
-		player.super_word:draw(...)
-	elseif displayed_mp >= player.SUPER_COST then
-		player.super_glow.transparency = math.ceil(math.sin(self.game.frame / 30) * 127.5 + 127.5)
-		player.super_glow:draw(...)
+		local superglow = gamestate.ui.static[player.ID .. "superglow"]
+		local superword = gamestate.ui.static[player.ID .. "superword"]
+		if player.supering then
+			superglow.transparency, superword.transparency = 255, 255
+		elseif displayed_mp >= player.SUPER_COST then
+			superglow.transparency = math.sin(self.game.frame / 30) * 127.5 + 127.5
+			superword.transparency = 0
+		else
+			superglow.transparency, superword.transparency = 0, 0
+		end
 	end
-
-	player.super_overlay:draw(...)
 end
 
-function ui:updateBurst(player, gamestate)
-	local ID = player.ID
-	local max_segs = 2
-	local full_segs = (player.cur_burst / player.MAX_BURST) * max_segs -- percent multiplied by 2
-	local full_segs_int = math.floor(full_segs)
-	local part_fill_percent = full_segs % 1
+function ui:updateBursts(gamestate)
+	for player in self.game:players() do
+		local ID = player.ID
+		local max_segs = 2
+		local full_segs = (player.cur_burst / player.MAX_BURST) * max_segs -- percent multiplied by 2
+		local full_segs_int = math.floor(full_segs)
+		local part_fill_percent = full_segs % 1
 
-	-- partial fill block length
-	if part_fill_percent > 0 then
-		local part_fill_block = gamestate.ui.static[ID .. "burstpartial" .. (full_segs_int + 1)]
-		local width = part_fill_block.width * part_fill_percent
-		local start = ID == "P2" and part_fill_block.width - width or 0
-		part_fill_block:setQuad(start, 0, width, part_fill_block.height)
-	end
-
-	-- super meter
-	for i = 1, max_segs do
-		if full_segs >= i then
-			gamestate.ui.static[ID .. "burstblock" .. i].transparency = 255
-		else
-			gamestate.ui.static[ID .. "burstblock" .. i].transparency = 0
+		-- partial fill block length
+		if part_fill_percent > 0 then
+			local part_fill_block = gamestate.ui.static[ID .. "burstpartial" .. (full_segs_int + 1)]
+			local width = part_fill_block.width * part_fill_percent
+			local start = ID == "P2" and part_fill_block.width - width or 0
+			part_fill_block:setQuad(start, 0, width, part_fill_block.height)
 		end
-		
-		if full_segs < i and full_segs + 1 > i then
-			gamestate.ui.static[ID .. "burstpartial" .. i].transparency = 255
-		else
-			gamestate.ui.static[ID .. "burstpartial" .. i].transparency = 0
+
+		-- super meter
+		for i = 1, max_segs do
+			if full_segs >= i then
+				gamestate.ui.static[ID .. "burstblock" .. i].transparency = 255
+			else
+				gamestate.ui.static[ID .. "burstblock" .. i].transparency = 0
+			end
+			
+			if full_segs < i and full_segs + 1 > i then
+				gamestate.ui.static[ID .. "burstpartial" .. i].transparency = 255
+			else
+				gamestate.ui.static[ID .. "burstpartial" .. i].transparency = 0
+			end
 		end
-	end
 
-	-- glow
-	local glow_amount = math.sin(self.game.frame / 30) * 127.5 + 127.5
-	gamestate.ui.static[ID .. "burstglow1"].transparency = full_segs_int == 1 and glow_amount or 0
-	gamestate.ui.static[ID .. "burstglow2"].transparency = full_segs_int == 2 and glow_amount or 0
-end
-
-function ui:drawBurst(player, ...)
-	local max_segs = 2
-	local full_segs = (player.cur_burst / player.MAX_BURST) * max_segs
-	local full_segs_int = math.floor(full_segs)
-	local part_fill_percent = full_segs % 1
-
-	-- update partial fill block length
-	if part_fill_percent > 0 then
-		local part_fill_block = player.burst_partial[full_segs_int + 1]
-		local width = part_fill_block.width * part_fill_percent
-		local start = player.ID == "P2" and part_fill_block.width - width or 0
-		part_fill_block:setQuad(start, 0, width, part_fill_block.height)
-	end
-
-	player.burst_frame:draw(...)
-
-	-- super meter
-	for i = 1, max_segs do
-		if full_segs >= i then
-			player.burst_block[i]:draw(...)
-		elseif full_segs + 1 > i then
-			player.burst_partial[i]:draw(...)
-		end
-	end
-
-	-- glow
-	if full_segs >= 1 then
-		player.burst_glow[full_segs_int].transparency = math.sin(self.game.frame / 30) * 127.5 + 127.5
-		player.burst_glow[full_segs_int]:draw(...)
+		-- glow
+		local glow_amount = math.sin(self.game.frame / 30) * 127.5 + 127.5
+		gamestate.ui.static[ID .. "burstglow1"].transparency = full_segs_int == 1 and glow_amount or 0
+		gamestate.ui.static[ID .. "burstglow2"].transparency = full_segs_int == 2 and glow_amount or 0
 	end
 end
 

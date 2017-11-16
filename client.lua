@@ -315,6 +315,9 @@ function Client:prepareDelta(...)
 	elseif args[2] == "super" then
 		self.our_delta[game.turn].super = true
 		self.our_delta[game.turn].super_params = args[3]
+	elseif args[2] == "cancelsuper" then
+		self.our_delta[game.turn].super = false
+		self.our_delta[game.turn].super_params = nil
 	else
 		print("Error: invalid delta arguments provided")
 		print("***")

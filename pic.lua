@@ -58,34 +58,36 @@ end
 		darkened: draw darker (when a pop-up menu is onscreen)
 --]]
 function Pic:draw(params)
-	params = params or {}
-	love.graphics.push("all")
-		local x_scale = params.scale or self.scaling
-		local y_scale = params.scale or self.scaling
-		local rgbt = self.RGB or {255, 255, 255}
-		rgbt[4] = self.transparency or 255
+	if self.transparency ~= 0 then
+		params = params or {}
+		love.graphics.push("all")
+			local x_scale = params.scale or self.scaling
+			local y_scale = params.scale or self.scaling
+			local rgbt = self.RGB or {255, 255, 255}
+			rgbt[4] = self.transparency or 255
 
-		if params.darkened then
-			love.graphics.setColor(127, 127, 127)
-		elseif params.RGBTable then
-			love.graphics.setColor(params.RGBTable)
-		elseif self.transparency then
-			love.graphics.setColor(rgbt)
-		end
-		if params.h_flip then x_scale = x_scale * -1 end
+			if params.darkened then
+				love.graphics.setColor(127, 127, 127)
+			elseif params.RGBTable then
+				love.graphics.setColor(params.RGBTable)
+			elseif self.transparency then
+				love.graphics.setColor(rgbt)
+			end
+			if params.h_flip then x_scale = x_scale * -1 end
 
-		love.graphics.draw(
-			params.img or self.image,
-			self.quad,
-			(params.x or self.x) + (self.quad_data.x_offset or 0),
-			(params.y or self.y) + (self.quad_data.y_offset or 0),
-			params.rotation or self.rotation,
-			x_scale or 1,
-			y_scale or 1,
-			self.width / 2, -- origin x
-			self.height / 2 -- origin y
-		)
-	love.graphics.pop()
+			love.graphics.draw(
+				params.img or self.image,
+				self.quad,
+				(params.x or self.x) + (self.quad_data.x_offset or 0),
+				(params.y or self.y) + (self.quad_data.y_offset or 0),
+				params.rotation or self.rotation,
+				x_scale or 1,
+				y_scale or 1,
+				self.width / 2, -- origin x
+				self.height / 2 -- origin y
+			)
+		love.graphics.pop()
+	end
 end
 
 function Pic:isStationary()
