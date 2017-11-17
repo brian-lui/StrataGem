@@ -124,6 +124,7 @@ function Gem:draw(params)
 		love.graphics.translate(params.displace_x or 0, params.displace_y or 0)
 		-- reverse the rotation so the gem always maintains its orientation
 		if params.rotation then love.graphics.rotate(-params.rotation) end
+		if params.darkened then love.graphics.setColor(127, 127, 127) end
 		love.graphics.draw(self.image, self.quad)
 	love.graphics.pop()
 end
