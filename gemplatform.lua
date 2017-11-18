@@ -22,21 +22,21 @@ function GemPlatform:init(game, owner, location)
 	})
 end
 
-function GemPlatform:draw(...)
-	local params = {}
-	for k, v in pairs(...) do params[k] = v end
+function GemPlatform:draw(params) 
+	local p = {} -- need to create a copy of params or else it will modify params
+	for k, v in pairs(params) do p[k] = v end
 
 	if self.shake then
 		local f = self.game.frame
-		params.x = self.pic.x + self.shake * (f % 7 * 0.5 + f % 13 * 0.25 + f % 23 / 6 - 5)
-		params.y = self.pic.y + self.shake * (f % 5 * 2/3 + f % 11 * 0.25 + f % 17 / 6 - 5)
+		p.x = self.pic.x + self.shake * (f % 7 * 0.5 + f % 13 * 0.25 + f % 23 / 6 - 5)
+		p.y = self.pic.y + self.shake * (f % 5 * 2/3 + f % 11 * 0.25 + f % 17 / 6 - 5)
 	end
-	self.pic:draw(params)
+	self.pic:draw(p)
 
 	if self.redness > 0 then
-		params.RGBTable = {255, 255, 255, self.redness}
-		params.image = image.UI.platform_red
-		self.pic:draw(params)		
+		p.RGBTable = {255, 255, 255, self.redness}
+		p.image = image.UI.platform_red
+		self.pic:draw(p)		
 	end
 end
 

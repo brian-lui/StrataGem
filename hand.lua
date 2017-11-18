@@ -117,11 +117,6 @@ function Hand:movePlatform(start_pos, end_pos)
 	-- anims
 	local dist = self.game.stage.height * 0.1375 * (end_pos - start_pos)
 	local duration = math.abs(dist / Hand.PLATFORM_SPEED)
-	--[[self[start_pos].platform:change{
-		x = function() return self:getx(self[end_pos].platform.y) end,
-		y = self[end_pos].y,
-		duration = duration,
-	}--]]
 
 	self[start_pos].platform.pic:change{
 		x = function() return self:getx(self[end_pos].platform.pic.y) end,

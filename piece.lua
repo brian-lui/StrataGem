@@ -141,7 +141,7 @@ function Piece:breakUp()
 end
 
 -- draw gems with displacement depending on piece horizontal/vertical
-function Piece:draw(...)
+function Piece:draw(params)
 	local frame = self.game.frame
 	local stage = self.game.stage
 	--screen shake translation
@@ -162,7 +162,7 @@ function Piece:draw(...)
 			end
 			local gem_params = {pivot_x = self.x, pivot_y = self.y, rotation = self.rotation,
 				displace_x = displace_x, displace_y = displace_y}
-			for k, v in pairs(...) do
+			for k, v in pairs(params) do
 				if gem_params[k] then
 					print("warning, overwriting original gem parameters in piece draw operation!")
 				else

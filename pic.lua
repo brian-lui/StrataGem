@@ -54,7 +54,7 @@ end
 		rotation: rotation number to draw
 		scale: scaling to draw
 		RGBTable: colors to draw, given as {red, green, blue, alpha}
-		img: image to draw
+		image: image to draw
 		darkened: draw darker (when a pop-up menu is onscreen)
 --]]
 function Pic:draw(params)
