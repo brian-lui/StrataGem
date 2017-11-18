@@ -89,15 +89,7 @@ function gs_main:enter()
 		-- super meter objects
 		local super_function = function() print("opposite guy button pushed!") end
 		if self.me_player.ID == ID then
-			super_function = function()
-				if player.mp >= player.SUPER_COST and self.phase == "Action" then 
-					if player.supering then
-						player:deactivateSuper()
-					else
-						player:activateSuper()
-					end
-				end
-			end
+			super_function = function() player:toggleSuper() end
  		end
 
 		gs_main.createButton(self, {
