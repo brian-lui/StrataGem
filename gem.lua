@@ -14,7 +14,6 @@ local gemImages = {
 local Gem = {}
 function Gem:init(game, x, y, color, garbage)
 	self.game = game
-
 	Pic.init(self, game, {x = x, y = y, image = gemImages[color:lower()]})
 	ID.gem = ID.gem + 1
 	self.horizontal = false -- for gem matches

@@ -117,8 +117,14 @@ function Hand:movePlatform(start_pos, end_pos)
 	-- anims
 	local dist = self.game.stage.height * 0.1375 * (end_pos - start_pos)
 	local duration = math.abs(dist / Hand.PLATFORM_SPEED)
-	self[start_pos].platform:change{
+	--[[self[start_pos].platform:change{
 		x = function() return self:getx(self[end_pos].platform.y) end,
+		y = self[end_pos].y,
+		duration = duration,
+	}--]]
+
+	self[start_pos].platform.pic:change{
+		x = function() return self:getx(self[end_pos].platform.pic.y) end,
 		y = self[end_pos].y,
 		duration = duration,
 	}
@@ -199,7 +205,7 @@ end
 
 function Hand:destroyPlatformsAnim()
 	for i = 1, math.min(5, self.damage * 0.25) do
-		self.game.particles.explodingPlatform.generate(self.game, self[i].platform)
+		self.game.particles.explodingPlatform.generate(self.game, self[i].platform.pic)
 	end
 	self.game.sound:newSFX("sfx_starbreak")
 end

@@ -76,7 +76,7 @@ function Pic:draw(params)
 			if params.h_flip then x_scale = x_scale * -1 end
 
 			love.graphics.draw(
-				params.img or self.image,
+				params.image or self.image,
 				self.quad,
 				(params.x or self.x) + (self.quad_data.x_offset or 0),
 				(params.y or self.y) + (self.quad_data.y_offset or 0),
