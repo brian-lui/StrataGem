@@ -408,6 +408,8 @@ function Game:keypressed(key)
 		end
 	elseif key == "g" then
 		self.unittests.displayNoRush(self)
+	elseif key == "h" then
+		self.unittests.testPlacedGem(self)
 	elseif key == "k" then self.canvas[6]:renderTo(function() love.graphics.clear() end)
 	elseif key == "z" then self.unittests.resetWithSeed(self, nil)
 	elseif key == "f1" then self.unittests.resetWithSeed(self, 12345)

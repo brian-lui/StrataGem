@@ -70,6 +70,7 @@ function PhaseManager:resolve(dt)
 		player.hand:afterActionPhaseUpdate()
 	end
 	game.particles.upGem.removeAll(game.particles) -- animation
+	game.particles.placedGem.removeAll(game.particles) -- animation
 	game.frozen = true
 	game.phase = "SuperFreeze"
 end

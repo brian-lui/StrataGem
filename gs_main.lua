@@ -281,6 +281,7 @@ function gs_main:drawGems(params)
 	for _, v in pairs(allParticles.OverDust) do v:draw(params) end
 	for _, v in pairs(allParticles.ExplodingPlatform) do v:draw(params) end
 	for _, v in pairs(allParticles.UpGem) do v:draw(params) end
+	for _, v in pairs(allParticles.PlacedGem) do v:draw(params) end
 end
 
 -- draw text items

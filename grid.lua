@@ -12,7 +12,7 @@ Grid.DROP_MULTIPLE_SPEED = window.height / 180 -- multiplier for scoring_combo
 function Grid:init(game)
 	self.game = game
 	self.columns = 8
-	self.rows = 14	-- 7-14 basin, 1-6 for rush/double/normal, 0 and 15 sentinels
+	self.rows = 14	-- 7-14 basin, 1-6 for double/rush/normal, 0 and 15 sentinels
 	self.x = {}
 	self.y = {}
 	self.active_rect = {}

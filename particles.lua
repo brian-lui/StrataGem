@@ -85,6 +85,7 @@ function Particles:reset()
 		Dust = {},
 		OverDust = {},
 		UpGem = {},
+		PlacedGem = {},
 		Words = {},
 		WordEffects = {},
 		PieEffects = {},
@@ -685,12 +686,49 @@ end
 
 -- Remove all gems at end of turn, whether they finished tweening or not
 function UpGem.removeAll(manager)
-	for _, v in pairs(manager.allParticles.UpGem) do
-		v:remove()
-	end
+	for _, v in pairs(manager.allParticles.UpGem) do v:remove() end
 end
 
 UpGem = common.class("UpGem", UpGem, Pic)
+
+-------------------------------------------------------------------------------
+-- When a gem is placed in basin, this is the lighter gem in the holding area
+-- to show where you plaecd it.
+local PlacedGem = {}
+function PlacedGem:init(manager, gem)
+	Pic.init(self, manager.game, {x = gem.x, y = gem.y, image = gem.image, transparency = 192})
+	manager.allParticles.PlacedGem[ID.particle] = self
+	self.manager = manager
+	self.owner = gem.owner
+	self.row = gem.row
+end
+
+function PlacedGem:remove()
+	self.manager.allParticles.PlacedGem[self.ID] = nil
+end
+
+function PlacedGem.generate(game, gem)
+	common.instance(PlacedGem, game.particles, gem)
+end
+
+-- In case of doublecast mouseover, we show it moved down
+function PlacedGem:tweenDown()
+	local destination = self.manager.game.grid.y[self.row + 4]
+	self:change{duration = 18, y = destination, easing = "outBack"}
+end
+
+-- If doublecast mouseover cancelled
+function PlacedGem:tweenUp()
+	local destination = self.manager.game.grid.y[self.row]
+	self:change{y = destination}
+end
+
+-- Remove all gems at end of turn, whether they finished tweening or not
+function PlacedGem.removeAll(manager)
+	for _, v in pairs(manager.allParticles.PlacedGem) do v:remove() end
+end
+
+PlacedGem = common.class("PlacedGem", PlacedGem, Pic)
 
 -------------------------------------------------------------------------------
 local WordEffects = {}
@@ -1018,6 +1056,7 @@ Particles.platformStar = PlatformStar
 Particles.dust = Dust
 --Particles.overDust = OverDust
 Particles.upGem = UpGem
+Particles.placedGem = PlacedGem
 Particles.words = Words
 Particles.wordEffects = WordEffects
 Particles.pieEffects = PieEffects

@@ -134,6 +134,14 @@ local function displayNoRush(game)
 	game.particles.words.generateNoRush(game, column)
 end
 
+local function testPlacedGem(game)
+	local placedgems = game.particles.allParticles.PlacedGem
+	for _, v in pairs(placedgems) do
+		print("PlacedGem owner:", v.owner)
+		v:tweenDown()
+	end
+end
+
 local Unittests = {
 	garbageMatch = garbageMatch,
 	multiCombo = multiCombo,
@@ -143,6 +151,7 @@ local Unittests = {
 	displayNoRush = displayNoRush,
 	resetWithSeed = resetWithSeed,
 	p2VerticalMatch = p2VerticalMatch,
+	testPlacedGem = testPlacedGem,
 }
 
 return common.class("Unittests", Unittests)

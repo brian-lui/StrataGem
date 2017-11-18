@@ -157,10 +157,12 @@ end
 -- display-related changes for the above function
 function Hand:movePieceToGridAnim(grid, piece, locations)
 	for i = 1, #piece.gems do
+		local image_loc = self.owner.placed_gem_image
 		local gem, r, c = piece.gems[i], locations[i][1], locations[i][2]
 		gem.x = grid.x[c] -- snap x-position to column first
 		self.game.particles.upGem.generate(self.game, gem) -- call upGem from current position
 		gem.y = grid.y[r]
+		self.game.particles.placedGem.generate(self.game, gem) -- put a placedGem image
 	end
 end
 
