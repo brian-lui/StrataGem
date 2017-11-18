@@ -43,7 +43,6 @@ Character.cur_burst = 3
 Character.hand_size = 5
 Character.pieces_fallen = 0
 Character.dropped_piece = false
-Character.super_clicked = false
 Character.supering = false
 Character.super_params = {}
 Character.super_this_turn = false

@@ -157,15 +157,17 @@ local function timeDip(self, logic_function, ...)
 end
 
 function gs_main:update(dt)
-	timeDip(self, function() self.phaseManager:run(self.timeStep) end)
-	self.particles:update(dt) -- variable fps
-	gs_main.current_background:update(dt) -- variable fps
-	self.ui.timer:update(dt)
-	self.ui:updateBursts(gs_main)
-	self.ui:updateSupers(gs_main)	
-	self.animations:updateAll(dt)
-	self.screenshake_frames = math.max(0, self.screenshake_frames - 1)
-	self.timeBucket = self.timeBucket + dt
+	if not self.paused then
+		timeDip(self, function() self.phaseManager:run(self.timeStep) end)
+		self.particles:update(dt) -- variable fps
+		gs_main.current_background:update(dt) -- variable fps
+		self.ui.timer:update(dt)
+		self.ui:updateBursts(gs_main)
+		self.ui:updateSupers(gs_main)	
+		self.animations:updateAll(dt)
+		self.screenshake_frames = math.max(0, self.screenshake_frames - 1)
+		self.timeBucket = self.timeBucket + dt
+	end
 
 	for _, tbl in pairs(gs_main.ui) do
 		for _, v in pairs(tbl) do v:update(dt) end
@@ -395,18 +397,16 @@ function gs_main:mousepressed(x, y)
 	self.lastClickedY = y
 	local player = self.me_player
 
-	for i = 1, player.hand_size do
-		if player.hand[i].piece and pointIsInRect(x, y, player.hand[i].piece:getRect()) then
-			if self.phase == "Action" then
-				player.hand[i].piece:select()
-			else
-				self.active_piece = player.hand[i].piece
+	if not self.paused then
+		for i = 1, player.hand_size do
+			if player.hand[i].piece and pointIsInRect(x, y, player.hand[i].piece:getRect()) then
+				if self.phase == "Action" then
+					player.hand[i].piece:select()
+				else
+					self.active_piece = player.hand[i].piece
+				end
 			end
 		end
-	end
-
-	if pointIsInRect(x, y, table.unpack(self.stage.super[player.ID].rect)) then
-		player.super_clicked = true
 	end
 
 	self:_mousepressed(x, y, gs_main)
@@ -426,7 +426,6 @@ function gs_main:mousereleased(x, y)
 		if self.phase == "Action" then print("deselect now") self.active_piece:deselect() end
 	end
 
-	player.super_clicked = false
 	self.active_piece = false
 
 	self:_mousereleased(x, y, gs_main)
