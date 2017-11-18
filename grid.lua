@@ -412,15 +412,6 @@ function Grid:isSettled()
 	return all_unmoved
 end
 
--- instructions to animate the falling gems
-function Grid:dropColumnsAnim()
-	for gem, r, c in self:gems() do
-		if gem and (gem.y ~= self.y[r] or gem.x ~= self.x[c]) then
-			self:moveGemAnim(gem, r, c)
-		end
-	end
-end
-
 function Grid:columnSort(column_num)
 	local column = {}
 	for i = 1, self.rows do
@@ -437,8 +428,10 @@ function Grid:columnSort(column_num)
 	return column
 end
 
--- creates the grid after gems have fallen
-function Grid:dropColumns()
+-- creates the grid after gems have fallen, and shows animation by default
+-- Set skip_animation to true to not show animation
+function Grid:dropColumns(params)
+	params = params or {}
 	for c = 1, self.columns do
 		local sorted_column = self:columnSort(c)
 		for r = 1, self.rows do
@@ -447,7 +440,14 @@ function Grid:dropColumns()
 			if cell then cell.row, cell.column = r, c end
 		end
 	end
-	self:dropColumnsAnim() -- easy to split out later
+
+	if not params.skip_animation then
+		for gem, r, c in self:gems() do
+			if gem and (gem.y ~= self.y[r] or gem.x ~= self.x[c]) then
+				self:moveGemAnim(gem, r, c)
+			end
+		end
+	end
 end
 
 function Grid:updateGravity(dt)

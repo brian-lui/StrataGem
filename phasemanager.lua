@@ -108,7 +108,7 @@ function PhaseManager:applyGemTween(dt)
 	for player in self.game:players() do player.hand:update(dt) end
 	local animation_done = grid:isSettled() --  tween-from-top is done
 	if animation_done then
-		grid:dropColumns() -- state
+		grid:dropColumns()
 		game.phase = "Gravity"
 	end
 end
@@ -184,7 +184,6 @@ function PhaseManager:resolvingMatches(dt)
 	grid:removeMatchedGems()
 	p1.hand:addDamage(p2dmg)
 	p2.hand:addDamage(p1dmg)
-	grid:dropColumnsAnim()
 	grid:dropColumns()
 	grid:updateGrid()
 	self.game.phase = "Gravity"

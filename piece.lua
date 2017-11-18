@@ -162,13 +162,7 @@ function Piece:draw(params)
 			end
 			local gem_params = {pivot_x = self.x, pivot_y = self.y, rotation = self.rotation,
 				displace_x = displace_x, displace_y = displace_y}
-			for k, v in pairs(params) do
-				if gem_params[k] then
-					print("warning, overwriting original gem parameters in piece draw operation!")
-				else
-					gem_params[k] = v
-				end
-			end
+			for k, v in pairs(params) do gem_params[k] = v end
 			self.gems[i]:draw(gem_params)
 		end
 	love.graphics.pop()

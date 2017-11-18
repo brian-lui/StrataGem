@@ -393,10 +393,9 @@ end
 
 function gs_main:mousepressed(x, y)
 	self.lastClickedFrame = self.frame
-	self.lastClickedX = x
-	self.lastClickedY = y
-	local player = self.me_player
+	self.lastClickedX, self.lastClickedY = x, y
 
+	local player = self.me_player
 	if not self.paused then
 		for i = 1, player.hand_size do
 			if player.hand[i].piece and pointIsInRect(x, y, player.hand[i].piece:getRect()) then
@@ -417,16 +416,14 @@ local QUICKCLICK_MAX_MOVE = 0.05
 
 function gs_main:mousereleased(x, y)
 	local player = self.me_player
-
 	if self.active_piece then
 		local quickclick = self.frame - self.lastClickedFrame < QUICKCLICK_FRAMES
 		local nomove = math.abs(x - self.lastClickedX) < self.stage.width * QUICKCLICK_MAX_MOVE and
 			math.abs(y - self.lastClickedY) < self.stage.height * QUICKCLICK_MAX_MOVE
 		if quickclick and nomove then self.active_piece:rotate() end
 		if self.phase == "Action" then print("deselect now") self.active_piece:deselect() end
+		self.active_piece = false
 	end
-
-	self.active_piece = false
 
 	self:_mousereleased(x, y, gs_main)
 end
