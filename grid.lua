@@ -9,10 +9,20 @@ local window = _G.window -- TODO: Remove global
 Grid.DROP_SPEED = window.height / 50 -- pixels per frame for loose gems to drop
 Grid.DROP_MULTIPLE_SPEED = window.height / 180 -- multiplier for scoring_combo
 
+--[[
+Rows 1-2: doublecast gem pending position.
+Rows 3-4: rush gem pending position.
+Rows 5-6: normal gem pending position.
+Rows 7-8: doublecast gem landing position.
+Rows 9-10: rush gem landing position.
+Rows 11-12: normal gem landing position.
+Rows 13-20: basin. Row 13 is at top, 20 at bottom.
+Row 21: bottom grid row where trash gems tween from.
+--]]
 function Grid:init(game)
 	self.game = game
 	self.columns = 8
-	self.rows = 14	-- 7-14 basin, 1-6 for double/rush/normal, 0 and 15 sentinels
+	self.rows = 20
 	self.x = {}
 	self.y = {}
 	self.active_rect = {}
@@ -25,23 +35,31 @@ function Grid:init(game)
 	end
 
 	local tub_bottom = stage.height * 0.95
-	for i = 0, self.rows + 1 do
-		if i == (1) or i == (2) then  --change the visual y used for the normal gem row
-			self.y[i] = tub_bottom + (i - self.rows + 1.25) * stage.gem_height
-		elseif i == (3) or i == (4) then --change the visual y used for rush gem row
-			self.y[i] = tub_bottom + (i - self.rows + 0.25) * stage.gem_height
-		else
-			self.y[i] = tub_bottom + (i - self.rows - 0.75) * stage.gem_height
-		end
-
+	-- pending gem positions
+	for i = 1, 6 do 
+		self.y[i] = stage.gem_height * (i - 8)
 	end
 
-	for row = 0, self.rows + 1 do
+	-- landing gem positions
+	self.y[7] = stage.gem_height * 1
+	self.y[8] = stage.gem_height * 2
+	self.y[9] = stage.gem_height * 2
+	self.y[10] = stage.gem_height * 3
+	self.y[11] = stage.gem_height * 3
+	self.y[12] = stage.gem_height * 4
+
+	-- basin positions
+	for i = 13, self.rows + 1 do
+		self.y[i] = tub_bottom + (i - self.rows - 0.75) * stage.gem_height
+	end
+
+	for row = 1, self.rows + 1 do
 		self[row] = {}
 		for col = 0, self.columns + 1 do
-			self[row][col] = {gem = false, owner = 0}
+			self[row][col] = {gem = nil, owner = 0}
 		end
 	end
+
 end
 
 function Grid:gems()
@@ -346,7 +364,9 @@ function Grid:moveGemAnim(gem, row, column)
 	--local angle = math.atan2(target_y - gem.y, target_x - gem.x)
 	local speed = self.DROP_SPEED + self.DROP_MULTIPLE_SPEED * self.game.scoring_combo
 	local duration = math.abs(dist / speed)
-
+	print("current gem y:", gem.y)
+	print("grid row 1, row 2:", self.game.grid.y[1], self.game.grid.y[2])
+	print("changing gem target_y to:", target_y)
 	gem:change{
 		x = target_x,
 		y = target_y,
@@ -452,10 +472,7 @@ end
 
 function Grid:updateGravity(dt)
 	if self.game.grid_wait == 0 then
-		-- move gems to new positions
-		for gem in self:gems() do
-			gem:update(dt)
-		end
+		for gem in self:gems() do gem:update(dt) end -- move gems to new positions
 	end
 end
 

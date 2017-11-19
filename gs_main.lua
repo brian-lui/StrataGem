@@ -125,9 +125,6 @@ function gs_main:enter()
 			end_x = stage.super[ID].x,
 			end_y = stage.super[ID].y,
 		})
-
-
---]]
 	end
 end
 

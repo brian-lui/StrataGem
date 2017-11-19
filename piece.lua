@@ -360,6 +360,39 @@ function Piece:dropIntoBasin(coords, received_from_opponent)
 		game.client.prepareDelta(game.client, self, coords, player.place_type)
 	end
 
+	-- TODO: player.dropped_piece, player.place_type seems too complicated
+---[[
+-- This is the new code, activate it when grid setup is done
+	-- place the gem into the holding area
+	local row_adj -- how many rows down from the top to place the gem
+	if player.place_type == "normal" then
+		row_adj = 4
+		player.dropped_piece = "normal"
+	elseif player.place_type == "rush" then
+		row_adj = 2
+		player.cur_burst = player.cur_burst - player.current_rush_cost
+		player.dropped_piece = "rushed"
+	elseif player.place_type == "double" then
+		row_adj = 0
+		player.cur_burst = player.cur_burst - player.current_double_cost
+		player.dropped_piece = "doubled"
+	else
+		print("invalid player place type")
+	end
+
+	local locations = {}
+	if self.horizontal then
+		for i = 1, #self.gems do locations[i] = {1 + row_adj, coords[i]} end
+	else
+		for i = 1, #self.gems do locations[i] = {i + row_adj, coords[i]} end
+	end
+
+	hand:movePieceToGrid(grid, self, locations)
+	hand:movePieceToGridAnim(grid, self, locations)
+	player.played_pieces[#player.played_pieces+1] = self.gems
+	self:breakUp()	
+--]]
+--[[
 	-- place the gem into the holding area
 	local row_adj = 0 -- how many rows down from the top to place the gem
 	if player.place_type == "rush" then
@@ -399,17 +432,20 @@ function Piece:dropIntoBasin(coords, received_from_opponent)
 		for i = 1, #self.gems do
 			local column = coords[i]
 			self.tween_y = grid.y[1 + row_adj + 4]
+			print("inputted a tween to row", 1 + row_adj + 4)
 			self.gems[i].tweening = tween.new(0.3, self.gems[i], {y = self.tween_y}, "outBack")
 		end
 	elseif not self.horizontal then
 		for i = 1, #self.gems do
 			local column = coords[1]
 			self.tween_y = grid.y[i + row_adj + 4]
+			print("inputted a tween to row", i + row_adj + 4)
 			self.gems[i].tweening = tween.new(0.3, self.gems[i], {y = self.tween_y}, "outBack")
 		end
 	end
 	player.played_pieces[#player.played_pieces+1] = self.gems
 	self:breakUp()
+--]]
 end
 
 return common.class("Piece", Piece)
