@@ -43,7 +43,6 @@ Character.cur_burst = 3
 Character.hand_size = 5
 Character.pieces_fallen = 0
 Character.dropped_piece = false
-Character.super_clicked = false
 Character.supering = false
 Character.super_params = {}
 Character.super_this_turn = false
@@ -135,24 +134,23 @@ function Character:resetMP()
 	self.turn_start_mp = self.mp
 end
 
--- validity check occurs on button press
-function Character:activateSuper(received_from_opponent)
+function Character:toggleSuper(received_from_opponent)
 	local game = self.game
-	self.supering = true
-	if game.type == "Netplay" and not received_from_opponent then
-		game.client.prepareDelta(game.client, self, "super", self.super_params)
-	end
-	self.game.sound:newSFX("sfx_buttonsuper")
-end
+	if game.phase ~= "Action" then return end
 
--- validity check occurs on button press
-function Character:deactivateSuper(received_from_opponent)
-	local game = self.game
-	self.supering = false
-	if game.type == "Netplay" and not received_from_opponent then
-		game.client.prepareDelta(game.client, self, "cancelsuper", self.super_params)
+	if self.supering then
+		self.supering = false
+		if game.type == "Netplay" and not received_from_opponent then
+			game.client.prepareDelta(game.client, self, "cancelsuper", self.super_params)
+		end
+		self.game.sound:newSFX("sfx_buttonbacksuper")
+	elseif self.mp >= self.SUPER_COST and self.game.phase == "Action" then
+		self.supering = true
+		if game.type == "Netplay" and not received_from_opponent then
+			game.client.prepareDelta(game.client, self, "super", self.super_params)
+		end
+		self.game.sound:newSFX("sfx_buttonsuper")
 	end
-	self.game.sound:newSFX("sfx_buttonbacksuper")
 end
 
 function Character:pieceDroppedOK(piece, shift)

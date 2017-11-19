@@ -9,34 +9,35 @@ local GemPlatform = {}
 
 function GemPlatform:init(game, owner, location)
 	self.game = game
-	local img = owner.ID == "P1" and image.UI.platform_gold or image.UI.platform_silver
-	Pic.init(self, game, {x = owner.hand[location].x, y = owner.hand[location].y, image = img})
 	self.hand_idx = location
-	self.x, self.y = owner.hand[location].x, owner.hand[location].y
 	self.owner = owner
 	self.getx = owner.hand.getx
-	self.transparency, self.redness, self.rotation = 255, 0, 0
+	self.redness = 0
 	self.spin = 0	-- radians per frame
-	self.h_shake, self.v_shake = 0, 0 -- screenshake from particles hitting platform
+
+	self.pic = common.instance(Pic, game, {
+		x = owner.hand[location].x,
+		y = owner.hand[location].y,
+		image = owner.ID == "P1" and image.UI.platform_gold or image.UI.platform_silver,
+	})
 end
 
-function GemPlatform:draw(...)
-	local frame = self.game.frame
-	--screen shake translation
-	local h_shake, v_shake = 0, 0
-	if self.shake then
-		h_shake = math.floor(self.shake * (frame % 7 * 0.5 + frame % 13 * 0.25 + frame % 23 / 6 - 5))
-		v_shake = math.floor(self.shake * (frame % 5 * 2/3 + frame % 11 * 0.25 + frame % 17 / 6 - 5))
-	end
+function GemPlatform:draw(params) 
+	local p = {} -- need to create a copy of params or else it will modify params
+	for k, v in pairs(params) do p[k] = v end
 
-	love.graphics.push("all")
-		love.graphics.translate(h_shake, v_shake)
-		Pic.draw(self, ...)
-		if self.redness > 0 then
-			local redRGB = {255, 255, 255, math.min(self.redness, self.transparency)}
-			Pic.draw(self, {RGBTable = redRGB, img = image.UI.platform_red})
-		end
-	love.graphics.pop()
+	if self.shake then
+		local f = self.game.frame
+		p.x = self.pic.x + self.shake * (f % 7 * 0.5 + f % 13 * 0.25 + f % 23 / 6 - 5)
+		p.y = self.pic.y + self.shake * (f % 5 * 2/3 + f % 11 * 0.25 + f % 17 / 6 - 5)
+	end
+	self.pic:draw(p)
+
+	if self.redness > 0 then
+		p.RGBTable = {255, 255, 255, self.redness}
+		p.image = image.UI.platform_red
+		self.pic:draw(p)		
+	end
 end
 
 function GemPlatform:screenshake(frames)
@@ -57,7 +58,7 @@ function GemPlatform:setFastSpin(bool)
 end
 
 function GemPlatform:update(dt)
-	Pic.update(self, dt)
+	self.pic:update(dt)
 	local player = self.owner
 	local loc = self.hand_idx
 
@@ -84,13 +85,14 @@ function GemPlatform:update(dt)
 	if self.fastspin and displayed_damage >= loc then
 		current_spin = self.spin * 5
 	end
-	local make_a_dust = math.floor((self.rotation + current_spin) * 5) - math.floor(self.rotation * 5) ~= 0
+	local make_a_dust = math.floor((self.pic.rotation + current_spin) * 5) - math.floor(self.pic.rotation * 5) ~= 0
 	if make_a_dust and loc ~= 1 then
-		local x_adj = (math.random() - 0.5) * self.width * 0.2
-		local y_adj = (math.random() - 0.5) * self.height * 0.2
-		self.game.particles.dust.generatePlatformSpin(self.game, self.x + x_adj, self.y + y_adj, math.abs(current_spin))
+		local x_adj = (math.random() - 0.5) * self.pic.width * 0.2
+		local y_adj = (math.random() - 0.5) * self.pic.height * 0.2
+		self.game.particles.dust.generatePlatformSpin(self.game, self.pic.x + x_adj, self.pic.y + y_adj, math.abs(current_spin))
 	end
-	self.rotation = self.rotation + current_spin
+
+	self.pic.rotation = self.pic.rotation + current_spin
 
 	if self.shake then
 		self.shake = self.shake - 1

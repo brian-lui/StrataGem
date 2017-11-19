@@ -35,8 +35,8 @@ end
 function RabbitInASnowstorm:update(dt)
 end
 
-function RabbitInASnowstorm:draw(...)
-	self.background:draw(...)
+function RabbitInASnowstorm:draw(params)
+	self.background:draw(params)
 end
 RabbitInASnowstorm = common.class("RabbitInASnowstorm", RabbitInASnowstorm)
 
@@ -159,11 +159,11 @@ function Clouds:update(dt)
 	end
 end
 
-function Clouds:draw(...)
-	self.background:draw(...)
-	for _, v in spairs(self.small_clouds) do v:draw(...) end
-	for _, v in spairs(self.medium_clouds) do v:draw(...) end
-	for _, v in spairs(self.big_clouds) do v:draw(...) end
+function Clouds:draw(params)
+	self.background:draw(params)
+	for _, v in spairs(self.small_clouds) do v:draw(params) end
+	for _, v in spairs(self.medium_clouds) do v:draw(params) end
+	for _, v in spairs(self.big_clouds) do v:draw(params) end
 end
 
 Clouds = common.class("Clouds", Clouds)
@@ -226,9 +226,9 @@ function Starfall:update(dt)
 	end
 end
 
-function Starfall:draw(...)
-	self.background:draw(...)
-	for _, v in spairs(self.stars) do v:draw(...) end
+function Starfall:draw(params)
+	self.background:draw(params)
+	for _, v in spairs(self.stars) do v:draw(params) end
 end
 Starfall = common.class("Starfall", Starfall)
 
@@ -276,9 +276,9 @@ function Colors:update(dt)
 	if new then self:_newColor(new) end
 end
 
-function Colors:draw(...)
-	if self.previous_color then self.previous_color:draw(...) end
-	self.current_color:draw(...)
+function Colors:draw(params)
+	if self.previous_color then self.previous_color:draw(params) end
+	self.current_color:draw(params)
 end
 Colors = common.class("Colors", Colors)
 

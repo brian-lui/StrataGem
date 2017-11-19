@@ -283,6 +283,7 @@ function ui:putPendingAtTop()
 		end
 		if #effect > 0 then
 			local h = effect[1].row == effect[2].row
+			print(effect[1], effect[2])
 			effect.func(self.game, effect[1], effect[2], h)
 		end
 	end
@@ -333,11 +334,11 @@ function ui:update(dt)
 	-- tween gem particles
 	if #pending_gems == 2 and valid then
 		for i = 1, #pending_gems do
-			pending_gems[i].tweening:update(dt)
+		--	pending_gems[i].tweening:update(dt)
 		end
 	else
 		for i = 1, #pending_gems do
-			pending_gems[i].tweening:reset()
+		--	pending_gems[i].tweening:reset()
 		end
 	end
 end

@@ -54,40 +54,40 @@ end
 		rotation: rotation number to draw
 		scale: scaling to draw
 		RGBTable: colors to draw, given as {red, green, blue, alpha}
-		img: image to draw
+		image: image to draw
 		darkened: draw darker (when a pop-up menu is onscreen)
 --]]
 function Pic:draw(params)
-	if self.transparency ~= 0 then
-		params = params or {}
-		love.graphics.push("all")
-			local x_scale = params.scale or self.scaling
-			local y_scale = params.scale or self.scaling
-			local rgbt = self.RGB or {255, 255, 255}
-			rgbt[4] = self.transparency or 255
+	if self.transparency == 0 then return end
 
-			if params.darkened then
-				love.graphics.setColor(127, 127, 127)
-			elseif params.RGBTable then
-				love.graphics.setColor(params.RGBTable)
-			elseif self.transparency then
-				love.graphics.setColor(rgbt)
-			end
-			if params.h_flip then x_scale = x_scale * -1 end
+	params = params or {}
+	love.graphics.push("all")
+		local x_scale = params.scale or self.scaling
+		local y_scale = params.scale or self.scaling
+		local rgbt = self.RGB or {255, 255, 255}
+		rgbt[4] = self.transparency or 255
 
-			love.graphics.draw(
-				params.img or self.image,
-				self.quad,
-				(params.x or self.x) + (self.quad_data.x_offset or 0),
-				(params.y or self.y) + (self.quad_data.y_offset or 0),
-				params.rotation or self.rotation,
-				x_scale or 1,
-				y_scale or 1,
-				self.width / 2, -- origin x
-				self.height / 2 -- origin y
-			)
-		love.graphics.pop()
-	end
+		if params.darkened then
+			love.graphics.setColor(127, 127, 127)
+		elseif params.RGBTable then
+			love.graphics.setColor(params.RGBTable)
+		elseif self.transparency then
+			love.graphics.setColor(rgbt)
+		end
+		if params.h_flip then x_scale = x_scale * -1 end
+
+		love.graphics.draw(
+			params.image or self.image,
+			self.quad,
+			(params.x or self.x) + (self.quad_data.x_offset or 0),
+			(params.y or self.y) + (self.quad_data.y_offset or 0),
+			params.rotation or self.rotation,
+			x_scale or 1,
+			y_scale or 1,
+			self.width / 2, -- origin x
+			self.height / 2 -- origin y
+		)
+	love.graphics.pop()
 end
 
 function Pic:isStationary()

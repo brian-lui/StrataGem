@@ -89,15 +89,7 @@ function gs_main:enter()
 		-- super meter objects
 		local super_function = function() print("opposite guy button pushed!") end
 		if self.me_player.ID == ID then
-			super_function = function()
-				if player.mp >= player.SUPER_COST and self.phase == "Action" then 
-					if player.supering then
-						player:deactivateSuper()
-					else
-						player:activateSuper()
-					end
-				end
-			end
+			super_function = function() player:toggleSuper() end
  		end
 
 		gs_main.createButton(self, {
@@ -133,9 +125,6 @@ function gs_main:enter()
 			end_x = stage.super[ID].x,
 			end_y = stage.super[ID].y,
 		})
-
-
---]]
 	end
 end
 
@@ -165,15 +154,17 @@ local function timeDip(self, logic_function, ...)
 end
 
 function gs_main:update(dt)
-	timeDip(self, function() self.phaseManager:run(self.timeStep) end)
-	self.particles:update(dt) -- variable fps
-	gs_main.current_background:update(dt) -- variable fps
-	self.ui.timer:update(dt)
-	self.ui:updateBursts(gs_main)
-	self.ui:updateSupers(gs_main)	
-	self.animations:updateAll(dt)
-	self.screenshake_frames = math.max(0, self.screenshake_frames - 1)
-	self.timeBucket = self.timeBucket + dt
+	if not self.paused then
+		timeDip(self, function() self.phaseManager:run(self.timeStep) end)
+		self.particles:update(dt) -- variable fps
+		gs_main.current_background:update(dt) -- variable fps
+		self.ui.timer:update(dt)
+		self.ui:updateBursts(gs_main)
+		self.ui:updateSupers(gs_main)	
+		self.animations:updateAll(dt)
+		self.screenshake_frames = math.max(0, self.screenshake_frames - 1)
+		self.timeBucket = self.timeBucket + dt
+	end
 
 	for _, tbl in pairs(gs_main.ui) do
 		for _, v in pairs(tbl) do v:update(dt) end
@@ -181,12 +172,12 @@ function gs_main:update(dt)
 end
 
 -- draw all the non-gem screen elements: super bar, sprite
-function gs_main:drawScreenElements(...)
+function gs_main:drawScreenElements(params)
 	-- under-platform trails
-	for _, v in pairs(self.particles.allParticles.PlatformTinyStar) do v:draw(...) end
-	for _, v in pairs(self.particles.allParticles.PlatformStar) do v:draw(...) end
-	gs_main.ui.static.tub:draw(...)
-	self.ui.timer:draw(...)	-- timer bar
+	for _, v in pairs(self.particles.allParticles.PlatformTinyStar) do v:draw(params) end
+	for _, v in pairs(self.particles.allParticles.PlatformStar) do v:draw(params) end
+	gs_main.ui.static.tub:draw(params)
+	self.ui.timer:draw(params)	-- timer bar
 
 	for player in self:players() do
 		player.animation:draw{h_flip = player.ID == "P2"} -- sprite
@@ -203,21 +194,21 @@ function gs_main.screenshake(self, shake)
 end
 
 -- draw gems and related objects (platforms, particles)
-function gs_main:drawGems(...)
+function gs_main:drawGems(params)
 	local allParticles = self.particles.allParticles
 	-- gem platforms
 	for player in self:players() do
 		for i = 0, #player.hand do
 			if player.hand[i].platform then
-				player.hand[i].platform:draw(...)
+				player.hand[i].platform:draw(params)
 			end
 		end
 	end
 
 	-- under-gem particles
-	for _, instance in pairs(allParticles.WordEffects) do instance:draw(...) end
-	for _, instance in pairs(allParticles.Dust) do instance:draw(...) end
-	for _, instance in pairs(allParticles.Pop) do instance:draw(...) end
+	for _, instance in pairs(allParticles.WordEffects) do instance:draw(params) end
+	for _, instance in pairs(allParticles.Dust) do instance:draw(params) end
+	for _, instance in pairs(allParticles.Pop) do instance:draw(params) end
 
 
 	-- hand gems and pending-garbage gems
@@ -225,12 +216,12 @@ function gs_main:drawGems(...)
 		for i = 1, player.hand_size do
 			if player.hand[i].piece and player.hand[i].piece ~= self.active_piece then
 				for _ = 1, player.hand[i].piece.size do
-						player.hand[i].piece:draw(...)
+						player.hand[i].piece:draw(params)
 				end
 			end
 		end
 		for i = 1, #player.hand.garbage do
-			player.hand.garbage[i]:draw(...)
+			player.hand.garbage[i]:draw(params)
 		end
 	end
 
@@ -256,51 +247,46 @@ function gs_main:drawGems(...)
 			if self.phase == "Action" and r <= 6 then
 				gem:draw{RGBTable = {255, 255, 255, 192}} -- TODO: make this darkened too
 			else
-				gem:draw(...)
+				gem:draw(params)
 			end
 		end
 		love.graphics.setStencilTest()
 	love.graphics.pop()
 
 	-- over-gem particles
-	for _, v in pairs(allParticles.SuperParticles) do v:draw(...) end
-	for _, v in pairs(allParticles.DamageTrail) do v:draw(...) end
-	for _, v in pairs(allParticles.GarbageParticles) do v:draw(...) end
-	for _, v in pairs(allParticles.Damage) do v:draw(...) end
-	for _, v in pairs(allParticles.ExplodingGem) do v:draw(...) end
-	for _, v in pairs(allParticles.PieEffects) do v:draw(...) end
-	for _, v in pairs(allParticles.CharEffects) do v:draw(...) end
+	for _, v in pairs(allParticles.SuperParticles) do v:draw(params) end
+	for _, v in pairs(allParticles.DamageTrail) do v:draw(params) end
+	for _, v in pairs(allParticles.GarbageParticles) do v:draw(params) end
+	for _, v in pairs(allParticles.Damage) do v:draw(params) end
+	for _, v in pairs(allParticles.ExplodingGem) do v:draw(params) end
+	for _, v in pairs(allParticles.PieEffects) do v:draw(params) end
+	for _, v in pairs(allParticles.CharEffects) do v:draw(params) end
 	for i = 1, 3 do
 		for _, v in pairs(allParticles.SuperFreezeEffects) do
-			if v.draw_order == i then
-				v:draw(...)
-			end
+			if v.draw_order == i then v:draw(params) end
 		end
 	end
 
 	-- draw the gem when it's been grabbed by the player
 	if self.active_piece then
 		self.ui:showShadows(self.active_piece)
-		self.active_piece:draw(...)
+		self.active_piece:draw(params)
 		self.ui:showX(self.active_piece)
 	end
 
-	-- over-dust
-	for _, v in pairs(allParticles.OverDust) do v:draw(...) end
-
-	-- exploded platform pieces
-	for _, v in pairs(allParticles.ExplodingPlatform) do v:draw(...) end
-
-	-- uptween gems
-	for _, v in pairs(allParticles.UpGem) do v:draw(...) end
+	-- more over-gem particles
+	for _, v in pairs(allParticles.OverDust) do v:draw(params) end
+	for _, v in pairs(allParticles.ExplodingPlatform) do v:draw(params) end
+	for _, v in pairs(allParticles.UpGem) do v:draw(params) end
+	for _, v in pairs(allParticles.PlacedGem) do v:draw(params) end
 end
 
 -- draw text items
-function gs_main:drawText(...)
+function gs_main:drawText(params)
 	local grid = self.grid
 	-- words
 	for _, v in pairs(self.particles.allParticles.Words) do
-		v:draw(...)
+		v:draw(params)
 	end
 
 	-- debug: row/column display
@@ -363,14 +349,14 @@ function gs_main:drawText(...)
 	love.graphics.pop()
 end
 
-function gs_main:drawButtons(...)
-	gs_main.ui.popup_static.settingsframe:draw(...)
-	gs_main.ui.popup_static.settingstext:draw(...)
-	gs_main.ui.popup_clickable.confirm:draw(...)
-	gs_main.ui.popup_clickable.cancel:draw(...)
-	gs_main.ui.clickable.settings:draw(...)
+function gs_main:drawButtons(params)
+	gs_main.ui.popup_static.settingsframe:draw(params)
+	gs_main.ui.popup_static.settingstext:draw(params)
+	gs_main.ui.popup_clickable.confirm:draw(params)
+	gs_main.ui.popup_clickable.cancel:draw(params)
+	gs_main.ui.clickable.settings:draw(params)
 end
-function gs_main:drawUI(...)
+function gs_main:drawUI(params)
 	local draws = {"tub", "P1burstframe", "P2burstframe", "P1burstblock1",
 		"P1burstblock2", "P2burstblock1", "P2burstblock2", "P1burstpartial1",
 		"P1burstpartial2", "P2burstpartial1", "P2burstpartial2", "P1burstglow1",
@@ -378,10 +364,10 @@ function gs_main:drawUI(...)
 		"P1supermeter", "P2supermeter", "P1superoverlay", "P2superoverlay",
 		"P1superglow", "P2superglow"}
 
-	gs_main.ui.clickable.P1super:draw(...)
-	gs_main.ui.clickable.P2super:draw(...)
-	for i = 1, #draws do gs_main.ui.static[ draws[i] ]:draw(...) end
-	gs_main.ui.clickable.settings:draw(...)
+	gs_main.ui.clickable.P1super:draw(params)
+	gs_main.ui.clickable.P2super:draw(params)
+	for i = 1, #draws do gs_main.ui.static[ draws[i] ]:draw(params) end
+	gs_main.ui.clickable.settings:draw(params)
 end
 
 function gs_main:draw()
@@ -405,22 +391,19 @@ end
 
 function gs_main:mousepressed(x, y)
 	self.lastClickedFrame = self.frame
-	self.lastClickedX = x
-	self.lastClickedY = y
-	local player = self.me_player
+	self.lastClickedX, self.lastClickedY = x, y
 
-	for i = 1, player.hand_size do
-		if player.hand[i].piece and pointIsInRect(x, y, player.hand[i].piece:getRect()) then
-			if self.phase == "Action" then
-				player.hand[i].piece:select()
-			else
-				self.active_piece = player.hand[i].piece
+	local player = self.me_player
+	if not self.paused then
+		for i = 1, player.hand_size do
+			if player.hand[i].piece and pointIsInRect(x, y, player.hand[i].piece:getRect()) then
+				if self.phase == "Action" then
+					player.hand[i].piece:select()
+				else
+					self.active_piece = player.hand[i].piece
+				end
 			end
 		end
-	end
-
-	if pointIsInRect(x, y, table.unpack(self.stage.super[player.ID].rect)) then
-		player.super_clicked = true
 	end
 
 	self:_mousepressed(x, y, gs_main)
@@ -431,17 +414,14 @@ local QUICKCLICK_MAX_MOVE = 0.05
 
 function gs_main:mousereleased(x, y)
 	local player = self.me_player
-
 	if self.active_piece then
 		local quickclick = self.frame - self.lastClickedFrame < QUICKCLICK_FRAMES
 		local nomove = math.abs(x - self.lastClickedX) < self.stage.width * QUICKCLICK_MAX_MOVE and
 			math.abs(y - self.lastClickedY) < self.stage.height * QUICKCLICK_MAX_MOVE
 		if quickclick and nomove then self.active_piece:rotate() end
 		if self.phase == "Action" then print("deselect now") self.active_piece:deselect() end
+		self.active_piece = false
 	end
-
-	player.super_clicked = false
-	self.active_piece = false
 
 	self:_mousereleased(x, y, gs_main)
 end
