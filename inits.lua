@@ -1,10 +1,13 @@
 local love = _G.love
+local TLfres = require "tlfres"
 
 -- For compatibility; Lua 5.3 moved unpack to table.unpack
 _G.table.unpack = _G.table.unpack or _G.unpack
 
 print(love.filesystem.getSaveDirectory())
 
+local WINDOW_WIDTH = 1920
+local WINDOW_HEIGHT = 1080
 -- all prints go to debug.txt file. achtung!
 love.filesystem.remove("debug.txt")
 local reallyprint = print
@@ -26,9 +29,10 @@ function print(...)
 end
 
 window = {
-	width = 1920,
-	height = 1080,
-	resize = 2/3,
+	width = WINDOW_WIDTH,
+	height = WINDOW_HEIGHT,
+	scale = TLfres.getScale(WINDOW_WIDTH, WINDOW_HEIGHT),
+	tlfres = TLfres,
 }
 
 ID = {
