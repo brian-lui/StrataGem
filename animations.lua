@@ -143,7 +143,7 @@ function Animations:drawTracers()
 	local colors = {{255, 0, 0}, {0, 255, 0}, {0, 0, 255}, {255, 255, 0}, {255, 0, 255}, {0, 255, 255}}
 	local count = 1
 	love.graphics.push("all")
-		love.graphics.setPointSize(3)
+		love.graphics.setPointSize(3 * window.scale)
 		for _, v in spairs(self.allAnimations) do
 			love.graphics.setColor(colors[count])
 			count = (count % #colors) + 1
