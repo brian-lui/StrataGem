@@ -695,12 +695,13 @@ UpGem = common.class("UpGem", UpGem, Pic)
 -- When a gem is placed in basin, this is the lighter gem in the holding area
 -- to show where you plaecd it.
 local PlacedGem = {}
-function PlacedGem:init(manager, gem)
-	Pic.init(self, manager.game, {x = gem.x, y = gem.y, image = gem.image, transparency = 192})
+function PlacedGem:init(manager, gem, y, row)
+	Pic.init(self, manager.game, {x = gem.x, y = y, image = gem.image, transparency = 192})
 	manager.allParticles.PlacedGem[ID.particle] = self
 	self.manager = manager
 	self.owner = gem.owner
-	self.row = gem.row
+	self.row = row
+	self.tweened_down = false
 end
 
 function PlacedGem:remove()
@@ -708,19 +709,37 @@ function PlacedGem:remove()
 end
 
 function PlacedGem.generate(game, gem)
-	common.instance(PlacedGem, game.particles, gem)
+	-- We calculate the placedgem location based on the gem row
+	local row, y
+	if gem.row == 1 or gem.row == 2 then -- doublecast gem, goes in rows 7-8
+		row = gem.row + 6
+	elseif gem.row == 3 or gem.row == 4 then -- rush gem, goes in rows 9-10
+		row = gem.row + 6
+	elseif gem.row == 5 or gem.row == 6 then -- normal gem, goes in rows 7-8 (gets pushed to 11-12)
+		row = gem.row + 2
+	else 
+		print("Error, placedgem received a gem without a row")
+	end
+	y = game.grid.y[row]
+	common.instance(PlacedGem, game.particles, gem, y, row)
 end
 
 -- In case of doublecast mouseover, we show it moved down
 function PlacedGem:tweenDown()
-	local destination = self.manager.game.grid.y[self.row + 4]
-	self:change{duration = 18, y = destination, easing = "outBack"}
+	if not self.tweened_down then
+		local destination = self.manager.game.grid.y[self.row + 4]
+		self:change{duration = 18, y = destination, easing = "outBack"}
+		self.tweened_down = true
+	end
 end
 
 -- If doublecast mouseover cancelled
 function PlacedGem:tweenUp()
-	local destination = self.manager.game.grid.y[self.row]
-	self:change{y = destination}
+	if self.tweened_down then
+		local destination = self.manager.game.grid.y[self.row]
+		self:change{y = destination}
+		self.tweened_down = false
+	end
 end
 
 -- Remove all gems at end of turn, whether they finished tweening or not

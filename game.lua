@@ -375,66 +375,16 @@ function Game:_mousemoved(x, y, gamestate)
 	end
 end
 
-
 function Game:keypressed(key)
-	local grid = self.grid
-	local p1, p2 = self.p1, self.p2
-
 	if key == "escape" then
 		love.event.quit()
 	elseif key == "f3" then	-- Toggle debug mode (see lovedebug.lua). Key chosen from Minecraft.
 		_G.debugEnabled = not _G.debugEnabled
-	elseif key == "t" then
-		grid:addBottomRow(p1)
-		for g in grid:gems() do
-			g.x = g.target_x
-			g.y = g.target_y
+	else
+		if self.unittests[key] then
+			args = function () return p1.super_meter_image.transparency end -- for showDebugOverlay
+			self.unittests[key](self, args)
 		end
-	elseif key == "y" then
-		grid:addBottomRow(p2)
-		for g in grid:gems() do
-			g.x = g.target_x
-			g.y = g.target_y
-		end
-	elseif key == "q" then reallyprint(love.filesystem.getSaveDirectory())
-	elseif key == "a" then self.time_to_next = 1
-	elseif key == "s" then p1.hand:addDamage(1)
-	elseif key == "d" then p2.hand:addDamage(1)
-	elseif key == "f" then
-		for player in self:players() do
-			player.cur_burst = math.min(player.cur_burst + 1, player.MAX_BURST)
-			player:addSuper(10000)
-			player:resetMP()
-		end
-	elseif key == "g" then
-		self.unittests.displayNoRush(self)
-	elseif key == "h" then
-		self.unittests.testPlacedGem(self)
-	elseif key == "k" then self.canvas[6]:renderTo(function() love.graphics.clear() end)
-	elseif key == "z" then self.unittests.resetWithSeed(self, nil)
-	elseif key == "f1" then self.unittests.resetWithSeed(self, 12345)
-	elseif key == "x" then
-		self.unittests.garbageMatch(self)
-	elseif key == "c" then
-		self.unittests.multiCombo(self)
-	elseif key == "v" then
-		self.unittests.p2VerticalMatch(self)
-	elseif key == "b" then
-		self.unittests.allRedGems(self)
-	elseif key == "n" then
-		self.unittests.shuffleHands(self)
-	elseif key == "m" then
-		self.debug_drawGemOwners = not self.debug_drawGemOwners
-		self.debug_drawParticleDestinations = not self.debug_drawParticleDestinations
-		self.debug_drawGamestate = not self.debug_drawGamestate
-		self.debug_drawDamage = not self.debug_drawDamage
-		self.debug_drawGrid = not self.debug_drawGrid
-	elseif key == "," then
-		self.debug_overlay = function ()
-			return p1.super_meter_image.transparency
-		end
-	elseif key == "." then
-		self.timeStep = self.timeStep == 0.1 and 1/60 or 0.1
 	end
 end
 
