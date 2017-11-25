@@ -1,5 +1,5 @@
 -- You can make some patterns to test bugs
-
+local NOP = function() end
 local common = require "class.commons"
 local Gem = require 'gem'
 local Piece = require 'piece'
@@ -14,6 +14,10 @@ local colorAliases = {
 	y = "yellow",
 	yellow = "yellow"
 }
+
+-------------------------------------------------------------------------------
+------------------------------ TEST GEM PATTERNS ------------------------------
+-------------------------------------------------------------------------------
 
 -- rows is from 8 at the top to 1 at the bottom
 local function n(self, row, column, color, owner)
@@ -56,7 +60,7 @@ local function nrow(game, row, colors)
 	end
 end
 
--- patterns here
+---------------------------------- PATTERNS -----------------------------------
 
 -- test garbage matches
 local function garbageMatch(game)
@@ -96,7 +100,10 @@ local function p2VerticalMatch(game)
 	end
 end
 
--- other test things here
+-------------------------------------------------------------------------------
+------------------------------ TEST OTHER THINGS ------------------------------
+-------------------------------------------------------------------------------
+
 local function allRedGems(game)
 	local hands = {game.p1.hand, game.p2.hand}
 	for _, hand in pairs(hands) do
@@ -125,8 +132,8 @@ local function shuffleHands(game)
 	end
 end
 
-local function resetWithSeed(game, rng_seed)
-	game:start("1P", "heath", "walter", "cloud", rng_seed, 1)
+local function resetGame(game)
+	game:start("1P", "heath", "walter", "cloud", nil, 1)
 end
 
 local function displayNoRush(game)
@@ -134,24 +141,106 @@ local function displayNoRush(game)
 	game.particles.words.generateNoRush(game, column)
 end
 
-local function testPlacedGem(game)
+local function tweenPlacedGemDown(game)
 	local placedgems = game.particles.allParticles.PlacedGem
 	for _, v in pairs(placedgems) do
-		print("PlacedGem owner:", v.owner)
 		v:tweenDown()
 	end
 end
 
+local function tweenPlacedGemUp(game)
+	local placedgems = game.particles.allParticles.PlacedGem
+	for _, v in pairs(placedgems) do
+		v:tweenUp()
+	end
+end
+
+local function addBottomRowP1(game)
+	game.grid:addBottomRow(p1)
+	for g in grid:gems() do g.x, g.y = g.target_x, g.target_y end
+end
+
+local function addBottomRowP2(game)
+	game.grid:addBottomRow(p2)
+	for g in grid:gems() do g.x, g.y = g.target_x, g.target_y end
+end
+
+local function printSaveDirectory(game)
+	print(love.filesystem.getSaveDirectory())
+end
+
+local function skipToTurnEnd(game)
+	game.time_to_next = 1
+end
+
+local function addDamageP1(game)
+	game.p1.hand:addDamage(1)
+end
+
+local function addDamageP2(game)
+	game.p2.hand:addDamage(1)
+end
+
+local function addSuperAndBurst(game)
+	for player in game:players() do
+		player.cur_burst = math.min(player.cur_burst + 1, player.MAX_BURST)
+		player:addSuper(10000)
+		player:resetMP()
+	end
+end
+
+local function showAnimationCanvas(game)
+	game.canvas[6]:renderTo(function() love.graphics.clear() end)
+end
+
+local function showDebugInfo(game)
+	game.debug_drawGemOwners = not game.debug_drawGemOwners
+	game.debug_drawParticleDestinations = not game.debug_drawParticleDestinations
+	game.debug_drawGamestate = not game.debug_drawGamestate
+	game.debug_drawDamage = not game.debug_drawDamage
+	game.debug_drawGrid = not game.debug_drawGrid	
+end
+
+local function showDebugOverlay(game, ...)
+	local args = {...}
+	if type(args[1]) == "function" then
+		game.debug_overlay = args[1]
+	else	
+		game.debug_overlay = function() return p1.super_meter_image.transparency end
+	end
+end
+
+local function toggleSlowdown(game)
+	game.timeStep = game.timeStep == 0.1 and 1/60 or 0.1
+end
+
 local Unittests = {
-	garbageMatch = garbageMatch,
-	multiCombo = multiCombo,
-	overflow = overflow,
-	allRedGems = allRedGems,
-	shuffleHands = shuffleHands,
-	displayNoRush = displayNoRush,
-	resetWithSeed = resetWithSeed,
-	p2VerticalMatch = p2VerticalMatch,
-	testPlacedGem = testPlacedGem,
+	q = garbageMatch,
+	w = multiCombo,
+	e = overflow,
+	r = p2VerticalMatch,
+	t = allRedGems,
+	y = shuffleHands,
+	u = resetGame,
+	i = displayNoRush,
+	o = tweenPlacedGemDown,
+	p = tweenPlacedGemUp,
+	a = addBottomRowP1,
+	s = addBottomRowP2,
+	d = printSaveDirectory,
+	f = skipToTurnEnd,
+	g = addDamageP1,
+	h = addDamageP2,
+	j = addSuperAndBurst,
+	k = showAnimationCanvas,
+	l = showDebugInfo,
+	z = showDebugOverlay,
+	x = toggleSlowdown,
+	c = NOP,
+	v = NOP,
+	b = NOP,
+	n = NOP,
+	m = NOP,
 }
 
 return common.class("Unittests", Unittests)
