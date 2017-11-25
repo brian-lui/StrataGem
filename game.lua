@@ -407,7 +407,7 @@ function Game:keypressed(key)
 			player:resetMP()
 		end
 	elseif key == "g" then
-		self.unittests.displayNoRush(self)
+		self.unittests.testPlacedGem2(self)
 	elseif key == "h" then
 		self.unittests.testPlacedGem(self)
 	elseif key == "k" then self.canvas[6]:renderTo(function() love.graphics.clear() end)

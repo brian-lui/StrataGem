@@ -331,15 +331,11 @@ function ui:update(dt)
 		game.particles.wordEffects.clear(game.particles)
 	end
 
-	-- tween gem particles
+	-- tween the placedgem particles, if it's a doublecast
 	if #pending_gems == 2 and valid then
-		for i = 1, #pending_gems do
-		--	pending_gems[i].tweening:update(dt)
-		end
+		for _, v in pairs(game.particles.allParticles.PlacedGem) do v:tweenDown() end
 	else
-		for i = 1, #pending_gems do
-		--	pending_gems[i].tweening:reset()
-		end
+		for _, v in pairs(game.particles.allParticles.PlacedGem) do v:tweenUp() end
 	end
 end
 
