@@ -4,32 +4,27 @@ require "lovedebug"
 require "classcommons"
 local common = require "class.commons"
 local game
-local maxWindowWidth
-local maxWindowHeight
 
 function love.load()
 	love.window.setTitle("StrataGem!")
 	game = common.instance(require "game")
 
-	-- Using the largest full screen dimension as the upper bound for window size
-	fullscreenDimensions = love.window.getFullscreenModes()
-	table.sort(fullscreenDimensions, function(a, b) return a.width*a.height > b.width*b.height end)
-	maxWindowWidth, maxWindowHeight = fullscreenDimensions[1].width, fullscreenDimensions[1].height
-
 	-- default windowed resolution is half native
 	local desktopWidth, desktopHeight = love.window.getDesktopDimensions()
-	love.window.setMode(desktopWidth / 2, desktopHeight / 2)
+	love.window.setMode(desktopWidth / 2, desktopHeight / 2, {resizable=true})
 end
 -- local sandbox = require 'animationsandbox'
 
 local __NOP__ = function () end
 
 function love.draw()
+	love.graphics.push("all")
 	if game.draw then
 		drawspace.tlfres.beginRendering(drawspace.width, drawspace.height)
 		game:draw()
-		drawspace.tlfres.endRendering({0, 0, 0, 0}) -- Using an opaque color so we don't have a visible letterbox
+		drawspace.tlfres.endRendering()
 	end
+	love.graphics.pop()
 end
 
 function love.update(dt)
@@ -63,4 +58,5 @@ end
 
 function love.resize(w, h)
 	drawspace.scale = drawspace.tlfres.getScale(drawspace.width, drawspace.height) -- Recalculate scale based on new window dimensions
+	love.window.setMode(drawspace.width * drawspace.scale, drawspace.height * drawspace.scale, {resizable = true}) -- Snapping window to a size that matches our aspect ratio
 end
