@@ -55,8 +55,3 @@ function love.mousemoved(x, y, dx, dy)
 		game:mousemoved(x, y, dx, dy)
 	end
 end
-
-function love.resize(w, h)
-	drawspace.scale = drawspace.tlfres.getScale(drawspace.width, drawspace.height) -- Recalculate scale based on new window dimensions
-	love.window.setMode(drawspace.width * drawspace.scale, drawspace.height * drawspace.scale, {resizable = true}) -- Snapping window to a size that matches our aspect ratio
-end
