@@ -6,7 +6,7 @@ local Pic = require 'pic'
 local image = require 'image'
 
 local Hand = {}
-Hand.PLATFORM_SPEED = canvas.height / 192 -- pixels per second for pieces to shuffle
+Hand.PLATFORM_SPEED = drawspace.height / 192 -- pixels per second for pieces to shuffle
 
 function Hand:init(game, player)
 	self.game = game

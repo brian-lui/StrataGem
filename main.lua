@@ -8,7 +8,7 @@ local maxWindowWidth
 local maxWindowHeight
 
 function love.load()
-	love.window.setMode(canvas.width * canvas.scale, canvas.height * canvas.scale, {resizable=true})
+	love.window.setMode(drawspace.width * drawspace.scale, drawspace.height * drawspace.scale, {resizable=true})
 	love.window.setTitle("StrataGem!")
 	game = common.instance(require "game")
 	
@@ -24,10 +24,10 @@ local __NOP__ = function () end
 function love.draw()
 	local f = game.draw or __NOP__
 	love.graphics.push("all")
-		love.graphics.scale(canvas.scale, canvas.scale)
+		love.graphics.scale(drawspace.scale, drawspace.scale)
 		f(game)
-	canvas.tlfres.beginRendering(canvas.width, canvas.height)
-	canvas.tlfres.endRendering({0, 0, 0, 0}) -- Using an opaque color so we don't have a visible letterbox
+	drawspace.tlfres.beginRendering(drawspace.width, drawspace.height)
+	drawspace.tlfres.endRendering({0, 0, 0, 0}) -- Using an opaque color so we don't have a visible letterbox
 	love.graphics.pop()
 end
 
@@ -40,26 +40,26 @@ function love.keypressed(key)
 end
 
 function love.mousepressed(x, y, button, istouch)
-	x, y = x / canvas.scale, y / canvas.scale
+	x, y = x / drawspace.scale, y / drawspace.scale
 	local f = game.mousepressed or __NOP__
 	f(game, x, y, button, istouch)
 end
 
 function love.mousereleased(x, y, button, istouch)
-	x, y = x / canvas.scale, y / canvas.scale
+	x, y = x / drawspace.scale, y / drawspace.scale
 	local f = game.mousereleased or __NOP__
 	f(game, x, y, button, istouch)
 end
 
 function love.mousemoved(x, y, dx, dy)
-	x, y, dx, dy = x / canvas.scale, y / canvas.scale, dx / canvas.scale, dy / canvas.scale
+	x, y, dx, dy = x / drawspace.scale, y / drawspace.scale, dx / drawspace.scale, dy / drawspace.scale
 	local f = game.mousemoved or __NOP__
 	f(game, x, y, dx, dy)
 end
 
 function love.resize(w, h)
 	local newHeight = math.min(maxWindowHeight, h)
-	local newWidth = math.min(maxWindowWidth, newHeight * canvas.aspectRatio)
+	local newWidth = math.min(maxWindowWidth, newHeight * drawspace.aspectRatio)
 	love.window.setMode(newWidth, newHeight, {resizable = true})
-	canvas.scale = canvas.tlfres.getScale(canvas.width, canvas.height) -- Recalculate scale based on new window dimensions
+	drawspace.scale = drawspace.tlfres.getScale(drawspace.width, drawspace.height) -- Recalculate scale based on new window dimensions
 end
