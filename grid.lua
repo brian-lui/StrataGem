@@ -6,8 +6,8 @@ local deepcpy = require "utilities".deepcpy
 local Grid = {}
 
 local window = _G.window -- TODO: Remove global
-Grid.DROP_SPEED = window.height / 50 -- pixels per frame for loose gems to drop
-Grid.DROP_MULTIPLE_SPEED = window.height / 180 -- multiplier for scoring_combo
+Grid.DROP_SPEED = canvas.height / 50 -- pixels per frame for loose gems to drop
+Grid.DROP_MULTIPLE_SPEED = canvas.height / 180 -- multiplier for scoring_combo
 
 --[[
 Rows 1-2: doublecast gem pending position.
