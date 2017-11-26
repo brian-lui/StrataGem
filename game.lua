@@ -41,8 +41,8 @@ local Game = {}
 
 Game.INIT_TIME_TO_NEXT = 430 -- frames in each action phase
 Game.INIT_PIECE_WAITING_TIME = 30 -- delay before new pieces
-Game.LOSE_ROW = 6
-Game.RUSH_ROW = 8 -- can only rush if this row is empty
+Game.LOSE_ROW = 12 -- game over if a gem ends the turn in this row or above
+Game.RUSH_ROW = 14 -- can only rush if this row is empty
 Game.NETPLAY_MAX_WAIT = 60
 Game.STATE_SEND_WAIT = 80
 Game.DAMAGE_PARTICLE_TO_PLATFORM_FRAMES = 54
