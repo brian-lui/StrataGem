@@ -37,7 +37,6 @@ function PhaseManager:action(dt)
 	local game = self.game
 	local client = game.client
 	local ai = game.ai
-	local TLfres = window.tlfres
 
 	for player in game:players() do
 		player.hand:update(dt)
@@ -50,7 +49,7 @@ function PhaseManager:action(dt)
 	game.time_to_next = game.time_to_next - 1
 	if not ai.finished then ai:evaluateActions(game.them_player) end
 	if game.time_to_next <= 0 and ai.finished then
-		love.mousereleased(TLfres.getMousePosition(window.width, window.height))
+		love.mousereleased(drawspace.tlfres.getMousePosition(drawspace.width, drawspace.height))
 		game.particles.wordEffects.clear(game.particles)
 		game.phase = "Resolve"
 

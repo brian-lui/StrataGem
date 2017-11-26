@@ -6,8 +6,8 @@ _G.table.unpack = _G.table.unpack or _G.unpack
 
 print(love.filesystem.getSaveDirectory())
 
-local WINDOW_WIDTH = 1920
-local WINDOW_HEIGHT = 1080
+local DRAWSPACE_WIDTH = 1920
+local DRAWSPACE_HEIGHT = 1080
 -- all prints go to debug.txt file. achtung!
 love.filesystem.remove("debug.txt")
 local reallyprint = print
@@ -28,10 +28,11 @@ function print(...)
 	love.filesystem.append("debug.txt", write .. "\n")
 end
 
-window = {
-	width = WINDOW_WIDTH,
-	height = WINDOW_HEIGHT,
-	scale = TLfres.getScale(WINDOW_WIDTH, WINDOW_HEIGHT),
+drawspace = {
+	width = DRAWSPACE_WIDTH,
+	height = DRAWSPACE_HEIGHT,
+	scale = TLfres.getScale(DRAWSPACE_WIDTH, DRAWSPACE_HEIGHT),
+	aspectRatio = DRAWSPACE_WIDTH / DRAWSPACE_HEIGHT,
 	tlfres = TLfres,
 }
 
