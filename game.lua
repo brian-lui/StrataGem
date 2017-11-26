@@ -296,6 +296,7 @@ function Game:_createSettingsMenu(gamestate, params)
 		image_pushed = image.button.confirmpush,
 		end_x = -stage.width,
 		end_y = -stage.height,
+		pushed_sfx = "sfx_buttonback",
 		end_transparency = 0,
 		action = function()
 			if self.settings_menu_open then
