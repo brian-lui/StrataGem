@@ -177,24 +177,26 @@ local function drawPlacementShadow(self, piece, shift)
 	end
 end
 
--- draws the gem shadows indicating where the piece will land.
+-- draws the gem shadows at the bottom indicating where the piece will land.
 local function drawDestinationShadow(self, piece, shift, account_for_doublecast)
 	local grid = self.game.grid
 	local toshow = {}
 	local drop_locs = grid:getDropLocations(piece, shift)
 	if account_for_doublecast then
 		local pending_gems = grid:getPendingGems(piece.owner)
-		for i = 1, piece.size do
-			for _, gem in pairs(pending_gems) do
-				if drop_locs[i][1] == gem.column then
-					drop_locs[i][2] = drop_locs[i][2] - 1
-				end
-			end
+
+		-- also draw the previous gem's shadows
+		for _, gem in pairs(pending_gems) do
+			local first_empty_row = grid:getFirstEmptyRow(gem.column)
+			-- shift needed is first_empty_row - (upper normal-placement-column - 1)
+			-- this is bad code sorry
+			local shift_needed = first_empty_row - (5 - 1)
+			local row = gem.row + shift_needed
+			gem:draw{RGBTable = {255, 255, 255, 160}, displace_y = self.game.grid.y[row] - gem.y}
 		end
 	end
 
 	for i = 1, piece.size do
-		-- shadow at bottom
 		toshow[i] = {}
 		toshow[i].x = grid.x[ drop_locs[i][1] ] -- tub c column
 		toshow[i].y = grid.y[ drop_locs[i][2] ] -- tub r row
@@ -202,11 +204,6 @@ local function drawDestinationShadow(self, piece, shift, account_for_doublecast)
 			piece.gems[i]:draw{pivot_x = toshow[i].x, pivot_y = toshow[i].y, RGBTable = {255, 255, 255, 160}}
 		end
 	end
-end
-
--- draws the gem shadows indicating where the piece will land.
-local function drawDoublecastGemShadow(self, gem, row)
-	gem:draw{RGBTable = {255, 255, 255, 160}, displace_y = self.game.grid.y[row] - gem.y}
 end
 
 -- show all the possible shadows!
@@ -223,15 +220,6 @@ function ui:showShadows(piece)
 		local account_for_doublecast = #pending_gems == 2
 
 		drawPlacementShadow(self, piece, shift)
-		if account_for_doublecast then
-			local row1, row2 = self.game.grid:getFirstEmptyRow(pending_gems[1].column), self.game.grid:getFirstEmptyRow(pending_gems[2].column)
-			if pending_gems[1].column == pending_gems[2].column then
-				drawDoublecastGemShadow(self, pending_gems[1], row2 - 1)	-- except up 1
-			else
-				drawDoublecastGemShadow(self, pending_gems[1], row2)
-			end
-			drawDoublecastGemShadow(self, pending_gems[2], row2)
-		end
 		drawDestinationShadow(self, piece, shift, account_for_doublecast)
 	end
 end

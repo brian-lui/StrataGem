@@ -41,12 +41,12 @@ function Grid:init(game)
 	end
 
 	-- landing gem positions
-	self.y[7] = stage.gem_height * 1
-	self.y[8] = stage.gem_height * 2
-	self.y[9] = stage.gem_height * 2
-	self.y[10] = stage.gem_height * 3
-	self.y[11] = stage.gem_height * 3
-	self.y[12] = stage.gem_height * 4
+	self.y[7] = tub_bottom - 11.75 * stage.gem_height
+	self.y[8] = tub_bottom - 10.75 * stage.gem_height
+	self.y[9] = tub_bottom - 10.75 * stage.gem_height
+	self.y[10] = tub_bottom - 9.75 * stage.gem_height
+	self.y[11] = tub_bottom - 9.75 * stage.gem_height
+	self.y[12] = tub_bottom - 8.75 * stage.gem_height
 
 	-- basin positions
 	for i = 13, self.rows + 1 do

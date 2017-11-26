@@ -361,8 +361,8 @@ function gs_main:drawUI(params)
 		"P1burstblock2", "P2burstblock1", "P2burstblock2", "P1burstpartial1",
 		"P1burstpartial2", "P2burstpartial1", "P2burstpartial2", "P1burstglow1",
 		"P1burstglow2", "P2burstglow1", "P2burstglow2", "P1superword", "P2superword",
-		"P1supermeter", "P2supermeter", "P1superoverlay", "P2superoverlay",
-		"P1superglow", "P2superglow"}
+		"P1supermeter", "P2supermeter", "P1superglow", "P2superglow", 
+		"P1superoverlay", "P2superoverlay",}
 
 	gs_main.ui.clickable.P1super:draw(params)
 	gs_main.ui.clickable.P2super:draw(params)
