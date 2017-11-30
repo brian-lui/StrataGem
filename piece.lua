@@ -388,7 +388,14 @@ function Piece:dropIntoBasin(coords, received_from_opponent)
 	hand:movePieceToGrid(grid, self, locations)
 	hand:movePieceToGridAnim(grid, self, locations)
 	player.played_pieces[#player.played_pieces+1] = self.gems
-	self:breakUp()	
+	self:breakUp()
+
+	-- refresh for new position for placement shadows if doublecast
+	if player.dropped_piece == "doubled" then
+		for _, v in pairs(game.particles.allParticles.PlacedGem) do
+			if v.place_type == "normal" then v:tweenDown(true) end
+		end
+	end
 end
 
 return common.class("Piece", Piece)

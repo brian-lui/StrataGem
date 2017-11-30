@@ -32,7 +32,6 @@ drawspace = {
 	width = DRAWSPACE_WIDTH,
 	height = DRAWSPACE_HEIGHT,
 	scale = TLfres.getScale(DRAWSPACE_WIDTH, DRAWSPACE_HEIGHT),
-	aspectRatio = DRAWSPACE_WIDTH / DRAWSPACE_HEIGHT,
 	tlfres = TLfres,
 }
 
