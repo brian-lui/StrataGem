@@ -244,12 +244,9 @@ end
 function Pic:change(target)
 	target.easing = target.easing or "linear"
 	target.tween_target = target.tween_target or {t = 1}
-	if target.queue ~= false then
-		target.queue = true
-	end
-	if target.debug then
-		print("New move instruction received")
-	end
+	if target.queue ~= false then target.queue = true end
+	if target.debug then print("New move instruction received")	end
+	if target.duration == 0 then target.duration = 0.0078125 end -- let me know if this hack causes problems
 
 	if not target.duration then -- apply instantly, interrupting all moves
 		clearMove(self)

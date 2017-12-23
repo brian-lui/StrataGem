@@ -241,7 +241,7 @@ end
 -- sends screenshake data depending on how many gems matched, called on match
 function ui:screenshake(damage)
 	self.game.screenshake_frames = self.game.screenshake_frames + math.max(0, damage * 5)
-	self.game.screenshake_vel = math.max(0, damage)
+	self.game.screenshake_vel = self.game.screenshake_vel + math.max(0, damage)
 end
 
 -- at turn end, move the gems to the top of the screen so they fall down nicely

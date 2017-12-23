@@ -383,8 +383,7 @@ function Game:keypressed(key)
 		_G.debugEnabled = not _G.debugEnabled
 	else
 		if self.unittests[key] then
-			args = function () return p1.super_meter_image.transparency end -- for showDebugOverlay
-			self.unittests[key](self, args)
+			self.unittests[key](self)
 		end
 	end
 end

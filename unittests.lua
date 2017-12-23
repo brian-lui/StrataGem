@@ -201,13 +201,8 @@ local function showDebugInfo(game)
 	game.debug_drawGrid = not game.debug_drawGrid	
 end
 
-local function showDebugOverlay(game, ...)
-	local args = {...}
-	if type(args[1]) == "function" then
-		game.debug_overlay = args[1]
-	else	
-		game.debug_overlay = function() return p1.super_meter_image.transparency end
-	end
+local function showDebugOverlay(game)
+	game.debug_overlay = function() return game.phase end
 end
 
 local function toggleSlowdown(game)
