@@ -86,6 +86,7 @@ function Particles:reset()
 		OverDust = {},
 		UpGem = {},
 		PlacedGem = {},
+		GemImage = {},
 		Words = {},
 		WordEffects = {},
 		PieEffects = {},
@@ -99,7 +100,7 @@ end
 local DamageParticle = {}
 function DamageParticle:init(manager, gem)
 	local img = image.lookup.particle_freq.random(gem.color)
-	Pic.init(self, manager.game, {x = gem.x, y = gem.y, image = img})
+	Pic.init(self, manager.game, {x = gem.x, y = gem.y, image = img, transparency = 0})
 	self.owner = gem.owner
 	manager.allParticles.Damage[ID.particle] = self
 	self.manager = manager
@@ -111,7 +112,7 @@ function DamageParticle:remove()
 end
 
 -- player.hand.damage is the damage before this round's match(es) is scored
-function DamageParticle.generate(game, gem)
+function DamageParticle.generate(game, gem, delay_frames)
 	local gem_creator = game:playerByIndex(gem.owner)
 	local player = gem_creator.enemy
 
@@ -147,6 +148,13 @@ function DamageParticle.generate(game, gem)
 			end
 			p:remove()
 		end
+
+		if delay_frames then
+			p:change{transparency = 0}
+		 	p:wait(delay_frames)
+		 	p:change{duration = 0, transparency = 255}
+		end
+
 		if drop_duration == 0 then
 			p:change{duration = duration, rotation = rotation, curve = curve,
 				exit = {exit_2}}
@@ -168,7 +176,7 @@ function DamageParticle.generate(game, gem)
 				trail.drop_duration, trail.drop_x, trail.drop_y = drop_duration, drop_x, drop_y
 			end
 
-			game.queue:add(i * 2, game.particles.damageTrail.generate, game, trail)
+			game.queue:add(i * 2, game.particles.damageTrail.generate, game, trail, delay_frames)
 		end
 
 		game.particles:incrementCount("created", "Damage", gem.owner)
@@ -190,9 +198,16 @@ function DamageTrailParticle:remove()
 	self.manager.allParticles.DamageTrail[self.ID] = nil
 end
 
-function DamageTrailParticle.generate(game, trail)
+function DamageTrailParticle.generate(game, trail, delay_frames)
 	local p = common.instance(DamageTrailParticle, game.particles, trail.gem)
 	p.particle_type = "DamageTrail"
+
+	if delay_frames then
+		p:change{transparency = 0}
+	 	p:wait(delay_frames)
+	 	p:change{duration = 0, transparency = 255}
+	 end
+
 	if trail.drop_duration then
 		p:change{duration = trail.duration, rotation = trail.rotation, curve = trail.curve}
 		p:change{duration = trail.drop_duration, x = trail.drop_x, y = trail.drop_y,
@@ -221,8 +236,8 @@ function SuperParticle:remove()
 	self.manager.allParticles.SuperParticles[self.ID] = nil
 end
 
-function SuperParticle.generate(game, gem, num_particles)
--- particles follow cubic Bezier curve from gem origin to super bar.
+function SuperParticle.generate(game, gem, num_particles, delay_frames)
+	-- particles follow cubic Bezier curve from gem origin to super bar.
 	local player = game:playerByIndex(gem.owner)
 	for _ = 1, num_particles do
 		-- create bezier curve
@@ -239,6 +254,12 @@ function SuperParticle.generate(game, gem, num_particles)
 		-- create particle
 		local p = common.instance(SuperParticle, game.particles, gem)
 		game.particles:incrementCount("created", "MP", gem.owner)
+
+		if delay_frames then
+			p:change{transparency = 0}
+		 	p:wait(delay_frames)
+		 	p:change{duration = 0, transparency = 255}
+		 end
 
 		-- move particle
 		local duration = (0.9 + 0.2 * math.random()) * 90
@@ -326,8 +347,15 @@ function PopParticle:remove()
 	self.manager.allParticles.Pop[self.ID] = nil
 end
 
-function PopParticle.generate(game, gem)
+function PopParticle.generate(game, gem, delay_frames)
 	local p = common.instance(PopParticle, game.particles, gem)
+
+	if delay_frames then
+		p:change{transparency = 0}
+	 	p:wait(delay_frames)
+	 	p:change{duration = 0, transparency = 255}
+	end
+
 	p:change{duration = 30, transparency = 0, scaling = 4, exit = true}
 end
 
@@ -548,8 +576,8 @@ function Dust.generateFountain(game, gem, n)
  	end
 end
 
--- called when a match is made
-function Dust.generateBigFountain(game, gem, n)
+-- called when a gem is destroyed (usually through a match)
+function Dust.generateBigFountain(game, gem, n, delay_frames)
 	local x, y = gem.x, gem.y
 	local duration = 30
 	local rotation = 0.5
@@ -562,9 +590,15 @@ function Dust.generateBigFountain(game, gem, n)
 
  		local p = common.instance(Dust, game.particles, gem.x, gem.y, todraw, p_type)
  		local x1 = x + x_vel
- 		local x2 = x_vel * 1.2
+ 		local x2 = x + x_vel * 1.2
  		local y_func = function() return y + p.t * y_vel + p.t^2 * acc end
  		local y_func2 = function() return y + y_vel * (1 + p.t * 0.5) + acc * (1 + p.t * 0.5)^2 end
+
+		if delay_frames then
+			p:change{transparency = 0}
+		 	p:wait(delay_frames)
+		 	p:change{duration = 0, transparency = 255}
+		end
 
  		p:change{duration = duration, rotation = rotation, x = x1, y = y_func}
  		p:change{duration = duration * 0.5, rotation = rotation * 1.5, x = x2,
@@ -693,7 +727,7 @@ UpGem = common.class("UpGem", UpGem, Pic)
 
 -------------------------------------------------------------------------------
 -- When a gem is placed in basin, this is the lighter gem in the holding area
--- to show where you plaecd it.
+-- to show where you placed it.
 local PlacedGem = {}
 function PlacedGem:init(manager, gem, y, row, place_type)
 	Pic.init(self, manager.game, {x = gem.x, y = y, image = gem.image, transparency = 192})
@@ -754,6 +788,27 @@ function PlacedGem.removeAll(manager)
 end
 
 PlacedGem = common.class("PlacedGem", PlacedGem, Pic)
+
+-------------------------------------------------------------------------------
+-- A temporary gem in the basin, shown when a gem has been removed from state
+-- but still needs to be shown in the basin for display.
+local GemImage = {}
+function GemImage:init(manager, x, y, image)
+	Pic.init(self, manager.game, {x = x, y = y, image = image})
+	manager.allParticles.GemImage[ID.particle] = self
+	self.manager = manager
+end
+
+function GemImage:remove()
+	self.manager.allParticles.GemImage[self.ID] = nil
+end
+
+function GemImage.generate(game, x, y, image, duration)
+	local p = common.instance(GemImage, game.particles, x, y, image)
+	p:change{duration = duration, exit = true}
+end
+
+GemImage = common.class("GemImage", GemImage, Pic)
 
 -------------------------------------------------------------------------------
 local WordEffects = {}
@@ -1082,6 +1137,7 @@ Particles.dust = Dust
 --Particles.overDust = OverDust
 Particles.upGem = UpGem
 Particles.placedGem = PlacedGem
+Particles.gemImage = GemImage
 Particles.words = Words
 Particles.wordEffects = WordEffects
 Particles.pieEffects = PieEffects

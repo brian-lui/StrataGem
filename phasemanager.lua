@@ -15,6 +15,7 @@ function PhaseManager:init(game)
 	for i = 1, 8 do --the 8 should be grid.column, but grid isn't initilized yet I don't think
 		self.no_rush[i] = true --whether no_rush is eligible for animation
 	end
+	self.match_anim_count = game.GEM_EXPLODE_FRAMES
 end
 
 function PhaseManager:intro(dt)
@@ -153,20 +154,17 @@ function PhaseManager:flagGems(dt)
 		player:beforeMatch(gem_table)
 	end
 	self.game.grid:generateMatchExplodingGems() -- animation
-	match_anim_count = self.game.GEM_EXPLODE_FRAMES
+	self.match_anim_count = self.game.GEM_EXPLODE_FRAMES
 	self.game.phase = "MatchAnimations"
 end
 
 -- wait for gem explode to finish, then create the match particles
-local match_anim_count = 0
 function PhaseManager:matchAnimations(dt)
-	if match_anim_count == 0 then
-		local matches = self.game.grid:getMatchedGems()
-		self.game.grid:generateMatchParticles() -- animation
+	if self.match_anim_count == 0 then
 		self.game.phase = "ResolvingMatches"
-		match_anim_count = self.game.GEM_EXPLODE_FRAMES
+		self.match_anim_count = self.game.GEM_EXPLODE_FRAMES
 	else
-		match_anim_count = match_anim_count - 1
+		self.match_anim_count = self.match_anim_count - 1
 	end
 end
 

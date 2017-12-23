@@ -187,7 +187,7 @@ end
 -- screenshake effect
 function gs_main.screenshake(self, shake)
 	local frame = self.frame
-	shake = shake or 6
+	shake = math.min(shake or 6, 6)
 	local h_displacement = shake * (frame % 7 * 0.5 + frame % 13 * 0.25 + frame % 23 / 6 - 5)
 	local v_displacement = shake * (frame % 5 * 2/3 + frame % 11 * 0.25 + frame % 17 / 6 - 5)
 	self.camera:setPosition(h_displacement, v_displacement)
@@ -254,6 +254,7 @@ function gs_main:drawGems(params)
 	love.graphics.pop()
 
 	-- over-gem particles
+	for _, v in pairs(allParticles.GemImage) do v:draw(params) end
 	for _, v in pairs(allParticles.SuperParticles) do v:draw(params) end
 	for _, v in pairs(allParticles.DamageTrail) do v:draw(params) end
 	for _, v in pairs(allParticles.GarbageParticles) do v:draw(params) end

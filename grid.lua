@@ -526,29 +526,20 @@ end
 
 -- remove a gem
 -- propogates flags upwards by default
-function Grid:removeGem(g, propogate_flags_up)
-	local function getAboveGems(column, start_row)
-		start_row = start_row or 1
-		local above = {}
-		for i = start_row, 1, -1 do
-			if self[i][column].gem then
-				above[#above + 1] = self[i][column].gem
-			end
-		end
-		return above
-	end
-
-	local function propogateFlagsUp(gem)
-		local above_gems = getAboveGems(gem.column, gem.row)
-		for _, v in pairs(above_gems) do
-			v:setOwner(gem.owner)
-		end
-	end
+function Grid:removeGem(gem, propogate_flags_up, delay_frames)
+	-- create a placeholder gem image that disappears after delay_frames
+	--self.game.particles.gemImage.generate(game, )
 
 	if propogate_flags_up ~= false then
-		propogateFlagsUp(g)
+		local above_gems = {}
+		for i = (gem.row or 1), 1, -1 do
+			if self[i][gem.column].gem then
+				above_gems[#above_gems + 1] = self[i][gem.column].gem
+			end
+		end
+		for _, v in pairs(above_gems) do v:setOwner(gem.owner) end
 	end
-	self[g.row][g.column].gem = false
+	self[gem.row][gem.column].gem = false
 end
 
 function Grid:checkMatchedThisTurn()
@@ -568,7 +559,41 @@ end
 
 function Grid:generateMatchExplodingGems()
 	for _, gem in pairs(self:getMatchedGems()) do
-		self:generateExplodingGem(gem)
+		self:destroyGem(gem)
+	end
+end
+
+-- removes a gem from the grid, and plays all of the associated animations
+function Grid:destroyGem(gem, extra_particles_from_chain_combos)
+	extra_particles_from_chain_combos = extra_particles_from_chain_combos or 0
+	local game = self.game
+	local particles = game.particles
+	local player = game:playerByIndex(gem.owner)
+
+	-- play sound
+	local soundfile_name = "sfx_gembreak" .. math.min(5, game.scoring_combo + 1)
+	local sfx = game.sound:newSFX(soundfile_name)
+	sfx:setPosition((gem.column - 4.5) * 0.02, 0, 0)
+
+	-- immediately generate explodingGem white/gray gem overlay
+	particles.explodingGem.generate(game, gem)
+
+	-- generate all the particle stuff, delayed by game.GEM_EXPLODE_FRAMES
+	-- except if it was a clash match
+	if player ~= nil then
+		local num_super_particles = player.supering and 0 or player.meter_gain[gem.color]
+		particles.superParticles.generate(game, gem, num_super_particles, game.GEM_EXPLODE_FRAMES)
+		particles.damage.generate(game, gem, game.GEM_EXPLODE_FRAMES)
+		particles.pop.generate(game, gem, game.GEM_EXPLODE_FRAMES)
+		particles.dust.generateBigFountain(game, gem, 24, game.GEM_EXPLODE_FRAMES)	
+
+		while extra_particles_from_chain_combos > 0 do
+			particles.superParticles.generate(game, gem, num_super_particles, game.GEM_EXPLODE_FRAMES)
+			particles.damage.generate(game, gem, game.GEM_EXPLODE_FRAMES)
+			extra_particles_from_chain_combos = extra_particles_from_chain_combos - 1
+		end
+
+		game.ui:screenshake(1)
 	end
 end
 
@@ -578,30 +603,6 @@ function Grid:generateExplodingGem(gem)
 	game.particles.explodingGem.generate(game, gem)
 	local sfx = game.sound:newSFX(soundfile_name)
 	sfx:setPosition((gem.column - 4.5) * 0.02, 0, 0)
-end
-
-function Grid:generateMatchParticles()
-	local game = self.game
-	local gem_table = self:getMatchedGems()
-	local particles = game.particles
-	local extra_particles = game.scoring_combo
-
-	for _, gem in pairs(gem_table) do
-		local player = game:playerByIndex(gem.owner)
-		if player then
-			local num_super_particles = player.supering and 0 or player.meter_gain[gem.color]
-			particles.superParticles.generate(game, gem, num_super_particles)
-			particles.damage.generate(game, gem)
-			particles.pop.generate(game, gem)
-			particles.dust.generateBigFountain(game, gem, 24)
-			if extra_particles > 0 then
-				particles.superParticles.generate(game, gem, num_super_particles)
-				particles.damage.generate(game, gem)
-				extra_particles = extra_particles - 1
-			end
-		end
-	end
-	self.game.ui:screenshake(#gem_table) -- animation
 end
 
 function Grid:setGarbageMatchFlags()
