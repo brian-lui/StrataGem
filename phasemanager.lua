@@ -181,8 +181,8 @@ function PhaseManager:resolvingMatches(dt)
 	--p1:addSuper(p1super)
 	--p2:addSuper(p2super)
 	grid:removeMatchedGems() -- remove it after an extra self.game.GEM_FADE_FRAMES for the gems to finish fading
-	--p1.hand:addDamage(p2dmg)
-	--p2.hand:addDamage(p1dmg)
+	--p1:addDamage(p2dmg)
+	--p2:addDamage(p1dmg)
 	grid:dropColumns()
 	grid:updateGrid()
 	self.game.phase = "Gravity"

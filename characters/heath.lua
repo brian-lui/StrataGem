@@ -289,7 +289,7 @@ function Heath:afterGravity()
 		end
 	end
 	if ouches > 0 then
-		self.enemy.hand:addDamage(ouches)
+		self.enemy:addDamage(ouches)
 		for i = 1, #ouch_gems do
 			particles.dust.generateBigFountain(self.game, ouch_gems[i], 120) -- placeholder animation
 			ret[#ret+1] = {1, particles.dust.generateBigFountain, self.game, particles.dust, ouch_gems[i], 120, self}
@@ -369,7 +369,7 @@ function Heath:duringMatch(gem_table)
 				processGemGamestate(grid[r+1][c].gem)
 			end
 		end
-		self.enemy.hand:addDamage(damage_to_add)
+		self.enemy:addDamage(damage_to_add)
 	end
 end
 

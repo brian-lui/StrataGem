@@ -174,11 +174,11 @@ local function skipToTurnEnd(game)
 end
 
 local function addDamageP1(game)
-	game.p1.hand:addDamage(1)
+	game.p1:addDamage(1)
 end
 
 local function addDamageP2(game)
-	game.p2.hand:addDamage(1)
+	game.p2:addDamage(1)
 end
 
 local function addSuperAndBurst(game)

@@ -32,6 +32,7 @@ Character.sounds = {
 	bgm = "bgm_heath",
 }
 
+Character.MAX_DAMAGE = 20
 Character.MAX_MP = 64
 Character.SUPER_COST = 64
 Character.mp = 0
@@ -66,6 +67,10 @@ end
 
 function Character:addSuper(amt)
 	self.mp = math.min(self.mp + amt, self.MAX_MP)
+end
+
+function Character:addDamage(damage)
+	self.hand.damage = math.min(self.hand.damage + damage, self.MAX_DAMAGE)
 end
 
 -- do those things to set up the character. Called at start of match

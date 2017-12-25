@@ -616,7 +616,7 @@ function Grid:destroyGem(params)
 		game.queue:add(game.GEM_EXPLODE_FRAMES, player.addSuper, player, super_to_add)
 
 		-- add damage
-		player.enemy.hand:addDamage(1 + extra_damage)
+		player.enemy:addDamage(1 + extra_damage)
 
 		-- remove matched gems
 		-- currently in phasemanager resolvingMatches	
