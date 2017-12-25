@@ -153,7 +153,7 @@ function PhaseManager:flagGems(dt)
 	for player in self.game:players() do
 		player:beforeMatch(gem_table)
 	end
-	self.game.grid:generateMatchExplodingGems() -- animation
+	self.game.grid:destroyMatchedGems(self.game.scoring_combo)
 	self.match_anim_count = self.game.GEM_EXPLODE_FRAMES
 	self.game.phase = "MatchAnimations"
 end
@@ -178,11 +178,11 @@ function PhaseManager:resolvingMatches(dt)
 	local p1_matched, p2_matched = grid:checkMatchedThisTurn()
 	if not p1_matched then grid:removeAllGemOwners(p1) end
 	if not p2_matched then grid:removeAllGemOwners(p2) end
-	p1:addSuper(p1super)
-	p2:addSuper(p2super)
-	grid:removeMatchedGems()
-	p1.hand:addDamage(p2dmg)
-	p2.hand:addDamage(p1dmg)
+	--p1:addSuper(p1super)
+	--p2:addSuper(p2super)
+	grid:removeMatchedGems() -- remove it after an extra self.game.GEM_FADE_FRAMES for the gems to finish fading
+	--p1.hand:addDamage(p2dmg)
+	--p2.hand:addDamage(p1dmg)
 	grid:dropColumns()
 	grid:updateGrid()
 	self.game.phase = "Gravity"

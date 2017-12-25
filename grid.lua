@@ -364,9 +364,6 @@ function Grid:moveGemAnim(gem, row, column)
 	--local angle = math.atan2(target_y - gem.y, target_x - gem.x)
 	local speed = self.DROP_SPEED + self.DROP_MULTIPLE_SPEED * self.game.scoring_combo
 	local duration = math.abs(dist / speed)
-	print("current gem y:", gem.y)
-	print("grid row 1, row 2:", self.game.grid.y[1], self.game.grid.y[2])
-	print("changing gem target_y to:", target_y)
 	gem:change{
 		x = target_x,
 		y = target_y,
@@ -557,15 +554,34 @@ function Grid:checkMatchedThisTurn()
 	return p1_matched, p2_matched
 end
 
-function Grid:generateMatchExplodingGems()
+-- adds an extra combo_bonus of damage, up to a maximum of double damage
+function Grid:destroyMatchedGems(combo_bonus)
+	local p1_remaining_damage, p2_remaining_damage = combo_bonus, combo_bonus
+
 	for _, gem in pairs(self:getMatchedGems()) do
-		self:destroyGem(gem)
+		local extra_damage = 0
+		if p1_remaining_damage > 0 and gem.owner == 1 then
+			extra_damage = 1
+			p1_remaining_damage = p1_remaining_damage - 1
+		elseif p2_remaining_damage > 0 and gem.owner == 2 then
+			p2_remaining_damage = p2_remaining_damage - 1
+			extra_damage = 1
+		end
+		self:destroyGem{gem = gem, extra_damage = extra_damage}
 	end
 end
 
 -- removes a gem from the grid, and plays all of the associated animations
-function Grid:destroyGem(gem, extra_particles_from_chain_combos)
-	extra_particles_from_chain_combos = extra_particles_from_chain_combos or 0
+--[[ TODO: Takes a table of:
+	gem: gem to destroy
+	extra_damage: how much extra damage to do
+	super_meter: if false, don't build super meter
+	damage: if false, don't deal damage
+--]]
+function Grid:destroyGem(params)
+	local gem = params.gem
+	local extra_damage = params.extra_damage or 0
+
 	local game = self.game
 	local particles = game.particles
 	local player = game:playerByIndex(gem.owner)
@@ -587,11 +603,24 @@ function Grid:destroyGem(gem, extra_particles_from_chain_combos)
 		particles.pop.generate(game, gem, game.GEM_EXPLODE_FRAMES)
 		particles.dust.generateBigFountain(game, gem, 24, game.GEM_EXPLODE_FRAMES)	
 
-		while extra_particles_from_chain_combos > 0 do
+		local particle_extra_damage = extra_damage
+		while particle_extra_damage > 0 do
 			particles.superParticles.generate(game, gem, num_super_particles, game.GEM_EXPLODE_FRAMES)
 			particles.damage.generate(game, gem, game.GEM_EXPLODE_FRAMES)
-			extra_particles_from_chain_combos = extra_particles_from_chain_combos - 1
+			particle_extra_damage = particle_extra_damage - 1
 		end
+
+		-- add super
+		local super_to_add = player.meter_gain[gem.color]
+		if super_to_add == nil then print("Nil value found when looking up super meter gain!") end
+		game.queue:add(game.GEM_EXPLODE_FRAMES, player.addSuper, player, super_to_add)
+
+		-- add damage
+		player.enemy.hand:addDamage(1 + extra_damage)
+
+		-- remove matched gems
+		-- currently in phasemanager resolvingMatches	
+		-- call self:removeGem, which generates a gem image
 
 		game.ui:screenshake(1)
 	end
