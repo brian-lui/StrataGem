@@ -206,7 +206,7 @@ local function showDebugOverlay(game)
 end
 
 local function toggleSlowdown(game)
-	game.timeStep = game.timeStep == 0.1 and 1/60 or 0.1
+	game.timeStep = game.timeStep == 0.25 and 1/60 or 0.25
 end
 
 local Unittests = {

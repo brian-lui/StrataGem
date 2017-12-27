@@ -140,7 +140,7 @@ function Gem:setOwner(player)
 	elseif player == 3 then
 		self.owner = 3
 	else
-		print("Error: tried to set invalid gem owner")
+		print("Error: tried to set invalid gem owner as player:", player)
 	end
 end
 

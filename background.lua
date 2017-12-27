@@ -152,8 +152,6 @@ function Clouds:update(dt)
 		self.small_timer = self.small_timer_func()
 		local c = 0
 		for _ in pairs(self.small_clouds) do c = c + 1 end
-		print("self.small_clouds", c)
-
 	else
 		self.small_timer = self.small_timer - 1
 	end

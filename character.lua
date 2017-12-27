@@ -121,14 +121,16 @@ function Character:afterGravity()
 	return {}
 end
 
-
+-- before gems are matched
 function Character:beforeMatch(gem_table)
 end
 
-function Character:duringMatch(gem_table)
+-- after each match
+function Character:afterMatch()
 end
 
-function Character:afterMatch()
+-- after all matches are finished (i.e. after chain combos and so on)
+function Character:afterAllMatches()
 end
 
 function Character:cleanup()

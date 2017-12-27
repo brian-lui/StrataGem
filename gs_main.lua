@@ -420,7 +420,7 @@ function gs_main:mousereleased(x, y)
 		local nomove = math.abs(x - self.lastClickedX) < self.stage.width * QUICKCLICK_MAX_MOVE and
 			math.abs(y - self.lastClickedY) < self.stage.height * QUICKCLICK_MAX_MOVE
 		if quickclick and nomove then self.active_piece:rotate() end
-		if self.phase == "Action" then print("deselect now") self.active_piece:deselect() end
+		if self.phase == "Action" then self.active_piece:deselect() end
 		self.active_piece = false
 	end
 
