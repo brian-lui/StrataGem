@@ -11,15 +11,6 @@ local Particles = {}
 function Particles:init(game)
 	self.game = game
 	self:reset()
-	self.count = {
-		created = {MP = {0, 0}, Damage = {0, 0}, Garbage = {0, 0},},
-		destroyed = {MP = {0, 0}, Damage = {0, 0}, Garbage = {0, 0},},
-	}
-	--check to see if no_rush is being animated. 0 no animation, 1 currently being animated, 2 mouse hovering over.
-	self.no_rush_check = {}
-	for i = 1, game.grid.columns do
-		self.no_rush_check[i] = 0 
-	end
 end
 
 function Particles:update(dt)
@@ -93,6 +84,14 @@ function Particles:reset()
 		CharEffects = {},
 		SuperFreezeEffects = {},
 	}
+	self.count = {
+		created = {MP = {0, 0}, Damage = {0, 0}, Garbage = {0, 0}},
+		destroyed = {MP = {0, 0}, Damage = {0, 0}, Garbage = {0, 0}},
+	}
+
+	--check to see if no_rush is being animated. 0 no animation, 1 currently being animated, 2 mouse hovering over.
+	self.no_rush_check = {}
+	for i = 1, self.game.grid.columns do self.no_rush_check[i] = 0 end
 end
 
 -------------------------------------------------------------------------------
@@ -362,11 +361,11 @@ end
 PopParticle = common.class("PopParticle", PopParticle, Pic)
 
 -------------------------------------------------------------------------------
--- When a match is made, this is the white/gray overlay for the gems
+-- When a match is made, this is the white/grey overlay for the gems
 local ExplodingGem = {}
 function ExplodingGem:init(manager, gem)
 	local grey_gems = gem.owner == 3
-	local color = grey_gems and (gem.color .. "_gray") or gem.color
+	local color = grey_gems and (gem.color .. "_grey") or gem.color
 	local img = image.lookup.gem_explode[color]
 	Pic.init(self, manager.game, {x = gem.x, y = gem.y, image = img, transparency = 0})
 	manager.allParticles.ExplodingGem[ID.particle] = self

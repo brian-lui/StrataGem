@@ -337,12 +337,13 @@ function Heath:beforeMatch(gem_table)
 	end
 end
 
+
 -- process the super_clears list
 -- TODO: the piece the opponent played this turn is incorrectly counted as belong to him,
 -- even if it didn't participate in a match.
 -- TODO: warning - queue.add grid.removeGem affects state
 
-function Heath:duringMatch(gem_table)
+function Heath:afterMatch(gem_table)
 	local game = self.game
 	local particles = game.particles
 	local grid = game.grid
@@ -355,7 +356,7 @@ function Heath:duringMatch(gem_table)
 			if gem.owner ~= 3 then
 				damage_to_add = damage_to_add + 1
 				particles.damage.generate(game, gem)
-				grid:removeGem(gem)
+				grid:removeGem{gem = gem}
 			end
 		end
 
@@ -374,7 +375,7 @@ function Heath:duringMatch(gem_table)
 end
 
 -- take away super meter, make fires
-function Heath:afterMatch()
+function Heath:afterAllMatches()
 	local particles = self.game.particles
 
 	-- super

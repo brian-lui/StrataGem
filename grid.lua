@@ -1,3 +1,4 @@
+local image = require 'image'
 local common = require "class.commons"
 local Gem = require "gem"
 
@@ -250,13 +251,6 @@ end
 -- get score of simulated piece placements
 function Grid:getScore(matching_number)
 	return #self:getMatchedGems(matching_number or 3)
-end
-
-function Grid:removeMatchedGems(minimumLength)
-	local gem_table = self:getMatchedGems(minimumLength or 3)
-	for _, gem in pairs(gem_table) do
-		self:removeGem(gem, true)
-	end
 end
 
 -- remove all gem flags claimed by a specific player
@@ -521,13 +515,16 @@ function Grid:reset()
 	end
 end
 
--- remove a gem
--- propogates flags upwards by default
-function Grid:removeGem(gem, propogate_flags_up, delay_frames)
-	-- create a placeholder gem image that disappears after delay_frames
-	--self.game.particles.gemImage.generate(game, )
+--[[ remove a gem:
+	gem: gem to remove
+	propogate_flags_up: whether to flag gems above. true by default
+	duration: how many frames to show a gem image
+--]]
+function Grid:removeGem(params)
+	local gem = params.gem
+	if not gem then print("gem not specified for removeGem") end
 
-	if propogate_flags_up ~= false then
+	if params.propogate_flags_up ~= false then
 		local above_gems = {}
 		for i = (gem.row or 1), 1, -1 do
 			if self[i][gem.column].gem then
@@ -536,10 +533,31 @@ function Grid:removeGem(gem, propogate_flags_up, delay_frames)
 		end
 		for _, v in pairs(above_gems) do v:setOwner(gem.owner) end
 	end
+
+	if params.duration then
+		self.game.particles.gemImage.generate(self.game, gem.x, gem.y, gem.image, params.duration)
+	end
+
 	self[gem.row][gem.column].gem = false
 end
 
 function Grid:checkMatchedThisTurn()
+	local gem_table = self:getMatchedGems()
+	local matched = {false, false}
+	for i = 1, #gem_table do
+		local owner = gem_table[i].owner
+		if owner == 1 or owner == 3 then
+			matched[1]  = true
+		end
+		if owner == 2 or owner == 3 then
+			matched[2] = true
+		end
+	end
+	return matched
+end
+
+
+function Grid:checkMatchedThisTurnOld()
 	local gem_table = self:getMatchedGems()
 	local p1_matched, p2_matched = false, false
 	for i = 1, #gem_table do
@@ -581,49 +599,36 @@ end
 function Grid:destroyGem(params)
 	local gem = params.gem
 	local extra_damage = params.extra_damage or 0
-
 	local game = self.game
 	local particles = game.particles
 	local player = game:playerByIndex(gem.owner)
 
-	-- play sound
-	local soundfile_name = "sfx_gembreak" .. math.min(5, game.scoring_combo + 1)
-	local sfx = game.sound:newSFX(soundfile_name)
-	sfx:setPosition((gem.column - 4.5) * 0.02, 0, 0)
+	if player == nil then -- grey gem
+		local soundfile_name = "sfx_gembreak" .. math.min(5, game.scoring_combo + 1)
+		local sfx = game.sound:newSFX(soundfile_name)
+		sfx:setPosition((gem.column - 4.5) * 0.02, 0, 0)
+	else
+		-- state
+		local super_to_add = player.meter_gain[gem.color]
+		if super_to_add == nil then print("Nil value found when looking up super meter gain!") end
+		player.enemy:addDamage(1 + extra_damage)
+		game.queue:add(game.GEM_EXPLODE_FRAMES, player.addSuper, player, super_to_add)
+		game.queue:add(game.GEM_EXPLODE_FRAMES, game.ui.screenshake, game.ui, 1)
 
-	-- immediately generate explodingGem white/gray gem overlay
-	particles.explodingGem.generate(game, gem)
-
-	-- generate all the particle stuff, delayed by game.GEM_EXPLODE_FRAMES
-	-- except if it was a clash match
-	if player ~= nil then
+		-- animations
+		local soundfile_name = "sfx_gembreak" .. math.min(5, game.scoring_combo + 1)
+		local sfx = game.sound:newSFX(soundfile_name)
+		sfx:setPosition((gem.column - 4.5) * 0.02, 0, 0)
 		local num_super_particles = player.supering and 0 or player.meter_gain[gem.color]
 		particles.superParticles.generate(game, gem, num_super_particles, game.GEM_EXPLODE_FRAMES)
 		particles.damage.generate(game, gem, game.GEM_EXPLODE_FRAMES)
 		particles.pop.generate(game, gem, game.GEM_EXPLODE_FRAMES)
 		particles.dust.generateBigFountain(game, gem, 24, game.GEM_EXPLODE_FRAMES)	
-
-		local particle_extra_damage = extra_damage
-		while particle_extra_damage > 0 do
-			particles.superParticles.generate(game, gem, num_super_particles, game.GEM_EXPLODE_FRAMES)
-			particles.damage.generate(game, gem, game.GEM_EXPLODE_FRAMES)
-			particle_extra_damage = particle_extra_damage - 1
-		end
-
-		-- add super
-		local super_to_add = player.meter_gain[gem.color]
-		if super_to_add == nil then print("Nil value found when looking up super meter gain!") end
-		game.queue:add(game.GEM_EXPLODE_FRAMES, player.addSuper, player, super_to_add)
-
-		-- add damage
-		player.enemy:addDamage(1 + extra_damage)
-
-		-- remove matched gems
-		-- currently in phasemanager resolvingMatches	
-		-- call self:removeGem, which generates a gem image
-
-		game.ui:screenshake(1)
+		for i = 1, extra_damage do particles.damage.generate(game, gem, game.GEM_EXPLODE_FRAMES) end
 	end
+
+	particles.explodingGem.generate(game, gem)
+	self:removeGem{gem = gem, duration = game.GEM_EXPLODE_FRAMES}
 end
 
 function Grid:generateExplodingGem(gem)
@@ -671,26 +676,10 @@ function Grid:calculateScore()
 	return dmg[1], dmg[2], super[1], super[2]
 end
 
-local function getFirstEmptyRow(self, column)
---[[ This function slightly differs from grid:getFirstEmptyRow game.grid. This
-	is because we need to check the top two rows, too, to see if any overflowed.
-	TODO: can refactor the functions together
---]]
-	if column then
-		local empty_spaces = 0
-		for i = 1, self.rows do
-			if not self[i][column].gem then
-				empty_spaces = empty_spaces + 1
-			end
-		end
-		return empty_spaces
-	end
-end
-
 function Grid:getLoser()
 	local p1loss, p2loss = false, false
 	for i = 1, self.columns do
-		local empty_row = getFirstEmptyRow(self, i)
+		local empty_row = self:getFirstEmptyRow(i)
 		if empty_row < self.game.LOSE_ROW then
 			if i <= 4 then
 				p1loss = true
@@ -709,60 +698,5 @@ function Grid:getLoser()
 	end
 	return
 end
-
---[[
-grid.debug = {}
-function grid.debug.drawGridlines(self)
-	for i = 1, #self.x do
-		love.graphics.line(self.x[i], 0, self.x[i], stage.height)
-		love.graphics.print(i, self.x[i], 200)
-	end
-	for i = 0, #self.y do
-		love.graphics.line(0, self.y[i], stage.width, self.y[i])
-		love.graphics.print(i, 200, self.y[i])
-	end
-end
-
-function grid.debug.getGridColors(self)
-	local ret = {"Printing gem colors:"}
-	for i = 1, #self-1 do
-		local row = {}
-		for j = 1, #self[i]-1 do
-			if self[i][j].gem then
-				row[j] = self[i][j].gem.color
-				row[j] = " " .. row[j] .. string.rep(" ", 7 - #row[j])
-			else
-				row[j] = " ...... "
-			end
-		end
-		ret[#ret+1] = table.concat({i-1, unpack(row)})
-	end
-	return ret
-end
-
-function grid.debug.getGridOwnership(self)
-	local ret = {"Printing gem ownership:"}
-	for i = 1, #self-1 do
-		local row = {}
-		for j = 1, #self[i]-1 do
-			if self[i][j].gem then
-				if self[i][j].gem.owner == 0 then
-					row[j] = "  Nil   "
-				elseif self[i][j].gem.owner == 1 then
-					row[j] = "   P1   "
-				elseif self[i][j].gem.owner == 2 then
-					row[j] = "   P2   "
-				elseif self[i][j].gem.owner == 3 then
-					row[j] = " P1&P2  "
-				end
-			else
-				row[j] = " ...... "
-			end
-		end
-		ret[#ret+1] = table.concat({i-1, unpack(row)})
-	end
-	return ret
-end
---]]
 
 return common.class("Grid", Grid)

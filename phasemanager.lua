@@ -15,7 +15,8 @@ function PhaseManager:init(game)
 	for i = 1, 8 do --the 8 should be grid.column, but grid isn't initilized yet I don't think
 		self.no_rush[i] = true --whether no_rush is eligible for animation
 	end
-	self.match_anim_count = game.GEM_EXPLODE_FRAMES
+	self.after_match_delay = game.GEM_FADE_FRAMES
+	self.matched_this_round = {false, false} -- p1 made a match, p2 made a match
 end
 
 function PhaseManager:intro(dt)
@@ -132,13 +133,12 @@ function PhaseManager:applyGravity(dt)
 				end
 			end
 		end
-		game.phase = "CheckMatches"
+		game.phase = "GetMatchedGems"
 	end
 end
 
 function PhaseManager:getMatchedGems(dt)
 	local _, matches = self.game.grid:getMatchedGems() -- sets horizontal/vertical flags for matches
-	print(matches)
 	if matches > 0 then
 		self.game.phase = "FlagGems"
 	else
@@ -146,43 +146,38 @@ function PhaseManager:getMatchedGems(dt)
 	end
 end
 
--- flag gems, and generate the exploding gem particles
+-- flag above gems, destroy matched gems, and generate the exploding gem particles
 function PhaseManager:flagGems(dt)
+	local grid = self.game.grid
 	local gem_table = self.game.grid:getMatchedGems() -- sets h/v flags
-	self.game.grid:flagMatchedGems() -- state
-	for player in self.game:players() do
-		player:beforeMatch(gem_table)
-	end
-	self.game.grid:destroyMatchedGems(self.game.scoring_combo)
-	self.match_anim_count = self.game.GEM_EXPLODE_FRAMES
+
+	grid:flagMatchedGems() -- state
+	for player in self.game:players() do player:beforeMatch(gem_table) end
+	self.matched_this_round = grid:checkMatchedThisTurn()
+	grid:destroyMatchedGems(self.game.scoring_combo)
 	self.game.phase = "MatchAnimations"
 end
 
--- wait for gem explode to finish, then create the match particles
+-- wait for gem explode animation
 function PhaseManager:matchAnimations(dt)
-	if self.match_anim_count == 0 then
-		self.game.phase = "ResolvingMatches"
-		self.match_anim_count = self.game.GEM_EXPLODE_FRAMES
-	else
-		self.match_anim_count = self.match_anim_count - 1
+	if self.game.particles:getNumber("GemImage") == 0 then
+		if self.after_match_delay == 0 then
+			self.game.phase = "ResolvingMatches"
+			self.after_match_delay = self.game.GEM_FADE_FRAMES
+		else
+			self.after_match_delay = self.after_match_delay - 1
+		end
 	end
 end
 
 function PhaseManager:resolvingMatches(dt)
 	local grid = self.game.grid
-	local p1, p2 = self.game.p1, self.game.p2
 	local gem_table = grid:getMatchedGems()
+
+	for player in self.game:players() do player:afterMatch(gem_table) end
 	self.game.scoring_combo = self.game.scoring_combo + 1
-	for player in self.game:players() do player:duringMatch(gem_table) end
-	local p1dmg, p2dmg, p1super, p2super = grid:calculateScore()
-	local p1_matched, p2_matched = grid:checkMatchedThisTurn()
-	if not p1_matched then grid:removeAllGemOwners(p1) end
-	if not p2_matched then grid:removeAllGemOwners(p2) end
-	--p1:addSuper(p1super)
-	--p2:addSuper(p2super)
-	grid:removeMatchedGems() -- remove it after an extra self.game.GEM_FADE_FRAMES for the gems to finish fading
-	--p1:addDamage(p2dmg)
-	--p2:addDamage(p1dmg)
+	if not self.matched_this_round[1] then grid:removeAllGemOwners(1) end
+	if not self.matched_this_round[2] then grid:removeAllGemOwners(2) end
 	grid:dropColumns()
 	grid:updateGrid()
 	self.game.phase = "Gravity"
@@ -195,7 +190,7 @@ function PhaseManager:resolvedMatches(dt)
 		for player in game:players() do player.hand:update(dt) end
 	else	-- all damage particles finished
 		for player in game:players() do
-			player:afterMatch()
+			player:afterAllMatches()
 			player.hand:update(dt)
 			player.place_type = "normal"
 		end
@@ -290,7 +285,6 @@ function PhaseManager:cleanup(dt)
 	local p1, p2 = game.p1, game.p2
 
 	grid:updateGrid()
-	--game.particles:clearCount()
 	for player in game:players() do player:cleanup() end
 	game.ai:newTurn()
 	p1.pieces_fallen, p2.pieces_fallen = 0, 0
@@ -354,7 +348,7 @@ PhaseManager.lookup = {
 	SuperFreeze = PhaseManager.superFreeze,
 	GemTween = PhaseManager.applyGemTween,
 	Gravity = PhaseManager.applyGravity,
-	CheckMatches = PhaseManager.getMatchedGems,
+	GetMatchedGems = PhaseManager.getMatchedGems,
 	FlagGems = PhaseManager.flagGems,
 	MatchAnimations = PhaseManager.matchAnimations,
 	ResolvingMatches = PhaseManager.resolvingMatches,
