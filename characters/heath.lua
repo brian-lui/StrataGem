@@ -323,7 +323,7 @@ function Heath:beforeMatch(gem_table)
 				self.super_clears[#self.super_clears+1] = gem
 			end
 		end
-
+		--[[
 		-- generate match exploding gems for super clears
 		for _, gem in ipairs(self.super_clears) do
 			local r, c = gem.row, gem.column
@@ -334,6 +334,7 @@ function Heath:beforeMatch(gem_table)
 				grid:generateExplodingGem(grid[r+1][c].gem)
 			end
 		end
+		--]]
 	end
 end
 
@@ -341,7 +342,6 @@ end
 -- process the super_clears list
 -- TODO: the piece the opponent played this turn is incorrectly counted as belong to him,
 -- even if it didn't participate in a match.
--- TODO: warning - queue.add grid.removeGem affects state
 
 function Heath:afterMatch(gem_table)
 	local game = self.game
@@ -356,7 +356,7 @@ function Heath:afterMatch(gem_table)
 			if gem.owner ~= 3 then
 				damage_to_add = damage_to_add + 1
 				particles.damage.generate(game, gem)
-				grid:removeGem{gem = gem}
+				grid:destroyGem{gem = gem}
 			end
 		end
 

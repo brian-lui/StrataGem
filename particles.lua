@@ -1002,7 +1002,7 @@ function Words.generateNoRush(game, column)
 		game.particles.no_rush_check[column] = 1
 		local grid = game.grid
 		local x = grid.x[column]
-		local y = (grid.y[8] + grid.y[9]) / 2
+		local y = (grid.y[game.RUSH_ROW] + grid.y[game.RUSH_ROW+1]) / 2
 		local todraw = image.words.no_rush_one_column
 		local p = common.instance(Words, game.particles, x, y, todraw, nil, nil, nil, nil, nil, true)
 		p:change{duration = 20, quad = {x = true, x_percentage = 1, x_anchor = 0.5}}
@@ -1027,14 +1027,6 @@ function Words.generateNoRush(game, column)
 		p:change{duration = 15, transparency = 0}
 		p:change{duration = 15, transparency = 255, exit = {blinkCheck, blink}}	
 	end
-	print("press 'g' to call this function!")
-	--[[
-	suggested process:
-	-- upload the image and reference it in images.lua
-	-- calculate where the image should be displayed
-	-- press "g" to display it for 3 seconds without any animation first
-	-- then animate it as suggested by artist
-	--]]
 end
 
 Words = common.class("Words", Words, Pic)

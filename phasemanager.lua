@@ -66,13 +66,11 @@ end
 
 function PhaseManager:resolve(dt)
 	local game = self.game
-
 	if game.me_player.place_type == nil then print("PLACE TYPE BUG") end
-	for player in game:players() do
-		player.hand:afterActionPhaseUpdate()
-	end
-	game.particles.upGem.removeAll(game.particles) -- animation
-	game.particles.placedGem.removeAll(game.particles) -- animation
+	for player in game:players() do player.hand:afterActionPhaseUpdate() end
+	game.grid:updateRushPriority()
+	game.particles.upGem.removeAll(game.particles)
+	game.particles.placedGem.removeAll(game.particles)
 	game.frozen = true
 	game.phase = "SuperFreeze"
 end
@@ -198,7 +196,7 @@ function PhaseManager:resolvedMatches(dt)
 		game.grid:setAllGemOwners(0)
 		for i = 1, grid.columns do --checks if should generate no rush
 			if self.no_rush[i] then
-				if grid[8][i].gem then
+				if grid[game.RUSH_ROW][i].gem then
 					game.particles.words.generateNoRush(self.game, i)
 					self.no_rush[i] = false	
 				end
@@ -267,7 +265,7 @@ function PhaseManager:platformsMoving(dt)
 			else
 				for i = 1, grid.columns do --checks if should generate no rush
 					if self.no_rush[i] then
-						if grid[8][i].gem then
+						if grid[game.RUSH_ROW][i].gem then
 							game.particles.words.generateNoRush(self.game, i)
 							self.no_rush[i] = false	
 						end
