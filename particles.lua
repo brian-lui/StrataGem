@@ -605,27 +605,38 @@ function Dust.generateBigFountain(game, gem, n, delay_frames)
  	end
 end
 
--- called when a doublecast/rush landed in the holding area
-function Dust.generateStarFountain(game, gem, n)
-	local x, y = gem.x, gem.y
+--[[ A star fountain, like when a doublecast/rush landed in the holding area
+	game: game instance (mandatory)
+	gem: a gem instance
+	x, y: coordinates
+	color: color of particles generated
+	num: number of particles to generate. Default is 24
+	x, y, color override gem if they are provided
+--]]
+function Dust.generateStarFountain(params)
+	local game, gem, num = params.game, params.gem, params.num or 24
+	local x = params.x or params.gem.x
+	local y = params.y or params.gem.y
+	local color = params.color or params.gem.color
 	local duration = 120
 	local rotation = 0.5
- 	for i = 1, n do
- 		local todraw = image.lookup.particle_freq.random(gem.color)
+
+ 	for i = 1, num do
+ 		local todraw = image.lookup.particle_freq.random(color)
 	 	local p_type = (i % 2 == 1) and "Dust" or "OverDust"
 	 	local x_vel = (math.random() - 0.5) * game.stage.width
 	 	local y_vel = (math.random() - 0.75) * 2 * game.stage.height
 	 	local acc = 3 * game.stage.height
 
 	 	-- create star
- 		local p = common.instance(Dust, game.particles, gem.x, gem.y, todraw, p_type)
+ 		local p = common.instance(Dust, game.particles, x, y, todraw, p_type)
  		local x1 = x + x_vel
  		local y_func = function() return y + p.t * y_vel + p.t^2 * acc end
  		p:change{duration = duration, rotation = rotation, x = x1, y = y_func, exit = true}
 
  		-- create trails
  		for frames = 1, 3 do
-	 		local trail_image = image.lookup.trail_particle[gem.color]
+	 		local trail_image = image.lookup.trail_particle[color]
 			local trail = common.instance(Dust, game.particles, x, y, trail_image, p_type)
 			local trail_y = function() return y + trail.t * y_vel + trail.t^2 * acc end
 			trail.scaling = 1.25 - (frames * 0.25)
@@ -823,7 +834,8 @@ end
 
 -- the glow cloud behind a doublecast piece.
 -- called from anims.putPendingOnTop, and from anims.update
-function WordEffects.generateDoublecastCloud(game, gem1, gem2, horizontal)
+function WordEffects.generateDoublecastCloud(game, gem1, gem2)
+	local horizontal = gem1.row == gem2.row
 	local todraw = horizontal and image.words.doublecast_cloud_h or image.words.doublecast_cloud_v
 	local p = common.instance(WordEffects, game.particles, (gem1.x + gem2.x) * 0.5, (gem1.y + gem2.y) * 0.5, todraw)
 	p.rotation = horizontal and 0 or math.pi * 0.5
@@ -838,7 +850,10 @@ end
 
 -- the glow cloud behind a rush piece.
 -- called from anims.putPendingOnTop, and from anims.update
-function WordEffects.generateRushCloud(game, gem1, gem2, horizontal)
+function WordEffects.generateRushCloud(game, gem1, gem2)
+	print("gem info", gem1, gem2)
+	if gem1 == nil then return end
+	local horizontal = gem1.row == gem2.row
 	local todraw = horizontal and image.words.rush_cloud_h or image.words.rush_cloud_v
 	local p = common.instance(WordEffects, game.particles, (gem1.x + gem2.x) * 0.5, (gem1.y + gem2.y) * 0.5, todraw)
 	p.transparency = 0
@@ -853,7 +868,8 @@ end
 
 -- the sparks coming out from the rush cloud.
 -- called from WordEffects.generateRushCloud
-function WordEffects.generateRushParticle(game, gem1, gem2, horizontal)
+function WordEffects.generateRushParticle(game, gem1, gem2)
+	local horizontal = gem1.row == gem2.row
 	local todraw = image.words.rush_particle
 	local x, y = (gem1.x + gem2.x) * 0.5, (gem1.y + gem2.y) * 0.5
 	local x_drift, y_adj
@@ -929,8 +945,8 @@ function Words:remove()
 	self.manager.allParticles.Words[self.ID] = nil
 end
 
-function Words.generateDoublecast(game, player)
-	local x = player.ID == "P1" and game.stage.width * 0.4 or game.stage.width * 0.6
+function Words.generateDoublecast(game, player_num)
+	local x = player == 1 and game.stage.width * 0.4 or game.stage.width * 0.6
 	local y = game.stage.height * 0.3
 	local todraw = image.words.doublecast
 	local p = common.instance(Words, game.particles, x, y, todraw, nil, nil, nil, nil, nil, true)
@@ -939,8 +955,8 @@ function Words.generateDoublecast(game, player)
 	p:change{duration = 60, transparency = 0, easing = "inExpo", exit = true}
 end
 
-function Words.generateRush(game, player)
-	local sign = player.ID == "P1" and 1 or -1
+function Words.generateRush(game, player_num)
+	local sign = player == 1 and 1 or -1
 	local x = game.stage.width * (0.5 - sign * 0.6)
 	local y = game.stage.height * 0.3
 	local todraw = image.words.rush

@@ -244,39 +244,61 @@ function ui:screenshake(damage)
 	self.game.screenshake_vel = self.game.screenshake_vel + math.max(0, damage)
 end
 
--- at turn end, move the gems to the top of the screen so they fall down nicely
-function ui:putPendingAtTop()
-	local pending = {
-		{gems = self.game.grid:getPendingGems(self.game.p1), me = 1, foe = 2},
-		{gems = self.game.grid:getPendingGems(self.game.p2), me = 2, foe = 1},
-	}
-	for _, piece in pairs(pending) do
-		local effect = {}
-		for i = 1, #piece.gems do
-			local gem = piece.gems[i]
-			local owner = self.game:playerByIndex(piece.me)
-			local exit
-			local target_y = gem.y
-			if owner.place_type == "double" and (gem.row == 1 or gem.row == 2) then
-				effect[#effect+1] = gem
-				effect.func = self.game.particles.wordEffects.generateDoublecastCloud
-				exit = {gem.landedInStagingArea, gem, "double", owner}
-			elseif gem.row == 3 or gem.row == 4 and gem.owner == piece.foe then
-				effect[#effect+1] = gem
-				effect.func = self.game.particles.wordEffects.generateRushCloud
-				exit = {gem.landedInStagingArea, gem, "rush", self.game:playerByIndex(piece.foe)}
-			end
-			gem:change{y = self.game.stage.height * -0.1}
-			gem:change{y = target_y, duration = 24, easing = "outQuart", exit = exit}
+local function pieceLandedInStagingArea(game, gems, place_type)
+	local particles = game.particles
+	local player_num = gems[1].owner
+	local sign = player_num == 1 and 1 or -1
+	local y = game.stage.height * 0.3
+	if place_type == "double" then
+		particles.words.generateDoublecast(game, player_num)
+		game.sound:newSFX("sfx_doublecast")
+		game.sound:newSFX("sfx_fountaindoublecast")
+		for i = 1, #gems do
+			particles.dust.generateStarFountain{game = game, color = gems[i].color,
+				x = game.stage.width * (0.5 - sign * 0.2), y = y}
 		end
-		if #effect > 0 then
-			local h = effect[1].row == effect[2].row
-			print(effect[1], effect[2])
-			effect.func(self.game, effect[1], effect[2], h)
+	elseif place_type == "rush" then
+		particles.words.generateRush(game, player_num)
+		game.sound:newSFX("sfx_rush")
+		game.sound:newSFX("sfx_fountainrush")
+		for i = 1, #gems do
+			particles.dust.generateStarFountain{game = game, color = gems[i].color,
+				x = game.stage.width * (0.5 + sign * 0.1), y = y}
 		end
 	end
 end
 
+-- animation: places pieces at top of basin, and tweens them down.
+-- also calls the cloud effects and the words/star fountains.
+function ui:putPendingAtTop()
+	local pending = {
+		p1 = self.game.grid:getPendingGems(self.game.p1),
+		p2 = self.game.grid:getPendingGems(self.game.p2),
+	}
+	for _, player_gems in pairs(pending) do
+		local doubles, rushes = {}, {}
+		for i = 1, #player_gems do
+			local gem = player_gems[i]
+			local target_y = gem.y
+			gem:change{y = self.game.stage.height * -0.1}
+			gem:change{y = target_y, duration = 24, easing = "outQuart", exit = true}
+			
+			if gem.place_type == "double" then
+				doubles[#doubles+1] = gem
+			elseif gem.place_type == "rush" then
+				rushes[#rushes+1] = gem
+			end
+		end
+		if #doubles == 2 then
+			self.game.particles.wordEffects.generateDoublecastCloud(self.game, doubles[1], doubles[2])
+			self.game.queue:add(24, pieceLandedInStagingArea, self.game, doubles, "double")
+		end
+		if #rushes == 2 then
+			self.game.particles.wordEffects.generateRushCloud(self.game, rushes[1], rushes[2])
+			self.game.queue:add(24, pieceLandedInStagingArea, self.game, rushes, "rush")
+		end
+	end
+end
 
 -- generates dust for active piece, and calculates tweens for gem shadows
 -- only called during active phase
@@ -306,11 +328,11 @@ function ui:update(dt)
 				--TODO: support variable number of gems
 				local gem1, gem2 = active_piece.gems[1], active_piece.gems[2]
 				local h = active_piece.horizontal
-				game.particles.wordEffects.generateDoublecastCloud(game, gem1, gem2, h)
+				game.particles.wordEffects.generateDoublecastCloud(game, gem1, gem2)
 			elseif valid and place_type == "rush" then
 				local gem1, gem2 = game.active_piece.gems[1], active_piece.gems[2]
 				local h = active_piece.horizontal
-				game.particles.wordEffects.generateRushCloud(game, gem1, gem2, h)
+				game.particles.wordEffects.generateRushCloud(game, gem1, gem2)
 			end
 		elseif not valid or place_type == "normal" then
 			game.particles.wordEffects.clear(game.particles)

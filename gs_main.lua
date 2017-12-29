@@ -41,7 +41,6 @@ function gs_main:enter()
 
 	self.sound:stopBGM()
 	gs_main.clicked = nil
-	self.dying_gems = {} -- this creates the dying_gems table in Game. Sad!
 	gs_main.current_background = common.instance(self.background[self.current_background_name], self)
 	self.settings_menu_open = false
 
@@ -224,8 +223,6 @@ function gs_main:drawGems(params)
 			player.hand.garbage[i]:draw(params)
 		end
 	end
-
-	-- for i = 1, #game.dying_gems do blah blah
 
 	local function blockBottomGemRow()
 		local stage = self.stage

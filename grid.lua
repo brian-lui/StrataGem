@@ -483,6 +483,7 @@ end
 -- If the only pieces placed are a rush and a normal, reverse their falling order
 function Grid:updateRushPriority()
 	print("Update rush priority!")
+	--check p1 place type, p2 place type
 end
 
 function Grid:checkMatchedThisTurn()

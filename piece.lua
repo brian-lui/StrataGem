@@ -137,7 +137,7 @@ function Piece:breakUp()
 			player.hand[i].piece = nil
 		end
 	end
-	return self.gems -- we can store these in a dying_actors thing
+	return self.gems
 end
 
 -- draw gems with displacement depending on piece horizontal/vertical
@@ -370,10 +370,12 @@ function Piece:dropIntoBasin(coords, received_from_opponent)
 		row_adj = 2
 		player.cur_burst = player.cur_burst - player.current_rush_cost
 		player.dropped_piece = "rushed"
+		for i = 1, #self.gems do self.gems[i].place_type = "rush" end
 	elseif player.place_type == "double" then
 		row_adj = 0
 		player.cur_burst = player.cur_burst - player.current_double_cost
 		player.dropped_piece = "doubled"
+		for i = 1, #self.gems do self.gems[i].place_type = "double" end
 	else
 		print("invalid player place type")
 	end
@@ -388,6 +390,7 @@ function Piece:dropIntoBasin(coords, received_from_opponent)
 	hand:movePieceToGrid(grid, self, locations)
 	hand:movePieceToGridAnim(grid, self, locations)
 	player.played_pieces[#player.played_pieces+1] = self.gems
+
 	self:breakUp()
 
 	-- refresh for new position for placement shadows if doublecast

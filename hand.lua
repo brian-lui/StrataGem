@@ -71,9 +71,6 @@ function Hand:createGarbageAnimation()
 	game.ui:screenshake(3)
 
 	local gems = self[0].piece:breakUp() -- but need to show the gems still, until game.GEM_EXPLODE_FRAMES later
-	for i = 1, #gems do
-		game.dying_gems[#game.dying_gems+1] = gems[i]
-	end
 	self.game.grid:addBottomRow(self.owner) -- add a penalty row TODO: callback function this later
 	self.owner.pieces_fallen = self.owner.pieces_fallen + 1 -- to determine garbage ownership
 	self.game.queue:add(45, self.game.sound.newSFX, self.game.sound, "sfx_trashrow") -- TODO: this is hacky and sucky

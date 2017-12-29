@@ -88,30 +88,6 @@ function Gem:landedInGrid()
 	end
 end
 
--- landed in the staging area above the grid
-function Gem:landedInStagingArea(place_type, owner)
-	local particles = self.game.particles
-	for player in self.game:players() do
-		if player.place_type == "double" then
-			particles.words.generateDoublecast(self.game, player)
-			self.game.sound:newSFX("sfx_doublecast")
-			self.game.sound:newSFX("sfx_fountaindoublecast")
-
-		elseif player.place_type == "rush" then
-			particles.words.generateRush(self.game, player)
-			self.game.sound:newSFX("sfx_rush")
-			self.game.sound:newSFX("sfx_fountainrush")
-		end
-	end
-	if place_type == "double" then
-		particles.dust.generateStarFountain(self.game, self, 24, owner)
-	elseif place_type == "rush" then
-		particles.dust.generateStarFountain(self.game, self, 24, owner)
-	else
-		print("wtf")
-	end
-end
-
 -- custom function to handle rotation around pivot
 function Gem:draw(params)
 	params = params or {}
