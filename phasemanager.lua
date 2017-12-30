@@ -97,7 +97,7 @@ function PhaseManager:superFreeze(dt)
 		table.remove(self.super_play, 1)
 	else
 		self.super_play = nil
-		self.game.ui:putPendingAtTop()
+		self.game.ui:putPendingAtTop() -- ready the gems for falling
 		self.game.phase = "GemTween"
 	end
 end
@@ -158,6 +158,7 @@ end
 
 -- wait for gem explode animation
 function PhaseManager:matchAnimations(dt)
+	for player in self.game:players() do player.hand:update(dt) end	
 	if self.game.particles:getNumber("GemImage") == 0 then
 		if self.after_match_delay == 0 then
 			self.game.phase = "ResolvingMatches"
@@ -209,32 +210,29 @@ end
 function PhaseManager:platformSpinDelay(dt)
 	for player in self.game:players() do player.hand:update(dt) end
 	if self.platformSpinDelayCounter > 0 then
-		for player in self.game:players() do
-			player.hand:update(dt)
-		end
+		for player in self.game:players() do player.hand:update(dt) end
 		self.platformSpinDelayCounter = self.platformSpinDelayCounter - 1
 	else
 		self.platformSpinDelayCounter = 30
-		self.game.phase = "GetPiece"
+		self.game.phase = "DestroyPlatforms"
 	end
 end
 
-function PhaseManager:getPiece(dt)
-	for player in self.game:players() do
-		player.hand:destroyPlatformsAnim()
-		player.hand:getNewTurnPieces()
-	end
+function PhaseManager:destroyPlatforms(dt)
+	for player in self.game:players() do player.hand:destroyPlatforms()	end
 	self.game.phase = "PlatformsExplodingAndGarbageAppearing"
 end
 
 function PhaseManager:platformsExplodingAndGarbageAppearing(dt)
-	for player in self.game:players() do player.hand:update(dt) end
-	if self.game.particles:getNumber("ExplodingPlatform") == 0 then
-		self.game.particles:clearCount()	-- clear here so the platforms display redness/spin correctly
-		for player in self.game:players() do
+	local game = self.game
+	if game.particles:getNumber("ExplodingPlatform") == 0 then
+		for player in game:players() do
+			player.hand:getNewTurnPieces()
+			player.hand:update(dt)
 			player:resetMP()
 		end
-		self.game.phase = "PlatformsMoving"
+		game.particles:clearCount()	-- clear here so the platforms display redness/spin correctly
+		game.phase = "PlatformsMoving"
 	end
 end
 
@@ -352,7 +350,7 @@ PhaseManager.lookup = {
 	ResolvingMatches = PhaseManager.resolvingMatches,
 	ResolvedMatches = PhaseManager.resolvedMatches,
 	PlatformSpinDelay = PhaseManager.platformSpinDelay,
-	GetPiece = PhaseManager.getPiece,
+	DestroyPlatforms = PhaseManager.destroyPlatforms,
 	PlatformsExplodingAndGarbageAppearing = PhaseManager.platformsExplodingAndGarbageAppearing,
 	PlatformsMoving = PhaseManager.platformsMoving,
 	Cleanup = PhaseManager.cleanup,

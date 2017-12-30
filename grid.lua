@@ -348,9 +348,7 @@ function Grid:moveAllUp(player, rows_to_add)
 -- Moves all gems in the player's half up by rows_to_add.
 	local last_row = self.rows - rows_to_add
 	local start_col, end_col = 1, 4
-	if player.ID == "P2" then
-		start_col, end_col = 5, 8
-	end
+	if player.ID == "P2" then start_col, end_col = 5, 8 end
 	for r = 1, last_row do
 		for c = start_col, end_col do
 			self[r][c].gem = self[r+rows_to_add][c].gem

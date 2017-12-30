@@ -388,7 +388,6 @@ function Piece:dropIntoBasin(coords, received_from_opponent)
 	end
 
 	hand:movePieceToGrid(grid, self, locations)
-	hand:movePieceToGridAnim(grid, self, locations)
 	player.played_pieces[#player.played_pieces+1] = self.gems
 
 	self:breakUp()

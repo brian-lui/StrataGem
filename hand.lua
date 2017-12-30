@@ -136,44 +136,36 @@ end
 -- e.g. {{3, 4}, {6, 6}} to move piece to r3/c6, r4/c6
 function Hand:movePieceToGrid(grid, piece, locations)
 	for i = 1, #piece.gems do
-		local g, r, c = piece.gems[i], locations[i][1], locations[i][2]
-		g:setOwner(self.owner) -- set ownership
+		-- gamestate
+		local gem, r, c = piece.gems[i], locations[i][1], locations[i][2]
+		gem:setOwner(self.owner) -- set ownership
 		if grid[r][c].gem then -- check if gem exists in destination
 			print("warning: existing gem in destination (row " .. r .. ", column " .. c .. ")")
 		end
-		grid[r][c].gem = g
-		g.row, g.column = r, c
+		grid[r][c].gem = gem
+		gem.row, gem.column = r, c
 		if not piece.horizontal and i ~= #piece.gems then
-			g.no_yoshi_particle = true
+			gem.no_yoshi_particle = true
 		end
+
+		-- animations
+		gem.x = grid.x[c] -- snap x-position to column first
+		self.game.particles.upGem.generate(self.game, gem) -- call upGem from current position
+		gem.y = grid.y[r]
+		self.game.particles.placedGem.generate(self.game, gem) -- put a placedGem image
 	end	
 	self[piece.hand_idx].piece = nil
 	piece.hand_idx = nil
 end
 
--- display-related changes for the above function
-function Hand:movePieceToGridAnim(grid, piece, locations)
-	for i = 1, #piece.gems do
-		local image_loc = self.owner.placed_gem_image
-		local gem, r, c = piece.gems[i], locations[i][1], locations[i][2]
-		gem.x = grid.x[c] -- snap x-position to column first
-		self.game.particles.upGem.generate(self.game, gem) -- call upGem from current position
-		gem.y = grid.y[r]
-		self.game.particles.placedGem.generate(self.game, gem) -- put a placedGem image
-	end
-end
-
 -- creates the new pieces for the turn and clears damage.
 -- Takes optional gem_table for gem frequencies
 function Hand:getNewTurnPieces(gem_table)
+	local player = self.owner
 	local pieces_to_get = math.floor(self.damage * 0.25)
 	self.damage = self.damage % 4
 	self.turn_start_damage = self.damage
-	if pieces_to_get == 0 then
-		return
-	end
-
-	local player = self.owner
+	if pieces_to_get == 0 then return end
 
 	for i = 6, pieces_to_get + 5 do
 		self[i].piece = common.instance(Piece, self.game, {
@@ -188,20 +180,21 @@ function Hand:getNewTurnPieces(gem_table)
 	end
 	for i = 1, 10 do -- move up all the pieces
 		local end_pos = math.max(i - pieces_to_get, 0)
-		if self[i].piece then
-			self:movePiece(i, end_pos)
-		end
-		if self[i].platform then
-			self:movePlatform(i, end_pos)
-		end
+		if self[i].piece then self:movePiece(i, end_pos) end
+		if self[i].platform then self:movePlatform(i, end_pos) end
 	end
 end
 
-function Hand:destroyPlatformsAnim()
-	for i = 1, math.min(5, self.damage * 0.25) do
-		self.game.particles.explodingPlatform.generate(self.game, self[i].platform.pic)
+function Hand:destroyPlatforms()
+	local each_platform_delay = 10
+	local game = self.game
+	local to_destroy = math.min(5, math.floor(self.damage * 0.25))
+	for i = 1, to_destroy do
+		local delay = (i - 1) * each_platform_delay
+		game.queue:add(delay, game.sound.newSFX, game.sound, "sfx_starbreak")
+		game.queue:add(delay, game.particles.explodingPlatform.generate,
+			self.game, self[i].platform.pic)
 	end
-	self.game.sound:newSFX("sfx_starbreak")
 end
 
 -- Checks whether a player's pieces have stopped moving.
