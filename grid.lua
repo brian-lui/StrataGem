@@ -533,8 +533,7 @@ function Grid:destroyGem(params)
 	local player = game:playerByIndex(gem.owner)
 
 	if player == nil then -- grey gem
-		local soundfile_name = "sfx_gembreak" .. math.min(5, game.scoring_combo + 1)
-		local sfx = game.sound:newSFX(soundfile_name)
+		local sfx = game.sound:newSFX("sfx_gembreakgrey")
 		sfx:setPosition((gem.column - 4.5) * 0.02, 0, 0)
 	else
 		-- state
