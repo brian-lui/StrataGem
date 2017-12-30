@@ -612,6 +612,7 @@ end
 	color: color of particles generated
 	num: number of particles to generate. Default is 24
 	x, y, color override gem if they are provided
+	fast: if true, particles are faster. defaults to false
 --]]
 function Dust.generateStarFountain(params)
 	local game, gem, num = params.game, params.gem, params.num or 24
@@ -620,12 +621,13 @@ function Dust.generateStarFountain(params)
 	local color = params.color or params.gem.color
 	local duration = 120
 	local rotation = 0.5
-
+	local x_speed_mult = params.fast and 2 or 1
+	local y_speed_mult = params.fast and 1.5 or 1
  	for i = 1, num do
  		local todraw = image.lookup.particle_freq.random(color)
 	 	local p_type = (i % 2 == 1) and "Dust" or "OverDust"
-	 	local x_vel = (math.random() - 0.5) * game.stage.width
-	 	local y_vel = (math.random() - 0.75) * 2 * game.stage.height
+	 	local x_vel = (math.random() - 0.5) * game.stage.width * x_speed_mult
+	 	local y_vel = (math.random() - 0.75) * 2 * game.stage.height * y_speed_mult
 	 	local acc = 3 * game.stage.height
 
 	 	-- create star
@@ -637,36 +639,6 @@ function Dust.generateStarFountain(params)
  		-- create trails
  		for frames = 1, 3 do
 	 		local trail_image = image.lookup.trail_particle[color]
-			local trail = common.instance(Dust, game.particles, x, y, trail_image, p_type)
-			local trail_y = function() return y + trail.t * y_vel + trail.t^2 * acc end
-			trail.scaling = 1.25 - (frames * 0.25)
-			trail:wait(frames * 2)
-			trail:change{duration = duration, rotation = rotation, x = x1, y = trail_y, exit = true}
- 		end
- 	end
-end
-
--- called from "Go" word. Similar to generateStarFountain but faster
-function Dust.generateYellowFountain(game, x, y)
-	local duration = 120
-	local rotation = 0.5
-
-	for i = 1, 48 do
-		local todraw = image.lookup.particle_freq.random("yellow")
-		local p_type = (i % 2 == 1) and "Dust" or "OverDust"
-	 	local x_vel = (math.random() - 0.5) * 2 * game.stage.width
-	 	local y_vel = (math.random() - 0.75) * 3 * game.stage.height
-	 	local acc = 3 * game.stage.height
-
-		-- create star
-	 	local p = common.instance(Dust, game.particles, x, y, todraw, p_type)
-	 	local x1 = x + x_vel
-	 	local y_func = function() return y + p.t * y_vel + p.t^2 * acc end
-	 	p:change{duration = duration, rotation = rotation, x = x1, y = y_func, exit = true}
-
-		-- create trails
- 		for frames = 1, 3 do
-	 		local trail_image = image.lookup.trail_particle.yellow
 			local trail = common.instance(Dust, game.particles, x, y, trail_image, p_type)
 			local trail_y = function() return y + trail.t * y_vel + trail.t^2 * acc end
 			trail.scaling = 1.25 - (frames * 0.25)
@@ -834,11 +806,9 @@ end
 
 -- the glow cloud behind a doublecast piece.
 -- called from anims.putPendingOnTop, and from anims.update
-function WordEffects.generateDoublecastCloud(game, gem1, gem2)
-	local horizontal = gem1.row == gem2.row
+function WordEffects.generateDoublecastCloud(game, gem1, gem2, horizontal)
 	local todraw = horizontal and image.words.doublecast_cloud_h or image.words.doublecast_cloud_v
 	local p = common.instance(WordEffects, game.particles, (gem1.x + gem2.x) * 0.5, (gem1.y + gem2.y) * 0.5, todraw)
-	p.rotation = horizontal and 0 or math.pi * 0.5
 	p.transparency = 0
 	p:change{duration = 20, transparency = 255, easing = "inCubic"}
 	p.update = function(_self, dt)
@@ -850,10 +820,7 @@ end
 
 -- the glow cloud behind a rush piece.
 -- called from anims.putPendingOnTop, and from anims.update
-function WordEffects.generateRushCloud(game, gem1, gem2)
-	print("gem info", gem1, gem2)
-	if gem1 == nil then return end
-	local horizontal = gem1.row == gem2.row
+function WordEffects.generateRushCloud(game, gem1, gem2, horizontal)
 	local todraw = horizontal and image.words.rush_cloud_h or image.words.rush_cloud_v
 	local p = common.instance(WordEffects, game.particles, (gem1.x + gem2.x) * 0.5, (gem1.y + gem2.y) * 0.5, todraw)
 	p.transparency = 0
@@ -946,7 +913,7 @@ function Words:remove()
 end
 
 function Words.generateDoublecast(game, player_num)
-	local x = player == 1 and game.stage.width * 0.4 or game.stage.width * 0.6
+	local x = player_num == 1 and game.stage.width * 0.4 or game.stage.width * 0.6
 	local y = game.stage.height * 0.3
 	local todraw = image.words.doublecast
 	local p = common.instance(Words, game.particles, x, y, todraw, nil, nil, nil, nil, nil, true)
@@ -956,7 +923,7 @@ function Words.generateDoublecast(game, player_num)
 end
 
 function Words.generateRush(game, player_num)
-	local sign = player == 1 and 1 or -1
+	local sign = player_num == 1 and 1 or -1
 	local x = game.stage.width * (0.5 - sign * 0.6)
 	local y = game.stage.height * 0.3
 	local todraw = image.words.rush
@@ -1004,9 +971,9 @@ function Words.generateGo(game)
 	particles.wordEffects.generateGoStar(game, x, y, stage.width * 0.25, stage.height * -1.2)
 	particles.wordEffects.generateGoStar(game, x, y, stage.width * -0.25, stage.height * -0.4)
 	particles.wordEffects.generateGoStar(game, x, y, stage.width * -0.25, stage.height * -1.2)
-	--particles.dust.generateYellowFountain(game, x, y)
 	for i = 1, 51, 10 do
-		game.queue:add(i, particles.dust.generateYellowFountain, game, x, y)
+		game.queue:add(i, particles.dust.generateStarFountain, {game = game, x = x,
+			y = y, color = "yellow", num = 48, fast = true})
 	end
 end
 

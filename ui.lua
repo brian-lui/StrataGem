@@ -255,7 +255,7 @@ local function pieceLandedInStagingArea(game, gems, place_type)
 		game.sound:newSFX("sfx_fountaindoublecast")
 		for i = 1, #gems do
 			particles.dust.generateStarFountain{game = game, color = gems[i].color,
-				x = game.stage.width * (0.5 - sign * 0.2), y = y}
+				x = game.stage.width * (0.5 - sign * 0.1), y = y}
 		end
 	elseif place_type == "rush" then
 		particles.words.generateRush(game, player_num)
@@ -263,7 +263,7 @@ local function pieceLandedInStagingArea(game, gems, place_type)
 		game.sound:newSFX("sfx_fountainrush")
 		for i = 1, #gems do
 			particles.dust.generateStarFountain{game = game, color = gems[i].color,
-				x = game.stage.width * (0.5 + sign * 0.1), y = y}
+				x = game.stage.width * (0.5 + sign * 0.2), y = y}
 		end
 	end
 end
@@ -271,16 +271,17 @@ end
 -- animation: places pieces at top of basin, and tweens them down.
 -- also calls the cloud effects and the words/star fountains.
 function ui:putPendingAtTop()
+	local game = self.game
 	local pending = {
-		p1 = self.game.grid:getPendingGems(self.game.p1),
-		p2 = self.game.grid:getPendingGems(self.game.p2),
+		p1 = game.grid:getPendingGems(game.p1),
+		p2 = game.grid:getPendingGems(game.p2),
 	}
 	for _, player_gems in pairs(pending) do
 		local doubles, rushes = {}, {}
 		for i = 1, #player_gems do
 			local gem = player_gems[i]
 			local target_y = gem.y
-			gem:change{y = self.game.stage.height * -0.1}
+			gem:change{y = game.stage.height * -0.1}
 			gem:change{y = target_y, duration = 24, easing = "outQuart", exit = true}
 			
 			if gem.place_type == "double" then
@@ -290,12 +291,14 @@ function ui:putPendingAtTop()
 			end
 		end
 		if #doubles == 2 then
-			self.game.particles.wordEffects.generateDoublecastCloud(self.game, doubles[1], doubles[2])
-			self.game.queue:add(24, pieceLandedInStagingArea, self.game, doubles, "double")
+			local horizontal = doubles[1].row == doubles[2].row
+			game.particles.wordEffects.generateDoublecastCloud(game, doubles[1], doubles[2], horizontal)
+			game.queue:add(24, pieceLandedInStagingArea, game, doubles, "double")
 		end
 		if #rushes == 2 then
-			self.game.particles.wordEffects.generateRushCloud(self.game, rushes[1], rushes[2])
-			self.game.queue:add(24, pieceLandedInStagingArea, self.game, rushes, "rush")
+			local horizontal = rushes[1].row == rushes[2].row
+			game.particles.wordEffects.generateRushCloud(game, rushes[1], rushes[2], horizontal)
+			game.queue:add(24, pieceLandedInStagingArea, game, rushes, "rush")
 		end
 	end
 end
@@ -328,11 +331,11 @@ function ui:update(dt)
 				--TODO: support variable number of gems
 				local gem1, gem2 = active_piece.gems[1], active_piece.gems[2]
 				local h = active_piece.horizontal
-				game.particles.wordEffects.generateDoublecastCloud(game, gem1, gem2)
+				game.particles.wordEffects.generateDoublecastCloud(game, gem1, gem2, h)
 			elseif valid and place_type == "rush" then
 				local gem1, gem2 = game.active_piece.gems[1], active_piece.gems[2]
 				local h = active_piece.horizontal
-				game.particles.wordEffects.generateRushCloud(game, gem1, gem2)
+				game.particles.wordEffects.generateRushCloud(game, gem1, gem2, h)
 			end
 		elseif not valid or place_type == "normal" then
 			game.particles.wordEffects.clear(game.particles)
