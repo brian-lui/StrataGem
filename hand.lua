@@ -107,9 +107,7 @@ end
 
 -- moves a gem platform from location to location, as integers
 function Hand:movePlatform(start_pos, end_pos)
-	if start_pos == end_pos then
-		return
-	end
+	if start_pos == end_pos then return end
 
 	-- anims
 	local dist = self.game.stage.height * 0.1375 * (end_pos - start_pos)
@@ -128,7 +126,8 @@ function Hand:movePlatform(start_pos, end_pos)
 	self[end_pos].platform = self[start_pos].platform
 	self[end_pos].platform.hand_idx = end_pos
 	self[start_pos].platform = nil
-	self[0].platform = nil
+
+	self:destroyPlatform(0)
 end
 
 -- moves a piece from the hand to the grid.
@@ -185,6 +184,11 @@ function Hand:getNewTurnPieces(gem_table)
 	end
 end
 
+function Hand:destroyPlatform(num)
+	-- TODO: if platform has a gem, make some garbage anims
+	self[num].platform = nil	
+end
+
 function Hand:destroyPlatforms()
 	local each_platform_delay = 10
 	local game = self.game
@@ -194,6 +198,7 @@ function Hand:destroyPlatforms()
 		game.queue:add(delay, game.sound.newSFX, game.sound, "sfx_starbreak")
 		game.queue:add(delay, game.particles.explodingPlatform.generate,
 			self.game, self[i].platform.pic)
+		game.queue:add(delay, self.destroyPlatform, self, i)
 	end
 end
 
