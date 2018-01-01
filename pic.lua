@@ -228,6 +228,7 @@ end
 		x: target x location, or function, e.g. x = function() return self.y^2 end
 		y: target y location, or function
 		rotation: target rotation, or function
+		scaling: target scaling, or function
 		transparency: target transparency, or function
 		easing: easing, default is "linear"
 		tween_target: variables to tween, default is {t = 1}
@@ -254,6 +255,7 @@ function Pic:change(target)
 		self.x = target.x or self.x
 		self.y = target.y or self.y
 		self.rotation = target.rotation or self.rotation
+		self.scaling = target.scaling or self.scaling
 		self.transparency = target.transparency or self.transparency
 		if target.debug then print("Instantly moving image") end
 	elseif not self.move_func then -- no active tween, apply this immediately

@@ -285,7 +285,7 @@ function GarbageParticles:remove()
 end
 
 -- player.hand.damage is the damage before this round's match(es) is scored
-function GarbageParticles.generate(game, gem)
+function GarbageParticles.generate(game, gem, delay_frames)
 	local player = game:playerByIndex(gem.owner)
 	local start_col, end_col = 1, 4
 	local end_row = game.grid.rows
@@ -309,9 +309,15 @@ function GarbageParticles.generate(game, gem)
 		local curve = love.math.newBezierCurve(x1, y1, x2, y2, x3, y3, x4, y4)
 
 		-- create damage particle
-		local p = common.instance(GarbageParticles, game.particles, gem) -- HELP
+		local p = common.instance(GarbageParticles, game.particles, gem)
 		local duration = 54 + math.random() * 12
 		local rotation = math.random() * 5
+
+		if delay_frames then
+			p:change{transparency = 0}
+		 	p:wait(delay_frames)
+		 	p:change{duration = 0, transparency = 255}
+		end
 		p:change{duration = duration, rotation = rotation, curve = curve, exit = true}
 
 		-- create damage trails
@@ -324,7 +330,7 @@ function GarbageParticles.generate(game, gem)
 				scaling = 1.25 - 0.25 * i
 			}
 
-			game.queue:add(i * 2, game.particles.damageTrail.generate, game, trail)
+			game.queue:add(i * 2, game.particles.damageTrail.generate, game, trail, delay_frames)
 		end
 		game.particles:incrementCount("created", "Garbage", gem.owner)
 	end
@@ -336,8 +342,8 @@ GarbageParticles = common.class("GarbageParticles", GarbageParticles, Pic)
 local PopParticle = {}
 function PopParticle:init(manager, gem)
 	local grid = manager.game.grid
-	Pic.init(self, manager.game, {x = grid.x[gem.column], y = grid.y[gem.row],
-		image = image.lookup.pop_particle[gem.color]})
+	local image = image.lookup.pop_particle[gem.color]
+	Pic.init(self, manager.game, {x = gem.x, y = gem.y, image = image})
 	manager.allParticles.Pop[ID.particle] = self
 	self.manager = manager
 end
@@ -376,13 +382,21 @@ function ExplodingGem:remove()
 	self.manager.allParticles.ExplodingGem[self.ID] = nil
 end
 
-function ExplodingGem.generate(game, gem)
+-- frames and shake are optional
+function ExplodingGem.generate(game, gem, explode_frames, fade_frames, shake)
+	explode_frames = explode_frames or game.GEM_EXPLODE_FRAMES
+	fade_frames = fade_frames or game.GEM_FADE_FRAMES
 	local p = common.instance(ExplodingGem, game.particles, gem)
-	p:change{duration = game.GEM_EXPLODE_FRAMES, transparency = 255}
-	if gem.owner == 3 then
-		p:change{duration = game.GEM_FADE_FRAMES, exit = true}
+	if shake then
+		p:change{duration = explode_frames, scaling = 2, easing = "inBounce", transparency = 255}
 	else
-		p:change{duration = game.GEM_FADE_FRAMES, transparency = 0, scaling = 2,
+		p:change{duration = explode_frames, transparency = 255}
+	end
+
+	if gem.owner == 3 then
+		p:change{duration = fade_frames, exit = true}
+	else
+		p:change{duration = fade_frames, transparency = 0, scaling = 2,
 			exit = true}
 	end
 end
@@ -785,9 +799,13 @@ function GemImage:remove()
 	self.manager.allParticles.GemImage[self.ID] = nil
 end
 
-function GemImage.generate(game, x, y, image, duration)
+function GemImage.generate(game, x, y, image, duration, shake)
 	local p = common.instance(GemImage, game.particles, x, y, image)
-	p:change{duration = duration, exit = true}
+	if shake then
+		p:change{duration = duration, scaling = 2, easing = "inBounce", exit = true}
+	else
+		p:change{duration = duration, exit = true}
+	end
 end
 
 GemImage = common.class("GemImage", GemImage, Pic)

@@ -384,8 +384,7 @@ function Grid:addBottomRow(player)
 	end
 
 	if player.pieces_fallen > player.enemy.pieces_fallen then
-		local flag_num = player.enemy.ID == "P1" and 1 or 2
-		self:setAllGemOwners(flag_num)
+		self:setAllGemOwners(player.enemy.playerNum)
 	end	
 end
 
