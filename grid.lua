@@ -311,11 +311,9 @@ function Grid:generate1by1(column, banned_color1, banned_color2)
 	local distance = self.y[row+1] - self.y[row]
 	local speed = self.DROP_SPEED + self.DROP_MULTIPLE_SPEED * self.game.scoring_combo
 	local duration = distance / speed
-	local make_gem = function(r, c)
-		self[r][c].gem = common.instance(Gem, self.game, self.x[c], self.y[r+1], make_color, true)
-		self[r][c].gem:change{x = self.x[c], y = self.y[r], duration = duration}
-	end
-	make_gem(row, column)
+
+	self[row][column].gem = common.instance(Gem, self.game, self.x[column], self.y[row+1], make_color, true)
+	self[row][column].gem:change{x = self.x[column], y = self.y[row], duration = duration}
 end
 
 -- move a gem from a spot on the grid to another spot
@@ -382,8 +380,13 @@ function Grid:addBottomRow(player)
 				ban2 = self[self.rows][next_col].gem.color
 			end
 		end
-		self:generate1by1(col, ban1, ban2)
+		self:generate1by1(col, ban1, ban2, player.enemy)
 	end
+
+	if player.pieces_fallen > player.enemy.pieces_fallen then
+		local flag_num = player.enemy.ID == "P1" and 1 or 2
+		self:setAllGemOwners(flag_num)
+	end	
 end
 
 function Grid:isSettled()

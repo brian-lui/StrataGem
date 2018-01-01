@@ -58,10 +58,23 @@ function Hand:getx(y)
 	return start_x + additional * sign
 end
 
-function Hand:createGarbageAnimation()
+function Hand:createGarbageAnimation(pos)
 	local game = self.game
-	for i = 1, #self[0].piece.gems do
-		local gem = self[0].piece.gems[i]
+
+	-- The gems animate like normal matches EXCEPT maybe more violent. 
+	-- Maybe they should shake while lighting up
+
+	-- explodingGem with shake
+	-- garbageParticles delayed by GEM_EXPLODE_FRAMES
+	-- garbageParticles exit function creates the following animation:
+	--[[ When the gems appear, the gem explode animation happens in reverse.
+		(particles appear randomly in a circle about 24 pixel radius from where the gem will spawn.
+		the blast circle appears full size and gets smaller, and the gem appears glowy and 
+		fades down to normal color). Also spray some dust
+	--]]
+
+	for i = 1, #self[pos].piece.gems do
+		local gem = self[pos].piece.gems[i]
 		gem.owner = self.owner.playerNum
 		game.particles.explodingGem.generate(game, gem)
 		game.queue:add(game.GEM_EXPLODE_FRAMES, game.particles.garbageParticles.generate, game, gem)
@@ -70,17 +83,15 @@ function Hand:createGarbageAnimation()
 	end
 	game.ui:screenshake(3)
 
-	local gems = self[0].piece:breakUp() -- but need to show the gems still, until game.GEM_EXPLODE_FRAMES later
-	self.game.grid:addBottomRow(self.owner) -- add a penalty row TODO: callback function this later
-	self.owner.pieces_fallen = self.owner.pieces_fallen + 1 -- to determine garbage ownership
+	local gems = self[pos].piece:breakUp() -- but need to show the gems still, until game.GEM_EXPLODE_FRAMES later
 	self.game.queue:add(45, self.game.sound.newSFX, self.game.sound, "sfx_trashrow") -- TODO: this is hacky and sucky
+	return 45
 end
 
 -- moves a piece from location to location, as integers
 function Hand:movePiece(start_pos, end_pos)
-	if start_pos == end_pos then
-		return
-	end
+	local game = self.game
+	if start_pos == end_pos then return end
 
 	-- anims
 	local dist = self.game.stage.height * 0.1375 * (end_pos - start_pos)
@@ -101,7 +112,9 @@ function Hand:movePiece(start_pos, end_pos)
 	self[end_pos].piece = self[start_pos].piece
 	self[start_pos].piece = nil
 	if self[0].piece then
-		self:createGarbageAnimation()
+		local animation_frames = self:createGarbageAnimation(0)
+		game.queue:add(animation_frames, game.grid.addBottomRow, game.grid, self.owner)
+		self.owner.pieces_fallen = self.owner.pieces_fallen + 1
 	end
 end
 
@@ -127,7 +140,7 @@ function Hand:movePlatform(start_pos, end_pos)
 	self[end_pos].platform.hand_idx = end_pos
 	self[start_pos].platform = nil
 
-	self:destroyPlatform(0)
+	self:destroyPlatform(0, true)
 end
 
 -- moves a piece from the hand to the grid.
@@ -184,21 +197,25 @@ function Hand:getNewTurnPieces(gem_table)
 	end
 end
 
-function Hand:destroyPlatform(num)
-	-- TODO: if platform has a gem, make some garbage anims
-	self[num].platform = nil	
+function Hand:destroyPlatform(num, skip_animations)
+	local game = self.game
+	if not skip_animations then
+		if self[num].platform then
+			game.sound:newSFX("sfx_starbreak")
+			game.particles.explodingPlatform.generate(game, self[num].platform.pic)
+		else
+			print("tried to destroy a non-existent platform with animation!")
+		end
+	end
+	self[num].platform = nil
 end
 
-function Hand:destroyPlatforms()
-	local each_platform_delay = 10
+function Hand:destroyDamagedPlatforms()
+	local platform_delay = 10
 	local game = self.game
 	local to_destroy = math.min(5, math.floor(self.damage * 0.25))
 	for i = 1, to_destroy do
-		local delay = (i - 1) * each_platform_delay
-		game.queue:add(delay, game.sound.newSFX, game.sound, "sfx_starbreak")
-		game.queue:add(delay, game.particles.explodingPlatform.generate,
-			self.game, self[i].platform.pic)
-		game.queue:add(delay, self.destroyPlatform, self, i)
+		game.queue:add((i - 1) * platform_delay, self.destroyPlatform, self, i)
 	end
 end
 

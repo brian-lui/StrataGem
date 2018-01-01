@@ -218,8 +218,8 @@ function PhaseManager:platformSpinDelay(dt)
 	end
 end
 
-function PhaseManager:destroyPlatforms(dt)
-	for player in self.game:players() do player.hand:destroyPlatforms()	end
+function PhaseManager:destroyDamagedPlatforms(dt)
+	for player in self.game:players() do player.hand:destroyDamagedPlatforms() end
 	self.game.phase = "PlatformsExplodingAndGarbageAppearing"
 end
 
@@ -252,13 +252,11 @@ function PhaseManager:platformsMoving(dt)
 		for player in game:players() do	-- TODO: check if we can delete this
 			player.hand:update(dt)
 		end
-		-- ignore garbage pushing gems up, creating matches, for now
 
 		if grid:isSettled() then
 		-- garbage can possibly push gems up, creating matches.
 			local _, matches = grid:getMatchedGems()
 			if matches > 0 then
-				grid:setGarbageMatchFlags()
 				game.phase = "Gravity"
 			else
 				for i = 1, grid.columns do --checks if should generate no rush
@@ -350,7 +348,7 @@ PhaseManager.lookup = {
 	ResolvingMatches = PhaseManager.resolvingMatches,
 	ResolvedMatches = PhaseManager.resolvedMatches,
 	PlatformSpinDelay = PhaseManager.platformSpinDelay,
-	DestroyPlatforms = PhaseManager.destroyPlatforms,
+	DestroyPlatforms = PhaseManager.destroyDamagedPlatforms,
 	PlatformsExplodingAndGarbageAppearing = PhaseManager.platformsExplodingAndGarbageAppearing,
 	PlatformsMoving = PhaseManager.platformsMoving,
 	Cleanup = PhaseManager.cleanup,
