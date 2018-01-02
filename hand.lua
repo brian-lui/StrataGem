@@ -60,8 +60,7 @@ end
 
 function Hand:createGarbageAnimation(pos)
 	local game = self.game
-	local explode_frames = game.GEM_EXPLODE_FRAMES * 1.5
-
+	local particles = game.particles
 	-- garbageParticles exit function creates the following animation:
 	--[[ When the gems appear, the gem explode animation happens in reverse.
 		(particles appear randomly in a circle about 24 pixel radius from where the gem will spawn.
@@ -72,16 +71,17 @@ function Hand:createGarbageAnimation(pos)
 	for i = 1, #self[pos].piece.gems do
 		local gem = self[pos].piece.gems[i]
 		gem.owner = self.owner.playerNum
-		game.particles.explodingGem.generate(game, gem, explode_frames, game.GEM_FADE_FRAMES, true)
-		game.particles.gemImage.generate(game, gem.x, gem.y, gem.image, explode_frames, true)
-		game.particles.pop.generate(game, gem, explode_frames)
-		game.particles.dust.generateBigFountain(game, gem, 24, explode_frames)
-		game.particles.garbageParticles.generate(game, gem, explode_frames)
-		game.queue:add(explode_frames, game.ui.screenshake, game.ui, 3)
+		particles.explodingGem.generate(game, gem,	game.PLATFORM_FALL_EXPLODE_FRAMES,
+			game.PLATFORM_FALL_FADE_FRAMES, true)
+		particles.gemImage.generate(game, gem.x, gem.y, gem.image, game.PLATFORM_FALL_EXPLODE_FRAMES, true)
+		particles.pop.generate(game, gem, game.PLATFORM_FALL_EXPLODE_FRAMES)
+		particles.dust.generateBigFountain(game, gem, 24, game.PLATFORM_FALL_EXPLODE_FRAMES)
+		particles.garbageParticles.generate(game, gem, game.PLATFORM_FALL_EXPLODE_FRAMES)
+		game.queue:add(game.PLATFORM_FALL_EXPLODE_FRAMES, game.ui.screenshake, game.ui, 3)
 	end
 
 	self[pos].piece:breakUp()
-	self.game.queue:add(45, self.game.sound.newSFX, self.game.sound, "sfx_trashrow") -- TODO: this is hacky and sucky
+	game.queue:add(45, game.sound.newSFX, game.sound, "sfx_trashrow") -- TODO: this is hacky and sucky
 	return 70
 end
 

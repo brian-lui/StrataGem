@@ -39,8 +39,6 @@ END QUEUE COMPONENT
 
 local Game = {}
 
-Game.INIT_TIME_TO_NEXT = 430 -- frames in each action phase
-Game.INIT_PIECE_WAITING_TIME = 30 -- delay before new pieces
 Game.LOSE_ROW = 12 -- game over if a gem ends the turn in this row or above
 Game.RUSH_ROW = 14 -- can only rush if this row is empty
 Game.NETPLAY_MAX_WAIT = 60
@@ -49,6 +47,8 @@ Game.DAMAGE_PARTICLE_TO_PLATFORM_FRAMES = 54
 Game.DAMAGE_PARTICLE_PER_DROP_FRAMES = 26
 Game.GEM_EXPLODE_FRAMES = 20
 Game.GEM_FADE_FRAMES = 10
+Game.PLATFORM_FALL_EXPLODE_FRAMES = 30
+Game.PLATFORM_FALL_FADE_FRAMES = 15
 Game.EXPLODING_PLATFORM_FRAMES = 60
 Game.VERSION = "64.0"
 
@@ -135,14 +135,13 @@ function Game:newTurn()
 	self.turn = self.turn + 1
 	self.phase = "Action"
 	self.frozen = false
-	self.time_to_next = self.INIT_TIME_TO_NEXT
+	self.phaseManager.time_to_next = self.phaseManager.INIT_TIME_TO_NEXT
 end
 
 function Game:reset()
 	self.phase = "Intro"
 	self.turn = 1
-	self.time_to_next = self.INIT_TIME_TO_NEXT
-	self.piece_waiting_time = self.INIT_PIECE_WAITING_TIME
+	self.phaseManager.time_to_next = self.phaseManager.INIT_TIME_TO_NEXT
 	self.netplay_wait = 0
 	self.frozen = false
 	self.scoring_combo = 0

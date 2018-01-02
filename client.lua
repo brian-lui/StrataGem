@@ -79,7 +79,7 @@ function Client:newTurn()
 	self.opponent_received_state = false
 	self.synced = false
 	print("Starting next turn on frame: " .. self.game.frame, "Time: " .. love.timer.getTime() - self.match_start_time)
-	print("Expecting resolution on frame: " .. self.game.frame + self.game.INIT_TIME_TO_NEXT)
+	print("Expecting resolution on frame: " .. self.game.frame + self.game.phaseManager.INIT_TIME_TO_NEXT)
 end
 
 function Client:endMatch()

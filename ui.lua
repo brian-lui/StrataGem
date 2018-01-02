@@ -29,11 +29,11 @@ end
 
 function Timer:update(dt)
 	-- set percentage of timer to show
-	local w = (self.game.time_to_next / self.game.INIT_TIME_TO_NEXT) * self.timerbar.width
+	local w = (self.game.phaseManager.time_to_next / self.game.phaseManager.INIT_TIME_TO_NEXT) * self.timerbar.width
 	local x_offset = (self.timerbar.width - w) * 0.5
 	self.timerbar:setQuad(x_offset, 0, w, self.timerbar.height)
 
-	if self.game.time_to_next == 0 then -- fade out
+	if self.game.phaseManager.time_to_next == 0 then -- fade out
 		self.timerbar.transparency = math.max(self.timerbar.transparency - self.FADE_SPEED, 0)
 	else -- fade in
 		self.timerbar.transparency = math.min(self.timerbar.transparency + self.FADE_SPEED, 255)
@@ -42,7 +42,7 @@ function Timer:update(dt)
 
 	-- update the timer text (3/2/1 countdown)
 	local previous_time_remaining_int = self.time_remaining_int
-	local time_remaining = (self.game.time_to_next * self.game.timeStep)
+	local time_remaining = (self.game.phaseManager.time_to_next * self.game.timeStep)
 	self.time_remaining_int = math.ceil(time_remaining * self.text_multiplier)
 
 	if time_remaining <= (3 / self.text_multiplier) and time_remaining > 0 then

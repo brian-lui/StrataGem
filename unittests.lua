@@ -170,7 +170,7 @@ local function printSaveDirectory(game)
 end
 
 local function skipToTurnEnd(game)
-	game.time_to_next = 1
+	game.phaseManager.time_to_next = 1
 end
 
 local function addDamageP1(game)

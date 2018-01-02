@@ -8,6 +8,8 @@ local PhaseManager = {}
 
 function PhaseManager:init(game)
 	self.game = game
+	self.INIT_TIME_TO_NEXT = 430 -- frames in each action phase
+	self.time_to_next = 430
 	self.super_play = nil
 	self.super_pause = 0
 	self.platformSpinDelayCounter = 15
@@ -48,9 +50,9 @@ function PhaseManager:action(dt)
 	end
 	self.game.ui:update(dt)
 
-	game.time_to_next = game.time_to_next - 1
+	self.time_to_next = self.time_to_next - 1
 	if not ai.finished then ai:evaluateActions(game.them_player) end
-	if game.time_to_next <= 0 and ai.finished then
+	if self.time_to_next <= 0 and ai.finished then
 		love.mousereleased(drawspace.tlfres.getMousePosition(drawspace.width, drawspace.height))
 		game.particles.wordEffects.clear(game.particles)
 		game.phase = "Resolve"
