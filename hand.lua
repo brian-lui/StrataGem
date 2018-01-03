@@ -68,6 +68,7 @@ function Hand:createGarbageAnimation(pos)
 		fades down to normal color). Also spray some dust
 	--]]
 
+	local garbage_gone_frames
 	for i = 1, #self[pos].piece.gems do
 		local gem = self[pos].piece.gems[i]
 		gem.owner = self.owner.playerNum
@@ -76,13 +77,13 @@ function Hand:createGarbageAnimation(pos)
 		particles.gemImage.generate(game, gem.x, gem.y, gem.image, game.PLATFORM_FALL_EXPLODE_FRAMES, true)
 		particles.pop.generate(game, gem, game.PLATFORM_FALL_EXPLODE_FRAMES)
 		particles.dust.generateBigFountain(game, gem, 24, game.PLATFORM_FALL_EXPLODE_FRAMES)
-		particles.garbageParticles.generate(game, gem, game.PLATFORM_FALL_EXPLODE_FRAMES)
+		garbage_gone_frames = particles.garbageParticles.generate(game, gem, game.PLATFORM_FALL_EXPLODE_FRAMES)
 		game.queue:add(game.PLATFORM_FALL_EXPLODE_FRAMES, game.ui.screenshake, game.ui, 3)
 	end
 
 	self[pos].piece:breakUp()
 	game.queue:add(45, game.sound.newSFX, game.sound, "sfx_trashrow") -- TODO: this is hacky and sucky
-	return 70
+	return garbage_gone_frames
 end
 
 -- moves a piece from location to location, as integers
