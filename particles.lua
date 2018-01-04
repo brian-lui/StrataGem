@@ -80,7 +80,6 @@ function Particles:reset()
 		GemImage = {},
 		Words = {},
 		WordEffects = {},
-		PieEffects = {},
 		CharEffects = {},
 		SuperFreezeEffects = {},
 	}
@@ -1047,53 +1046,6 @@ end
 Words = common.class("Words", Words, Pic)
 -------------------------------------------------------------------------------
 
-local PieEffects = {}
-function PieEffects:init(manager, x, y, rotation, todraw, update_func, tw)
-	Pic.init(self, manager.game, {x = x, y = y, rotation = rotation, image = todraw})
-	manager.allParticles.PieEffects[ID.particle] = self
-	self.manager = manager
-	self.update = update_func
-	self.t = 0
-	self.tweening = tween.new(tw.duration, self, tw.var, tw.movement)
-end
-
-function PieEffects:remove()
-	self.manager.allParticles.PieEffects[self.ID] = nil
-end
-
-function PieEffects.generateSegment(game, segment, todraw)
-	todraw = todraw or segment.image
-	local x_sign, y_sign
-	if segment.owner.ID == "P1" then
-		x_sign = (segment.segment_number == 1 or segment.segment_number == 2) and 1 or -1
-	elseif segment.owner.ID == "P2" then
-		x_sign = (segment.segment_number == 1 or segment.segment_number == 2) and -1 or 1
-	end
-	y_sign = (segment.segment_number == 1 or segment.segment_number == 4) and -1 or 1
-
-	local update_func = function(_self, dt)
-		local complete = _self.tweening:update(dt)
-		_self.x = segment.x + _self.t * x_sign * _self.stage.width * 0.2
-		_self.y = segment.y + _self.t * y_sign * _self.stage.height * 0.2
-		_self.scaling = 1 + (_self.t * 10)
-		_self.transparency = math.max(255 - (_self.t * 255), 0)
-		if complete then
-			_self:remove()
-		end
-	end
-	local tweening = {duration = 0.5,	var = {t = 1}, movement = "inCubic"}
-	common.instance(PieEffects, game.particles, segment.x, segment.y, segment.rotation, todraw, update_func, tweening)
-end
-
--- TODO: Delete this function? Maybe the whole PieEffects class.
---[[
-function PieEffects.generatePie(game, pie)
-end
---]]
-PieEffects = common.class("PieEffects", PieEffects, Pic)
-
--------------------------------------------------------------------------------
-
 local CharEffects = {}
 -- required stuff in table: x, y, image
 function CharEffects:init(manager, tbl)
@@ -1145,7 +1097,6 @@ Particles.placedGem = PlacedGem
 Particles.gemImage = GemImage
 Particles.words = Words
 Particles.wordEffects = WordEffects
-Particles.pieEffects = PieEffects
 Particles.charEffects = CharEffects
 Particles.superFreezeEffects = SuperFreezeEffects
 

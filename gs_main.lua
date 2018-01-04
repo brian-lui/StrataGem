@@ -257,7 +257,6 @@ function gs_main:drawGems(params)
 	for _, v in pairs(allParticles.GarbageParticles) do v:draw(params) end
 	for _, v in pairs(allParticles.Damage) do v:draw(params) end
 	for _, v in pairs(allParticles.ExplodingGem) do v:draw(params) end
-	for _, v in pairs(allParticles.PieEffects) do v:draw(params) end
 	for _, v in pairs(allParticles.CharEffects) do v:draw(params) end
 	for i = 1, 3 do
 		for _, v in pairs(allParticles.SuperFreezeEffects) do
