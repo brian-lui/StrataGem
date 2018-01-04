@@ -611,13 +611,49 @@ function Grid:getLoser()
 	end
 
 	if p1loss and p2loss then
-		return "Draw"
+		return 3
 	elseif p1loss then
-		return "P1"
+		return 1
 	elseif p2loss then
-		return "P2"
+		return 2
 	end
 	return
+end
+
+function Grid:animateGameOver(loser_num)
+	local game = self.game
+	local particles = game.particles
+	local EACH_ROW_DELAY = 5
+
+	local start_col, end_col
+	if loser_num == 1 then
+		start_col, end_col = 1, 4
+	elseif loser_num == 2 then
+		start_col, end_col = 5, 8
+	elseif loser_num == 3 then
+		start_col, end_col = 1, 8
+	else
+		print("craps")
+	end
+
+	particles.words.generateGameOverThanks(game)
+
+	for row = 20, 5, -1 do
+		local delay = (20 - row) * EACH_ROW_DELAY
+		local duration = game.INIT_GAMEOVER_PAUSE
+
+		for col = start_col, end_col do
+			if self[row][col].gem then
+				local gem = self[row][col].gem
+				local img = image.lookup.gem_explode[gem.color .. "_grey"]
+				game.queue:add(delay, particles.gemImage.generate, game, gem.x, gem.y, img, duration)
+			end
+		end
+	end
+end
+
+function Grid:clearGameOverAnims()
+	self.game.particles.gemImage.removeAll(self.game.particles)
 end
 
 return common.class("Grid", Grid)

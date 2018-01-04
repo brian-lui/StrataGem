@@ -810,6 +810,10 @@ function GemImage.generate(game, x, y, image, duration, shake)
 	end
 end
 
+function GemImage.removeAll(manager)
+	for _, v in pairs(manager.allParticles.GemImage) do v:remove() end
+end
+
 GemImage = common.class("GemImage", GemImage, Pic)
 
 -------------------------------------------------------------------------------
@@ -936,7 +940,7 @@ function Words.generateDoublecast(game, player_num)
 	local x = player_num == 1 and game.stage.width * 0.4 or game.stage.width * 0.6
 	local y = game.stage.height * 0.3
 	local todraw = image.words.doublecast
-	local p = common.instance(Words, game.particles, x, y, todraw, nil, nil, nil, nil, nil, true)
+	local p = common.instance(Words, game.particles, x, y, todraw)
 	p.scaling = 5
 	p:change{duration = 60, scaling = 1, easing = "outQuart"}
 	p:change{duration = 60, transparency = 0, easing = "inExpo", exit = true}
@@ -947,7 +951,7 @@ function Words.generateRush(game, player_num)
 	local x = game.stage.width * (0.5 - sign * 0.6)
 	local y = game.stage.height * 0.3
 	local todraw = image.words.rush
-	local p = common.instance(Words, game.particles, x, y, todraw, nil, nil, nil, nil, nil, true)
+	local p = common.instance(Words, game.particles, x, y, todraw)
 	p.rotation = 0.25
 	p:change{duration = 60, x = game.stage.width * (0.5 + sign * 0.2), rotation = 0, easing = "outBounce"}
 	p:change{duration = 60, x = game.stage.width * (0.5 + sign * 0.9), rotation = 0.5, easing = "inBack", exit = true}
@@ -960,7 +964,7 @@ function Words.generateReady(game)
 	local y = stage.height * 0.3
 	local todraw = image.words.ready
 	local h, w = todraw:getHeight(), todraw:getWidth()
-	local p = common.instance(Words, particles, x, y, todraw, nil, nil, nil, nil, nil, true)
+	local p = common.instance(Words, particles, x, y, todraw)
 	local generate_big = function()
 		particles.wordEffects.generateReadyParticle(game, "large",
 				p.x + (math.random()-0.5)*w, stage.height*0.3 + (math.random()-0.5)*h)
@@ -1007,7 +1011,7 @@ function Words.generateNoRush(game, column)
 		local x = grid.x[column]
 		local y = (grid.y[game.RUSH_ROW] + grid.y[game.RUSH_ROW+1]) / 2
 		local todraw = image.words.no_rush_one_column
-		local p = common.instance(Words, game.particles, x, y, todraw, nil, nil, nil, nil, nil, true)
+		local p = common.instance(Words, game.particles, x, y, todraw)
 		p:change{duration = 20, quad = {x = true, x_percentage = 1, x_anchor = 0.5}}
 		p:change{duration = 40}
 		local blink = 0
@@ -1032,8 +1036,15 @@ function Words.generateNoRush(game, column)
 	end
 end
 
-Words = common.class("Words", Words, Pic)
+function Words.generateGameOverThanks(game)
+	local x = game.stage.width * 0.5
+	local y = game.stage.height * 0.4
+	local todraw = image.words.gameoverthanks
+	local p = common.instance(Words, game.particles, x, y, todraw)
+	p:change{duration = 600, exit = true}
+end
 
+Words = common.class("Words", Words, Pic)
 -------------------------------------------------------------------------------
 
 local PieEffects = {}

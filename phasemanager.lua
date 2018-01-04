@@ -19,6 +19,25 @@ function PhaseManager:init(game)
 	end
 	self.after_match_delay = game.GEM_FADE_FRAMES
 	self.matched_this_round = {false, false} -- p1 made a match, p2 made a match
+	self.game_is_over = false
+	self.INIT_GAMEOVER_PAUSE = 180
+	self.gameover_pause = 180
+end
+
+function PhaseManager:reset()
+	self.time_to_next = self.INIT_TIME_TO_NEXT
+	self.super_play = nil
+	self.super_pause = 0
+	self.platformSpinDelayCounter = 15
+	self.no_rush = {}
+	for i = 1, 8 do
+		self.no_rush[i] = true
+	end
+	self.after_match_delay = self.game.GEM_FADE_FRAMES
+	self.matched_this_round = {false, false} -- p1 made a match, p2 made a match
+	self.game_is_over = false
+	self.gameover_pause = 180
+	self.game.grid:clearGameOverAnims()
 end
 
 function PhaseManager:intro(dt)
@@ -313,27 +332,21 @@ end
 
 function PhaseManager:gameOver(dt)
 	local game = self.game
-	local particles = game.particles
-
-	local loser = game.grid:getLoser()
-	if loser == "P1" then
-		print("P2 wins gg")
-	elseif loser == "P2" then
-		print("P1 wins gg")
-	elseif loser == "Draw" then
-		print("Draw gg")
-	else
-		print("Match ended unexpectedly, whopps!")
-	end
-	local damage_particles = particles:getCount("onscreen", "Damage", 1) + particles:getCount("onscreen", "Damage", 2)
-	local super_particles = particles:getCount("onscreen", "MP", 1) + particles:getCount("onscreen", "MP", 2)
-	if damage_particles + super_particles == 0 then
-		if game.type == "Netplay" then
-			game.client:endMatch()
-			game.statemanager:switch(require "gs_lobby")
-		elseif game.type == "1P" then
-			game.statemanager:switch(require "gs_charselect")
+	if self.game_is_over then
+		if self.gameover_pause == 0 then
+			self:reset()
+			if game.type == "Netplay" then
+				game.statemanager:switch(require "gs_lobby")
+			elseif game.type == "1P" then
+				game.statemanager:switch(require "gs_charselect")
+			end
+		else
+			self.gameover_pause = self.gameover_pause - 1
 		end
+	else
+		game.grid:animateGameOver(game.grid:getLoser())
+		self.game_is_over = true
+		if game.type == "Netplay" then game.client:endMatch() end
 	end
 end
 
