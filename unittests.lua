@@ -1,6 +1,7 @@
 -- You can make some patterns to test bugs
 local NOP = function() end
 local common = require "class.commons"
+local image = require 'image'
 local Gem = require 'gem'
 local Piece = require 'piece'
 
@@ -206,7 +207,20 @@ local function showDebugOverlay(game)
 end
 
 local function toggleSlowdown(game)
-	game.timeStep = game.timeStep == 0.25 and 1/60 or 0.25
+	if game.timeStep == 1/60 then
+		game.timeStep = 1/2
+	elseif game.timeStep == 1/2 then
+		game.timeStep = 2
+	else
+		game.timeStep = 1/60
+	end
+end
+
+local function testGemImage(game)
+	local stage = game.stage
+	game.grid:animateGameOver(2)	
+	--game.particles.gemImage.generate{game = game, x = stage.x_mid, y = stage.y_mid,
+	--	image = image.red_grey, duration = 60, delay_frames = 30}
 end
 
 local Unittests = {
@@ -231,7 +245,7 @@ local Unittests = {
 	l = showDebugInfo,
 	z = showDebugOverlay,
 	x = toggleSlowdown,
-	c = NOP,
+	c = testGemImage,
 	v = NOP,
 	b = NOP,
 	n = NOP,

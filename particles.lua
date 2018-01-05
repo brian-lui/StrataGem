@@ -383,12 +383,28 @@ function ExplodingGem:remove()
 	self.manager.allParticles.ExplodingGem[self.ID] = nil
 end
 
--- frames and shake are optional
-function ExplodingGem.generate(game, gem, explode_frames, fade_frames, shake)
-	explode_frames = explode_frames or game.GEM_EXPLODE_FRAMES
-	fade_frames = fade_frames or game.GEM_FADE_FRAMES
+--[[ game and gem are mandatory
+	explode_frames: optional duration of exploding part. Defaults to game.GEM_EXPLODE_FRAMES
+	fade_frames: optional duration of fade part. Defaults to game.GEM_FADE_FRAMES
+	shake: boolean for whether to bounce the gam. Used by garbage gem. Defaults to false.
+	delay_frames: optional amount of time to delay the start of animation.
+--]]
+--function ExplodingGem.generate(game, gem, explode_frames, fade_frames, shake)
+function ExplodingGem.generate(params)
+	local game = params.game
+	local gem = params.gem
+	local explode_frames = params.explode_frames or game.GEM_EXPLODE_FRAMES
+	local fade_frames = params.fade_frames or game.GEM_FADE_FRAMES
+
 	local p = common.instance(ExplodingGem, game.particles, gem)
-	if shake then
+
+	if params.delay_frames then
+		p:change{transparency = 0}
+	 	p:wait(params.delay_frames)
+	 	p:change{duration = 0, transparency = 255}
+	end
+
+	if params.shake then
 		p:change{duration = explode_frames, scaling = 2, easing = "inBounce", transparency = 255}
 	else
 		p:change{duration = explode_frames, transparency = 255}
@@ -800,12 +816,28 @@ function GemImage:remove()
 	self.manager.allParticles.GemImage[self.ID] = nil
 end
 
-function GemImage.generate(game, x, y, image, duration, shake)
+--[[ Takes mandatory game and duration arguments, and either
+	1) gem: will use the x, y, image from the gem, (takes priority), or
+	2) x, y, image arguments
+	shake: whether to bounce, currently used for garbage gem animations
+	delay_frames: how many frames to delay the animation
+]]
+function GemImage.generate(params)
+	local game = params.game
+	local x, y, image = params.x, params.y, params.image
+	if params.gem then x, y, image = params.gem.x, params.gem.y, params.gem.image end
+
 	local p = common.instance(GemImage, game.particles, x, y, image)
-	if shake then
-		p:change{duration = duration, scaling = 2, easing = "inBounce", exit = true}
+	if params.delay_frames then
+		p:change{transparency = 0}
+	 	p:wait(params.delay_frames)
+	 	p:change{duration = 0, transparency = 255}
+	end
+
+	if params.shake then
+		p:change{duration = params.duration, scaling = 2, easing = "inBounce", exit = true}
 	else
-		p:change{duration = duration, exit = true}
+		p:change{duration = params.duration, exit = true}
 	end
 end
 

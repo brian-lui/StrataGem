@@ -281,7 +281,7 @@ function ui:putPendingAtTop()
 		for i = 1, #player_gems do
 			local gem = player_gems[i]
 			local target_y = gem.y
-			gem:change{y = game.stage.height * -0.1}
+			gem.y = game.stage.height * -0.1
 			gem:change{y = target_y, duration = 24, easing = "outQuart", exit = true}
 			
 			if gem.place_type == "double" then

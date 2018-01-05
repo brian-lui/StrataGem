@@ -72,9 +72,10 @@ function Hand:createGarbageAnimation(pos)
 	for i = 1, #self[pos].piece.gems do
 		local gem = self[pos].piece.gems[i]
 		gem.owner = self.owner.playerNum
-		particles.explodingGem.generate(game, gem,	game.PLATFORM_FALL_EXPLODE_FRAMES,
-			game.PLATFORM_FALL_FADE_FRAMES, true)
-		particles.gemImage.generate(game, gem.x, gem.y, gem.image, game.PLATFORM_FALL_EXPLODE_FRAMES, true)
+		particles.explodingGem.generate{game = game, gem = gem,	delay_frames = i * 10, shake = true,
+			explode_frames = game.PLATFORM_FALL_EXPLODE_FRAMES, fade_frames = game.PLATFORM_FALL_FADE_FRAMES}
+		particles.gemImage.generate{game = game, gem = gem, duration = game.PLATFORM_FALL_EXPLODE_FRAMES, shake = true}
+		--particles.gemImage.generate(game, gem.x, gem.y, gem.image, game.PLATFORM_FALL_EXPLODE_FRAMES, true)
 		particles.pop.generate(game, gem, game.PLATFORM_FALL_EXPLODE_FRAMES)
 		particles.dust.generateBigFountain(game, gem, 24, game.PLATFORM_FALL_EXPLODE_FRAMES)
 		garbage_gone_frames = particles.garbageParticles.generate(game, gem, game.PLATFORM_FALL_EXPLODE_FRAMES)

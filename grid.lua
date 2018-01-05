@@ -555,7 +555,7 @@ function Grid:destroyGem(params)
 		for i = 1, extra_damage do particles.damage.generate(game, gem, game.GEM_EXPLODE_FRAMES) end
 	end
 
-	particles.explodingGem.generate(game, gem)
+	particles.explodingGem.generate{game = game, gem = gem}
 
 	-- remove gem
 	if params.propogate_flags_up ~= false then
@@ -567,7 +567,8 @@ function Grid:destroyGem(params)
 		end
 	end
 
-	self.game.particles.gemImage.generate(self.game, gem.x, gem.y, gem.image, game.GEM_EXPLODE_FRAMES)
+	particles.gemImage.generate{game = game, gem = gem, duration = game.GEM_EXPLODE_FRAMES}
+	--particles.gemImage.generate(game, gem.x, gem.y, gem.image, game.GEM_EXPLODE_FRAMES)
 	self[gem.row][gem.column].gem = false
 end
 
@@ -639,14 +640,15 @@ function Grid:animateGameOver(loser_num)
 	particles.words.generateGameOverThanks(game)
 
 	for row = 20, 5, -1 do
-		local delay = (20 - row) * EACH_ROW_DELAY
-		local duration = game.INIT_GAMEOVER_PAUSE
+		local delay = (20 - row) * EACH_ROW_DELAY + 1
+		local duration = game.phaseManager.INIT_GAMEOVER_PAUSE
 
 		for col = start_col, end_col do
 			if self[row][col].gem then
 				local gem = self[row][col].gem
 				local img = image.lookup.gem_explode[gem.color .. "_grey"]
-				game.queue:add(delay, particles.gemImage.generate, game, gem.x, gem.y, img, duration)
+				particles.gemImage.generate{game = game, x = gem.x, y = gem.y, image = img,
+					duration = duration, delay_frames = delay}
 			end
 		end
 	end

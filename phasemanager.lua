@@ -9,10 +9,12 @@ local PhaseManager = {}
 function PhaseManager:init(game)
 	self.game = game
 	self.INIT_TIME_TO_NEXT = 430 -- frames in each action phase
+	self.INIT_PLATFORM_SPIN_DELAY_FRAMES = 30 -- frames to animate platforms exploding
+	self.INIT_SUPER_PAUSE = 90 -- frames to animate super activation
 	self.time_to_next = 430
 	self.super_play = nil
 	self.super_pause = 0
-	self.platformSpinDelayCounter = 15
+	self.platform_spin_delay_frames = 30
 	self.no_rush = {}
 	for i = 1, 8 do --the 8 should be grid.column, but grid isn't initilized yet I don't think
 		self.no_rush[i] = true --whether no_rush is eligible for animation
@@ -28,7 +30,7 @@ function PhaseManager:reset()
 	self.time_to_next = self.INIT_TIME_TO_NEXT
 	self.super_play = nil
 	self.super_pause = 0
-	self.platformSpinDelayCounter = 15
+	self.platform_spin_delay_frames = self.INIT_PLATFORM_SPIN_DELAY_FRAMES
 	self.no_rush = {}
 	for i = 1, 8 do
 		self.no_rush[i] = true
@@ -63,11 +65,9 @@ function PhaseManager:action(dt)
 
 	for player in game:players() do
 		player.hand:update(dt)
-		if player.actionPhase then
-			player:actionPhase(dt)
-		end
+		if player.actionPhase then player:actionPhase(dt) end
 	end
-	self.game.ui:update(dt)
+	self.game.ui:update()
 
 	self.time_to_next = self.time_to_next - 1
 	if not ai.finished then ai:evaluateActions(game.them_player) end
@@ -82,6 +82,9 @@ function PhaseManager:action(dt)
 			end
 		end
 		ai:performQueuedAction()	-- TODO: Expand this to netplay and have the ai read from the net
+		game.ui:putPendingAtTop(dt) -- ready the gems for falling
+		game.particles.upGem.removeAll(game.particles)
+		game.particles.placedGem.removeAll(game.particles)
 	end
 end
 
@@ -90,8 +93,6 @@ function PhaseManager:resolve(dt)
 	if game.me_player.place_type == nil then print("PLACE TYPE BUG") end
 	for player in game:players() do player.hand:afterActionPhaseUpdate() end
 	game.grid:updateRushPriority()
-	game.particles.upGem.removeAll(game.particles)
-	game.particles.placedGem.removeAll(game.particles)
 	game.frozen = true
 	game.phase = "SuperFreeze"
 end
@@ -114,11 +115,10 @@ function PhaseManager:superFreeze(dt)
 		self.super_pause = self.super_pause - 1
 	elseif self.super_play[1] then
 		self.super_play[1]:superSlideIn()
-		self.super_pause = 90
+		self.super_pause = self.INIT_SUPER_PAUSE
 		table.remove(self.super_play, 1)
 	else
 		self.super_play = nil
-		self.game.ui:putPendingAtTop() -- ready the gems for falling
 		self.game.phase = "GemTween"
 	end
 end
@@ -230,11 +230,11 @@ end
 
 function PhaseManager:platformSpinDelay(dt)
 	for player in self.game:players() do player.hand:update(dt) end
-	if self.platformSpinDelayCounter > 0 then
+	if self.platform_spin_delay_frames > 0 then
 		for player in self.game:players() do player.hand:update(dt) end
-		self.platformSpinDelayCounter = self.platformSpinDelayCounter - 1
+		self.platform_spin_delay_frames = self.platform_spin_delay_frames - 1
 	else
-		self.platformSpinDelayCounter = 30
+		self.platform_spin_delay_frames = self.INIT_PLATFORM_SPIN_DELAY_FRAMES
 		self.game.phase = "DestroyPlatforms"
 	end
 end

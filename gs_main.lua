@@ -302,8 +302,9 @@ function gs_main:drawText(params)
 	-- debug: top right HUD
 	if self.debug_overlay then
 		love.graphics.push("all")
+			love.graphics.setFont(FONT.SLIGHTLY_BIGGER)
 			love.graphics.setColor(255, 255, 255)
-			love.graphics.printf(self.debug_overlay(), 0, 40, 1000, "right")
+			love.graphics.printf(self.debug_overlay(), 0, 40, self.stage.width, "center")
 		love.graphics.pop()
 	end
 
