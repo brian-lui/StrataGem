@@ -568,7 +568,6 @@ function Grid:destroyGem(params)
 	end
 
 	particles.gemImage.generate{game = game, gem = gem, duration = game.GEM_EXPLODE_FRAMES}
-	--particles.gemImage.generate(game, gem.x, gem.y, gem.image, game.GEM_EXPLODE_FRAMES)
 	self[gem.row][gem.column].gem = false
 end
 

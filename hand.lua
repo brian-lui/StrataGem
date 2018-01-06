@@ -71,19 +71,25 @@ function Hand:createGarbageAnimation(pos)
 	local garbage_gone_frames
 	for i = 1, #self[pos].piece.gems do
 		local gem = self[pos].piece.gems[i]
+		local start_delay = pos * 10
 		gem.owner = self.owner.playerNum
-		particles.explodingGem.generate{game = game, gem = gem,	delay_frames = i * 10, shake = true,
-			explode_frames = game.PLATFORM_FALL_EXPLODE_FRAMES, fade_frames = game.PLATFORM_FALL_FADE_FRAMES}
-		particles.gemImage.generate{game = game, gem = gem, duration = game.PLATFORM_FALL_EXPLODE_FRAMES, shake = true}
-		--particles.gemImage.generate(game, gem.x, gem.y, gem.image, game.PLATFORM_FALL_EXPLODE_FRAMES, true)
-		particles.pop.generate(game, gem, game.PLATFORM_FALL_EXPLODE_FRAMES)
-		particles.dust.generateBigFountain(game, gem, 24, game.PLATFORM_FALL_EXPLODE_FRAMES)
-		garbage_gone_frames = particles.garbageParticles.generate(game, gem, game.PLATFORM_FALL_EXPLODE_FRAMES)
-		game.queue:add(game.PLATFORM_FALL_EXPLODE_FRAMES, game.ui.screenshake, game.ui, 3)
+		particles.explodingGem.generate{game = game, gem = gem,	shake = true,
+			explode_frames = game.PLATFORM_FALL_EXPLODE_FRAMES,
+			fade_frames = game.PLATFORM_FALL_FADE_FRAMES, delay_frames = start_delay}
+
+		particles.gemImage.generate{game = game, gem = gem, shake = true,
+			duration = game.PLATFORM_FALL_EXPLODE_FRAMES, delay_frames = start_delay}
+
+		local particle_delay = start_delay + game.PLATFORM_FALL_EXPLODE_FRAMES
+		particles.pop.generate(game, gem, particle_delay)
+		particles.dust.generateBigFountain(game, gem, 24, particle_delay)
+		garbage_gone_frames = particles.garbageParticles.generate(game, gem, particle_delay)
+		game.queue:add(particle_delay, game.ui.screenshake, game.ui, 3)
 	end
 
 	self[pos].piece:breakUp()
 	game.queue:add(45, game.sound.newSFX, game.sound, "sfx_trashrow") -- TODO: this is hacky and sucky
+	print("garbage gone frames:", garbage_gone_frames)
 	return garbage_gone_frames
 end
 

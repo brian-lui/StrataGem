@@ -219,8 +219,6 @@ end
 local function testGemImage(game)
 	local stage = game.stage
 	game.grid:animateGameOver(2)	
-	--game.particles.gemImage.generate{game = game, x = stage.x_mid, y = stage.y_mid,
-	--	image = image.red_grey, duration = 60, delay_frames = 30}
 end
 
 local Unittests = {
