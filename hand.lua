@@ -61,15 +61,11 @@ end
 function Hand:createGarbageAnimation(pos)
 	local game = self.game
 	local particles = game.particles
-	-- garbageParticles exit function creates the following animation:
-	--[[ When the gems appear, the gem explode animation happens in reverse.
-		(particles appear randomly in a circle about 24 pixel radius from where the gem will spawn.
-		the blast circle appears full size and gets smaller, and the gem appears glowy and 
-		fades down to normal color). Also spray some dust
-	--]]
 
 	local explode_frames = game.PLATFORM_FALL_EXPLODE_FRAMES
 	local fade_frames = game.PLATFORM_FALL_FADE_FRAMES
+
+	local arrival_frame -- when the garbage particles arrive at bottom
 
 	for i = 1, #self[pos].piece.gems do
 		local gem = self[pos].piece.gems[i]
@@ -82,9 +78,16 @@ function Hand:createGarbageAnimation(pos)
 			duration = explode_frames}
 		particles.pop.generate(game, gem, explode_frames)
 		particles.dust.generateBigFountain(game, gem, 24, explode_frames)
-		particles.garbageParticles.generate(game, gem, explode_frames)
+		arrival_frame = particles.garbageParticles.generate(game, gem, explode_frames)
 		game.queue:add(explode_frames, game.ui.screenshake, game.ui, 2)
 	end
+
+	-- create garbageAppearParticles :
+	--[[ When the gems appear, the gem explode animation happens in reverse.
+		(particles appear randomly in a circle about 24 pixel radius from where the gem will spawn.
+		the blast circle appears full size and gets smaller, and the gem appears glowy and 
+		fades down to normal color). Also spray some dust
+	--]]
 
 	self[pos].piece:breakUp()
 end

@@ -289,12 +289,8 @@ function GarbageParticles.generate(game, gem, delay_frames)
 	local start_col, end_col = 1, 4
 	local end_row = game.grid.rows
 	if player.ID == "P2" then start_col = 5 end_col = 8 end
-	-- create exploding gem
-	--game.particles.explodingGem.generate(game, gem) now called from Hand:createGarbageAnimation
-	
-	--game.particles.pop.generate(game, gem) -- after countdown to explodinged
-	--game.particles.dust.generateBigFountain(game, gem, 24) -- after countdown to explodinged
 
+	local duration = 54 + game.particles:getNumber("GarbageParticles")
 	-- calculate bezier curve
 	for i = start_col, end_col do
 		local x1, y1 = gem.x, gem.y -- start
@@ -309,7 +305,6 @@ function GarbageParticles.generate(game, gem, delay_frames)
 
 		-- create damage particle
 		local p = common.instance(GarbageParticles, game.particles, gem)
-		local duration = 54 + game.particles:getNumber("GarbageParticles")
 		local rotation = math.random() * 5
 
 		if delay_frames then
@@ -333,14 +328,38 @@ function GarbageParticles.generate(game, gem, delay_frames)
 		end
 		game.particles:incrementCount("created", "Garbage", gem.owner)
 	end
+
+	return duration
 end
 GarbageParticles = common.class("GarbageParticles", GarbageParticles, Pic)
+
+-------------------------------------------------------------------------------
+-- Animation that happens when garbage is created at bottom
+-- called from Grid:addBottomRow
+local GarbageAppearParticles = {}
+function GarbageAppearParticles:init(manager, gem)
+	local image = image.lookup.pop_particle[gem.color]
+	Pic.init(self, manager.game, {x = gem.x, y = gem.y, image = image})
+	manager.allParticles.Pop[ID.particle] = self
+	self.manager = manager
+end
+
+function GarbageAppearParticles:remove()
+	self.manager.allParticles.Pop[self.ID] = nil
+end
+
+function GarbageAppearParticles.generate(game, gem)
+	print("make a garbage appear animation here")
+	--local p = common.instance(GarbageAppearParticles, game.particles, gem)
+	--p:change{duration = 30, transparency = 0, scaling = 4, exit = true}
+end
+
+GarbageAppearParticles = common.class("GarbageAppearParticles", GarbageAppearParticles, Pic)
 
 -------------------------------------------------------------------------------
 -- When a match is made, this is the glow behind the gems
 local PopParticle = {}
 function PopParticle:init(manager, gem)
-	local grid = manager.game.grid
 	local image = image.lookup.pop_particle[gem.color]
 	Pic.init(self, manager.game, {x = gem.x, y = gem.y, image = image})
 	manager.allParticles.Pop[ID.particle] = self

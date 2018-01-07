@@ -255,6 +255,7 @@ function gs_main:drawGems(params)
 	for _, v in pairs(allParticles.SuperParticles) do v:draw(params) end
 	for _, v in pairs(allParticles.DamageTrail) do v:draw(params) end
 	for _, v in pairs(allParticles.GarbageParticles) do v:draw(params) end
+	for _, v in pairs(allParticles.GarbageAppearParticles) do v:draw(params) end	
 	for _, v in pairs(allParticles.Damage) do v:draw(params) end
 	for _, v in pairs(allParticles.ExplodingGem) do v:draw(params) end
 	for _, v in pairs(allParticles.CharEffects) do v:draw(params) end
@@ -321,8 +322,8 @@ function gs_main:drawText(params)
 
 			for player in self:players() do
 				for gem in player.hand:gems() do
-					love.graphics.print("X:" .. gem.x, gem.x - gem.width * 0.4, gem.y - gem.height * 0.1)
-					love.graphics.print("Y:" .. gem.y, gem.x - gem.width * 0.4, gem.y + gem.height * 0.1)
+					love.graphics.print("X:" .. math.floor(gem.x), gem.x - gem.width * 0.4, gem.y - gem.height * 0.1)
+					love.graphics.print("Y:" .. math.floor(gem.y), gem.x - gem.width * 0.4, gem.y + gem.height * 0.1)
 				end
 			end
 		end

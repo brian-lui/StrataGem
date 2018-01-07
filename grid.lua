@@ -364,15 +364,17 @@ function Grid:moveAllUp(player, rows_to_add)
 	end
 end
 
-function Grid:addBottomRow(player)
+function Grid:addBottomRow(player, skip_animation)
+	local game = self.game
+
 	self:moveAllUp(player, 1)
-	local start, finish, step = self.game.p1.start_col, self.game.p1.end_col, 1
+	local start, finish, step = game.p1.start_col, game.p1.end_col, 1
 	if player.ID == "P2" then
-		start, finish, step = self.game.p2.end_col, self.game.p2.start_col, -1
+		start, finish, step = game.p2.end_col, game.p2.start_col, -1
 	end
 	for col = start, finish, step do
 		local ban1, ban2 = false, false
-		if col > self.game.p1.start_col and col < self.game.p2.end_col then
+		if col > game.p1.start_col and col < game.p2.end_col then
 			local prev_col = (col - step)
 			local next_col = (col + step)
 			ban1 = self[self.rows][prev_col].gem.color
@@ -381,11 +383,16 @@ function Grid:addBottomRow(player)
 			end
 		end
 		self:generate1by1(col, ban1, ban2, player.enemy)
+		if not skip_animation then
+			game.particles.garbageAppearParticles.generate(game)
+		end		
 	end
 
 	if player.garbage_rows_created > player.enemy.garbage_rows_created then
 		self:setAllGemOwners(player.enemy.playerNum)
 	end
+
+
 end
 
 function Grid:isSettled()
