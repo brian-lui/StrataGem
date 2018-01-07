@@ -383,7 +383,7 @@ function Grid:addBottomRow(player)
 		self:generate1by1(col, ban1, ban2, player.enemy)
 	end
 
-	if player.pieces_fallen > player.enemy.pieces_fallen then
+	if player.garbage_rows_created > player.enemy.garbage_rows_created then
 		self:setAllGemOwners(player.enemy.playerNum)
 	end	
 end
@@ -572,7 +572,7 @@ function Grid:destroyGem(params)
 end
 
 function Grid:setGarbageMatchFlags()
-	local garbage_diff = self.game.p1.pieces_fallen - self.game.p2.pieces_fallen
+	local garbage_diff = self.game.p1.garbage_rows_created - self.game.p2.garbage_rows_created
 	if garbage_diff == 0 then
 		self:setAllGemOwners(0)
 	elseif garbage_diff < 0 then

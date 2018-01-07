@@ -119,7 +119,7 @@ function Hand:movePiece(start_pos, end_pos)
 	if self[0].piece then
 		local animation_frames = self:createGarbageAnimation(0)
 		game.queue:add(animation_frames, game.grid.addBottomRow, game.grid, self.owner)
-		self.owner.pieces_fallen = self.owner.pieces_fallen + 1
+		self.owner.garbage_rows_created = self.owner.garbage_rows_created + 1
 	end
 end
 

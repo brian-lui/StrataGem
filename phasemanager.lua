@@ -302,7 +302,7 @@ function PhaseManager:cleanup(dt)
 	grid:updateGrid()
 	for player in game:players() do player:cleanup() end
 	game.ai:newTurn()
-	p1.pieces_fallen, p2.pieces_fallen = 0, 0
+	p1.garbage_rows_created, p2.garbage_rows_created = 0, 0
 	p1.dropped_piece, p2.dropped_piece = false, false
 	p1.played_pieces, p2.played_pieces = {}, {}
 	game.finished_getting_pieces = false
