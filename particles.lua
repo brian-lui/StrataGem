@@ -309,7 +309,7 @@ function GarbageParticles.generate(game, gem, delay_frames)
 
 		-- create damage particle
 		local p = common.instance(GarbageParticles, game.particles, gem)
-		local duration = 54 + math.random() * 12
+		local duration = 54 + game.particles:getNumber("GarbageParticles")
 		local rotation = math.random() * 5
 
 		if delay_frames then

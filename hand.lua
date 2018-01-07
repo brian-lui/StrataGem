@@ -118,7 +118,6 @@ function Hand:movePiece(start_pos, end_pos)
 	self[start_pos].piece = nil
 	if self[0].piece then
 		local animation_frames = self:createGarbageAnimation(0)
-		game.queue:add(animation_frames, game.grid.addBottomRow, game.grid, self.owner)
 		self.owner.garbage_rows_created = self.owner.garbage_rows_created + 1
 	end
 end
@@ -175,13 +174,11 @@ function Hand:movePieceToGrid(grid, piece, locations)
 	piece.hand_idx = nil
 end
 
--- creates the new pieces for the turn and clears damage.
+-- creates the new pieces for the turn.
 -- Takes optional gem_table for gem frequencies
 function Hand:getNewTurnPieces(gem_table)
 	local player = self.owner
 	local pieces_to_get = math.floor(self.damage * 0.25)
-	self.damage = self.damage % 4
-	self.turn_start_damage = self.damage
 	if pieces_to_get == 0 then return end
 
 	for i = 6, pieces_to_get + 5 do
@@ -200,6 +197,11 @@ function Hand:getNewTurnPieces(gem_table)
 		if self[i].piece then self:movePiece(i, end_pos) end
 		if self[i].platform then self:movePlatform(i, end_pos) end
 	end
+end
+
+function Hand:clearDamage()
+	self.damage = self.damage % 4
+	self.turn_start_damage = self.damage
 end
 
 function Hand:destroyPlatform(num, skip_animations)

@@ -24,6 +24,7 @@ function PhaseManager:init(game)
 	self.game_is_over = false
 	self.INIT_GAMEOVER_PAUSE = 180
 	self.gameover_pause = 180
+	self.garbage_this_round = false
 end
 
 function PhaseManager:reset()
@@ -39,6 +40,7 @@ function PhaseManager:reset()
 	self.matched_this_round = {false, false} -- p1 made a match, p2 made a match
 	self.game_is_over = false
 	self.gameover_pause = 180
+	self.garbage_this_round = false
 	self.game.grid:clearGameOverAnims()
 end
 
@@ -235,24 +237,49 @@ function PhaseManager:platformSpinDelay(dt)
 		self.platform_spin_delay_frames = self.platform_spin_delay_frames - 1
 	else
 		self.platform_spin_delay_frames = self.INIT_PLATFORM_SPIN_DELAY_FRAMES
-		self.game.phase = "DestroyPlatforms"
+		self.game.phase = "DestroyDamagedPlatforms"
 	end
 end
 
 function PhaseManager:destroyDamagedPlatforms(dt)
 	for player in self.game:players() do player.hand:destroyDamagedPlatforms() end
-	self.game.phase = "PlatformsExplodingAndGarbageAppearing"
+	self.game.phase = "PlatformsExploding"
 end
 
-function PhaseManager:platformsExplodingAndGarbageAppearing(dt)
+function PhaseManager:platformsExploding(dt)
 	local game = self.game
 	if game.particles:getNumber("ExplodingPlatform") == 0 then
 		for player in game:players() do
 			player.hand:getNewTurnPieces()
+			player.hand:clearDamage()
 			player.hand:update(dt)
 			player:resetMP()
 		end
 		game.particles:clearCount()	-- clear here so the platforms display redness/spin correctly
+		game.phase = "GarbageRowCreation"
+	end
+end
+
+function PhaseManager:garbageRowCreation(dt)
+	local game = self.game
+	local grid = game.grid
+
+	for player in game:players() do player.hand:update(dt) end
+	grid:updateGravity(dt)
+
+	if grid:isSettled() and game.particles:getNumber("GarbageParticles") == 0 then	
+		for player in game:players() do
+			for i = 1, player.garbage_rows_created do
+				grid:addBottomRow(player)
+				self.garbage_this_round = true
+			end
+		end
+
+		if self.garbage_this_round then
+			grid:setGarbageMatchFlags()
+			game.p1.garbage_rows_created, game.p2.garbage_rows_created = 0, 0
+		end
+
 		game.phase = "PlatformsMoving"
 	end
 end
@@ -260,8 +287,8 @@ end
 function PhaseManager:platformsMoving(dt)
 	local game = self.game
 	local grid = game.grid
-	local handsettled = true
 
+	local handsettled = true
 	for player in game:players() do
 		player.hand:update(dt)
 		if not player.hand:isSettled() then handsettled = false end
@@ -269,27 +296,12 @@ function PhaseManager:platformsMoving(dt)
 
 	grid:updateGravity(dt)
 
-	if handsettled then
-		for player in game:players() do	-- TODO: check if we can delete this
-			player.hand:update(dt)
-		end
-
-		if grid:isSettled() then
-		-- garbage can possibly push gems up, creating matches.
-			local _, matches = grid:getMatchedGems()
-			if matches > 0 then
-				game.phase = "Gravity"
-			else
-				for i = 1, grid.columns do --checks if should generate no rush
-					if self.no_rush[i] then
-						if grid[game.RUSH_ROW][i].gem then
-							game.particles.words.generateNoRush(self.game, i)
-							self.no_rush[i] = false	
-						end
-					end
-				end
-				game.phase = "Cleanup"
-			end
+	if handsettled then	
+		if self.garbage_this_round then
+			game.phase = "Gravity"
+			self.garbage_this_round = false
+		else
+			game.phase = "Cleanup"
 		end
 	end
 end
@@ -299,10 +311,19 @@ function PhaseManager:cleanup(dt)
 	local grid = game.grid
 	local p1, p2 = game.p1, game.p2
 
+	for i = 1, grid.columns do --checks if should generate no rush
+		if self.no_rush[i] then
+			if grid[game.RUSH_ROW][i].gem then
+				game.particles.words.generateNoRush(self.game, i)
+				self.no_rush[i] = false	
+			end
+		end
+	end
+
 	grid:updateGrid()
 	for player in game:players() do player:cleanup() end
 	game.ai:newTurn()
-	p1.garbage_rows_created, p2.garbage_rows_created = 0, 0
+	self.garbage_this_round = false
 	p1.dropped_piece, p2.dropped_piece = false, false
 	p1.played_pieces, p2.played_pieces = {}, {}
 	game.finished_getting_pieces = false
@@ -363,8 +384,9 @@ PhaseManager.lookup = {
 	ResolvingMatches = PhaseManager.resolvingMatches,
 	ResolvedMatches = PhaseManager.resolvedMatches,
 	PlatformSpinDelay = PhaseManager.platformSpinDelay,
-	DestroyPlatforms = PhaseManager.destroyDamagedPlatforms,
-	PlatformsExplodingAndGarbageAppearing = PhaseManager.platformsExplodingAndGarbageAppearing,
+	DestroyDamagedPlatforms = PhaseManager.destroyDamagedPlatforms,
+	PlatformsExploding = PhaseManager.platformsExploding,
+	GarbageRowCreation = PhaseManager.garbageRowCreation,
 	PlatformsMoving = PhaseManager.platformsMoving,
 	Cleanup = PhaseManager.cleanup,
 	Sync = PhaseManager.sync,

@@ -41,7 +41,7 @@ local function n(self, row, column, color, owner)
 		return
 	end
 
-	row = row + 6
+	row = row + 12
 	local x, y = self.grid.x[column], self.grid.y[row]
 	self.grid[row][column].gem = common.instance(Gem, self, x, y, color)
 	if owner > 0 then
@@ -99,6 +99,12 @@ local function p2VerticalMatch(game)
 			end
 		end
 	end
+end
+
+local function flagPropogateProblem(game)
+	nrow(game, 6, "     R  ")
+	nrow(game, 7, "    BRGR")
+	nrow(game, 8, "    GGRY")
 end
 
 -------------------------------------------------------------------------------
@@ -244,7 +250,7 @@ local Unittests = {
 	z = showDebugOverlay,
 	x = toggleSlowdown,
 	c = testGemImage,
-	v = NOP,
+	v = flagPropogateProblem,
 	b = NOP,
 	n = NOP,
 	m = NOP,
