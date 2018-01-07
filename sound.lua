@@ -12,6 +12,7 @@ local soundfiles = {
 	bgm_menu = {filename = "music/menu.ogg", loop_from = 34.758, loop_to = 1.655},
 	bgm_mort = {filename = "music/mort.ogg", loop_from = 135.400, loop_to = 67.200},
 	bgm_walter = {filename = "music/walter.ogg", loop_from = 72.923, loop_to = 1.846},
+	bgm_wolfgang = {filename = "music/wolfgang.ogg", loop_from = 132.727, loop_to = 20.909},
 }
 
 local sfx_files = {"dummy", "button", "buttonback", "buttonsuper", "buttonbacksuper",
