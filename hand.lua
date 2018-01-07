@@ -68,29 +68,25 @@ function Hand:createGarbageAnimation(pos)
 		fades down to normal color). Also spray some dust
 	--]]
 
-	local garbage_gone_frames
+	local explode_frames = game.PLATFORM_FALL_EXPLODE_FRAMES
+	local fade_frames = game.PLATFORM_FALL_FADE_FRAMES
+
 	for i = 1, #self[pos].piece.gems do
 		local gem = self[pos].piece.gems[i]
-		local start_delay = pos * 10
 		gem.owner = self.owner.playerNum
+
+		print("gem x, y", gem.x, gem.y)
 		particles.explodingGem.generate{game = game, gem = gem,	shake = true,
-			explode_frames = game.PLATFORM_FALL_EXPLODE_FRAMES,
-			fade_frames = game.PLATFORM_FALL_FADE_FRAMES, delay_frames = start_delay}
-
+			explode_frames = explode_frames, fade_frames = fade_frames}
 		particles.gemImage.generate{game = game, gem = gem, shake = true,
-			duration = game.PLATFORM_FALL_EXPLODE_FRAMES, delay_frames = start_delay}
-
-		local particle_delay = start_delay + game.PLATFORM_FALL_EXPLODE_FRAMES
-		particles.pop.generate(game, gem, particle_delay)
-		particles.dust.generateBigFountain(game, gem, 24, particle_delay)
-		garbage_gone_frames = particles.garbageParticles.generate(game, gem, particle_delay)
-		game.queue:add(particle_delay, game.ui.screenshake, game.ui, 3)
+			duration = explode_frames}
+		particles.pop.generate(game, gem, explode_frames)
+		particles.dust.generateBigFountain(game, gem, 24, explode_frames)
+		particles.garbageParticles.generate(game, gem, explode_frames)
+		game.queue:add(explode_frames, game.ui.screenshake, game.ui, 2)
 	end
 
 	self[pos].piece:breakUp()
-	game.queue:add(45, game.sound.newSFX, game.sound, "sfx_trashrow") -- TODO: this is hacky and sucky
-	print("garbage gone frames:", garbage_gone_frames)
-	return garbage_gone_frames
 end
 
 -- moves a piece from location to location, as integers
@@ -116,10 +112,10 @@ function Hand:movePiece(start_pos, end_pos)
 	end
 	self[end_pos].piece = self[start_pos].piece
 	self[start_pos].piece = nil
-	if self[0].piece then
-		local animation_frames = self:createGarbageAnimation(0)
-		self.owner.garbage_rows_created = self.owner.garbage_rows_created + 1
-	end
+	--if self[0].piece then
+	--	local animation_frames = self:createGarbageAnimation(0)
+	--	self.owner.garbage_rows_created = self.owner.garbage_rows_created + 1
+	--end
 end
 
 -- moves a gem platform from location to location, as integers
@@ -210,6 +206,11 @@ function Hand:destroyPlatform(num, skip_animations)
 		if self[num].platform then
 			game.sound:newSFX("sfx_starbreak")
 			game.particles.explodingPlatform.generate(game, self[num].platform.pic)
+			if self[num].piece then
+				self:updatePieceGems()
+				self:createGarbageAnimation(num)
+				self.owner.garbage_rows_created = self.owner.garbage_rows_created + 1
+			end
 		else
 			print("tried to destroy a non-existent platform with animation!")
 		end
@@ -296,6 +297,40 @@ function Hand:endOfTurnUpdate()
 	self.damage = self.damage + 4
 	self.turn_start_damage = self.damage
 	self.owner.cur_burst = math.min(self.owner.cur_burst + 1, self.owner.MAX_BURST)
+end
+
+function Hand:updatePieceGems()
+	for piece in self:pieces() do piece:updateGems() end
+end
+
+function Hand:pieces()
+	local pieces, index = {}, 0
+	for i = 1, 10 do 
+		if self[i].piece then
+			pieces[#pieces+1] = self[i].piece
+		end
+	end
+
+	return function()
+		index = index + 1
+		return pieces[index]
+	end
+end
+
+function Hand:gems()
+	local gems, index = {}, 0
+	for i = 1, 10 do
+		if self[i].piece then
+			for j = 1, #self[i].piece.gems do
+				gems[#gems+1] = self[i].piece.gems[j]
+			end
+		end
+	end
+
+	return function()
+		index = index + 1
+		return gems[index]
+	end
 end
 
 return common.class("Hand", Hand)

@@ -318,6 +318,13 @@ function gs_main:drawText(params)
 				love.graphics.print("ROW:" .. gem.row, gem.x - gem.width * 0.4, gem.y - gem.height * 0.1)
 				love.graphics.print("COL:" .. gem.column, gem.x - gem.width * 0.4, gem.y + gem.height * 0.1)
 			end
+
+			for player in self:players() do
+				for gem in player.hand:gems() do
+					love.graphics.print("X:" .. gem.x, gem.x - gem.width * 0.4, gem.y - gem.height * 0.1)
+					love.graphics.print("Y:" .. gem.y, gem.x - gem.width * 0.4, gem.y + gem.height * 0.1)
+				end
+			end
 		end
 		if self.debug_drawParticleDestinations then
 			for _, p in pairs(self.particles.allParticles.Damage) do

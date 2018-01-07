@@ -9,26 +9,6 @@ local Gem = require "gem"
 local reverseTable = require "utilities".reverseTable
 local pointIsInRect = require "utilities".pointIsInRect
 
-local function updatePieceGems(self)
-	if self.horizontal then
-		for i = 1, self.size do
-			self.gems[i].x =
-				self.x
-				- (self.gems[i].width / 2) * (self.size - 1)
-				+ (i - 1) * self.gems[i].width
-			self.gems[i].y = self.y
-		end
-	else
-		for i = 1, self.size do
-			self.gems[i].x = self.x
-			self.gems[i].y =
-				self.y
-				- (self.gems[i].height / 2) * (self.size - 1)
-				+ (i - 1) * self.gems[i].height
-		end
-	end
-end
-
 local Piece = {}
 function Piece:init(game, tbl)
 	self.game = game
@@ -59,6 +39,26 @@ function Piece:init(game, tbl)
 	self.hand_idx = tbl.hand_idx
 end
 
+function Piece:updateGems()
+	if self.horizontal then
+		for i = 1, self.size do
+			self.gems[i].x =
+				self.x
+				- (self.gems[i].width / 2) * (self.size - 1)
+				+ (i - 1) * self.gems[i].width
+			self.gems[i].y = self.y
+		end
+	else
+		for i = 1, self.size do
+			self.gems[i].x = self.x
+			self.gems[i].y =
+				self.y
+				- (self.gems[i].height / 2) * (self.size - 1)
+				+ (i - 1) * self.gems[i].height
+		end
+	end
+end
+
 function Piece:screenshake(frames)
 	self.shake = frames or 6
 end
@@ -68,13 +68,13 @@ function Piece:addGems(gem_table)
 		local gem_color = Gem.random(self.game, gem_table)
 		self.gems[i] = common.instance(Gem, self.game, self.x, self.y, gem_color)
 	end
-	updatePieceGems(self)
+	self:updateGems()
 end
 
 function Piece:change(target)
 	self.queued_moves = self.queued_moves or {}
 	Pic.change(self, target)
-	updatePieceGems(self)
+	self:updateGems()
 end
 
 function Piece:resolve()
@@ -109,7 +109,7 @@ function Piece:rotate()
 		self.gems = reverseTable(self.gems)
 	end
 	self.rotation_index = (self.rotation_index + 1) % 4
-	updatePieceGems(self)
+	self:updateGems()
 	self.rotation = self.rotation % (2 * math.pi)
 
 	--[[ piece has already rotated pi/2 clockwise. But we show

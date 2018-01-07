@@ -385,7 +385,7 @@ function Grid:addBottomRow(player)
 
 	if player.garbage_rows_created > player.enemy.garbage_rows_created then
 		self:setAllGemOwners(player.enemy.playerNum)
-	end	
+	end
 end
 
 function Grid:isSettled()

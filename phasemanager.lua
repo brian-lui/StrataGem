@@ -274,10 +274,11 @@ function PhaseManager:garbageRowCreation(dt)
 				self.garbage_this_round = true
 			end
 		end
-
+		
 		if self.garbage_this_round then
 			grid:setGarbageMatchFlags()
 			game.p1.garbage_rows_created, game.p2.garbage_rows_created = 0, 0
+			game.sound:newSFX("sfx_trashrow")
 		end
 
 		game.phase = "PlatformsMoving"

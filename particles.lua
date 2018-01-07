@@ -333,8 +333,6 @@ function GarbageParticles.generate(game, gem, delay_frames)
 		end
 		game.particles:incrementCount("created", "Garbage", gem.owner)
 	end
-
-	return delay_frames + 66
 end
 GarbageParticles = common.class("GarbageParticles", GarbageParticles, Pic)
 
