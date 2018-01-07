@@ -82,13 +82,6 @@ function Hand:createGarbageAnimation(pos)
 		game.queue:add(explode_frames, game.ui.screenshake, game.ui, 2)
 	end
 
-	-- create garbageAppearParticles :
-	--[[ When the gems appear, the gem explode animation happens in reverse.
-		(particles appear randomly in a circle about 24 pixel radius from where the gem will spawn.
-		the blast circle appears full size and gets smaller, and the gem appears glowy and 
-		fades down to normal color). Also spray some dust
-	--]]
-
 	self[pos].piece:breakUp()
 end
 
@@ -106,7 +99,9 @@ function Hand:movePiece(start_pos, end_pos)
 	to_move:change{
 		x = function() return self:getx(to_move.y) end,
 		y = self[end_pos].y,
+		during = {1, 10, to_move.updateGems, to_move},
 		duration = duration,
+		exit = {to_move.updateGems, to_move},
 	}
 
 	-- state
@@ -115,10 +110,7 @@ function Hand:movePiece(start_pos, end_pos)
 	end
 	self[end_pos].piece = self[start_pos].piece
 	self[start_pos].piece = nil
-	--if self[0].piece then
-	--	local animation_frames = self:createGarbageAnimation(0)
-	--	self.owner.garbage_rows_created = self.owner.garbage_rows_created + 1
-	--end
+
 end
 
 -- moves a gem platform from location to location, as integers

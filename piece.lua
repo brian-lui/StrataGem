@@ -347,6 +347,7 @@ function Piece:deselect()
 		self:dropIntoBasin(cols)
 	else -- snap back to original place. Can't use change because it interferes with rotate tween
 		self.x, self.y = player.hand[self.hand_idx].x, player.hand[self.hand_idx].y
+		self:updateGems()
 	end
 end
 

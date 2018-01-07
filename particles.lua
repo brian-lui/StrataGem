@@ -350,6 +350,13 @@ end
 
 function GarbageAppearParticles.generate(game, gem)
 	print("make a garbage appear animation here")
+	--[[ When the gems appear, the gem explode animation happens in reverse.
+		(particles appear randomly in a circle about 24 pixel radius from where the gem will spawn.
+		the blast circle appears full size and gets smaller, and the gem appears glowy and 
+		fades down to normal color). Also spray some dust
+	--]]
+
+
 	--local p = common.instance(GarbageAppearParticles, game.particles, gem)
 	--p:change{duration = 30, transparency = 0, scaling = 4, exit = true}
 end
