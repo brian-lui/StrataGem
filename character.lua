@@ -49,15 +49,15 @@ Character.super_params = {}
 Character.super_this_turn = false
 Character.place_type = "normal"
 
-function Character:init(playerNum, game)
+function Character:init(player_num, game)
 	self.game = game
-	self.playerNum = playerNum
-	if playerNum == 1 then
+	self.player_num = player_num
+	if player_num == 1 then
 		self.ID, self.start_col, self.end_col = "P1", 1, 4
-	elseif playerNum == 2 then
+	elseif player_num == 2 then
 		self.ID, self.start_col, self.end_col = "P2", 5, 8
 	else
-		love.errhand("Invalid playerNum " .. tostring(playerNum))
+		love.errhand("Invalid player_num " .. tostring(player_num))
 	end
 	self.current_rush_cost = self.RUSH_COST
 	self.current_double_cost = self.DOUBLE_COST
@@ -143,7 +143,7 @@ end
 
 function Character:toggleSuper(received_from_opponent)
 	local game = self.game
-	if game.phase ~= "Action" then return end
+	if game.current_phase ~= "Action" then return end
 
 	if self.supering then
 		self.supering = false
@@ -151,7 +151,7 @@ function Character:toggleSuper(received_from_opponent)
 			game.client.prepareDelta(game.client, self, "cancelsuper", self.super_params)
 		end
 		self.game.sound:newSFX("sfx_buttonbacksuper")
-	elseif self.mp >= self.SUPER_COST and self.game.phase == "Action" then
+	elseif self.mp >= self.SUPER_COST and self.game.current_phase == "Action" then
 		self.supering = true
 		if game.type == "Netplay" and not received_from_opponent then
 			game.client.prepareDelta(game.client, self, "super", self.super_params)

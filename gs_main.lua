@@ -154,7 +154,7 @@ end
 
 function gs_main:update(dt)
 	if not self.paused then
-		timeDip(self, function() self.phaseManager:run(self.timeStep) end)
+		timeDip(self, function() self.phase:run(self.timeStep) end)
 		self.particles:update(dt) -- variable fps
 		gs_main.current_background:update(dt) -- variable fps
 		self.ui.timer:update(dt)
@@ -207,7 +207,7 @@ function gs_main:drawGems(params)
 	-- under-gem particles
 	for _, instance in pairs(allParticles.WordEffects) do instance:draw(params) end
 	for _, instance in pairs(allParticles.Dust) do instance:draw(params) end
-	for _, instance in pairs(allParticles.Pop) do instance:draw(params) end
+	for _, instance in pairs(allParticles.PopParticles) do instance:draw(params) end
 
 
 	-- hand gems and pending-garbage gems
@@ -241,7 +241,7 @@ function gs_main:drawGems(params)
 		love.graphics.stencil(blockBottomGemRow, "replace", 1)
 		love.graphics.setStencilTest("equal", 0)
 		for gem, r in self.grid:gems() do
-			if self.phase == "Action" and r <= 6 then
+			if self.current_phase == "Action" and r <= 6 then
 				gem:draw{RGBTable = {255, 255, 255, 192}} -- TODO: make this darkened too
 			else
 				gem:draw(params)
@@ -255,8 +255,7 @@ function gs_main:drawGems(params)
 	for _, v in pairs(allParticles.SuperParticles) do v:draw(params) end
 	for _, v in pairs(allParticles.DamageTrail) do v:draw(params) end
 	for _, v in pairs(allParticles.GarbageParticles) do v:draw(params) end
-	for _, v in pairs(allParticles.GarbageAppearParticles) do v:draw(params) end	
-	for _, v in pairs(allParticles.Damage) do v:draw(params) end
+		for _, v in pairs(allParticles.Damage) do v:draw(params) end
 	for _, v in pairs(allParticles.ExplodingGem) do v:draw(params) end
 	for _, v in pairs(allParticles.CharEffects) do v:draw(params) end
 	for i = 1, 3 do
@@ -403,7 +402,7 @@ function gs_main:mousepressed(x, y)
 	if not self.paused then
 		for i = 1, player.hand_size do
 			if player.hand[i].piece and pointIsInRect(x, y, player.hand[i].piece:getRect()) then
-				if self.phase == "Action" then
+				if self.current_phase == "Action" then
 					player.hand[i].piece:select()
 				else
 					self.active_piece = player.hand[i].piece
@@ -425,7 +424,7 @@ function gs_main:mousereleased(x, y)
 		local nomove = math.abs(x - self.lastClickedX) < self.stage.width * QUICKCLICK_MAX_MOVE and
 			math.abs(y - self.lastClickedY) < self.stage.height * QUICKCLICK_MAX_MOVE
 		if quickclick and nomove then self.active_piece:rotate() end
-		if self.phase == "Action" then self.active_piece:deselect() end
+		if self.current_phase == "Action" then self.active_piece:deselect() end
 		self.active_piece = false
 	end
 
@@ -433,7 +432,7 @@ function gs_main:mousereleased(x, y)
 end
 
 function gs_main:mousemoved(x, y)
-	if self.active_piece and self.phase == "Action" then
+	if self.active_piece and self.current_phase == "Action" then
 		self.active_piece:change{x = x, y = y}
 	end
 

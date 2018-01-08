@@ -14,7 +14,7 @@ function Piece:init(game, tbl)
 	self.game = game
 
 	ID.piece = ID.piece + 1
-	local tocopy = {"x", "y", "owner", "gem_table"}
+	local tocopy = {"x", "y", "owner", "owner_num", "gem_table"}
 	for i = 1, #tocopy do
 		local item = tocopy[i]
 		self[item] = tbl[item]
@@ -240,7 +240,7 @@ function Piece:isDropValid(shift)
 	local place_type
 	local cols = self:getColumns(shift)
 	local gems_in_my_tub = 0
-	if self.game.phase ~= "Action" then return false end
+	if self.game.current_phase ~= "Action" then return false end
 	for i = 1, self.size do
 		if not cols[i] then
 			return false
@@ -295,7 +295,7 @@ function Piece:isValidRush()
 	local row_ok = true
 	for i = 1, self.size do
 		local empty_row = grid:getFirstEmptyRow(cols[i])
-		if empty_row < self.game.RUSH_ROW then 
+		if empty_row < grid.RUSH_ROW then 
 			row_ok = false 
 			if self.game.particles.no_rush_check[cols[i]] == 0 then
 				self.game.particles.words.generateNoRush(self.game, cols[i])
@@ -342,7 +342,7 @@ function Piece:deselect()
 		(place_type == "rush" and self:isValidRush()) or
 		(place_type == "double" and player.cur_burst >= player.current_double_cost)
 	local char_ability_ok = player:pieceDroppedOK(self, shift)
-	if valid and not self.game.frozen and go_ahead and char_ability_ok and self.game.phase == "Action" then
+	if valid and not self.game.frozen and go_ahead and char_ability_ok and self.game.current_phase == "Action" then
 		player.place_type = place_type
 		self:dropIntoBasin(cols)
 	else -- snap back to original place. Can't use change because it interferes with rotate tween

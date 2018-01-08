@@ -177,7 +177,7 @@ local function printSaveDirectory(game)
 end
 
 local function skipToTurnEnd(game)
-	game.phaseManager.time_to_next = 1
+	game.phase.time_to_next = 1
 end
 
 local function addDamageP1(game)
@@ -209,7 +209,7 @@ local function showDebugInfo(game)
 end
 
 local function showDebugOverlay(game)
-	game.debug_overlay = function() return game.phase end
+	game.debug_overlay = function() return game.current_phase end
 end
 
 local function toggleSlowdown(game)
@@ -225,6 +225,14 @@ end
 local function testGemImage(game)
 	local stage = game.stage
 	game.grid:animateGameOver(2)	
+end
+
+local function makeAGarbage(game)
+	game.grid:addBottomRow(game.p2)
+	game.grid:updateGrid()
+	for i = 1, 20 do
+		game.queue:add(i, game.grid.updateGravity, game.grid, i/60)
+	end
 end
 
 local Unittests = {
@@ -251,7 +259,7 @@ local Unittests = {
 	x = toggleSlowdown,
 	c = testGemImage,
 	v = flagPropogateProblem,
-	b = NOP,
+	b = makeAGarbage,
 	n = NOP,
 	m = NOP,
 }

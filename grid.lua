@@ -21,6 +21,10 @@ Rows 13-20: basin. Row 13 is at top, 20 at bottom.
 Row 21: bottom grid row where trash gems tween from.
 --]]
 function Grid:init(game)
+	self.LOSE_ROW = 12 -- game over if a gem ends the turn in this row or above
+	self.RUSH_ROW = 14 -- can only rush if this row is empty
+	self.BOTTOM_ROW = 20 -- used for garbage appearance
+	
 	local stage = game.stage
 	local tub_bottom = stage.height * 0.95
 	self.game = game
@@ -290,6 +294,7 @@ function Grid:getPermittedColors(column, banned_color1, banned_color2)
 	return ret
 end
 
+-- Returns a string representing the color of the gem generated
 function Grid:generate1by1(column, banned_color1, banned_color2)
 	local row = self.rows -- grid.rows is the row underneath the bottom row
 	local avail_colors = self:getPermittedColors(column, banned_color1, banned_color2)
@@ -314,6 +319,7 @@ function Grid:generate1by1(column, banned_color1, banned_color2)
 
 	self[row][column].gem = common.instance(Gem, self.game, self.x[column], self.y[row+1], make_color, true)
 	self[row][column].gem:change{x = self.x[column], y = self.y[row], duration = duration}
+	return make_color
 end
 
 -- move a gem from a spot on the grid to another spot
@@ -364,8 +370,14 @@ function Grid:moveAllUp(player, rows_to_add)
 	end
 end
 
+--[[ Returns a list of gem colors generated. List is in the order for
+	{col 1, 2, 3, 4} for player 1, {col 8, 7, 6, 5} for player 2
+	Not used now, but could be useful later maybe --]]
 function Grid:addBottomRow(player, skip_animation)
 	local game = self.game
+	local grid = game.grid
+	local particles = game.particles
+	local generated_gems = {}
 
 	self:moveAllUp(player, 1)
 	local start, finish, step = game.p1.start_col, game.p1.end_col, 1
@@ -382,17 +394,31 @@ function Grid:addBottomRow(player, skip_animation)
 				ban2 = self[self.rows][next_col].gem.color
 			end
 		end
-		self:generate1by1(col, ban1, ban2, player.enemy)
+		local gem_color = self:generate1by1(col, ban1, ban2, player.enemy)
+		generated_gems[#generated_gems+1] = gem_color
+
 		if not skip_animation then
-			game.particles.garbageAppearParticles.generate(game)
+			local x = grid.x[col]
+			local y = grid.y[grid.BOTTOM_ROW]
+			local pop_image = image.lookup.pop_particle[gem_color]
+			local explode_image = image.lookup.gem_explode[gem_color]
+
+			particles.popParticles.generateReversePop{game = game, x = x,
+				y = y, image = pop_image}
+			particles.explodingGem.generateReverseExplode{game = game, x = x,
+				y = y, image = explode_image, shake = true}
+
+			--particles appear randomly in a circle about 48 pixel radius from where the gem will spawn.
+			--Also spray some dust
+			-- particles.dust.generateBigFountain{game = game, x = x, y = y, color = gem_color, num = 24, duration = game.GEM_EXPLODE_FRAMES}
 		end		
 	end
 
 	if player.garbage_rows_created > player.enemy.garbage_rows_created then
-		self:setAllGemOwners(player.enemy.playerNum)
+		self:setAllGemOwners(player.enemy.player_num)
 	end
 
-
+	return generated_gems
 end
 
 function Grid:isSettled()
@@ -557,7 +583,7 @@ function Grid:destroyGem(params)
 		local num_super_particles = player.supering and 0 or player.meter_gain[gem.color]
 		particles.superParticles.generate(game, gem, num_super_particles, game.GEM_EXPLODE_FRAMES)
 		particles.damage.generate(game, gem, game.GEM_EXPLODE_FRAMES)
-		particles.pop.generate(game, gem, game.GEM_EXPLODE_FRAMES)
+		particles.popParticles.generate{game = game, gem = gem, delay_frames = game.GEM_EXPLODE_FRAMES}
 		particles.dust.generateBigFountain(game, gem, 24, game.GEM_EXPLODE_FRAMES)	
 		for i = 1, extra_damage do particles.damage.generate(game, gem, game.GEM_EXPLODE_FRAMES) end
 	end
@@ -601,7 +627,7 @@ function Grid:calculateScore()
 		end
 	end
 	for player in self.game:players() do
-		local i = player.playerNum
+		local i = player.player_num
 		if dmg[i] > 0 then dmg[i] = dmg[i] + self.game.scoring_combo - 1 end
 		if player.supering then super[i] = 0 end
 	end
@@ -612,7 +638,7 @@ function Grid:getLoser()
 	local p1loss, p2loss = false, false
 	for i = 1, self.columns do
 		local empty_row = self:getFirstEmptyRow(i)
-		if empty_row < self.game.LOSE_ROW then
+		if empty_row < self.LOSE_ROW then
 			if i <= 4 then p1loss = true else p2loss = true end
 		end
 	end
@@ -647,7 +673,7 @@ function Grid:animateGameOver(loser_num)
 
 	for row = 20, 5, -1 do
 		local delay = (20 - row) * EACH_ROW_DELAY + 1
-		local duration = game.phaseManager.INIT_GAMEOVER_PAUSE
+		local duration = game.phase.INIT_GAMEOVER_PAUSE
 
 		for col = start_col, end_col do
 			if self[row][col].gem then

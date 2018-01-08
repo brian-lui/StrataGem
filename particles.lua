@@ -67,8 +67,7 @@ function Particles:reset()
 		DamageTrail = {},
 		SuperParticles = {},
 		GarbageParticles = {},
-		GarbageAppearParticles = {},
-		Pop = {},
+		PopParticles = {},
 		ExplodingGem = {},
 		ExplodingPlatform = {},
 		PlatformTinyStar = {},
@@ -334,71 +333,73 @@ end
 GarbageParticles = common.class("GarbageParticles", GarbageParticles, Pic)
 
 -------------------------------------------------------------------------------
--- Animation that happens when garbage is created at bottom
--- called from Grid:addBottomRow
-local GarbageAppearParticles = {}
-function GarbageAppearParticles:init(manager, gem)
-	local image = image.lookup.pop_particle[gem.color]
-	Pic.init(self, manager.game, {x = gem.x, y = gem.y, image = image})
-	manager.allParticles.Pop[ID.particle] = self
-	self.manager = manager
-end
-
-function GarbageAppearParticles:remove()
-	self.manager.allParticles.Pop[self.ID] = nil
-end
-
-function GarbageAppearParticles.generate(game, gem)
-	print("make a garbage appear animation here")
-	--[[ When the gems appear, the gem explode animation happens in reverse.
-		(particles appear randomly in a circle about 24 pixel radius from where the gem will spawn.
-		the blast circle appears full size and gets smaller, and the gem appears glowy and 
-		fades down to normal color). Also spray some dust
-	--]]
-
-
-	--local p = common.instance(GarbageAppearParticles, game.particles, gem)
-	--p:change{duration = 30, transparency = 0, scaling = 4, exit = true}
-end
-
-GarbageAppearParticles = common.class("GarbageAppearParticles", GarbageAppearParticles, Pic)
-
--------------------------------------------------------------------------------
 -- When a match is made, this is the glow behind the gems
-local PopParticle = {}
-function PopParticle:init(manager, gem)
-	local image = image.lookup.pop_particle[gem.color]
-	Pic.init(self, manager.game, {x = gem.x, y = gem.y, image = image})
-	manager.allParticles.Pop[ID.particle] = self
+local PopParticles = {}
+function PopParticles:init(params)
+	local manager = params.manager
+	Pic.init(self, manager.game, {x = params.x, y = params.y, image = params.image})
+	manager.allParticles.PopParticles[ID.particle] = self
 	self.manager = manager
 end
 
-function PopParticle:remove()
-	self.manager.allParticles.Pop[self.ID] = nil
+function PopParticles:remove()
+	self.manager.allParticles.PopParticles[self.ID] = nil
 end
 
-function PopParticle.generate(game, gem, delay_frames)
-	local p = common.instance(PopParticle, game.particles, gem)
+-- Takes either a gem or x, y, image
+-- Can delay by delay_frames
+function PopParticles.generate(params)
+	local manager = params.game.particles
+	local x = params.x or params.gem.x 
+	local y = params.y or params.gem.y
+	local img = params.image or image.lookup.pop_particle[params.gem.color]
 
-	if delay_frames then
+	local p = common.instance(PopParticles, {manager = manager, x = x, y = y, image = img})
+
+	if params.delay_frames then
 		p:change{transparency = 0}
-	 	p:wait(delay_frames)
+	 	p:wait(params.delay_frames)
 	 	p:change{duration = 0, transparency = 255}
 	end
 
 	p:change{duration = 30, transparency = 0, scaling = 4, exit = true}
 end
 
-PopParticle = common.class("PopParticle", PopParticle, Pic)
+--[[The same animation but in reverse. Used for garbage particle
+	game, x, y, image: self-explanatory
+	delay_frames is optional
+--]]
+function PopParticles.generateReversePop(params)
+	local manager = params.game.particles
+	local p = common.instance(PopParticles, {manager = manager, x = params.x,
+		y = params.y, image = params.image})
+
+	p:change{duration = 0, transparency = 0, scaling = 4}
+	if params.delay_frames then p:wait(delay_frames.params) end
+	p:change{duration = 30, transparency = 255, scaling = 1, exit = true}
+end
+
+PopParticles = common.class("PopParticles", PopParticles, Pic)
 
 -------------------------------------------------------------------------------
 -- When a match is made, this is the white/grey overlay for the gems
 local ExplodingGem = {}
-function ExplodingGem:init(manager, gem)
-	local grey_gems = gem.owner == 3
-	local color = grey_gems and (gem.color .. "_grey") or gem.color
-	local img = image.lookup.gem_explode[color]
-	Pic.init(self, manager.game, {x = gem.x, y = gem.y, image = img, transparency = 0})
+function ExplodingGem:init(params)
+	local manager = params.manager
+	local gem = params.gem
+	local x, y, img, transparency
+
+	if gem then
+		local create_grey_gems = gem.owner == 3
+		local color = create_grey_gems and (gem.color .. "_grey") or gem.color
+		x, y, img = gem.x, gem.y, image.lookup.gem_explode[color]
+		transparency = 0
+	else
+		x, y, img = params.x, params.y, params.image
+		transparency = params.transparency
+	end
+
+	Pic.init(self, manager.game, {x = x, y = y, image = img, transparency = transparency})
 	manager.allParticles.ExplodingGem[ID.particle] = self
 	self.manager = manager
 end
@@ -413,20 +414,15 @@ end
 	shake: boolean for whether to bounce the gam. Used by garbage gem. Defaults to false.
 	delay_frames: optional amount of time to delay the start of animation.
 --]]
---function ExplodingGem.generate(game, gem, explode_frames, fade_frames, shake)
 function ExplodingGem.generate(params)
 	local game = params.game
 	local gem = params.gem
 	local explode_frames = params.explode_frames or game.GEM_EXPLODE_FRAMES
 	local fade_frames = params.fade_frames or game.GEM_FADE_FRAMES
 
-	local p = common.instance(ExplodingGem, game.particles, gem)
+	local p = common.instance(ExplodingGem, {manager = game.particles, gem = gem})
 
-	if params.delay_frames then
-		p:change{transparency = 0}
-	 	p:wait(params.delay_frames)
-	 	p:change{duration = 0, transparency = 255}
-	end
+	if params.delay_frames then p:wait(params.delay_frames) end
 
 	if params.shake then
 		p:change{duration = explode_frames, scaling = 2, easing = "inBounce", transparency = 255}
@@ -440,6 +436,26 @@ function ExplodingGem.generate(params)
 		p:change{duration = fade_frames, transparency = 0, scaling = 2,
 			exit = true}
 	end
+end
+
+--[[According to artist, "the gem appears glowy and fades down to normal color". 
+	Used for garbage particle. game, x, y, image: self-explanatory.
+	delay_frames, duration are optional. --]]
+function ExplodingGem.generateReverseExplode(params)
+	local game = params.game
+	local x, y, img = params.x, params.y, params.image
+	local duration = params.duration or game.GEM_EXPLODE_FRAMES
+
+	local p = common.instance(ExplodingGem, {manager = game.particles, x = x,
+		y = y, image = img, transparency = 255})
+
+	if params.delay_frames then
+		p:change{transparency = 0}
+	 	p:wait(params.delay_frames)
+	 	p:change{duration = 0, transparency = 255}
+	end	
+
+	p:change{duration = duration, transparency = 0, exit = true}
 end
 
 ExplodingGem = common.class("ExplodingGem", ExplodingGem, Pic)
@@ -1064,7 +1080,7 @@ function Words.generateNoRush(game, column)
 		game.particles.no_rush_check[column] = 1
 		local grid = game.grid
 		local x = grid.x[column]
-		local y = (grid.y[game.RUSH_ROW] + grid.y[game.RUSH_ROW+1]) / 2
+		local y = (grid.y[grid.RUSH_ROW] + grid.y[grid.RUSH_ROW+1]) / 2
 		local todraw = image.words.no_rush_one_column
 		local p = common.instance(Words, game.particles, x, y, todraw)
 		p:change{duration = 20, quad = {x = true, x_percentage = 1, x_anchor = 0.5}}
@@ -1138,13 +1154,11 @@ SuperFreezeEffects = common.class("SuperFreezeEffects", SuperFreezeEffects, Pic)
 Particles.damage = DamageParticle
 Particles.damageTrail = DamageTrailParticle
 Particles.superParticles = SuperParticle
-Particles.pop = PopParticle
+Particles.popParticles = PopParticles
 Particles.explodingGem = ExplodingGem
 Particles.explodingPlatform = ExplodingPlatform
 Particles.garbageParticles = GarbageParticles
 Particles.garbageTrail = GarbageTrail
-
-Particles.garbageAppearParticles = GarbageAppearParticles
 Particles.platformStar = PlatformStar
 Particles.dust = Dust
 --Particles.overDust = OverDust

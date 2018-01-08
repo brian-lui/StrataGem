@@ -63,7 +63,7 @@ function GemPlatform:update(dt)
 	local loc = self.hand_idx
 
 	-- set spin and redness
-	local destroyed_particles = self.game.particles:getCount("destroyed", "Damage", player.enemy.playerNum)
+	local destroyed_particles = self.game.particles:getCount("destroyed", "Damage", player.enemy.player_num)
 	local displayed_damage = (player.hand.turn_start_damage + destroyed_particles/3) * 0.25
 
 	if displayed_damage >= loc then	-- fully red, full spin

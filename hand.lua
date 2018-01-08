@@ -14,6 +14,8 @@ function Hand:init(game, player)
 
 	--assert((player == p1 or player == p2), "Invalid player given!")
 	self.owner = player
+	self.owner_num = player.player_num
+
 	for i = 0, 10 do
 		self[i] = {}
 		self[i].piece = nil
@@ -35,6 +37,7 @@ function Hand:makeInitialPieces(gem_table)
 			location = self[i],
 			hand_idx = i,
 			owner = self.owner,
+			owner_num = self.owner_num,
 			x = self[i].x,
 			y = self[i].y,
 			--gem_table = gem_table,
@@ -58,8 +61,12 @@ function Hand:getx(y)
 	return start_x + additional * sign
 end
 
+--[[This creates the animation for the gems falling off platform, and particles
+	arriving at the bottom of basin. Does NOT create the animation for the
+	gems being formed; those are created in grid:addBottomRow(). --]]
 function Hand:createGarbageAnimation(pos)
 	local game = self.game
+	local grid = game.grid
 	local particles = game.particles
 
 	local explode_frames = game.PLATFORM_FALL_EXPLODE_FRAMES
@@ -69,14 +76,13 @@ function Hand:createGarbageAnimation(pos)
 
 	for i = 1, #self[pos].piece.gems do
 		local gem = self[pos].piece.gems[i]
-		gem.owner = self.owner.playerNum
+		gem.owner = self.owner.player_num
 
-		print("gem x, y", gem.x, gem.y)
 		particles.explodingGem.generate{game = game, gem = gem,	shake = true,
 			explode_frames = explode_frames, fade_frames = fade_frames}
 		particles.gemImage.generate{game = game, gem = gem, shake = true,
 			duration = explode_frames}
-		particles.pop.generate(game, gem, explode_frames)
+		particles.popParticles.generate{game = game, gem = gem, delay_frames = explode_frames}
 		particles.dust.generateBigFountain(game, gem, 24, explode_frames)
 		arrival_frame = particles.garbageParticles.generate(game, gem, explode_frames)
 		game.queue:add(explode_frames, game.ui.screenshake, game.ui, 2)
@@ -168,7 +174,6 @@ end
 -- creates the new pieces for the turn.
 -- Takes optional gem_table for gem frequencies
 function Hand:getNewTurnPieces(gem_table)
-	local player = self.owner
 	local pieces_to_get = math.floor(self.damage * 0.25)
 	if pieces_to_get == 0 then return end
 
@@ -176,12 +181,13 @@ function Hand:getNewTurnPieces(gem_table)
 		self[i].piece = common.instance(Piece, self.game, {
 			location = self[i],
 			hand_idx = i,
-			owner = player,
+			owner = self.owner,
+			owner_num = self.owner_num,
 			x = self[i].x,
 			y = self[i].y,
 			gem_table = gem_table,
 		})
-		self[i].platform = common.instance(GemPlatform, self.game, player, i)
+		self[i].platform = common.instance(GemPlatform, self.game, self.owner, i)
 	end
 	for i = 1, 10 do -- move up all the pieces
 		local end_pos = math.max(i - pieces_to_get, 0)

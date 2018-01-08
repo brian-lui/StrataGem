@@ -39,8 +39,6 @@ END QUEUE COMPONENT
 
 local Game = {}
 
-Game.LOSE_ROW = 12 -- game over if a gem ends the turn in this row or above
-Game.RUSH_ROW = 14 -- can only rush if this row is empty
 Game.NETPLAY_MAX_WAIT = 60
 Game.STATE_SEND_WAIT = 80
 Game.DAMAGE_PARTICLE_TO_PLATFORM_FRAMES = 54
@@ -58,11 +56,11 @@ function Game:init()
 	self.debug_drawGamestate = true
 	self.debug_drawDamage = true
 	self.debug_drawGrid = true
-	self.debug_overlay = function() return self.phase end
+	self.debug_overlay = function() return self.current_phase end
 	
 	self.rng = love.math.newRandomGenerator()
 	self.unittests = common.instance(require "unittests", self) -- debug testing
-	self.phaseManager = common.instance(require "phasemanager", self)
+	self.phase = common.instance(require "phase", self)
 	self.sound = common.instance(require "sound", self)
 	self.stage = common.instance(require "stage", self)	-- playing field area and grid
 	self.grid = common.instance(require "grid", self)
@@ -134,15 +132,15 @@ end
 
 function Game:newTurn()
 	self.turn = self.turn + 1
-	self.phase = "Action"
+	self.current_phase = "Action"
 	self.frozen = false
-	self.phaseManager.time_to_next = self.phaseManager.INIT_TIME_TO_NEXT
+	self.phase.time_to_next = self.phase.INIT_TIME_TO_NEXT
 end
 
 function Game:reset()
-	self.phase = "Intro"
+	self.current_phase = "Intro"
 	self.turn = 1
-	self.phaseManager.time_to_next = self.phaseManager.INIT_TIME_TO_NEXT
+	self.phase.time_to_next = self.phase.INIT_TIME_TO_NEXT
 	self.netplay_wait = 0
 	self.frozen = false
 	self.scoring_combo = 0

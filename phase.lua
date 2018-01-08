@@ -56,7 +56,7 @@ function PhaseManager:intro(dt)
 		game.sound:newBGM(game.p1.sounds.bgm, true)
 		game.particles.words.generateGo(self.game)
 		game.sound:newSFX("sfx_fountaingo")
-		game.phase = "Action"
+		game.current_phase = "Action"
 	end
 end
 
@@ -76,7 +76,7 @@ function PhaseManager:action(dt)
 	if self.time_to_next <= 0 and ai.finished then
 		love.mousereleased(drawspace.tlfres.getMousePosition(drawspace.width, drawspace.height))
 		game.particles.wordEffects.clear(game.particles)
-		game.phase = "Resolve"
+		game.current_phase = "Resolve"
 
 		if game.type == "Netplay" then
 			if not client.our_delta[game.turn] then	-- If local player hasn't acted, send empty turn
@@ -96,7 +96,7 @@ function PhaseManager:resolve(dt)
 	for player in game:players() do player.hand:afterActionPhaseUpdate() end
 	game.grid:updateRushPriority()
 	game.frozen = true
-	game.phase = "SuperFreeze"
+	game.current_phase = "SuperFreeze"
 end
 
 local function superPlays(self)
@@ -121,7 +121,7 @@ function PhaseManager:superFreeze(dt)
 		table.remove(self.super_play, 1)
 	else
 		self.super_play = nil
-		self.game.phase = "GemTween"
+		self.game.current_phase = "GemTween"
 	end
 end
 
@@ -133,7 +133,7 @@ function PhaseManager:applyGemTween(dt)
 	local animation_done = grid:isSettled() --  tween-from-top is done
 	if animation_done then
 		grid:dropColumns()
-		game.phase = "Gravity"
+		game.current_phase = "Gravity"
 	end
 end
 
@@ -154,16 +154,16 @@ function PhaseManager:applyGravity(dt)
 				end
 			end
 		end
-		game.phase = "GetMatchedGems"
+		game.current_phase = "GetMatchedGems"
 	end
 end
 
 function PhaseManager:getMatchedGems(dt)
 	local _, matches = self.game.grid:getMatchedGems() -- sets horizontal/vertical flags for matches
 	if matches > 0 then
-		self.game.phase = "FlagGems"
+		self.game.current_phase = "FlagGems"
 	else
-		self.game.phase = "ResolvedMatches"
+		self.game.current_phase = "ResolvedMatches"
 	end
 end
 
@@ -176,7 +176,7 @@ function PhaseManager:flagGems(dt)
 	for player in self.game:players() do player:beforeMatch(gem_table) end
 	self.matched_this_round = grid:checkMatchedThisTurn()
 	grid:destroyMatchedGems(self.game.scoring_combo)
-	self.game.phase = "MatchAnimations"
+	self.game.current_phase = "MatchAnimations"
 end
 
 -- wait for gem explode animation
@@ -184,7 +184,7 @@ function PhaseManager:matchAnimations(dt)
 	for player in self.game:players() do player.hand:update(dt) end	
 	if self.game.particles:getNumber("GemImage") == 0 then
 		if self.after_match_delay == 0 then
-			self.game.phase = "ResolvingMatches"
+			self.game.current_phase = "ResolvingMatches"
 			self.after_match_delay = self.game.GEM_FADE_FRAMES
 		else
 			self.after_match_delay = self.after_match_delay - 1
@@ -202,7 +202,7 @@ function PhaseManager:resolvingMatches(dt)
 	if not self.matched_this_round[2] then grid:removeAllGemOwners(2) end
 	grid:dropColumns()
 	grid:updateGrid()
-	self.game.phase = "Gravity"
+	self.game.current_phase = "Gravity"
 end
 
 function PhaseManager:resolvedMatches(dt)
@@ -220,13 +220,13 @@ function PhaseManager:resolvedMatches(dt)
 		game.grid:setAllGemOwners(0)
 		for i = 1, grid.columns do --checks if should generate no rush
 			if self.no_rush[i] then
-				if grid[game.RUSH_ROW][i].gem then
+				if grid[grid.RUSH_ROW][i].gem then
 					game.particles.words.generateNoRush(self.game, i)
 					self.no_rush[i] = false	
 				end
 			end
 		end
-		game.phase = "PlatformSpinDelay"
+		game.current_phase = "PlatformSpinDelay"
 	end
 end
 
@@ -237,13 +237,13 @@ function PhaseManager:platformSpinDelay(dt)
 		self.platform_spin_delay_frames = self.platform_spin_delay_frames - 1
 	else
 		self.platform_spin_delay_frames = self.INIT_PLATFORM_SPIN_DELAY_FRAMES
-		self.game.phase = "DestroyDamagedPlatforms"
+		self.game.current_phase = "DestroyDamagedPlatforms"
 	end
 end
 
 function PhaseManager:destroyDamagedPlatforms(dt)
 	for player in self.game:players() do player.hand:destroyDamagedPlatforms() end
-	self.game.phase = "PlatformsExploding"
+	self.game.current_phase = "PlatformsExploding"
 end
 
 function PhaseManager:platformsExploding(dt)
@@ -256,7 +256,7 @@ function PhaseManager:platformsExploding(dt)
 			player:resetMP()
 		end
 		game.particles:clearCount()	-- clear here so the platforms display redness/spin correctly
-		game.phase = "GarbageRowCreation"
+		game.current_phase = "GarbageRowCreation"
 	end
 end
 
@@ -281,7 +281,7 @@ function PhaseManager:garbageRowCreation(dt)
 			game.sound:newSFX("sfx_trashrow")
 		end
 
-		game.phase = "PlatformsMoving"
+		game.current_phase = "PlatformsMoving"
 	end
 end
 
@@ -299,10 +299,10 @@ function PhaseManager:platformsMoving(dt)
 
 	if handsettled then	
 		if self.garbage_this_round then
-			game.phase = "Gravity"
+			game.current_phase = "Gravity"
 			self.garbage_this_round = false
 		else
-			game.phase = "Cleanup"
+			game.current_phase = "Cleanup"
 		end
 	end
 end
@@ -314,7 +314,7 @@ function PhaseManager:cleanup(dt)
 
 	for i = 1, grid.columns do --checks if should generate no rush
 		if self.no_rush[i] then
-			if grid[game.RUSH_ROW][i].gem then
+			if grid[grid.RUSH_ROW][i].gem then
 				game.particles.words.generateNoRush(self.game, i)
 				self.no_rush[i] = false	
 			end
@@ -333,9 +333,9 @@ function PhaseManager:cleanup(dt)
 	for player in game:players() do player.hand:endOfTurnUpdate() end
 
 	if grid:getLoser() then
-		game.phase = "GameOver"
+		game.current_phase = "GameOver"
 	elseif game.type == "Netplay" then
-		game.phase = "Sync"
+		game.current_phase = "Sync"
 	else
 		game:newTurn()
 	end
@@ -396,8 +396,8 @@ PhaseManager.lookup = {
 
 function PhaseManager:run(...)
 	if not self.game.paused then
-		local todo = PhaseManager.lookup[self.game.phase]
-		assert(todo, "You did a typo for the current phase idiot - " .. self.game.phase)
+		local todo = PhaseManager.lookup[self.game.current_phase]
+		assert(todo, "You did a typo for the current phase idiot - " .. self.game.current_phase)
 		todo(self, ...)
 		self.game.queue:update()
 	end

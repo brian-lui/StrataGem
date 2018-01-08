@@ -79,7 +79,7 @@ function Client:newTurn()
 	self.opponent_received_state = false
 	self.synced = false
 	print("Starting next turn on frame: " .. self.game.frame, "Time: " .. love.timer.getTime() - self.match_start_time)
-	print("Expecting resolution on frame: " .. self.game.frame + self.game.phaseManager.INIT_TIME_TO_NEXT)
+	print("Expecting resolution on frame: " .. self.game.frame + self.game.phase.INIT_TIME_TO_NEXT)
 end
 
 function Client:endMatch()
@@ -154,7 +154,7 @@ local function playPiece(self, recv_piece)
 	self.game.them_player.place_type = recv_piece.place_type
 	if self.game.them_player.place_type == nil then
 		print("place_type is nil, exiting")
-		self.game.phase = "GameOver"
+		self.game.current_phase = "GameOver"
 	end
 	print("current place type for playing their piece:", self.game.them_player.place_type)
 	opp_piece:dropIntoBasin(recv_piece.coords, true)
@@ -277,7 +277,7 @@ end
 
 -- delta for pieces is called from Piece:dropIntoBasin
 -- delta for supers is called from ___
--- if blank, then phasemanager.lua Action phase will send a blank delta
+-- if blank, then phase.lua Action phase will send a blank delta
 -- This packages our delta so we don't have to send so much stuff
 function Client:prepareDelta(...)
 	local game = self.game
