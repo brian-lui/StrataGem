@@ -4,17 +4,19 @@ local love = _G.love
 
 local common = require "class.commons"
 
-local PhaseManager = {}
+local Phase = {}
 
-function PhaseManager:init(game)
+function Phase:init(game)
 	self.game = game
 	self.INIT_TIME_TO_NEXT = 430 -- frames in each action phase
 	self.INIT_PLATFORM_SPIN_DELAY_FRAMES = 30 -- frames to animate platforms exploding
 	self.INIT_SUPER_PAUSE = 90 -- frames to animate super activation
-	self.time_to_next = 430
+	self.INIT_GAMEOVER_PAUSE = 180 -- how long to stay on gameover screen
+
+	self.time_to_next = self.INIT_TIME_TO_NEXT
 	self.super_play = nil
 	self.super_pause = 0
-	self.platform_spin_delay_frames = 30
+	self.platform_spin_delay_frames = self.INIT_PLATFORM_SPIN_DELAY_FRAMES
 	self.no_rush = {}
 	for i = 1, 8 do --the 8 should be grid.column, but grid isn't initilized yet I don't think
 		self.no_rush[i] = true --whether no_rush is eligible for animation
@@ -22,29 +24,12 @@ function PhaseManager:init(game)
 	self.after_match_delay = game.GEM_FADE_FRAMES
 	self.matched_this_round = {false, false} -- p1 made a match, p2 made a match
 	self.game_is_over = false
-	self.INIT_GAMEOVER_PAUSE = 180
-	self.gameover_pause = 180
+	self.gameover_pause = self.INIT_GAMEOVER_PAUSE
 	self.garbage_this_round = false
+	self.garbage_arrival_frames = {{}, {}} -- p1, p2
 end
 
-function PhaseManager:reset()
-	self.time_to_next = self.INIT_TIME_TO_NEXT
-	self.super_play = nil
-	self.super_pause = 0
-	self.platform_spin_delay_frames = self.INIT_PLATFORM_SPIN_DELAY_FRAMES
-	self.no_rush = {}
-	for i = 1, 8 do
-		self.no_rush[i] = true
-	end
-	self.after_match_delay = self.game.GEM_FADE_FRAMES
-	self.matched_this_round = {false, false} -- p1 made a match, p2 made a match
-	self.game_is_over = false
-	self.gameover_pause = 180
-	self.garbage_this_round = false
-	self.game.grid:clearGameOverAnims()
-end
-
-function PhaseManager:intro(dt)
+function Phase:intro(dt)
 	local game = self.game
 	for player in game:players() do
 		player.hand:update(dt)
@@ -60,7 +45,7 @@ function PhaseManager:intro(dt)
 	end
 end
 
-function PhaseManager:action(dt)
+function Phase:action(dt)
 	local game = self.game
 	local client = game.client
 	local ai = game.ai
@@ -90,7 +75,7 @@ function PhaseManager:action(dt)
 	end
 end
 
-function PhaseManager:resolve(dt)
+function Phase:resolve(dt)
 	local game = self.game
 	if game.me_player.place_type == nil then print("PLACE TYPE BUG") end
 	for player in game:players() do player.hand:afterActionPhaseUpdate() end
@@ -110,7 +95,7 @@ local function superPlays(self)
 end
 
 -- TODO: refactor this lame stuff
-function PhaseManager:superFreeze(dt)
+function Phase:superFreeze(dt)
 	self.super_play = self.super_play or superPlays(self)
 
 	if self.super_pause > 0 then
@@ -125,7 +110,7 @@ function PhaseManager:superFreeze(dt)
 	end
 end
 
-function PhaseManager:applyGemTween(dt)
+function Phase:applyGemTween(dt)
 	local game = self.game
 	local grid = game.grid
 	grid:updateGravity(dt) -- animation
@@ -137,7 +122,7 @@ function PhaseManager:applyGemTween(dt)
 	end
 end
 
-function PhaseManager:applyGravity(dt)
+function Phase:applyGravity(dt)
 	local game = self.game
 	local grid = game.grid
 	grid:updateGravity(dt) -- animation
@@ -158,7 +143,7 @@ function PhaseManager:applyGravity(dt)
 	end
 end
 
-function PhaseManager:getMatchedGems(dt)
+function Phase:getMatchedGems(dt)
 	local _, matches = self.game.grid:getMatchedGems() -- sets horizontal/vertical flags for matches
 	if matches > 0 then
 		self.game.current_phase = "FlagGems"
@@ -168,7 +153,7 @@ function PhaseManager:getMatchedGems(dt)
 end
 
 -- flag above gems, destroy matched gems, and generate the exploding gem particles
-function PhaseManager:flagGems(dt)
+function Phase:flagGems(dt)
 	local grid = self.game.grid
 	local gem_table = self.game.grid:getMatchedGems() -- sets h/v flags
 
@@ -180,7 +165,7 @@ function PhaseManager:flagGems(dt)
 end
 
 -- wait for gem explode animation
-function PhaseManager:matchAnimations(dt)
+function Phase:matchAnimations(dt)
 	for player in self.game:players() do player.hand:update(dt) end	
 	if self.game.particles:getNumber("GemImage") == 0 then
 		if self.after_match_delay == 0 then
@@ -192,7 +177,7 @@ function PhaseManager:matchAnimations(dt)
 	end
 end
 
-function PhaseManager:resolvingMatches(dt)
+function Phase:resolvingMatches(dt)
 	local grid = self.game.grid
 	local gem_table = grid:getMatchedGems()
 
@@ -205,7 +190,7 @@ function PhaseManager:resolvingMatches(dt)
 	self.game.current_phase = "Gravity"
 end
 
-function PhaseManager:resolvedMatches(dt)
+function Phase:resolvedMatches(dt)
 	local game = self.game
 	local grid = game.grid
 	if game.particles:getCount("onscreen", "Damage", 1) + game.particles:getCount("onscreen", "Damage", 2) > 0 then
@@ -230,7 +215,7 @@ function PhaseManager:resolvedMatches(dt)
 	end
 end
 
-function PhaseManager:platformSpinDelay(dt)
+function Phase:platformSpinDelay(dt)
 	for player in self.game:players() do player.hand:update(dt) end
 	if self.platform_spin_delay_frames > 0 then
 		for player in self.game:players() do player.hand:update(dt) end
@@ -241,12 +226,15 @@ function PhaseManager:platformSpinDelay(dt)
 	end
 end
 
-function PhaseManager:destroyDamagedPlatforms(dt)
-	for player in self.game:players() do player.hand:destroyDamagedPlatforms() end
+function Phase:destroyDamagedPlatforms(dt)
+	for player in self.game:players() do
+		local arrival_frames = player.hand:destroyDamagedPlatforms()
+		self.garbage_arrival_frames[player.player_num] = arrival_frames
+	end
 	self.game.current_phase = "PlatformsExploding"
 end
 
-function PhaseManager:platformsExploding(dt)
+function Phase:platformsExploding(dt)
 	local game = self.game
 	if game.particles:getNumber("ExplodingPlatform") == 0 then
 		for player in game:players() do
@@ -260,17 +248,23 @@ function PhaseManager:platformsExploding(dt)
 	end
 end
 
-function PhaseManager:garbageRowCreation(dt)
+function Phase:garbageRowCreation(dt)
 	local game = self.game
 	local grid = game.grid
 
 	for player in game:players() do player.hand:update(dt) end
 	grid:updateGravity(dt)
 
+	--[[
+	use lists of self.garbage_arrival_frames[1] and self.garbage_arrival_frames[2] for the delay in the garbage row creation below
+	pass to next phase after(max(garbage_arrival_frames) + animation time of garbageappear)
+	--]]
+	
 	if grid:isSettled() and game.particles:getNumber("GarbageParticles") == 0 then	
 		for player in game:players() do
 			for i = 1, player.garbage_rows_created do
-				grid:addBottomRow(player)
+				local delay = (i - 1) * game.GEM_EXPLODE_FRAMES
+				game.queue:add(delay, grid.addBottomRow, grid, player)
 				self.garbage_this_round = true
 			end
 		end
@@ -278,6 +272,7 @@ function PhaseManager:garbageRowCreation(dt)
 		if self.garbage_this_round then
 			grid:setGarbageMatchFlags()
 			game.p1.garbage_rows_created, game.p2.garbage_rows_created = 0, 0
+			self.garbage_arrival_frames = {{}, {}}
 			game.sound:newSFX("sfx_trashrow")
 		end
 
@@ -285,7 +280,7 @@ function PhaseManager:garbageRowCreation(dt)
 	end
 end
 
-function PhaseManager:platformsMoving(dt)
+function Phase:platformsMoving(dt)
 	local game = self.game
 	local grid = game.grid
 
@@ -307,7 +302,7 @@ function PhaseManager:platformsMoving(dt)
 	end
 end
 
-function PhaseManager:cleanup(dt)
+function Phase:cleanup(dt)
 	local game = self.game
 	local grid = game.grid
 	local p1, p2 = game.p1, game.p2
@@ -341,7 +336,7 @@ function PhaseManager:cleanup(dt)
 	end
 end
 
-function PhaseManager:sync(dt)
+function Phase:sync(dt)
 	self.game.client:newTurn()
 	self.game:newTurn()
 	-- If disconnected by server, change to vs AI
@@ -352,11 +347,10 @@ function PhaseManager:sync(dt)
 	end
 end
 
-function PhaseManager:gameOver(dt)
+function Phase:gameOver(dt)
 	local game = self.game
 	if self.game_is_over then
 		if self.gameover_pause == 0 then
-			self:reset()
 			if game.type == "Netplay" then
 				game.statemanager:switch(require "gs_lobby")
 			elseif game.type == "1P" then
@@ -372,35 +366,35 @@ function PhaseManager:gameOver(dt)
 	end
 end
 
-PhaseManager.lookup = {
-	Intro = PhaseManager.intro,
-	Action = PhaseManager.action,
-	Resolve = PhaseManager.resolve,
-	SuperFreeze = PhaseManager.superFreeze,
-	GemTween = PhaseManager.applyGemTween,
-	Gravity = PhaseManager.applyGravity,
-	GetMatchedGems = PhaseManager.getMatchedGems,
-	FlagGems = PhaseManager.flagGems,
-	MatchAnimations = PhaseManager.matchAnimations,
-	ResolvingMatches = PhaseManager.resolvingMatches,
-	ResolvedMatches = PhaseManager.resolvedMatches,
-	PlatformSpinDelay = PhaseManager.platformSpinDelay,
-	DestroyDamagedPlatforms = PhaseManager.destroyDamagedPlatforms,
-	PlatformsExploding = PhaseManager.platformsExploding,
-	GarbageRowCreation = PhaseManager.garbageRowCreation,
-	PlatformsMoving = PhaseManager.platformsMoving,
-	Cleanup = PhaseManager.cleanup,
-	Sync = PhaseManager.sync,
-	GameOver = PhaseManager.gameOver
+Phase.lookup = {
+	Intro = Phase.intro,
+	Action = Phase.action,
+	Resolve = Phase.resolve,
+	SuperFreeze = Phase.superFreeze,
+	GemTween = Phase.applyGemTween,
+	Gravity = Phase.applyGravity,
+	GetMatchedGems = Phase.getMatchedGems,
+	FlagGems = Phase.flagGems,
+	MatchAnimations = Phase.matchAnimations,
+	ResolvingMatches = Phase.resolvingMatches,
+	ResolvedMatches = Phase.resolvedMatches,
+	PlatformSpinDelay = Phase.platformSpinDelay,
+	DestroyDamagedPlatforms = Phase.destroyDamagedPlatforms,
+	PlatformsExploding = Phase.platformsExploding,
+	GarbageRowCreation = Phase.garbageRowCreation,
+	PlatformsMoving = Phase.platformsMoving,
+	Cleanup = Phase.cleanup,
+	Sync = Phase.sync,
+	GameOver = Phase.gameOver
 }
 
-function PhaseManager:run(...)
+function Phase:run(...)
 	if not self.game.paused then
-		local todo = PhaseManager.lookup[self.game.current_phase]
+		local todo = Phase.lookup[self.game.current_phase]
 		assert(todo, "You did a typo for the current phase idiot - " .. self.game.current_phase)
 		todo(self, ...)
 		self.game.queue:update()
 	end
 end
 
-return common.class("PhaseManager", PhaseManager)
+return common.class("Phase", Phase)

@@ -91,15 +91,20 @@ end
 -- custom function to handle rotation around pivot
 function Gem:draw(params)
 	params = params or {}
+	local rgbt = params.RGBTable or {255, 255, 255, self.transparency or 255}
+	if params.darkened then
+		rgbt[1], rgbt[2], rgbt[3] = rgbt[1] * 0.5, rgbt[2] * 0.5, rgbt[3] * 0.5
+	end
+
 	love.graphics.push("all")
-		if params.RGBTable then love.graphics.setColor(params.RGBTable) end
+		--if params.RGBTable then love.graphics.setColor(params.RGBTable) end
 		love.graphics.translate(params.pivot_x or self.x, params.pivot_y or self.y)
 		love.graphics.translate(-self.width * 0.5, -self.height * 0.5)
 		if params.rotation then love.graphics.rotate(params.rotation) end
 		love.graphics.translate(params.displace_x or 0, params.displace_y or 0)
 		-- reverse the rotation so the gem always maintains its orientation
 		if params.rotation then love.graphics.rotate(-params.rotation) end
-		if params.darkened then love.graphics.setColor(127, 127, 127) end
+		love.graphics.setColor(rgbt)
 		love.graphics.draw(self.image, self.quad)
 	love.graphics.pop()
 end

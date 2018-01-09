@@ -291,8 +291,8 @@ function Heath:afterGravity()
 	if ouches > 0 then
 		self.enemy:addDamage(ouches)
 		for i = 1, #ouch_gems do
-			particles.dust.generateBigFountain(self.game, ouch_gems[i], 120) -- placeholder animation
-			ret[#ret+1] = {1, particles.dust.generateBigFountain, self.game, particles.dust, ouch_gems[i], 120, self}
+			particles.dust.generateBigFountain{game = self.game, gem = ouch_gems[i], num = 120} -- placeholder animation
+			ret[#ret+1] = {1, particles.dust.generateBigFountain, {game = self.game, gem = ouch_gems[i], num = 120}}
 		end
 	end
 	return ret

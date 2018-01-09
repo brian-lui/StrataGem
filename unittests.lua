@@ -214,8 +214,8 @@ end
 
 local function toggleSlowdown(game)
 	if game.timeStep == 1/60 then
-		game.timeStep = 1/2
-	elseif game.timeStep == 1/2 then
+		game.timeStep = 1/5
+	elseif game.timeStep == 1/5 then
 		game.timeStep = 2
 	else
 		game.timeStep = 1/60
@@ -230,11 +230,21 @@ end
 local function makeAGarbage(game)
 	game.grid:addBottomRow(game.p2)
 	game.grid:updateGrid()
-	for i = 1, 20 do
-		game.queue:add(i, game.grid.updateGravity, game.grid, i/60)
+	for i = 1, 60 do
+		game.queue:add(i, game.grid.updateGravity, game.grid, 1/60)
 	end
 end
 
+local player_toggle
+local function maxDamage(game)
+	if player_toggle ~= game.p1 then
+		game.p2:addDamage(20)
+		player_toggle = game.p1
+	else
+		game.p1:addDamage(20)
+		player_toggle = game.p2
+	end
+end
 local Unittests = {
 	q = garbageMatch,
 	w = multiCombo,
@@ -260,7 +270,7 @@ local Unittests = {
 	c = testGemImage,
 	v = flagPropogateProblem,
 	b = makeAGarbage,
-	n = NOP,
+	n = maxDamage,
 	m = NOP,
 }
 

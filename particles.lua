@@ -328,7 +328,8 @@ function GarbageParticles.generate(game, gem, delay_frames)
 		game.particles:incrementCount("created", "Garbage", gem.owner)
 	end
 
-	return duration
+	delay_frames = delay_frames or 0
+	return duration + delay_frames
 end
 GarbageParticles = common.class("GarbageParticles", GarbageParticles, Pic)
 
@@ -346,13 +347,14 @@ function PopParticles:remove()
 	self.manager.allParticles.PopParticles[self.ID] = nil
 end
 
--- Takes either a gem or x, y, image
--- Can delay by delay_frames
+--[[ Mandatory game and either a gem or [x, y, image].
+	Optional: duration, delay by delay_frames --]]
 function PopParticles.generate(params)
 	local manager = params.game.particles
 	local x = params.x or params.gem.x 
 	local y = params.y or params.gem.y
 	local img = params.image or image.lookup.pop_particle[params.gem.color]
+	local duration = params.duration or 30
 
 	local p = common.instance(PopParticles, {manager = manager, x = x, y = y, image = img})
 
@@ -362,7 +364,8 @@ function PopParticles.generate(params)
 	 	p:change{duration = 0, transparency = 255}
 	end
 
-	p:change{duration = 30, transparency = 0, scaling = 4, exit = true}
+	p:change{duration = duration, transparency = 0, scaling = 4, exit = true}
+	return duration
 end
 
 --[[The same animation but in reverse. Used for garbage particle
@@ -421,7 +424,7 @@ function ExplodingGem.generate(params)
 	local fade_frames = params.fade_frames or game.GEM_FADE_FRAMES
 
 	local p = common.instance(ExplodingGem, {manager = game.particles, gem = gem})
-
+	p.transparency = 0
 	if params.delay_frames then p:wait(params.delay_frames) end
 
 	if params.shake then
@@ -456,6 +459,7 @@ function ExplodingGem.generateReverseExplode(params)
 	end	
 
 	p:change{duration = duration, transparency = 0, exit = true}
+	return duration
 end
 
 ExplodingGem = common.class("ExplodingGem", ExplodingGem, Pic)
@@ -473,7 +477,7 @@ function ExplodingPlatform:remove()
 	self.manager.allParticles.ExplodingPlatform[self.ID] = nil
 end
 
-function ExplodingPlatform.generate(game, platform)
+function ExplodingPlatform.generate(game, platform, delay_frames)
 	local x, y = platform.x, platform.y
 	local todraw = image.UI.starpiece
 	local duration = game.EXPLODING_PLATFORM_FRAMES
@@ -489,6 +493,13 @@ function ExplodingPlatform.generate(game, platform)
 	for i = 1, #todraw do
 		local p = common.instance(ExplodingPlatform, game.particles, x, y, todraw[i])
 		p.transparency = 510
+
+		if delay_frames then
+			p:change{transparency = 0}
+		 	p:wait(delay_frames)
+		 	p:change{duration = 0, transparency = 510}
+		end
+
 		local function y_func()
 			return y + p.t * moves[i].y + p.t^2 * height
 		end
@@ -646,27 +657,34 @@ function Dust.generateFountain(game, gem, n)
  	end
 end
 
--- called when a gem is destroyed (usually through a match)
-function Dust.generateBigFountain(game, gem, n, delay_frames)
-	local x, y = gem.x, gem.y
-	local duration = 30
-	local rotation = 0.5
- 	for i = 1, n do
- 		local todraw = image.lookup.dust.small(gem.color)
+--[[ called when a gem is destroyed (usually through a match)
+	mandatory: game, either gem or [x, y, color]. [x, y, color] takes priority
+	optional: num (#particles, default 24), duration (default 30), delay_frames
+--]]
+function Dust.generateBigFountain(params)
+	local game = params.game
+	local num = params.num or 24
+	local x = params.x or params.gem.x
+	local y = params.y or params.gem.y
+	local img = image.lookup.dust.small(params.color or params.gem.color)
+	local duration = params.duration or 30
+	local rotation = duration / 60
+
+ 	for i = 1, num do
 	 	local p_type = (i % 2 == 1) and "Dust" or "OverDust"
 	 	local x_vel = (math.random() - 0.5) * 0.4 * game.stage.width
 	 	local y_vel = (math.random() - 0.75) * 0.52 * game.stage.height
 	 	local acc = 0.2 * game.stage.height
 
- 		local p = common.instance(Dust, game.particles, gem.x, gem.y, todraw, p_type)
+ 		local p = common.instance(Dust, game.particles, x, y, img, p_type)
  		local x1 = x + x_vel
  		local x2 = x + x_vel * 1.2
  		local y_func = function() return y + p.t * y_vel + p.t^2 * acc end
  		local y_func2 = function() return y + y_vel * (1 + p.t * 0.5) + acc * (1 + p.t * 0.5)^2 end
 
-		if delay_frames then
+		if params.delay_frames then
 			p:change{transparency = 0}
-		 	p:wait(delay_frames)
+		 	p:wait(params.delay_frames)
 		 	p:change{duration = 0, transparency = 255}
 		end
 
@@ -687,9 +705,9 @@ end
 --]]
 function Dust.generateStarFountain(params)
 	local game, gem, num = params.game, params.gem, params.num or 24
-	local x = params.x or params.gem.x
-	local y = params.y or params.gem.y
-	local color = params.color or params.gem.color
+	local x = params.x or gem.x
+	local y = params.y or gem.y
+	local color = params.color or gem.color
 	local duration = 120
 	local rotation = 0.5
 	local x_speed_mult = params.fast and 2 or 1
@@ -751,6 +769,35 @@ function Dust.generatePlatformSpin(game, x, y, speed)
 	p:change{duration = duration, rotation = rotation, x = x + x_vel, y = y_func, transparency = 0, exit = true}
 end
 
+--[[ The circular particles on garbage creation
+	mandatory: game, either gem or [x, y, color]. [x, y, color] takes priority
+	optional: num (number of particles), duration, delay_frames
+--]]
+function Dust.generateGarbageCircle(params)
+	local game = params.game
+	local num = params.num or 12
+	local x_dest = params.x or params.gem.x
+	local y_dest = params.y or params.gem.y
+	local img = image.lookup.dust.star(params.color or params.gem.color)
+	local distance = game.stage.gem_width * 1.5
+	local fade_in_duration = 10
+	local duration = (params.duration or game.GEM_EXPLODE_FRAMES) - fade_in_duration
+	local rotation = duration / 60
+	local p_type = "OverDust"
+
+ 	for i = 1, num do
+ 		local angle = math.random(math.pi * 2)
+ 		local x_start = distance * math.cos(angle) + x_dest
+ 		local y_start = distance * math.sin(angle) + y_dest
+
+ 		local p = common.instance(Dust, game.particles, x_start, y_start, img, p_type)
+		p.transparency = 0
+		if params.delay_frames then p:wait(params.delay_frames) end
+		p:change{duration = fade_in_duration, transparency = 255}
+ 		p:change{duration = duration, rotation = rotation, x = x_dest,
+ 			y = y_dest, easing = "inCubic", exit = true}
+ 	end
+end
 Dust = common.class("Dust", Dust, Pic)
 
 -------------------------------------------------------------------------------

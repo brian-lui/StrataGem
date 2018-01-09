@@ -2,7 +2,7 @@ local love = _G.love
 --[[
 Each AI is assigned to a player on creation, replacing user input.
 
-The AI follows the following lifecycle, called in PhaseManager and elsewhere.
+The AI follows the following lifecycle, called in Phase and elsewhere.
 
 ai:evaluateActions()	Determines what action to take this turn
 ai:queueAction(func, args)	Sets the currently-queued action for the ai

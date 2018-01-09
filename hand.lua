@@ -61,36 +61,6 @@ function Hand:getx(y)
 	return start_x + additional * sign
 end
 
---[[This creates the animation for the gems falling off platform, and particles
-	arriving at the bottom of basin. Does NOT create the animation for the
-	gems being formed; those are created in grid:addBottomRow(). --]]
-function Hand:createGarbageAnimation(pos)
-	local game = self.game
-	local grid = game.grid
-	local particles = game.particles
-
-	local explode_frames = game.PLATFORM_FALL_EXPLODE_FRAMES
-	local fade_frames = game.PLATFORM_FALL_FADE_FRAMES
-
-	local arrival_frame -- when the garbage particles arrive at bottom
-
-	for i = 1, #self[pos].piece.gems do
-		local gem = self[pos].piece.gems[i]
-		gem.owner = self.owner.player_num
-
-		particles.explodingGem.generate{game = game, gem = gem,	shake = true,
-			explode_frames = explode_frames, fade_frames = fade_frames}
-		particles.gemImage.generate{game = game, gem = gem, shake = true,
-			duration = explode_frames}
-		particles.popParticles.generate{game = game, gem = gem, delay_frames = explode_frames}
-		particles.dust.generateBigFountain(game, gem, 24, explode_frames)
-		arrival_frame = particles.garbageParticles.generate(game, gem, explode_frames)
-		game.queue:add(explode_frames, game.ui.screenshake, game.ui, 2)
-	end
-
-	self[pos].piece:breakUp()
-end
-
 -- moves a piece from location to location, as integers
 function Hand:movePiece(start_pos, end_pos)
 	local game = self.game
@@ -141,7 +111,7 @@ function Hand:movePlatform(start_pos, end_pos)
 	self[end_pos].platform.hand_idx = end_pos
 	self[start_pos].platform = nil
 
-	self:destroyPlatform(0, true)
+	if self[0].platform then self:destroyPlatform(0, true) end
 end
 
 -- moves a piece from the hand to the grid.
@@ -201,31 +171,70 @@ function Hand:clearDamage()
 	self.turn_start_damage = self.damage
 end
 
-function Hand:destroyPlatform(num, skip_animations)
+--[[This creates the animation for the gems falling off platform, and particles
+	arriving at the bottom of basin. Does NOT create the animation for the
+	gems being formed; those are created in grid:addBottomRow(). --]]
+function Hand:createGarbageAnimation(pos, delay_frames)
+	delay_frames = delay_frames or 0
 	local game = self.game
+	local grid = game.grid
+	local particles = game.particles
+
+	local explode_frames = game.PLATFORM_FALL_EXPLODE_FRAMES + delay_frames
+	local fade_frames = game.PLATFORM_FALL_FADE_FRAMES
+
+	local arrival_frame -- when the garbage particles arrive at bottom
+
+	for i = 1, #self[pos].piece.gems do
+		local gem = self[pos].piece.gems[i]
+		gem.owner = self.owner.player_num
+
+		particles.explodingGem.generate{game = game, gem = gem,	shake = true,
+			explode_frames = game.PLATFORM_FALL_EXPLODE_FRAMES,
+			fade_frames = fade_frames, delay_frames = delay_frames}
+		particles.gemImage.generate{game = game, gem = gem, shake = true,
+			duration = explode_frames}
+		particles.popParticles.generate{game = game, gem = gem, delay_frames = explode_frames}
+		particles.dust.generateBigFountain{game = game, gem = gem, delay_frames = explode_frames}
+		arrival_frame = particles.garbageParticles.generate(game, gem, explode_frames)
+		game.queue:add(explode_frames, game.ui.screenshake, game.ui, 2)
+	end
+
+	self[pos].piece:breakUp()
+	return arrival_frame
+end
+
+function Hand:destroyPlatform(pos, skip_animations, delay_frames)
+	delay_frames = delay_frames or 0
+	local garbage_delay = delay_frames + 15
+	local game = self.game
+	local arrival_frame
 	if not skip_animations then
-		if self[num].platform then
-			game.sound:newSFX("sfx_starbreak")
-			game.particles.explodingPlatform.generate(game, self[num].platform.pic)
-			if self[num].piece then
+		if self[pos].platform then
+			game.queue:add(delay_frames, game.sound.newSFX, game.sound, "sfx_starbreak")
+			game.particles.explodingPlatform.generate(game, self[pos].platform.pic, delay_frames)
+			if self[pos].piece then
 				self:updatePieceGems()
-				self:createGarbageAnimation(num)
+				arrival_frame = self:createGarbageAnimation(pos, garbage_delay)
 				self.owner.garbage_rows_created = self.owner.garbage_rows_created + 1
 			end
 		else
 			print("tried to destroy a non-existent platform with animation!")
 		end
 	end
-	self[num].platform = nil
+	game.queue:add(delay_frames, function() self[pos].platform = nil end)
+	return arrival_frame
 end
 
 function Hand:destroyDamagedPlatforms()
 	local platform_delay = 10
-	local game = self.game
 	local to_destroy = math.min(5, math.floor(self.damage * 0.25))
+	local arrival_frames = {}
 	for i = 1, to_destroy do
-		game.queue:add((i - 1) * platform_delay, self.destroyPlatform, self, i)
+		local frame = self:destroyPlatform(i, false, (i - 1) * platform_delay)
+		if frame then arrival_frames[#arrival_frames+1] = frame end
 	end
+	return arrival_frames
 end
 
 -- Checks whether a player's pieces have stopped moving.

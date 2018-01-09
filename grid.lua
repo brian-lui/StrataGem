@@ -18,7 +18,7 @@ Rows 7-8: doublecast gem landing position.
 Rows 9-10: rush gem landing position.
 Rows 11-12: normal gem landing position.
 Rows 13-20: basin. Row 13 is at top, 20 at bottom.
-Row 21: bottom grid row where trash gems tween from.
+Row 21: bottom grid row where trash gems tween from. (now it's just a sentinel)
 --]]
 function Grid:init(game)
 	self.LOSE_ROW = 12 -- game over if a gem ends the turn in this row or above
@@ -296,7 +296,7 @@ end
 
 -- Returns a string representing the color of the gem generated
 function Grid:generate1by1(column, banned_color1, banned_color2)
-	local row = self.rows -- grid.rows is the row underneath the bottom row
+	local row = self.BOTTOM_ROW
 	local avail_colors = self:getPermittedColors(column, banned_color1, banned_color2)
 	local all_gems = {
 		{color = "red", freq = 1},
@@ -313,12 +313,13 @@ function Grid:generate1by1(column, banned_color1, banned_color2)
 		end
 	end
 	local make_color = Gem.random(self.game, legal_gems)
-	local distance = self.y[row+1] - self.y[row]
-	local speed = self.DROP_SPEED + self.DROP_MULTIPLE_SPEED * self.game.scoring_combo
-	local duration = distance / speed
 
-	self[row][column].gem = common.instance(Gem, self.game, self.x[column], self.y[row+1], make_color, true)
-	self[row][column].gem:change{x = self.x[column], y = self.y[row], duration = duration}
+	local new_gem = common.instance(Gem, self.game, self.x[column], self.y[row], make_color, true)
+	new_gem.transparency = 0
+	new_gem:wait(self.game.GEM_EXPLODE_FRAMES)
+	new_gem:change{duration = 0, transparency = 255}
+
+	self[row][column].gem = new_gem
 	return make_color
 end
 
@@ -403,14 +404,14 @@ function Grid:addBottomRow(player, skip_animation)
 			local pop_image = image.lookup.pop_particle[gem_color]
 			local explode_image = image.lookup.gem_explode[gem_color]
 
+			particles.dust.generateGarbageCircle{game = game, x = x, y = y,
+				color = gem_color}
 			particles.popParticles.generateReversePop{game = game, x = x,
 				y = y, image = pop_image}
-			particles.explodingGem.generateReverseExplode{game = game, x = x,
-				y = y, image = explode_image, shake = true}
-
-			--particles appear randomly in a circle about 48 pixel radius from where the gem will spawn.
-			--Also spray some dust
-			-- particles.dust.generateBigFountain{game = game, x = x, y = y, color = gem_color, num = 24, duration = game.GEM_EXPLODE_FRAMES}
+			local explode_time = particles.explodingGem.generateReverseExplode{
+				game = game, x = x, y = y, image = explode_image, shake = true}
+			particles.dust.generateBigFountain{game = game, x = x, y = y,
+				color = gem_color, delay_frames = explode_time}
 		end		
 	end
 
@@ -584,7 +585,7 @@ function Grid:destroyGem(params)
 		particles.superParticles.generate(game, gem, num_super_particles, game.GEM_EXPLODE_FRAMES)
 		particles.damage.generate(game, gem, game.GEM_EXPLODE_FRAMES)
 		particles.popParticles.generate{game = game, gem = gem, delay_frames = game.GEM_EXPLODE_FRAMES}
-		particles.dust.generateBigFountain(game, gem, 24, game.GEM_EXPLODE_FRAMES)	
+		particles.dust.generateBigFountain{game = game, gem = gem, delay_frames = game.GEM_EXPLODE_FRAMES}
 		for i = 1, extra_damage do particles.damage.generate(game, gem, game.GEM_EXPLODE_FRAMES) end
 	end
 
