@@ -10,6 +10,8 @@ local Particles = {}
 
 function Particles:init(game)
 	self.game = game
+	self.NEXT_TINYSTAR, self.NEXT_STAR = 10, 42
+	self.next_tinystar_frame, self.next_star_frame = 0, 0
 	self:reset()
 end
 
@@ -17,8 +19,17 @@ function Particles:update(dt)
 	for _, particle_tbl in pairs(self.allParticles) do
 		for _, particle in pairs(particle_tbl) do particle:update(dt) end
 	end
-	if self.game.frame % 10 == 0 then self.platformStar.generate(self.game, "TinyStar") end
-	if self.game.frame % 42 == 0 then self.platformStar.generate(self.game, "Star") end
+
+	-- make the platform river stars
+	if self.game.frame >= self.next_tinystar_frame then
+		self.platformStar.generate(self.game, "TinyStar") 
+		self.next_tinystar_frame = self.next_tinystar_frame + self.NEXT_TINYSTAR
+	end
+
+	if self.game.frame >= self.next_star_frame then
+		self.platformStar.generate(self.game, "Star")
+		self.next_star_frame = self.next_star_frame + self.NEXT_STAR
+	end
 end
 
 -- returns the number of particles in a specificed self.allParticles subtable.
@@ -90,6 +101,7 @@ function Particles:reset()
 	--check to see if no_rush is being animated. 0 no animation, 1 currently being animated, 2 mouse hovering over.
 	self.no_rush_check = {}
 	for i = 1, self.game.grid.columns do self.no_rush_check[i] = 0 end
+	self.next_tinystar_frame, self.next_star_frame = 0, 0
 end
 
 -------------------------------------------------------------------------------
@@ -775,18 +787,19 @@ end
 --]]
 function Dust.generateGarbageCircle(params)
 	local game = params.game
-	local num = params.num or 12
+	local num = params.num or 8
 	local x_dest = params.x or params.gem.x
 	local y_dest = params.y or params.gem.y
 	local img = image.lookup.dust.star(params.color or params.gem.color)
-	local distance = game.stage.gem_width * 1.5
+	local distance = game.stage.gem_width * (math.random() + 1)
 	local fade_in_duration = 10
 	local duration = (params.duration or game.GEM_EXPLODE_FRAMES) - fade_in_duration
 	local rotation = duration / 60
 	local p_type = "OverDust"
 
  	for i = 1, num do
- 		local angle = math.random(math.pi * 2)
+ 		local angle = math.random() * math.pi * 2
+ 		if i == 1 then print("angle", angle) end
  		local x_start = distance * math.cos(angle) + x_dest
  		local y_start = distance * math.sin(angle) + y_dest
 
