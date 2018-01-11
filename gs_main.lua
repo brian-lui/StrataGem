@@ -224,31 +224,13 @@ function gs_main:drawGems(params)
 		end
 	end
 
-	local function blockBottomGemRow()
-		local stage = self.stage
-		local grid = self.grid
-	-- stencil function to hide gems in bottom row
-	-- makes it look nicer when gems are generated and push up from the bottom
-		local x = 0.5 * (grid.x[0] + grid.x[1])
-		local y = 0.5 * (grid.y[grid.rows] + grid.y[grid.rows + 1])
-		local width = grid.x[grid.columns] - grid.x[0]
-		local height = stage.gem_width
-		love.graphics.rectangle("fill", x, y, width, height)
-	end
-
-	-- grid gems
-	love.graphics.push("all")
-		love.graphics.stencil(blockBottomGemRow, "replace", 1)
-		love.graphics.setStencilTest("equal", 0)
-		for gem, r in self.grid:gems() do
-			if self.current_phase == "Action" and r <= 6 then
-				gem:draw{RGBTable = {255, 255, 255, 192}} -- TODO: make this darkened too
-			else
-				gem:draw(params)
-			end
+	for gem, r in self.grid:gems() do
+		if self.current_phase == "Action" and r <= 6 then
+			gem:draw{RGBTable = {255, 255, 255, 192}}
+		else
+			gem:draw(params)
 		end
-		love.graphics.setStencilTest()
-	love.graphics.pop()
+	end
 
 	-- over-gem particles
 	for _, v in pairs(allParticles.GemImage) do v:draw(params) end
