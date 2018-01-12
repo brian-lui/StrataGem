@@ -26,7 +26,6 @@ function Phase:init(game)
 	self.game_is_over = false
 	self.gameover_pause = self.INIT_GAMEOVER_PAUSE
 	self.garbage_this_round = false
-	self.garbage_arrival_frames = {{}, {}} -- p1, p2
 end
 
 function Phase:intro(dt)
@@ -227,22 +226,28 @@ function Phase:platformSpinDelay(dt)
 end
 
 function Phase:destroyDamagedPlatforms(dt)
-	for player in self.game:players() do
+	local game = self.game
+	local grid = game.grid
+	local max_delay = 0
+	for player in game:players() do
 		local arrival_frames = player.hand:destroyDamagedPlatforms()
-		self.garbage_arrival_frames[player.player_num] = arrival_frames
+		for _, delay in pairs(arrival_frames) do
+			game.queue:add(delay, grid.addBottomRow, grid, player)
+			max_delay = math.max(max_delay, delay)
+			self.garbage_this_round = true
+		end
 	end
-	self.game.current_phase = "PlatformsExploding"
+
+	if self.garbage_this_round then
+		game.queue:add(max_delay, grid.setGarbageMatchFlags, grid)
+		game.p1.garbage_rows_created, game.p2.garbage_rows_created = 0, 0
+	end
+	game.current_phase = "PlatformsExploding"
 end
 
 function Phase:platformsExploding(dt)
 	local game = self.game
 	if game.particles:getNumber("ExplodingPlatform") == 0 then
-		for player in game:players() do
-			player.hand:getNewTurnPieces()
-			player.hand:clearDamage()
-			player.hand:update(dt)
-			player:resetMP()
-		end
 		game.particles:clearCount()	-- clear here so the platforms display redness/spin correctly
 		game.current_phase = "GarbageRowCreation"
 	end
@@ -255,27 +260,13 @@ function Phase:garbageRowCreation(dt)
 	for player in game:players() do player.hand:update(dt) end
 	grid:updateGravity(dt)
 
-	--[[
-	use lists of self.garbage_arrival_frames[1] and self.garbage_arrival_frames[2] for the delay in the garbage row creation below
-	pass to next phase after(max(garbage_arrival_frames) + animation time of garbageappear)
-	--]]
-	
-	if grid:isSettled() and game.particles:getNumber("GarbageParticles") == 0 then	
+	if grid:isSettled() and game.particles:getNumber("GarbageParticles") == 0 then
 		for player in game:players() do
-			for i = 1, player.garbage_rows_created do
-				local delay = (i - 1) * game.GEM_EXPLODE_FRAMES
-				game.queue:add(delay, grid.addBottomRow, grid, player)
-				self.garbage_this_round = true
-			end
+			player.hand:getNewTurnPieces()
+			player.hand:clearDamage()
+			player.hand:update(dt)
+			player:resetMP()
 		end
-		
-		if self.garbage_this_round then
-			grid:setGarbageMatchFlags()
-			game.p1.garbage_rows_created, game.p2.garbage_rows_created = 0, 0
-			self.garbage_arrival_frames = {{}, {}}
-			game.sound:newSFX("sfx_trashrow")
-		end
-
 		game.current_phase = "PlatformsMoving"
 	end
 end

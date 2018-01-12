@@ -419,6 +419,7 @@ function Grid:addBottomRow(player, skip_animation)
 		self:setAllGemOwners(player.enemy.player_num)
 	end
 
+	game.sound:newSFX("sfx_trashrow")
 	return generated_gems
 end
 

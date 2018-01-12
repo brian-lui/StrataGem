@@ -232,6 +232,7 @@ function Hand:destroyDamagedPlatforms()
 	local arrival_frames = {}
 	for i = 1, to_destroy do
 		local frame = self:destroyPlatform(i, false, (i - 1) * platform_delay)
+		--if frame then arrival_frames[#arrival_frames+1] = frame + self.game.frame end
 		if frame then arrival_frames[#arrival_frames+1] = frame end
 	end
 	return arrival_frames
