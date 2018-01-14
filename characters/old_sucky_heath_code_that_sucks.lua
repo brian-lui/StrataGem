@@ -1,19 +1,7 @@
---[[ Color: red
-Passive: Horizontal matches create a fire tile if the matched gem was the top
-most gem in that column. Fire tiles last for one turn. At the end of the turn,
-they destroy the gem below them UNLESS a gem is placed on top of them (the gem
-can come from either player). Heath owns the damage from the fire burn.
-
-Super: If Heath makes a horizontal match on the turn he activates super, it
-clears out the gems in the row above and below match. (example, a match 3 would
-clear out a 3x3 box with the matched row being the middle box. a match 4 would
-clear out a 4x3 box with the matched row being the middle box.)
-(this should leave fire also) --]]
-
 local love = _G.love
+
 local common = require "class.commons"
 local image = require "image"
-local Pic = require 'pic'
 local Character = require "character"
 
 local Heath = {}
@@ -99,7 +87,7 @@ function particle_effects:SmallFire(row, col, owner)
 	--[[
 		TODO: update the y-tracking:
 			get the first_empty_row, and adjust as normal
-			however, instead of moving directly to y_dest, only move at speed of grid.DROP_SPEED
+			however, instead of moving directly to y_dest, only move at speed of SPEED.DROP
 			this will make sure it moves along with the other gems, instead of instantly
 	--]]
 	--local first_empty_row = grid:getFirstEmptyRow(gem.column)
@@ -435,5 +423,4 @@ function Heath:cleanup()
 	Character.cleanup(self)
 end
 
-Heath.particle_effects = particle_effects -- haha
 return common.class("Heath", Heath, Character)

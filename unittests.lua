@@ -245,6 +245,18 @@ local function maxDamage(game)
 		player_toggle = game.p2
 	end
 end
+
+local function makeHeathFire(game)
+	local h = game.p1
+	if h.character_id == "Heath" then
+		local fire_object = h.particle_effects.SmallFire(h, 8, 3, h)
+		local p = common.instance(game.particles.charEffects, game.particles, fire_object)
+
+	else
+		print("p1 is not heath")
+	end
+end
+
 local Unittests = {
 	q = garbageMatch,
 	w = multiCombo,
@@ -271,7 +283,7 @@ local Unittests = {
 	v = flagPropogateProblem,
 	b = makeAGarbage,
 	n = maxDamage,
-	m = NOP,
+	m = makeHeathFire,
 }
 
 return common.class("Unittests", Unittests)
