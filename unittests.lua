@@ -249,9 +249,7 @@ end
 local function makeHeathFire(game)
 	local h = game.p1
 	if h.character_id == "Heath" then
-		local fire_object = h.particle_effects.SmallFire(h, 8, 3, h)
-		local p = common.instance(game.particles.charEffects, game.particles, fire_object)
-
+		h.particles.smallFire.generateSmallFire(game, h, 2)
 	else
 		print("p1 is not heath")
 	end
