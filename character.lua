@@ -116,6 +116,9 @@ end
 function Character:actionPhase(dt)
 end
 
+function Character:beforeGravity()
+	
+end
 -- returns a list of {frames, func, args to execute}
 function Character:afterGravity()
 	return {}
@@ -135,6 +138,8 @@ end
 
 function Character:cleanup()
 	self:resetMP()
+	self.supering = false
+	self.super_this_turn = false
 end
 
 function Character:resetMP()

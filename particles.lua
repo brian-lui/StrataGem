@@ -799,7 +799,6 @@ function Dust.generateGarbageCircle(params)
 
  	for i = 1, num do
  		local angle = math.random() * math.pi * 2
- 		if i == 1 then print("angle", angle) end
  		local x_start = distance * math.cos(angle) + x_dest
  		local y_start = distance * math.sin(angle) + y_dest
 

@@ -132,6 +132,7 @@ local function shuffleHands(game)
 				location = hand[i],
 				hand_idx = i,
 				owner = hand.owner,
+				owner_num = hand.owner.player_num,
 				x = hand[i].x,
 				y = hand[i].y,
 			})
@@ -249,7 +250,16 @@ end
 local function makeHeathFire(game)
 	local h = game.p1
 	if h.character_id == "Heath" then
-		h.particles.smallFire.generateSmallFire(game, h, 2)
+		h.particle_effects.smallFire.generateSmallFire(game, h, 2)
+	else
+		print("p1 is not heath")
+	end
+end
+
+local function makeHeathBoom(game)
+	local h = game.p1
+	if h.character_id == "Heath" then
+		h.particle_effects.boomEffect.generateBoomEffect(game, h, 15, 2)
 	else
 		print("p1 is not heath")
 	end
@@ -281,7 +291,7 @@ local Unittests = {
 	v = flagPropogateProblem,
 	b = makeAGarbage,
 	n = maxDamage,
-	m = makeHeathFire,
+	m = makeHeathBoom,
 }
 
 return common.class("Unittests", Unittests)

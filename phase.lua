@@ -105,8 +105,13 @@ function Phase:superFreeze(dt)
 		table.remove(self.super_play, 1)
 	else
 		self.super_play = nil
-		self.game.current_phase = "GemTween"
+		self.game.current_phase = "BeforeGravity"
 	end
+end
+
+function Phase:beforeGravity(dt)
+	for player in self.game:players() do player:beforeGravity() end
+	self.game.current_phase = "GemTween"
 end
 
 function Phase:applyGemTween(dt)
@@ -362,6 +367,7 @@ Phase.lookup = {
 	Action = Phase.action,
 	Resolve = Phase.resolve,
 	SuperFreeze = Phase.superFreeze,
+	BeforeGravity = Phase.beforeGravity,
 	GemTween = Phase.applyGemTween,
 	Gravity = Phase.applyGravity,
 	GetMatchedGems = Phase.getMatchedGems,

@@ -482,6 +482,25 @@ function Grid:getPendingGems(player)
 	return ret
 end
 
+function Grid:getPendingGemsByNum(player_num)
+	local ret = {}
+	local col_start, col_end
+	if player_num == 1 then
+		col_start, col_end = 1, 4
+	elseif player_num == 2 then
+		col_start, col_end = 5, 8
+	elseif player_num == 3 then
+		col_start, col_end = 1, 8
+	end
+	for gem, r, c in self:gems() do
+		if r <= 6 and c >= col_start and gem.column <= col_end then
+			ret[#ret+1] = gem
+		end
+	end
+	return ret
+end
+
+
 function Grid:getIDs()
 -- returns the ID, column, row of all gems in the tub
 	local ret = {}
@@ -556,6 +575,7 @@ end
 -- removes a gem from the grid, and plays all of the associated animations
 --[[ TODO: Takes a table of:
 	gem: gem to destroy
+	credit_to: optional player_num (to deal damage to player_num's opponent)
 	extra_damage: how much extra damage to do
 	super_meter: if false, don't build super meter
 	damage: if false, don't deal damage
@@ -565,8 +585,10 @@ function Grid:destroyGem(params)
 	local extra_damage = params.extra_damage or 0
 	local game = self.game
 	local particles = game.particles
-	local player = game:playerByIndex(gem.owner)
 
+	if params.credit_to then gem:setOwner(params.credit_to) end
+
+	local player = game:playerByIndex(gem.owner)
 	if player == nil then -- grey gem
 		local sfx = game.sound:newSFX("sfx_gembreakgrey")
 		sfx:setPosition((gem.column - 4.5) * 0.02, 0, 0)

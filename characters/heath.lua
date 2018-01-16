@@ -10,6 +10,7 @@ clear out a 3x3 box with the matched row being the middle box. a match 4 would
 clear out a 4x3 box with the matched row being the middle box.)
 (this should leave fire also) --]]
 
+-- *This part is the setup part where we initialize the working variables and images
 local love = _G.love
 local common = require "class.commons"
 local image = require "image"
@@ -17,14 +18,14 @@ local Pic = require 'pic'
 local Character = require "character"
 
 local Heath = {}
+Heath.character_id = "Heath"
+Heath.meter_gain = {red = 8, blue = 4, green = 4, yellow = 4}
 
 Heath.full_size_image = love.graphics.newImage('images/characters/heath.png')
 Heath.small_image = love.graphics.newImage('images/characters/heathsmall.png')
 Heath.action_image = love.graphics.newImage('images/characters/heathaction.png')
 Heath.shadow_image = love.graphics.newImage('images/characters/heathshadow.png')
 
-Heath.character_id = "Heath"
-Heath.meter_gain = {red = 8, blue = 4, green = 4, yellow = 4}
 Heath.super_images = {
 	word = image.UI.super.red_word,
 	empty = image.UI.super.red_empty,
@@ -40,19 +41,24 @@ Heath.burst_images = {
 }
 
 Heath.special_images = {
-	fire = {love.graphics.newImage('images/specials/heath/fire1.png'),
+	fire = {
+		love.graphics.newImage('images/specials/heath/fire1.png'),
 		love.graphics.newImage('images/specials/heath/fire2.png'),
 		love.graphics.newImage('images/specials/heath/fire3.png'),
 	},
 	fire_particle = love.graphics.newImage('images/specials/heath/fireparticle.png'),
-	boom1 = love.graphics.newImage('images/specials/heath/explode1.png'),
-	boom2 = love.graphics.newImage('images/specials/heath/explode2.png'),
-	boom3 = love.graphics.newImage('images/specials/heath/explode3.png'),
-	boom4 = love.graphics.newImage('images/specials/heath/explode4.png'),
-	boom5 = love.graphics.newImage('images/specials/heath/explode5.png'),
-	boomparticle1 = love.graphics.newImage('images/specials/heath/boomparticle1.png'),
-	boomparticle2 = love.graphics.newImage('images/specials/heath/boomparticle2.png'),
-	boomparticle3 = love.graphics.newImage('images/specials/heath/boomparticle3.png'),
+	boom = {
+		love.graphics.newImage('images/specials/heath/explode1.png'),
+		love.graphics.newImage('images/specials/heath/explode2.png'),
+		love.graphics.newImage('images/specials/heath/explode3.png'),
+		love.graphics.newImage('images/specials/heath/explode4.png'),
+		love.graphics.newImage('images/specials/heath/explode5.png'),
+	},
+	boom_particle = {
+		love.graphics.newImage('images/specials/heath/boomparticle1.png'),
+		love.graphics.newImage('images/specials/heath/boomparticle2.png'),
+		love.graphics.newImage('images/specials/heath/boomparticle3.png'),
+	},
 }
 
 Heath.sounds = {
@@ -61,12 +67,16 @@ Heath.sounds = {
 
 function Heath:init(...)
 	Character.init(self, ...)
-	self.fire_columns = {}
+
+	-- these columns are stores as booleans for columns 1-8
 	self.pending_fires = {} -- fires for horizontal matches generated at t0
 	self.ready_fires = {} -- fires at t1, ready to burn
-	self.super_clears = {}
+	self.pending_gem_cols = {} -- pending gems, for extinguishing of ready_fires
 end
 
+-- *This part creates the animations for the character's specials and supers
+-- The templating is the same as particles.lua, but the init and remove refers
+-- to manager.allParticels.CharEffects
 -------------------------------------------------------------------------------
 local SmallFire = {}
 function SmallFire:init(manager, tbl)
@@ -81,7 +91,7 @@ end
 
 function SmallFire:updateYPos()
 	local grid = self.game.grid
-	local row = grid:getFirstEmptyRow(col)
+	local row = grid:getFirstEmptyRow(self.col)
 	local new_y = grid.y[row]
 	if self.y ~= new_y and self:isStationary() then
 		local duration = math.abs(self.y - new_y) / grid.DROP_SPEED
@@ -119,7 +129,8 @@ function SmallFire.generateSmallFire(game, owner, col)
 
 	local params = {
 		x = grid.x[col],
-		y = start_y, 
+		y = start_y,
+		col = col,
 		scaling = 0,
 		image = Heath.special_images.fire[1],
 		turns_remaining = 1,
@@ -149,199 +160,140 @@ function BoomEffect:remove()
 	self.manager.allParticles.CharEffects[self.ID] = nil
 end
 
-function BoomEffect.generateBoomParticle(game, boom)
+function BoomEffect._generateBoomParticle(game, boom, delay_frames)
+	local stage = game.stage
+	local particle_idx = math.random(1, 3)
+	local params = {
+		x = boom.x,
+		y = boom.y,
+		image = Heath.special_images.boom_particle[particle_idx],
+		owner = boom.owner,
+		player_num = boom.player_num,
+		name = "HeathBoomParticle",
+	}
+
+	local p = common.instance(BoomEffect, game.particles, params)
+
+	local x_vel = stage.gem_width * (math.random() - 0.5) * 4
+	local y_vel = stage.gem_height * - (math.random() * 0.5 + 0.5) * 4
+	local gravity = stage.gem_height * 3
+	local x_dest1 = boom.x + 1 * x_vel
+	local x_dest2 = boom.x + 1.5 * x_vel
+	local y_func1 = function() return boom.y + p.t * y_vel + p.t^2 * gravity end
+	local y_func2 = function() return boom.y + (p.t + 1) * y_vel + (p.t + 1)^2 * gravity end
+	local rotation_func = function()
+		return math.atan2(y_vel + gravity * 1, x_vel) - (math.pi * 0.5)
+	end
+
+	if delay_frames then
+		p.transparency = 0
+		p:wait(delay_frames)
+		p:change{duration = 0, transparency = 255}
+	end
+
+	p:change{duration = 60, x = x_dest1, y = y_func1, rotation = rotation_func}
+	p:change{duration = 30, x = x_dest2, y = y_func2, rotation = rotation_func,
+		transparency = 0, exit = true}
 end
 
 function BoomEffect.generateBoomEffect(game, owner, row, col)
+	local particles = game.particles
+	local grid = game.grid
+
+	local function update_func(_self, dt)
+		Pic.update(_self, dt)
+		_self.elapsed_frames = _self.elapsed_frames + 1
+		if _self.elapsed_frames >= 6 then -- loop through images
+			if _self.current_image_idx < 5 then
+				_self.current_image_idx = _self.current_image_idx + 1
+				_self:newImage(Heath.special_images.boom[_self.current_image_idx])	
+				_self.elapsed_frames = 0
+			else
+				_self:remove()
+			end
+		end
+	end
+
+	local params = {
+		x = grid.x[col],
+		y = grid.y[row], 
+		image = Heath.special_images.boom[1],
+		current_image_idx = 1,
+		elapsed_frames = 0,
+		update = update_func,
+		owner = owner,
+		player_num = owner.player_num,
+		name = "HeathBoom",
+	}
+
+	local p = common.instance(BoomEffect, game.particles, params)
+	for i = 1, 20 do
+		Heath.particles.boomEffect._generateBoomParticle(game, p)
+		Heath.particles.boomEffect._generateBoomParticle(game, p, 5)
+		Heath.particles.boomEffect._generateBoomParticle(game, p, 10)
+	end
 end
 
 BoomEffect = common.class("BoomEffect", BoomEffect, Pic)
 -------------------------------------------------------------------------------
-
-
-Heath.particles = {
+Heath.particle_effects = {
 	smallFire = SmallFire,
 	boomEffect = BoomEffect,
 }
-
 -------------------------------------------------------------------------------
 
-local particle_effects = {}
-function particle_effects:BoomParticle(boom)
-	local stage = self.game.stage
+-- *The follow code is executed from phase.lua
+-- character.lua has a complete list of all the timings. Can omit unneeded ones
+-- we can add more timing phases if needed
 
-	local x_vel = stage.gem_width * (math.random() - 0.5)
-	local y_vel = stage.gem_height * -(math.random()*0.5 + 0.5)
-	local gravity = stage.gem_height
-	local update_func = function(_self, dt)
-		_self.t = _self.t + dt * 2
-		_self.x = boom.x + (_self.t * x_vel)
-		_self.y = boom.y + (_self.t * y_vel) + (_self.t^2 * gravity * 0.5)
-		local angle = math.atan2(y_vel + gravity * _self.t, x_vel)
-		_self.rotation = angle - math.pi * 0.5
-		if _self.y > stage.height * 1.1 then _self:remove() end
+-- get the list of pending gem columns for extinguishing in afterGravity
+function Heath:beforeGravity()
+	local pending_gems = self.game.grid:getPendingGemsByNum(3)
+	self.pending_gem_cols = {}
+	for _, gem in ipairs(pending_gems) do
+		self.pending_gem_cols[gem.column] = true
 	end
-
-	return {
-		x = boom.x,
-		y = boom.y,
-		rotation = 0,
-		image = Heath.special_images["boomparticle"..math.random(1, 3)],
-		t = 0,
-		update = update_func,
-		owner = boom.owner,
-		name = "HeathBoomParticle",
-	}
 end
 
-function particle_effects:Boom(row, col, owner)
-	local game = self.game
-	local particles = game.particles
-	local stage = game.stage
-	local grid = game.grid
-
-	local draw_t, draw_img = 0, 1
-	local draw_order = {1, 2, 3, 4, 5}
-	local already_boom_particled = false
-	local update_func = function(_self, dt)
-		_self.t, draw_t = _self.t + dt, draw_t + dt
-		if draw_t >= 0.1 then
-			draw_t = draw_t - 0.1
-			draw_img = draw_img + 1
-			if draw_img > #draw_order then
-				_self:remove()
-			else
-				_self:newImage(Heath.special_images["boom"..draw_order[draw_img] ])
-			end
-		end
-		if _self.t >= 0.2 and not already_boom_particled then
-			for _ = 1, 10 do
-				local boom_particle = particle_effects.BoomParticle(_self)
-				common.instance(particles.charEffects, boom_particle)
-			end
-			already_boom_particled = true
-		end
-	end
-
-	return {
-		x = grid.x[col],
-		y = grid.y[row],
-		rotation = math.pi * 2 / math.random(4),
-		image = Heath.special_images.boom1,
-		t = 0,
-		update = update_func,
-		owner = owner,
-		name = "HeathBoom",
-	}
-end
-
-function Heath:actionPhase(dt)
-	local game = self.game
-	-- Set rush cost to 0 if a gem is over a fire.
-	if game.active_piece then
-		local midline, on_left = game.active_piece:isOnMidline()
-		local shift = 0
-		if midline then shift = on_left and -1 or 1 end
-		local legal = game.active_piece:isDropLegal(shift)
-		if legal then
-			local cols = game.active_piece:getColumns(shift)
-			local free_rush = false
-			for i = 1, #cols do
-				for fire_col, _ in pairs(self.fire_columns) do
-					if cols[i] == fire_col then
-						free_rush = true
-					end
+-- extinguish ready_fires where a gem landed on them
+function Heath:afterGravity()
+	for i = 1, 8 do
+		if self.pending_gem_cols[i] then
+			self.ready_fires[i] = false
+			for _, particle in pairs(self.game.particles.allParticles.CharEffects) do
+				if particle.player_num == self.player_num and particle.name == "HeathFire" and
+				particle.turns_remaining == 0 and particle:isStationary() then
+					particle:fadeOut()
 				end
 			end
-			if free_rush then
-				self.current_rush_cost = 0
-			else
-				self.current_rush_cost = self.RUSH_COST
-			end
 		end
-	else
-		self.current_rush_cost = self.RUSH_COST
 	end
 end
 
--- generate ouchies for enemy gems landing on fire
-function Heath:afterGravity()
-	local particles = self.game.particles
-
-	if self.game.scoring_combo > 0 then -- only check on the first round of gravity
-		return {}
-	end
-	local own_tbl = {self.game.p1, self.game.p2}
-	local gem_table = {} -- all enemy gems played this turn
-	local ret = {}
-	for i = 1, #self.enemy.played_pieces do
-		for _, gem in pairs(self.enemy.played_pieces[i]) do
-			gem_table[#gem_table+1] = gem
-		end
-	end
-	for i = 1, #self.played_pieces do -- need to consider own gems as well for bottom
-		for _, gem in pairs(self.played_pieces[i]) do
-			gem_table[#gem_table+1] = gem
-		end
-	end
-
-	local bottom_gems = {} -- only consider the bottom gem
-	for i = 1, #gem_table do
-		local gem = gem_table[i]
-		if not bottom_gems[gem.column] then
-			bottom_gems[gem.column] = gem
-		elseif bottom_gems[gem.column].row < gem.row then -- existing row is higher up
-			bottom_gems[gem.column] = gem
-		end
-	end
-
-	local ouches = 0
-	local ouch_gems = {}
-	for col, _ in pairs(self.fire_columns) do
-		for _, gem in pairs(bottom_gems) do
-			if gem.column == col and gem.color ~= "red" and own_tbl[gem.owner] == self.enemy then
-				ouches = ouches + 1
-				ouch_gems[#ouch_gems+1] = gem
-			end
-		end
-	end
-	if ouches > 0 then
-		self.enemy:addDamage(ouches)
-		for i = 1, #ouch_gems do
-			particles.dust.generateBigFountain{game = self.game, gem = ouch_gems[i], num = 120} -- placeholder animation
-			ret[#ret+1] = {1, particles.dust.generateBigFountain, {game = self.game, gem = ouch_gems[i], num = 120}}
-		end
-	end
-	return ret
-end
-
--- Make fire for horizontal matches
--- Super-clear if super was active
+-- takes the matches made this round as an argument
 function Heath:beforeMatch(gem_table)
 	local grid = self.game.grid
 
-	local own_tbl = {self.game.p1, self.game.p2}
-
 	-- store horizontal fire locations, used in aftermatch phase
 	for _, gem in pairs(gem_table) do
-		local owned = own_tbl[gem.owner] == self
 		local top_gem = gem.row-1 == grid:getFirstEmptyRow(gem.column)
-		if owned and gem.horizontal and top_gem then
-			self.pending_fires[#self.pending_fires+1] = gem.column
+		if self.player_num == gem.owner and gem.horizontal and top_gem then
+			self.pending_fires[gem.column] = true
 		end
 	end
 
 	-- super
-	if self.supering then
+	if self.supering and game.scoring_combo == 1 then
+		local super_clears = {}
 		self.super_this_turn = true
 		for _, gem in pairs(gem_table) do
-			local owned = own_tbl[gem.owner] == self
-			if owned and gem.horizontal then
-				self.super_clears[#self.super_clears+1] = gem
+			if self.player_num == gem.owner and gem.horizontal then
+				super_clears[#super_clears+1] = gem
 			end
 		end
 		--[[
 		-- generate match exploding gems for super clears
+		-- destroy the super clear gems too
 		for _, gem in ipairs(self.super_clears) do
 			local r, c = gem.row, gem.column
 			if grid[r-1][c].gem then
@@ -356,50 +308,20 @@ function Heath:beforeMatch(gem_table)
 end
 
 
--- process the super_clears list
 -- TODO: the piece the opponent played this turn is incorrectly counted as belong to him,
 -- even if it didn't participate in a match.
-
 function Heath:afterMatch(gem_table)
-	local game = self.game
-	local particles = game.particles
-	local grid = game.grid
-
 	-- create animation particles for horizontal match fires
-	for _, col in ipairs(self.pending_fires) do
-		self.particles.smallFire.generateSmallFire(self.game, self, col)
-	end
-
-	if self.supering and game.scoring_combo == 1 then	-- don't super on followups
-		local damage_to_add = 0 -- add it all at the end so it doesn't interfere with particles
-
-		local function processGemGamestate(gem)
-			gem:addOwner(self)
-			if gem.owner ~= 3 then
-				damage_to_add = damage_to_add + 1
-				particles.damage.generate(game, gem)
-				grid:destroyGem{gem = gem}
-			end
+	for i = 1, 8 do
+		if self.pending_fires[i] then
+			self.particle_effects.smallFire.generateSmallFire(self.game, self, i)
 		end
-
-		grid:updateGrid()
-		for _, v in ipairs(self.super_clears) do
-			local r, c = v.row, v.column
-			if grid[r-1][c].gem then
-				processGemGamestate(grid[r-1][c].gem)
-			end
-			if grid[r+1][c].gem then
-				processGemGamestate(grid[r+1][c].gem)
-			end
-		end
-		self.enemy:addDamage(damage_to_add)
 	end
 end
 
 -- take away super meter, make fires
 function Heath:afterAllMatches()
-	local particles = self.game.particles
-
+	local grid = self.game.grid
 	-- super
 	if self.supering then
 		self.mp = 0
@@ -408,31 +330,30 @@ function Heath:afterAllMatches()
 	end
 
 	-- activate horizontal match fires
-	for _, col in ipairs(self.ready_fires) do
-		print("this fire makes ouch!", col)
+	for i = 1, 8 do
+		if self.ready_fires[i] then
+			local row = grid:getFirstEmptyRow(i) + 1
+			if grid[row][i].gem then
+				grid:destroyGem{gem = grid[row][i].gem, credit_to = self.player_num}
+			end
+		end
 	end
-
-	self.ready_fires = self.pending_fires
-	self.pending_fires = {}
+	self.ready_fires = {}
 end
 
 function Heath:cleanup()
 	-- particle update
 	for _, particle in pairs(self.game.particles.allParticles.CharEffects) do
 		if particle.player_num == self.player_num and particle.name == "HeathFire" then
+			particle:updateYPos()
 			particle:countdown()
 		end
 	end
 
-	-- fire column update
-	for col, turns in pairs(self.fire_columns) do
-		self.fire_columns[col] = turns - 1
-		if self.fire_columns[col] < 0 then self.fire_columns[col] = nil end
-	end
+	-- prepare the active fire columns for next turn
+	self.ready_fires = self.pending_fires
+	self.pending_fires = {}
 
-	self.current_rush_cost, self.current_double_cost = self.RUSH_COST, self.DOUBLE_COST
-	self.supering = false
-	self.super_this_turn = false
 	Character.cleanup(self)
 end
 
