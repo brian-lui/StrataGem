@@ -72,6 +72,7 @@ function Heath:init(...)
 	self.pending_fires = {} -- fires for horizontal matches generated at t0
 	self.ready_fires = {} -- fires at t1, ready to burn
 	self.pending_gem_cols = {} -- pending gems, for extinguishing of ready_fires
+	self.generated_fires = false -- whether fire particles were generated yet
 end
 
 -- *This part creates the animations for the character's specials and supers
@@ -261,8 +262,8 @@ function Heath:afterGravity()
 		if self.pending_gem_cols[i] then
 			self.ready_fires[i] = false
 			for _, particle in pairs(self.game.particles.allParticles.CharEffects) do
-				if particle.player_num == self.player_num and particle.name == "HeathFire" and
-				particle.turns_remaining == 0 and particle:isStationary() then
+				if particle.player_num == self.player_num and particle.col == i and
+				particle.name == "HeathFire" and particle.turns_remaining == 0 then
 					particle:fadeOut()
 				end
 			end
@@ -307,15 +308,19 @@ function Heath:beforeMatch(gem_table)
 	end
 end
 
+function Heath:duringMatchAnimation()
+end
 
 -- TODO: the piece the opponent played this turn is incorrectly counted as belong to him,
 -- even if it didn't participate in a match.
 function Heath:afterMatch(gem_table)
-	-- create animation particles for horizontal match fires
-	for i = 1, 8 do
-		if self.pending_fires[i] then
-			self.particle_effects.smallFire.generateSmallFire(self.game, self, i)
+	if not self.generated_fires then
+		for i = 1, 8 do
+			if self.pending_fires[i] then
+				self.particle_effects.smallFire.generateSmallFire(self.game, self, i)
+			end
 		end
+		self.generated_fires = true
 	end
 end
 
@@ -335,10 +340,24 @@ function Heath:afterAllMatches()
 			local row = grid:getFirstEmptyRow(i) + 1
 			if grid[row][i].gem then
 				grid:destroyGem{gem = grid[row][i].gem, credit_to = self.player_num}
+				for _, particle in pairs(self.game.particles.allParticles.CharEffects) do
+					if particle.player_num == self.player_num and particle.col == i and
+					particle.name == "HeathFire" and particle.turns_remaining == 0 then
+						particle:fadeOut()
+					end
+				end
 			end
 		end
 	end
 	self.ready_fires = {}
+end
+
+function Heath:whenCreatingGarbageRow()
+	for _, particle in pairs(self.game.particles.allParticles.CharEffects) do
+		if particle.player_num == self.player_num and particle.name == "HeathFire" then
+			particle:updateYPos()
+		end
+	end
 end
 
 function Heath:cleanup()
@@ -353,6 +372,7 @@ function Heath:cleanup()
 	-- prepare the active fire columns for next turn
 	self.ready_fires = self.pending_fires
 	self.pending_fires = {}
+	self.generated_fires = false
 
 	Character.cleanup(self)
 end

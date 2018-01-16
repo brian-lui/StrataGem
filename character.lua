@@ -128,8 +128,16 @@ end
 function Character:beforeMatch(gem_table)
 end
 
+-- while matches are exploding
+function Character:duringMatchAnimation()
+end
+
 -- after each match
 function Character:afterMatch()
+end
+
+-- at garbage row creation
+function Character:whenCreatingGarbageRow()
 end
 
 -- after all matches are finished (i.e. after chain combos and so on)

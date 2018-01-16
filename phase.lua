@@ -26,6 +26,7 @@ function Phase:init(game)
 	self.game_is_over = false
 	self.gameover_pause = self.INIT_GAMEOVER_PAUSE
 	self.garbage_this_round = false
+	self.should_call_char_ability_this_phase = true
 end
 
 function Phase:intro(dt)
@@ -133,9 +134,7 @@ function Phase:applyGravity(dt)
 	for player in self.game:players() do player.hand:update(dt) end
 	if grid:isSettled() then
 		game.particles.wordEffects.clear(game.particles)
-		for player in game:players() do
-			player:afterGravity()
-		end
+		for player in game:players() do player:afterGravity() end
 		for i = 1, grid.columns do --checks if no_rush should be possible again
 			if not self.no_rush[i] then
 				if not grid[8][i].gem  then
@@ -170,11 +169,23 @@ end
 
 -- wait for gem explode animation
 function Phase:matchAnimations(dt)
-	for player in self.game:players() do player.hand:update(dt) end	
+	for player in self.game:players() do
+		player.hand:update(dt)
+		player:duringMatchAnimation(dt)
+	end	
+	
+	if self.should_call_char_ability_this_phase then
+		for player in self.game:players() do
+			player:duringMatchAnimation(dt)
+		end	
+		self.should_call_char_ability_this_phase = false
+	end
+
 	if self.game.particles:getNumber("GemImage") == 0 then
 		if self.after_match_delay == 0 then
 			self.game.current_phase = "ResolvingMatches"
 			self.after_match_delay = self.game.GEM_FADE_FRAMES
+			self.should_call_char_ability_this_phase = true
 		else
 			self.after_match_delay = self.after_match_delay - 1
 		end
@@ -197,11 +208,16 @@ end
 function Phase:resolvedMatches(dt)
 	local game = self.game
 	local grid = game.grid
+	if self.should_call_char_ability_this_phase then 
+		for player in game:players() do
+			player:afterAllMatches()
+		end
+		self.should_call_char_ability_this_phase = false
+	end
 	if game.particles:getCount("onscreen", "Damage", 1) + game.particles:getCount("onscreen", "Damage", 2) > 0 then
 		for player in game:players() do player.hand:update(dt) end
 	else	-- all damage particles finished
 		for player in game:players() do
-			player:afterAllMatches()
 			player.hand:update(dt)
 			player.place_type = "normal"
 		end
@@ -216,6 +232,7 @@ function Phase:resolvedMatches(dt)
 			end
 		end
 		game.current_phase = "PlatformSpinDelay"
+		self.should_call_char_ability_this_phase = true
 	end
 end
 
@@ -265,14 +282,21 @@ function Phase:garbageRowCreation(dt)
 	for player in game:players() do player.hand:update(dt) end
 	grid:updateGravity(dt)
 
+	if game.particles:getNumber("GarbageParticles") == 0 and self.should_call_char_ability_this_phase then
+		for player in game:players() do
+			player:whenCreatingGarbageRow()
+		end
+		self.should_call_char_ability_this_phase = false
+	end
+
 	if grid:isSettled() and game.particles:getNumber("GarbageParticles") == 0 then
 		for player in game:players() do
 			player.hand:getNewTurnPieces()
 			player.hand:clearDamage()
-			player.hand:update(dt)
 			player:resetMP()
 		end
 		game.current_phase = "PlatformsMoving"
+		self.should_call_char_ability_this_phase = true
 	end
 end
 
