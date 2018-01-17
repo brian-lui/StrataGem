@@ -211,7 +211,7 @@ function Hand:destroyPlatform(pos, skip_animations, delay_frames)
 	local arrival_frame
 	if not skip_animations then
 		if self[pos].platform then
-			game.queue:add(delay_frames, game.sound.newSFX, game.sound, "sfx_starbreak")
+			game.queue:add(delay_frames, game.sound.newSFX, game.sound, "starbreak")
 			game.particles.explodingPlatform.generate(game, self[pos].platform.pic, delay_frames)
 			if self[pos].piece then
 				self:updatePieceGems()

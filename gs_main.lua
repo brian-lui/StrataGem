@@ -97,7 +97,7 @@ function gs_main:enter()
 			image_pushed = player.super_images.empty,
 			end_x = stage.super[ID].x,
 			end_y = stage.super[ID].y,
-			pushed_sfx = "sfx_dummy",
+			pushed_sfx = "dummy",
 			action = super_function,
 		})
 		gs_main.createImage(self, {

@@ -419,7 +419,7 @@ function Grid:addBottomRow(player, skip_animation)
 		self:setAllGemOwners(player.enemy.player_num)
 	end
 
-	game.sound:newSFX("sfx_trashrow")
+	game.sound:newSFX("trashrow")
 	return generated_gems
 end
 
@@ -590,7 +590,7 @@ function Grid:destroyGem(params)
 
 	local player = game:playerByIndex(gem.owner)
 	if player == nil then -- grey gem
-		local sfx = game.sound:newSFX("sfx_gembreakgrey")
+		local sfx = game.sound:newSFX("gembreakgrey")
 		sfx:setPosition((gem.column - 4.5) * 0.02, 0, 0)
 	else
 		-- state
@@ -601,7 +601,7 @@ function Grid:destroyGem(params)
 		game.queue:add(game.GEM_EXPLODE_FRAMES, game.ui.screenshake, game.ui, 1)
 
 		-- animations
-		local soundfile_name = "sfx_gembreak" .. math.min(5, game.scoring_combo + 1)
+		local soundfile_name = "gembreak" .. math.min(5, game.scoring_combo + 1)
 		local sfx = game.sound:newSFX(soundfile_name)
 		sfx:setPosition((gem.column - 4.5) * 0.02, 0, 0)
 		local num_super_particles = player.supering and 0 or player.meter_gain[gem.color]
@@ -702,7 +702,7 @@ function Grid:animateGameOver(loser_num)
 		for col = start_col, end_col do
 			if self[row][col].gem then
 				local gem = self[row][col].gem
-				local img = image.lookup.gem_explode[gem.color .. "_grey"]
+				local img = image.lookup.grey_gem_crumble[gem.color]
 				particles.gemImage.generate{game = game, x = gem.x, y = gem.y, image = img,
 					duration = duration, delay_frames = delay}
 			end

@@ -51,7 +51,7 @@ function Timer:update(dt)
 		self.timertext.transparency = self.text_transparency(t)
 		if self.time_remaining_int < previous_time_remaining_int then
 			self.timertext:newImage(image.UI.timer[self.time_remaining_int])
-			self.game.sound:newSFX("sfx_countdown"..self.time_remaining_int)
+			self.game.sound:newSFX("countdown"..self.time_remaining_int)
 		end
 	else
 		self.timertext.transparency = 0
@@ -251,16 +251,16 @@ local function pieceLandedInStagingArea(game, gems, place_type)
 	local y = game.stage.height * 0.3
 	if place_type == "double" then
 		particles.words.generateDoublecast(game, player_num)
-		game.sound:newSFX("sfx_doublecast")
-		game.sound:newSFX("sfx_fountaindoublecast")
+		game.sound:newSFX("doublecast")
+		game.sound:newSFX("fountaindoublecast")
 		for i = 1, #gems do
 			particles.dust.generateStarFountain{game = game, color = gems[i].color,
 				x = game.stage.width * (0.5 - sign * 0.1), y = y}
 		end
 	elseif place_type == "rush" then
 		particles.words.generateRush(game, player_num)
-		game.sound:newSFX("sfx_rush")
-		game.sound:newSFX("sfx_fountainrush")
+		game.sound:newSFX("rush")
+		game.sound:newSFX("fountainrush")
 		for i = 1, #gems do
 			particles.dust.generateStarFountain{game = game, color = gems[i].color,
 				x = game.stage.width * (0.5 + sign * 0.2), y = y}

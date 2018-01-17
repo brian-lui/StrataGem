@@ -118,7 +118,7 @@ function Piece:rotate()
 	self.rotation = self.rotation - (0.5 * math.pi)
 	self._rotateTween = tween.new(1, self, {rotation = new_rotation}, 'outExpo')
 
-	self.game.sound:newSFX("sfx_gemrotate")
+	self.game.sound:newSFX("gemrotate")
 end
 -- same as rotate, but animations not shown
 function Piece:ai_rotate()

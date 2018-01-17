@@ -114,7 +114,7 @@ function SmallFire.generateSmallFire(game, owner, col)
 	local function update_func(_self, dt)
 		Pic.update(_self, dt)
 		_self.elapsed_frames = _self.elapsed_frames + 1
-		if _self.elapsed_frames >= 10 then -- loop through images
+		if _self.elapsed_frames >= 5 then -- loop through images
 			_self.current_image_idx = _self.current_image_idx % 3 + 1
 			_self:newImage(Heath.special_images.fire[_self.current_image_idx])	
 			_self.elapsed_frames = 0
@@ -150,18 +150,18 @@ end
 
 SmallFire = common.class("SmallFire", SmallFire, Pic)
 -------------------------------------------------------------------------------
-local BoomEffect = {}
-function BoomEffect:init(manager, tbl)
+local Boom = {}
+function Boom:init(manager, tbl)
 	Pic.init(self, manager.game, tbl)
 	manager.allParticles.CharEffects[ID.particle] = self
 	self.manager = manager
 end
 
-function BoomEffect:remove()
+function Boom:remove()
 	self.manager.allParticles.CharEffects[self.ID] = nil
 end
 
-function BoomEffect._generateBoomParticle(game, boom, delay_frames)
+function Boom._generateBoomParticle(game, boom, delay_frames)
 	local stage = game.stage
 	local particle_idx = math.random(1, 3)
 	local params = {
@@ -173,7 +173,7 @@ function BoomEffect._generateBoomParticle(game, boom, delay_frames)
 		name = "HeathBoomParticle",
 	}
 
-	local p = common.instance(BoomEffect, game.particles, params)
+	local p = common.instance(Boom, game.particles, params)
 
 	local x_vel = stage.gem_width * (math.random() - 0.5) * 4
 	local y_vel = stage.gem_height * - (math.random() * 0.5 + 0.5) * 4
@@ -197,7 +197,7 @@ function BoomEffect._generateBoomParticle(game, boom, delay_frames)
 		transparency = 0, exit = true}
 end
 
-function BoomEffect.generateBoomEffect(game, owner, row, col)
+function Boom.generateBoom(game, owner, row, col)
 	local particles = game.particles
 	local grid = game.grid
 
@@ -227,7 +227,7 @@ function BoomEffect.generateBoomEffect(game, owner, row, col)
 		name = "HeathBoom",
 	}
 
-	local p = common.instance(BoomEffect, game.particles, params)
+	local p = common.instance(Boom, game.particles, params)
 	for i = 1, 20 do
 		Heath.particles.boomEffect._generateBoomParticle(game, p)
 		Heath.particles.boomEffect._generateBoomParticle(game, p, 5)
@@ -235,11 +235,11 @@ function BoomEffect.generateBoomEffect(game, owner, row, col)
 	end
 end
 
-BoomEffect = common.class("BoomEffect", BoomEffect, Pic)
+Boom = common.class("Boom", Boom, Pic)
 -------------------------------------------------------------------------------
-Heath.particle_effects = {
+Heath.particle_fx = {
 	smallFire = SmallFire,
-	boomEffect = BoomEffect,
+	boomEffect = Boom,
 }
 -------------------------------------------------------------------------------
 
@@ -271,9 +271,9 @@ function Heath:afterGravity()
 	end
 end
 
--- takes the matches made this round as an argument
 function Heath:beforeMatch(gem_table)
-	local grid = self.game.grid
+	local game = self.game
+	local grid = game.grid
 
 	-- store horizontal fire locations, used in aftermatch phase
 	for _, gem in pairs(gem_table) do
@@ -285,39 +285,47 @@ function Heath:beforeMatch(gem_table)
 
 	-- super
 	if self.supering and game.scoring_combo == 1 then
-		local super_clears = {}
 		self.super_this_turn = true
+		local delay = game.GEM_EXPLODE_FRAMES
+		local function gemInGemTable(gem)
+			for _, g in pairs(gem_table) do
+				if gem == g then return true end
+			end
+			return false
+		end
+
 		for _, gem in pairs(gem_table) do
 			if self.player_num == gem.owner and gem.horizontal then
-				super_clears[#super_clears+1] = gem
+				local row, col = gem.row, gem.column
+				if grid[row - 1][col].gem then -- explode upper gem
+					game.queue:add(delay, grid.destroyGem, grid, 
+						{gem = grid[row - 1][col].gem, credit_to = self.player_num})
+				end
+				if grid[row + 1][col].gem then -- explode lower gem
+					game.queue:add(delay, grid.destroyGem, grid, 
+						{gem = grid[row + 1][col].gem, credit_to = self.player_num})
+				end
+
+				-- create boom particle if it's a middle gem
+				if grid[row][col - 1].gem and grid[row][col + 1].gem then
+					local left_gem = grid[row][col - 1].gem
+					local right_gem = grid[row][col + 1].gem
+					if left_gem.horizontal and right_gem.horizontal and
+					gemInGemTable(left_gem) and gemInGemTable(right_gem) then
+						game.queue:add(delay, self.particle_fx.boomEffect.generateBoom,
+							self.game, self, row, col)
+					end
+				end
 			end
 		end
-		--[[
-		-- generate match exploding gems for super clears
-		-- destroy the super clear gems too
-		for _, gem in ipairs(self.super_clears) do
-			local r, c = gem.row, gem.column
-			if grid[r-1][c].gem then
-				grid:generateExplodingGem(grid[r-1][c].gem)
-			end
-			if grid[r+1][c].gem then
-				grid:generateExplodingGem(grid[r+1][c].gem)
-			end
-		end
-		--]]
 	end
 end
 
-function Heath:duringMatchAnimation()
-end
-
--- TODO: the piece the opponent played this turn is incorrectly counted as belong to him,
--- even if it didn't participate in a match.
 function Heath:afterMatch(gem_table)
-	if not self.generated_fires then
+	if not self.generated_fires then -- only activate this once per turn
 		for i = 1, 8 do
 			if self.pending_fires[i] then
-				self.particle_effects.smallFire.generateSmallFire(self.game, self, i)
+				self.particle_fx.smallFire.generateSmallFire(self.game, self, i)
 			end
 		end
 		self.generated_fires = true
@@ -330,7 +338,6 @@ function Heath:afterAllMatches()
 	-- super
 	if self.supering then
 		self.mp = 0
-		self.super_clears = {}
 		self.supering = false
 	end
 

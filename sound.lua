@@ -21,7 +21,7 @@ local sfx_files = {"dummy", "button", "buttonback", "buttonsuper", "buttonbacksu
 	"fountaingo", "fountainrush", "fountaindoublecast", "superactivate", "starbreak",
 	"trashrow", "countdown3", "countdown2", "countdown1"}
 for _, v in pairs(sfx_files) do
-	soundfiles["sfx_" .. v] = {filename = "sound/" .. v .. ".ogg"}
+	soundfiles[v] = {filename = "sound/" .. v .. ".ogg"}
 end
 
 -------------------------------------------------------------------------------

@@ -185,7 +185,7 @@ function DamageParticle.generate(game, gem, delay_frames)
 				trail.drop_duration, trail.drop_x, trail.drop_y = drop_duration, drop_x, drop_y
 			end
 
-			game.queue:add(i * 2, game.particles.damageTrail.generate, game, trail, delay_frames)
+			game.particles._damageTrail.generate(game, trail, delay_frames + i * 2)
 		end
 
 		game.particles:incrementCount("created", "Damage", gem.owner)
@@ -335,7 +335,7 @@ function GarbageParticles.generate(game, gem, delay_frames)
 				scaling = 1.25 - 0.25 * i
 			}
 
-			game.queue:add(i * 2, game.particles.damageTrail.generate, game, trail, delay_frames)
+			game.particles._damageTrail.generate(game, trail, delay_frames + i * 2)
 		end
 		game.particles:incrementCount("created", "Garbage", gem.owner)
 	end
@@ -405,13 +405,14 @@ function ExplodingGem:init(params)
 	local x, y, img, transparency
 
 	if gem then
-		local create_grey_gems = gem.owner == 3
-		local color = create_grey_gems and (gem.color .. "_grey") or gem.color
-		x, y, img = gem.x, gem.y, image.lookup.gem_explode[color]
-		transparency = 0
+		if gem.owner == 3 then
+			img = image.lookup.grey_gem_crumble[gem.color]
+		else
+			img = image.lookup.gem_explode[gem.color]
+		end
+		x, y, transparency = gem.x, gem.y, 0
 	else
-		x, y, img = params.x, params.y, params.image
-		transparency = params.transparency
+		x, y, img, transparency = params.x, params.y, params.image, params.transparency
 	end
 
 	Pic.init(self, manager.game, {x = x, y = y, image = img, transparency = transparency})
@@ -1211,7 +1212,7 @@ SuperFreezeEffects = common.class("SuperFreezeEffects", SuperFreezeEffects, Pic)
 -------------------------------------------------------------------------------
 
 Particles.damage = DamageParticle
-Particles.damageTrail = DamageTrailParticle
+Particles._damageTrail = DamageTrailParticle
 Particles.superParticles = SuperParticle
 Particles.popParticles = PopParticles
 Particles.explodingGem = ExplodingGem

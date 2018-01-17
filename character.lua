@@ -163,13 +163,13 @@ function Character:toggleSuper(received_from_opponent)
 		if game.type == "Netplay" and not received_from_opponent then
 			game.client.prepareDelta(game.client, self, "cancelsuper", self.super_params)
 		end
-		self.game.sound:newSFX("sfx_buttonbacksuper")
+		self.game.sound:newSFX("buttonbacksuper")
 	elseif self.mp >= self.SUPER_COST and self.game.current_phase == "Action" then
 		self.supering = true
 		if game.type == "Netplay" and not received_from_opponent then
 			game.client.prepareDelta(game.client, self, "super", self.super_params)
 		end
-		self.game.sound:newSFX("sfx_buttonsuper")
+		self.game.sound:newSFX("buttonsuper")
 	end
 end
 
@@ -230,7 +230,7 @@ function Character:superSlideIn()
 	bottom_fuzz:change{duration = 21, y = stage.height, easing = "outQuart"}
 	bottom_fuzz:wait(40)
 	bottom_fuzz:change{duration = 5, transparency = 0, exit = true}
-	self.game.sound:newSFX("sfx_superactivate")
+	self.game.sound:newSFX("superactivate")
 end
 
 return common.class("Character", Character)

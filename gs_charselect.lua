@@ -52,7 +52,7 @@ function charselect:_createCharacterButtons()
 			end_y = end_y,
 			start_transparency = 195,
 			easing = "inOutSine",
-			pushed_sfx = "sfx_buttoncharacter",
+			pushed_sfx = "buttoncharacter",
 			action = function() 
 				if charselect.my_character ~= char then
 					charselect.my_character = char

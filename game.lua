@@ -46,7 +46,7 @@ Game.DAMAGE_PARTICLE_PER_DROP_FRAMES = 26
 Game.GEM_EXPLODE_FRAMES = 20
 Game.GEM_FADE_FRAMES = 10
 Game.PLATFORM_FALL_EXPLODE_FRAMES = 30
-Game.PLATFORM_FALL_FADE_FRAMES = 15
+Game.PLATFORM_FALL_FADE_FRAMES = 8
 Game.EXPLODING_PLATFORM_FRAMES = 60
 Game.VERSION = "64.0"
 
@@ -83,6 +83,7 @@ function Game:start(gametype, char1, char2, bkground, seed, side)
 	self.sound:reset()
 	self.grid:reset()
 	self.particles:reset()
+	self.phase:reset()
 	if seed then self.rng:setSeed(seed)	end
 
 	self.p1 = common.instance(require("characters." .. char1), 1, self)
@@ -180,7 +181,7 @@ function Game:_createButton(gamestate, params)
 		transparency = params.end_transparency or 255,
 		easing = params.easing or "linear", exit = params.exit}
 	button.pushed = params.pushed or function()
-		self.sound:newSFX(params.pushed_sfx or "sfx_button")
+		self.sound:newSFX(params.pushed_sfx or "button")
 		button:newImage(params.image_pushed)
 	end
 	button.released = params.released or function()
@@ -294,7 +295,7 @@ function Game:_createSettingsMenu(gamestate, params)
 		image_pushed = image.button.confirmpush,
 		end_x = -stage.width,
 		end_y = -stage.height,
-		pushed_sfx = "sfx_buttonback",
+		pushed_sfx = "buttonback",
 		end_transparency = 0,
 		action = function()
 			if self.settings_menu_open then

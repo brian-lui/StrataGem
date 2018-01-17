@@ -226,10 +226,13 @@ image.lookup.gem_explode = {
 	red = image.red_explode,
 	green = image.green_explode,
 	yellow = image.yellow_explode,
-	red_grey = image.red_grey,
-	blue_grey = image.blue_grey,
-	green_grey = image.green_grey,
-	yellow_grey = image.yellow_grey
+}
+
+image.lookup.grey_gem_crumble = {
+	red = image.red_grey,
+	blue = image.blue_grey,
+	green = image.green_grey,
+	yellow = image.yellow_grey,
 }
 
 image.lookup.particle_freq = {

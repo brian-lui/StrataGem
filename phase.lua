@@ -1,9 +1,6 @@
-local love = _G.love
-
 -- handles the main game phases
-
+local love = _G.love
 local common = require "class.commons"
-
 local Phase = {}
 
 function Phase:init(game)
@@ -12,16 +9,16 @@ function Phase:init(game)
 	self.INIT_PLATFORM_SPIN_DELAY_FRAMES = 30 -- frames to animate platforms exploding
 	self.INIT_SUPER_PAUSE = 90 -- frames to animate super activation
 	self.INIT_GAMEOVER_PAUSE = 180 -- how long to stay on gameover screen
+end
 
+function Phase:reset()
 	self.time_to_next = self.INIT_TIME_TO_NEXT
 	self.super_play = nil
 	self.super_pause = 0
 	self.platform_spin_delay_frames = self.INIT_PLATFORM_SPIN_DELAY_FRAMES
-	self.no_rush = {}
-	for i = 1, 8 do --the 8 should be grid.column, but grid isn't initilized yet I don't think
-		self.no_rush[i] = true --whether no_rush is eligible for animation
-	end
-	self.after_match_delay = game.GEM_FADE_FRAMES
+	self.no_rush = {} --whether no_rush is eligible for animation
+	for i = 1, self.game.grid.columns do self.no_rush[i] = true end
+	self.after_match_delay = self.game.GEM_FADE_FRAMES
 	self.matched_this_round = {false, false} -- p1 made a match, p2 made a match
 	self.game_is_over = false
 	self.gameover_pause = self.INIT_GAMEOVER_PAUSE
@@ -40,7 +37,7 @@ function Phase:intro(dt)
 	if game.frame == 120 then
 		game.sound:newBGM(game.p1.sounds.bgm, true)
 		game.particles.words.generateGo(self.game)
-		game.sound:newSFX("sfx_fountaingo")
+		game.sound:newSFX("fountaingo")
 		game.current_phase = "Action"
 	end
 end
