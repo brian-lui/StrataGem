@@ -266,6 +266,7 @@ end
 
 function Phase:platformsExploding(dt)
 	local game = self.game
+	for player in game:players() do player.hand:update(dt) end
 	if game.particles:getNumber("ExplodingPlatform") == 0 then
 		game.particles:clearCount()	-- clear here so the platforms display redness/spin correctly
 		game.current_phase = "GarbageRowCreation"
