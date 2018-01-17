@@ -73,6 +73,8 @@ function Heath:init(...)
 	self.ready_fires = {} -- fires at t1, ready to burn
 	self.pending_gem_cols = {} -- pending gems, for extinguishing of ready_fires
 	self.generated_fires = false -- whether fire particles were generated yet
+	self.super_gems_to_destroy = {} -- gems to be reflagged and destroyed by super effect
+	self.super_boom_effects = {} -- {row/col} of boom effects to be created
 end
 
 -- *This part creates the animations for the character's specials and supers
@@ -243,7 +245,7 @@ Heath.particle_fx = {
 }
 -------------------------------------------------------------------------------
 
--- *The follow code is executed from phase.lua
+-- *The following code is executed from phase.lua
 -- character.lua has a complete list of all the timings. Can omit unneeded ones
 -- we can add more timing phases if needed
 
@@ -284,7 +286,10 @@ function Heath:beforeMatch(gem_table)
 	end
 
 	-- super
-	if self.supering and game.scoring_combo == 1 then
+	-- flag gems using high_priority
+	-- store gems in self.super_gems_to_destroy, to be destroyed during afterMatch
+	-- store {row, col} of Booms in self.super_boom_effects to be created during afterMatch
+	if self.supering and game.scoring_combo == 0 then
 		self.super_this_turn = true
 		local delay = game.GEM_EXPLODE_FRAMES
 		local function gemInGemTable(gem)
@@ -296,6 +301,8 @@ function Heath:beforeMatch(gem_table)
 
 		for _, gem in pairs(gem_table) do
 			if self.player_num == gem.owner and gem.horizontal then
+				-- reflag gem as super priority
+
 				local row, col = gem.row, gem.column
 				if grid[row - 1][col].gem then -- explode upper gem
 					game.queue:add(delay, grid.destroyGem, grid, 
@@ -322,6 +329,10 @@ function Heath:beforeMatch(gem_table)
 end
 
 function Heath:afterMatch(gem_table)
+	-- explode the super gems
+
+
+	-- create fire particle for passive
 	if not self.generated_fires then -- only activate this once per turn
 		for i = 1, 8 do
 			if self.pending_fires[i] then

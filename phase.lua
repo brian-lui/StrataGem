@@ -341,7 +341,7 @@ function Phase:cleanup(dt)
 	p1.dropped_piece, p2.dropped_piece = false, false
 	p1.played_pieces, p2.played_pieces = {}, {}
 	game.finished_getting_pieces = false
-	grid:setAllGemOwners(0)
+	grid:setAllGemOwners(0, true)
 
 	for player in game:players() do player.hand:endOfTurnUpdate() end
 

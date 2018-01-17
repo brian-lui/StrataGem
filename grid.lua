@@ -244,12 +244,12 @@ function Grid:getScore(matching_number)
 	return #self:getMatchedGems(matching_number or 3)
 end
 
-function Grid:removeAllGemOwners(player)
-	for gem in self:gems() do gem:removeOwner(player) end
+function Grid:removeAllGemOwners(player, high_priority)
+	for gem in self:gems() do gem:removeOwner(player, high_priority) end
 end
 
-function Grid:setAllGemOwners(flag_num)
-	for gem in self:gems() do gem.owner = flag_num end
+function Grid:setAllGemOwners(flag_num, high_priority)
+	for gem in self:gems() do gem:setOwner(flag_num, high_priority) end
 end
 
 function Grid:getFirstEmptyRow(column)

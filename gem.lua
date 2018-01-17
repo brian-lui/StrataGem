@@ -110,52 +110,66 @@ function Gem:draw(params)
 end
 
 -- these can take either the player object or the number
-function Gem:setOwner(player)
-	if type(player) == "table" then
-		player = player.ID
-	end
-	if player == 1 or player == "P1" then
-		self.owner = 1
-	elseif player == 2 or player == "P2" then
-		self.owner = 2
-	elseif player == 3 then
-		self.owner = 3
-	else
+-- if high_priority is true, it will prevent normal removal of flag
+function Gem:setOwner(player, high_priority)
+	if type(player) == "table" then player = player.player_num end
+	if not (player == 1 or player == 2 or player == 3) then
 		print("Error: tried to set invalid gem owner as player:", player)
+		return
 	end
-end
 
-function Gem:addOwner(player)
-	if type(player) == "table" then
-		player = player.ID
-	end
-	if player == 1 or player == "P1" then
-		if self.owner == 0 or self.owner == 2 then
-			self.owner = self.owner + 1
-		end
-	elseif player == 2 or player == "P2" then
-		if self.owner == 0 or self.owner == 1 then
-			self.owner = self.owner + 2
-		end
-	elseif player ~= 3 then	-- if player == 3, nothing needs to be added
-		print("Error: tried to add invalid gem owner")
-	end
-end
-
-function Gem:removeOwner(player)
-	if type(player) == "table" then
-		player = player.ID
-	end
-	if player == 1 or player == "P1" then
-		if self.owner == 1 or self.owner == 3 then
-			self.owner = self.owner - 1
-		end
-	elseif player == 2 or player == "P2" then
-		if self.owner == 2 or self.owner == 3 then
-			self.owner = self.owner - 2
+	if self.high_flag_priority and not high_priority then
+		if self.owner == 0 then
+			self.owner = player
+		elseif self.owner == 1 then
+			if player == 2 or player == 3 then self.owner = 3 end
+		elseif self.owner == 2 then
+			if player == 1 or player == 3 then self.owner = 3 end
 		end
 	else
-		print("Error: tried to remove invalid gem owner")
+		self.owner = player
+	end
+
+	if high_priority then self.high_flag_priority = true end
+end
+
+function Gem:addOwner(player, high_priority)
+	if type(player) == "table" then player = player.player_num end
+	if not (player == 1 or player == 2 or player == 3) then
+		print("Error: tried to add invalid gem owner as player:", player)
+		return
+	end
+
+	if self.owner == 0 then
+		self.owner = player
+	elseif self.owner == 1 then
+		if player == 2 or player == 3 then self.owner = 3 end
+	elseif self.owner == 2 then
+		if player == 1 or player == 3 then self.owner = 3 end
+	end
+
+	if high_priority then self.high_flag_priority = true end
+end
+
+function Gem:removeOwner(player, high_priority)
+	if type(player) == "table" then player = player.player_num end
+	if not (player == 1 or player == 2 or player == 3) then
+		print("Error: tried to remove invalid gem owner as player:", player)
+		return
+	end
+
+	if high_priority or not self.high_flag_priority then
+		if player == 1 then
+			if self.owner == 1 or self.owner == 3 then
+				self.owner = self.owner - 1
+			end
+		elseif player == 2 then
+			if self.owner == 2 or self.owner == 3 then
+				self.owner = self.owner - 2
+			end
+		elseif player == 3 then
+			self.owner = 0
+		end
 	end
 end
 
