@@ -116,7 +116,7 @@ function SmallFire.generateSmallFire(game, owner, col)
 	local function update_func(_self, dt)
 		Pic.update(_self, dt)
 		_self.elapsed_frames = _self.elapsed_frames + 1
-		if _self.elapsed_frames >= 5 then -- loop through images
+		if _self.elapsed_frames >= 6 then -- loop through images
 			_self.current_image_idx = _self.current_image_idx % 3 + 1
 			_self:newImage(Heath.special_images.fire[_self.current_image_idx])	
 			_self.elapsed_frames = 0
