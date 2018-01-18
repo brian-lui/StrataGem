@@ -165,9 +165,8 @@ function Phase:flagGems(dt)
 	local game = self.game
 	local grid = game.grid
 
-	local gem_table = grid:getMatchedGems() -- sets h/v flags
 	grid:flagMatchedGems() -- sets flags
-	for player in game:players() do player:beforeMatch(gem_table) end
+	for player in game:players() do player:beforeMatch() end
 	self.matched_this_round = grid:checkMatchedThisTurn()
 	grid:destroyMatchedGems(game.scoring_combo)
 	game.current_phase = "MatchAnimations"

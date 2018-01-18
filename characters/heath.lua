@@ -273,10 +273,11 @@ function Heath:afterGravity()
 	end
 end
 
-function Heath:beforeMatch(gem_table)
+function Heath:beforeMatch()
 	local game = self.game
 	local grid = game.grid
 
+	local gem_table = grid:getMatchedGems()
 	-- store horizontal fire locations, used in aftermatch phase
 	for _, gem in pairs(gem_table) do
 		local top_gem = gem.row-1 == grid:getFirstEmptyRow(gem.column)

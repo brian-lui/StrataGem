@@ -125,7 +125,7 @@ function Character:afterGravity()
 end
 
 -- before gems are matched
-function Character:beforeMatch(gem_table)
+function Character:beforeMatch()
 end
 
 -- while matches are exploding
