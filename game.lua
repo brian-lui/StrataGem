@@ -185,7 +185,7 @@ function Game:_createButton(gamestate, params)
 		button:newImage(params.image_pushed)
 	end
 	button.released = params.released or function()
-		if released_sfx then self.sound:newSFX(params.released_sfx) end
+		if params.released_sfx then self.sound:newSFX(params.released_sfx) end
 		button:newImage(params.image)
 	end
 	button.action = params.action
@@ -347,7 +347,7 @@ end
 function Game:_mousereleased(x, y, gamestate)
 	if self.settings_menu_open then	
 		for _, button in pairs(gamestate.ui.popup_clickable) do
-			button.released()
+			if gamestate.clicked == button then button.released() end
 			if pointIsInRect(x, y, button:getRect()) and gamestate.clicked == button then
 				button.action()
 				break
@@ -355,7 +355,7 @@ function Game:_mousereleased(x, y, gamestate)
 		end
 	else
 		for _, button in pairs(gamestate.ui.clickable) do
-			button.released()
+			if gamestate.clicked == button then button.released() end
 			if pointIsInRect(x, y, button:getRect()) and gamestate.clicked == button then
 				button.action()
 				break
