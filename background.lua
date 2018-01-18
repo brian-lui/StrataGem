@@ -125,7 +125,7 @@ Checkmate = common.class("Checkmate", Checkmate)
 ------------------------------------ CLOUD ------------------------------------
 -------------------------------------------------------------------------------
 local Clouds = {
-	ID_number = 1,
+	ID_number = 2,
 	thumbnail = image.background.cloud.thumbnail,
 	full_pic = image.background.cloud.background,
 }
