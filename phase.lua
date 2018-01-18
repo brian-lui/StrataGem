@@ -145,6 +145,14 @@ end
 
 function Phase:getMatchedGems(dt)
 	local _, matches = self.game.grid:getMatchedGems() -- sets is_horizontal/is_vertical flags for matches
+
+	if self.garbage_this_round then
+		local diff = game.p1.garbage_rows_created - game.p2.garbage_rows_created
+		grid:setGarbageMatchFlags(diff)
+		self.garbage_this_round = false
+		game.p1.garbage_rows_created, game.p2.garbage_rows_created = 0		
+	end
+
 	if matches > 0 then
 		self.game.current_phase = "FlagGems"
 	else
@@ -156,13 +164,6 @@ end
 function Phase:flagGems(dt)
 	local game = self.game
 	local grid = game.grid
-
-	if self.garbage_this_round then
-		local diff = game.p1.garbage_rows_created - game.p2.garbage_rows_created
-		grid:setGarbageMatchFlags(diff)
-		self.garbage_this_round = false
-		game.p1.garbage_rows_created, game.p2.garbage_rows_created = 0		
-	end
 
 	local gem_table = grid:getMatchedGems() -- sets h/v flags
 	grid:flagMatchedGems() -- sets flags

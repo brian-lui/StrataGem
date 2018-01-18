@@ -2,11 +2,10 @@ local love = _G.love
 --[[
 	Every background should have:
 	ID_number - used for the ordering of the backgrounds
-	thumbnail - the small picture that shows up in the selection box
-	full_pic - full sized background picture
 	init(game)
 	update(dt)
 	draw()
+	The background class needs to be added, near the end of this file
 --]]
 
 local common = require "class.commons"
@@ -17,11 +16,7 @@ local spairs = require "utilities".spairs
 -------------------------------------------------------------------------------
 ---------------------------- RABBIT IN A SNOWSTORM ----------------------------
 -------------------------------------------------------------------------------
-local RabbitInASnowstorm = {
-	ID_number = 5,
-	thumbnail = image.background.colors.thumbnail,
-	full_pic = image.background.rabbitsnowstorm.background,
-}
+local RabbitInASnowstorm = {ID_number = 5}
 function RabbitInASnowstorm:init(game)
 	self.game = game
 	self.background = common.instance(Pic, game, {
@@ -38,17 +33,14 @@ end
 function RabbitInASnowstorm:draw(params)
 	self.background:draw(params)
 end
+
 RabbitInASnowstorm = common.class("RabbitInASnowstorm", RabbitInASnowstorm)
 
 
 -------------------------------------------------------------------------------
 ---------------------------- RABBIT IN A SNOWSTORM ----------------------------
 -------------------------------------------------------------------------------
-local Checkmate = {
-	ID_number = 1,
-	thumbnail = image.background.colors.thumbnail,
-	full_pic = image.background.checkmate[0],
-}
+local Checkmate = {ID_number = 1}
 function Checkmate:init(game)
 	self.game = game
 	self.IMAGE_WIDTH = image.background.checkmate[0]:getWidth()
@@ -57,7 +49,6 @@ function Checkmate:init(game)
 	self.OVERLAY_RATE = 180 -- pixels per second
 	self.OVERLAY_DURATION = (self.IMAGE_HEIGHT / self.OVERLAY_RATE) / game.timeStep
 	self.NEXT_SWAP_TIME = 5 -- seconds until next picture swap
-	self.NEXT_SWAP_DURATION = self.NEXT_SWAP_TIME / game.timeStep -- frames
 	self.swap_time = self.NEXT_SWAP_TIME
 	self.background = common.instance(Pic, game, {
 		x = self.IMAGE_WIDTH * 0.5,
@@ -89,7 +80,6 @@ function Checkmate:update(dt)
 		self.image_idx = (self.image_idx + 1) % 10
 		local new_bk = image.background.checkmate[self.image_idx]
 		local new_over = image.background.checkmate[(self.image_idx + 1) % 10]
-
 		self.overlay:change{
 			duration = self.OVERLAY_DURATION,
 			y = self.IMAGE_HEIGHT * 0.5,
@@ -118,17 +108,14 @@ function Checkmate:draw(params)
 	self.background:draw(draw_params)
 	self.overlay:draw(draw_params)
 end
+
 Checkmate = common.class("Checkmate", Checkmate)
 
 
 -------------------------------------------------------------------------------
 ------------------------------------ CLOUD ------------------------------------
 -------------------------------------------------------------------------------
-local Clouds = {
-	ID_number = 2,
-	thumbnail = image.background.cloud.thumbnail,
-	full_pic = image.background.cloud.background,
-}
+local Clouds = {ID_number = 2}
 function Clouds:init(game)
 	self.game = game
 	self.background = common.instance(Pic, game, {
@@ -247,15 +234,10 @@ end
 Clouds = common.class("Clouds", Clouds)
 
 
-
 -------------------------------------------------------------------------------
 ---------------------------------- STARFALL -----------------------------------
 -------------------------------------------------------------------------------
-local Starfall = {
-	ID_number = 3,
-	thumbnail = image.background.starfall.thumbnail,
-	full_pic = image.background.starfall.background,
-}
+local Starfall = {ID_number = 3}
 function Starfall:init(game)
 	self.game = game
 	self.background = common.instance(Pic, game, {
@@ -314,11 +296,7 @@ Starfall = common.class("Starfall", Starfall)
 -------------------------------------------------------------------------------
 ----------------------------------- COLORS -----------------------------------
 -------------------------------------------------------------------------------
-local Colors = {
-	ID_number = 4,
-	thumbnail = image.background.colors.thumbnail,
-	full_pic = image.background.colors.white,
-}
+local Colors = {ID_number = 4}
 function Colors:init(game)
 	self.game = game
 	self.t = 0
