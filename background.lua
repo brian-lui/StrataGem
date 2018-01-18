@@ -18,7 +18,7 @@ local spairs = require "utilities".spairs
 ---------------------------- RABBIT IN A SNOWSTORM ----------------------------
 -------------------------------------------------------------------------------
 local RabbitInASnowstorm = {
-	ID_number = 1,
+	ID_number = 5,
 	thumbnail = image.background.colors.thumbnail,
 	full_pic = image.background.rabbitsnowstorm.background,
 }
@@ -42,10 +42,90 @@ RabbitInASnowstorm = common.class("RabbitInASnowstorm", RabbitInASnowstorm)
 
 
 -------------------------------------------------------------------------------
+---------------------------- RABBIT IN A SNOWSTORM ----------------------------
+-------------------------------------------------------------------------------
+local Checkmate = {
+	ID_number = 1,
+	thumbnail = image.background.colors.thumbnail,
+	full_pic = image.background.checkmate[0],
+}
+function Checkmate:init(game)
+	self.game = game
+	self.IMAGE_WIDTH = image.background.checkmate[0]:getWidth()
+	self.IMAGE_HEIGHT = image.background.checkmate[0]:getHeight()
+	self.SCROLL_RATE = 180 -- pixels per second
+	self.OVERLAY_RATE = 180 -- pixels per second
+	self.OVERLAY_DURATION = (self.IMAGE_HEIGHT / self.OVERLAY_RATE) / game.timeStep
+	self.NEXT_SWAP_TIME = 5 -- seconds until next picture swap
+	self.NEXT_SWAP_DURATION = self.NEXT_SWAP_TIME / game.timeStep -- frames
+	self.swap_time = self.NEXT_SWAP_TIME
+	self.background = common.instance(Pic, game, {
+		x = self.IMAGE_WIDTH * 0.5,
+		y = self.IMAGE_HEIGHT * 0.5,
+		image = image.background.checkmate[0],
+	})
+	self.overlay = common.instance(Pic, game, {
+		x = self.IMAGE_WIDTH * 0.5,
+		y = self.IMAGE_HEIGHT * -0.5,
+		image = image.background.checkmate[1],
+	})
+	self.image_idx = 0
+	ID.background_particle = 0
+end
+
+function Checkmate:update(dt)
+	local bk, over = self.background, self.overlay
+
+	-- scroll to the left
+	bk.x = bk.x - (dt * self.SCROLL_RATE)
+	over.x = over.x - (dt * self.SCROLL_RATE)
+	if bk.x <= self.IMAGE_WIDTH * -0.5 then bk.x = self.IMAGE_WIDTH * 0.5 end
+	if over.x <= self.IMAGE_WIDTH * -0.5 then over.x = self.IMAGE_WIDTH * 0.5 end
+
+	-- swap images
+	self.swap_time = self.swap_time - dt
+	if self.swap_time <= 0 then
+		self.swap_time = self.NEXT_SWAP_TIME
+		self.image_idx = (self.image_idx + 1) % 10
+		local new_bk = image.background.checkmate[self.image_idx]
+		local new_over = image.background.checkmate[(self.image_idx + 1) % 10]
+
+		self.overlay:change{
+			duration = self.OVERLAY_DURATION,
+			y = self.IMAGE_HEIGHT * 0.5,
+			exit = {function()
+				self.overlay.y = self.IMAGE_HEIGHT * -0.5
+				self.background.image = new_bk
+				self.overlay.image = new_over
+			end},
+		}
+	end
+
+	bk:update(dt)
+	over:update(dt)
+end
+
+function Checkmate:draw(params)
+	local draw_params = params or {}
+	self.background:draw(draw_params)
+	self.overlay:draw(draw_params)
+
+	draw_params.x = self.background.x + self.IMAGE_WIDTH
+	self.background:draw(draw_params)
+	self.overlay:draw(draw_params)
+
+	draw_params.x = self.background.x + self.IMAGE_WIDTH * 2
+	self.background:draw(draw_params)
+	self.overlay:draw(draw_params)
+end
+Checkmate = common.class("Checkmate", Checkmate)
+
+
+-------------------------------------------------------------------------------
 ------------------------------------ CLOUD ------------------------------------
 -------------------------------------------------------------------------------
 local Clouds = {
-	ID_number = 2,
+	ID_number = 1,
 	thumbnail = image.background.cloud.thumbnail,
 	full_pic = image.background.cloud.background,
 }
@@ -280,12 +360,14 @@ function Colors:draw(params)
 end
 Colors = common.class("Colors", Colors)
 
+
+-------------------------------------------------------------------------------
 local background = {}
+background.checkmate = Checkmate
 background.cloud = Clouds
 background.rabbitsnowstorm = RabbitInASnowstorm
 background.starfall = Starfall
 background.colors = Colors
-
 
 local bk_list, total = {}, 0
 for k in pairs(background) do

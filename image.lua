@@ -93,6 +93,11 @@ image.background.rabbitsnowstorm = {
 	background = love.graphics.newImage('images/backgrounds/rabbitsnowstorm/rabbitsnowstorm.png'),
 	thumbnail = love.graphics.newImage('images/charselect/rabbitthumbnail.png'),
 }
+image.background.checkmate = {}
+for i = 0, 9 do
+	image.background.checkmate[i] = love.graphics.newImage('images/backgrounds/checkmate/checkmate'..i..'.png')
+end
+
 
 for i = 1, 6 do
 	image.background.cloud["bigcloud"..i] =	love.graphics.newImage('images/backgrounds/cloud/bigcloud'..i..'.png')
