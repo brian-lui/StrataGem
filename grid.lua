@@ -101,7 +101,7 @@ end
 
 -- place piece into simulated grid
 function Grid:simulatePlacePiece(piece, coords)
-	if piece.horizontal then
+	if piece.is_horizontal then
 		for i = 1, #piece.gems do
 			local column = coords[i]
 			self[1][column].gem = piece.gems[i]
@@ -144,7 +144,7 @@ function Grid:getMatches(minimumLength)
 					until tostring(getColor(row, column + matchLength)):lower() ~= c
 				end
 				if matchLength >= minimumLength then
-					ret[#ret+1] = {length = matchLength, row = row, column = column, horizontal = true}
+					ret[#ret+1] = {length = matchLength, row = row, column = column, is_horizontal = true}
 				end
 
 				-- VERTICAL MATCHES
@@ -155,7 +155,7 @@ function Grid:getMatches(minimumLength)
 					until tostring(getColor(row + matchLength, column, self)):lower() ~= c
 				end
 				if matchLength >= minimumLength then
-					ret[#ret+1] = {length = matchLength, row = row, column = column, horizontal = false}
+					ret[#ret+1] = {length = matchLength, row = row, column = column, is_horizontal = false}
 				end
 			end
 		end
@@ -165,18 +165,19 @@ end
 
 -- Returns a list of gems which are part of matches, and the total number of
 -- matches (not number of matched gems).
+-- also sets the .is_horizontal and/or .is_vertical attribute of the gem.
 function Grid:getMatchedGems(minimumLength)
 	local matches = self:getMatches(minimumLength or 3)
 	local gem_set = {}
 
 	for _, match in pairs(matches) do
-		if match.horizontal then
+		if match.is_horizontal then
 			for i = 1, match.length do
 				local r, c = match.row, match.column + i - 1
 				local this_gem = self[r][c].gem
 				if this_gem then
 					gem_set[this_gem] = true
-					this_gem.horizontal = true
+					this_gem.is_horizontal = true
 				end
 			end
 		else
@@ -185,7 +186,7 @@ function Grid:getMatchedGems(minimumLength)
 				local this_gem = self[r][c].gem
 				if this_gem then
 					gem_set[this_gem] = true
-					this_gem.vertical = true
+					this_gem.is_vertical = true
 				end
 			end
 		end
@@ -197,13 +198,37 @@ function Grid:getMatchedGems(minimumLength)
 	return gem_table, #matches
 end
 
+-- same as above, but returns in the format {list1, list2, ...}
+-- e.g. {{gem1, gem2, gem3}, {gem4, gem5, gem6, gem7}}
+function Grid:getMatchedGemLists(min_length)
+	local matches = self:getMatches(min_length or 3)
+	local ret = {}
+	for _, match in pairs(matches) do
+		local gem_list = {}
+		if match.is_horizontal then
+			for i = 1, match.length do
+				local this_gem = self[match.row][match.column + i - 1].gem
+				if this_gem then gem_list[#gem_list+1] = this_gem end
+			end
+		else
+			for i = 1, match.length do
+				local this_gem = self[match.row + i - 1][match.column].gem
+				if this_gem then gem_list[#gem_list+1] = this_gem end
+			end
+		end
+		ret[#ret+1] = gem_list
+	end
+	return ret
+end
+
+
 -- If any gem in a set is owned by a player, make all other gems in its match
 -- also owned by that player (may be owned by both players).
 function Grid:flagMatchedGems()
 	local matches = self:getMatches()
 	for i = 1, #matches do
 		local p1flag, p2flag = false, false
-		if matches[i].horizontal then
+		if matches[i].is_horizontal then
 			-- Check whether p1 or p2 own any of the gems in this match
 			for j = 1, matches[i].length do
 				local row = matches[i].row
@@ -216,8 +241,8 @@ function Grid:flagMatchedGems()
 			for j = 1, matches[i].length do
 				local row = matches[i].row
 				local column = matches[i].column + (j-1)
-				if p1flag then self[row][column].gem:addOwner(self.game.p1) end
-				if p2flag then self[row][column].gem:addOwner(self.game.p2) end
+				if p1flag then self[row][column].gem:addOwner(1) end
+				if p2flag then self[row][column].gem:addOwner(2) end
 			end
 		else
 			-- Check whether p1 or p2 own any of the gems in this match
@@ -232,8 +257,8 @@ function Grid:flagMatchedGems()
 			for j = 1, matches[i].length do
 				local row = matches[i].row + (j-1)
 				local column = matches[i].column
-				if p1flag then self[row][column].gem:addOwner(self.game.p1) end
-				if p2flag then self[row][column].gem:addOwner(self.game.p2) end
+				if p1flag then self[row][column].gem:addOwner(1) end
+				if p2flag then self[row][column].gem:addOwner(2) end
 			end
 		end
 	end
@@ -244,12 +269,16 @@ function Grid:getScore(matching_number)
 	return #self:getMatchedGems(matching_number or 3)
 end
 
-function Grid:removeAllGemOwners(player, high_priority)
-	for gem in self:gems() do gem:removeOwner(player, high_priority) end
+function Grid:removeAllGemOwners(player)
+	for gem in self:gems() do gem:removeOwner(player) end
 end
 
-function Grid:setAllGemOwners(flag_num, high_priority)
-	for gem in self:gems() do gem:setOwner(flag_num, high_priority) end
+function Grid:setAllGemOwners(flag_num)
+	for gem in self:gems() do gem:setOwner(flag_num) end
+end
+
+function Grid:setAllGemReadOnlyFlags(bool)
+	for gem in self:gems() do gem:setProtectedFlag(bool) end
 end
 
 function Grid:getFirstEmptyRow(column)
@@ -270,7 +299,7 @@ function Grid:getDropLocations(piece, optional_shift)
 	local row, ret = {}, {}
 	for i = 1, piece.size do
 		row[i] = self:getFirstEmptyRow(column[i])
-		if not piece.horizontal and row[i] then
+		if not piece.is_horizontal and row[i] then
 			row[i] = row[i] - piece.size + i
 		end
 		ret[i] = {column[i], row[i]}
@@ -585,7 +614,7 @@ function Grid:destroyGem(params)
 	local extra_damage = params.extra_damage or 0
 	local game = self.game
 	local particles = game.particles
-
+	if gem.is_destroyed then return end
 	if params.credit_to then gem:setOwner(params.credit_to) end
 
 	local player = game:playerByIndex(gem.owner)
@@ -618,23 +647,28 @@ function Grid:destroyGem(params)
 	if params.propogate_flags_up ~= false then
 		local above_gems = {}
 		for i = (gem.row or 1), 1, -1 do
-			if self[i][gem.column].gem then
-				self[i][gem.column].gem:setOwner(gem.owner)
+			local current_gem = self[i][gem.column].gem
+			if current_gem then
+				if current_gem.owner ~= 0 then
+					break
+				else
+					current_gem:setOwner(gem.owner)
+				end
 			end
 		end
 	end
 
 	particles.gemImage.generate{game = game, gem = gem, duration = game.GEM_EXPLODE_FRAMES}
+	gem.is_destroyed = true -- in case we try to destroy it again
 	self[gem.row][gem.column].gem = false
 end
 
-function Grid:setGarbageMatchFlags()
-	local garbage_diff = self.game.p1.garbage_rows_created - self.game.p2.garbage_rows_created
-	if garbage_diff == 0 then
-		self:setAllGemOwners(0)
-	elseif garbage_diff < 0 then
+function Grid:setGarbageMatchFlags(diff)
+	if diff == 0 then
+		self:setAllGemOwners(3)
+	elseif diff < 0 then
 		self:setAllGemOwners(1)
-	elseif garbage_diff > 0 then
+	elseif diff > 0 then
 		self:setAllGemOwners(2)
 	end
 end

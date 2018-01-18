@@ -222,7 +222,7 @@ local function startMatch(self, recv)
 	assert(recv.side == 1 or recv.side == 2, "oh craps")
 	self.match_start_time = love.timer.getTime()
 	local char1 = "heath" -- need to lookup the character name
-	local char2 = "walter" -- need to lookup the character name
+	local char2 = "heath" -- need to lookup the character name
 	local bkground = "rabbitsnowstorm"
 	self.queuing = false
 	self.playing = true

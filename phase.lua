@@ -144,7 +144,7 @@ function Phase:applyGravity(dt)
 end
 
 function Phase:getMatchedGems(dt)
-	local _, matches = self.game.grid:getMatchedGems() -- sets horizontal/vertical flags for matches
+	local _, matches = self.game.grid:getMatchedGems() -- sets is_horizontal/is_vertical flags for matches
 	if matches > 0 then
 		self.game.current_phase = "FlagGems"
 	else
@@ -154,26 +154,31 @@ end
 
 -- flag above gems, destroy matched gems, and generate the exploding gem particles
 function Phase:flagGems(dt)
-	local grid = self.game.grid
-	local gem_table = self.game.grid:getMatchedGems() -- sets h/v flags
+	local game = self.game
+	local grid = game.grid
 
-	grid:flagMatchedGems() -- state
-	for player in self.game:players() do player:beforeMatch(gem_table) end
+	if self.garbage_this_round then
+		local diff = game.p1.garbage_rows_created - game.p2.garbage_rows_created
+		grid:setGarbageMatchFlags(diff)
+		self.garbage_this_round = false
+		game.p1.garbage_rows_created, game.p2.garbage_rows_created = 0		
+	end
+
+	local gem_table = grid:getMatchedGems() -- sets h/v flags
+	grid:flagMatchedGems() -- sets flags
+	for player in game:players() do player:beforeMatch(gem_table) end
 	self.matched_this_round = grid:checkMatchedThisTurn()
-	grid:destroyMatchedGems(self.game.scoring_combo)
-	self.game.current_phase = "MatchAnimations"
+	grid:destroyMatchedGems(game.scoring_combo)
+	game.current_phase = "MatchAnimations"
 end
 
 -- wait for gem explode animation
 function Phase:matchAnimations(dt)
-	for player in self.game:players() do
-		player.hand:update(dt)
-		player:duringMatchAnimation(dt)
-	end	
+	for player in self.game:players() do player.hand:update(dt) end	
 	
 	if self.should_call_char_ability_this_phase then
 		for player in self.game:players() do
-			player:duringMatchAnimation(dt)
+			player:duringMatchAnimation()
 		end	
 		self.should_call_char_ability_this_phase = false
 	end
@@ -257,10 +262,6 @@ function Phase:destroyDamagedPlatforms(dt)
 		end
 	end
 
-	if self.garbage_this_round then
-		game.queue:add(max_delay, grid.setGarbageMatchFlags, grid)
-		game.p1.garbage_rows_created, game.p2.garbage_rows_created = 0, 0
-	end
 	game.current_phase = "PlatformsExploding"
 end
 
@@ -313,7 +314,6 @@ function Phase:platformsMoving(dt)
 	if handsettled then	
 		if self.garbage_this_round then
 			game.current_phase = "Gravity"
-			self.garbage_this_round = false
 		else
 			game.current_phase = "Cleanup"
 		end
@@ -341,7 +341,8 @@ function Phase:cleanup(dt)
 	p1.dropped_piece, p2.dropped_piece = false, false
 	p1.played_pieces, p2.played_pieces = {}, {}
 	game.finished_getting_pieces = false
-	grid:setAllGemOwners(0, true)
+	grid:setAllGemOwners(0)
+	grid:setAllGemReadOnlyFlags(false)
 
 	for player in game:players() do player.hand:endOfTurnUpdate() end
 

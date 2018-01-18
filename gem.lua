@@ -16,8 +16,8 @@ function Gem:init(game, x, y, color, garbage)
 	self.game = game
 	Pic.init(self, game, {x = x, y = y, image = gemImages[color:lower()]})
 	ID.gem = ID.gem + 1
-	self.horizontal = false -- for gem matches
-	self.vertical = false -- for gem matches
+	self.is_horizontal = false -- for gem matches
+	self.is_vertical = false -- for gem matches
 	self.target_x = x
 	self.target_y = y
 	self.target_rotation = 0
@@ -110,30 +110,22 @@ function Gem:draw(params)
 end
 
 -- these can take either the player object or the number
--- if high_priority is true, it will prevent normal removal of flag
-function Gem:setOwner(player, high_priority)
+-- respects cannot_remove_owners
+function Gem:setOwner(player)
 	if type(player) == "table" then player = player.player_num end
-	if not (player == 1 or player == 2 or player == 3) then
+	if not (player == 0 or player == 1 or player == 2 or player == 3) then
 		print("Error: tried to set invalid gem owner as player:", player)
 		return
 	end
 
-	if self.high_flag_priority and not high_priority then
-		if self.owner == 0 then
-			self.owner = player
-		elseif self.owner == 1 then
-			if player == 2 or player == 3 then self.owner = 3 end
-		elseif self.owner == 2 then
-			if player == 1 or player == 3 then self.owner = 3 end
-		end
+	if self.cannot_remove_owners then
+		self:addOwner(player)
 	else
 		self.owner = player
 	end
-
-	if high_priority then self.high_flag_priority = true end
 end
 
-function Gem:addOwner(player, high_priority)
+function Gem:addOwner(player)
 	if type(player) == "table" then player = player.player_num end
 	if not (player == 1 or player == 2 or player == 3) then
 		print("Error: tried to add invalid gem owner as player:", player)
@@ -147,18 +139,16 @@ function Gem:addOwner(player, high_priority)
 	elseif self.owner == 2 then
 		if player == 1 or player == 3 then self.owner = 3 end
 	end
-
-	if high_priority then self.high_flag_priority = true end
 end
 
-function Gem:removeOwner(player, high_priority)
+function Gem:removeOwner(player)
 	if type(player) == "table" then player = player.player_num end
 	if not (player == 1 or player == 2 or player == 3) then
 		print("Error: tried to remove invalid gem owner as player:", player)
 		return
 	end
 
-	if high_priority or not self.high_flag_priority then
+	if not self.cannot_remove_owners then
 		if player == 1 then
 			if self.owner == 1 or self.owner == 3 then
 				self.owner = self.owner - 1
@@ -171,6 +161,11 @@ function Gem:removeOwner(player, high_priority)
 			self.owner = 0
 		end
 	end
+end
+
+-- If true, can only add to ownership, not replace or remove
+function Gem:setProtectedFlag(bool)
+	self.cannot_remove_owners = bool
 end
 
 -- returns how many frames it will take to completely animate

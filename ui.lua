@@ -166,7 +166,7 @@ local function drawPlacementShadow(self, piece, shift)
 	for i = 1, piece.size do
 		show[i] = {}
 		show[i].x = grid.x[ drop_cols[i] ]
-		if piece.horizontal then
+		if piece.is_horizontal then
 			show[i].y = grid.y[1 + row_adj]
 		else
 			show[i].y = grid.y[i + row_adj]
@@ -291,13 +291,13 @@ function ui:putPendingAtTop()
 			end
 		end
 		if #doubles == 2 then
-			local horizontal = doubles[1].row == doubles[2].row
-			game.particles.wordEffects.generateDoublecastCloud(game, doubles[1], doubles[2], horizontal)
+			local is_horizontal = doubles[1].row == doubles[2].row
+			game.particles.wordEffects.generateDoublecastCloud(game, doubles[1], doubles[2], is_horizontal)
 			game.queue:add(24, pieceLandedInStagingArea, game, doubles, "double")
 		end
 		if #rushes == 2 then
-			local horizontal = rushes[1].row == rushes[2].row
-			game.particles.wordEffects.generateRushCloud(game, rushes[1], rushes[2], horizontal)
+			local is_horizontal = rushes[1].row == rushes[2].row
+			game.particles.wordEffects.generateRushCloud(game, rushes[1], rushes[2], is_horizontal)
 			game.queue:add(24, pieceLandedInStagingArea, game, rushes, "rush")
 		end
 	end
@@ -330,11 +330,11 @@ function ui:update(dt)
 			if valid and place_type == "double" then
 				--TODO: support variable number of gems
 				local gem1, gem2 = active_piece.gems[1], active_piece.gems[2]
-				local h = active_piece.horizontal
+				local h = active_piece.is_horizontal
 				game.particles.wordEffects.generateDoublecastCloud(game, gem1, gem2, h)
 			elseif valid and place_type == "rush" then
 				local gem1, gem2 = game.active_piece.gems[1], active_piece.gems[2]
-				local h = active_piece.horizontal
+				local h = active_piece.is_horizontal
 				game.particles.wordEffects.generateRushCloud(game, gem1, gem2, h)
 			end
 		elseif not valid or place_type == "normal" then

@@ -32,7 +32,7 @@ function Piece:init(game, tbl)
 	}
 	self.rotation = 0
 	self.rotation_index = 0
-	self.horizontal = true
+	self.is_horizontal = true
 	self.gems = {}
 	self:addGems(self.gem_table)
 	self.getx = self.owner.hand.getx
@@ -40,7 +40,7 @@ function Piece:init(game, tbl)
 end
 
 function Piece:updateGems()
-	if self.horizontal then
+	if self.is_horizontal then
 		for i = 1, self.size do
 			self.gems[i].x =
 				self.x
@@ -104,8 +104,8 @@ end
 function Piece:rotate()
 	if self._rotateTween then self._rotateTween:set(math.huge) end
 
-	self.horizontal = not self.horizontal
-	if self.horizontal then
+	self.is_horizontal = not self.is_horizontal
+	if self.is_horizontal then
 		self.gems = reverseTable(self.gems)
 	end
 	self.rotation_index = (self.rotation_index + 1) % 4
@@ -122,8 +122,8 @@ function Piece:rotate()
 end
 -- same as rotate, but animations not shown
 function Piece:ai_rotate()
-	self.horizontal = not self.horizontal
-	if self.horizontal then
+	self.is_horizontal = not self.is_horizontal
+	if self.is_horizontal then
 		self.gems = reverseTable(self.gems)
 	end
 	self.rotation_index = (self.rotation_index + 1) % 4
@@ -140,7 +140,7 @@ function Piece:breakUp()
 	return self.gems
 end
 
--- draw gems with displacement depending on piece horizontal/vertical
+-- draw gems with displacement depending on piece is_horizontal/is_vertical
 function Piece:draw(params)
 	local frame = self.game.frame
 	local stage = self.game.stage
@@ -155,7 +155,7 @@ function Piece:draw(params)
 		love.graphics.translate(h_shake, v_shake)
 		for i = 1, self.size do
 			local displace_x, displace_y = 0, 0
-			if self.horizontal then
+			if self.is_horizontal then
 				displace_x = stage.gem_width * (i - (1 + self.size) * 0.5)
 			else
 				displace_y = stage.gem_height * (i - (1 + self.size) * 0.5)
@@ -186,7 +186,7 @@ function Piece:getColumns(shift)
 	shift = shift or 0
 	if shift then shift = shift * stage.gem_width end
 
-	if self.horizontal then
+	if self.is_horizontal then
 		for i = 1, self.size do
 			ret[i] = false
 			for j = 1, grid.columns do
@@ -196,7 +196,7 @@ function Piece:getColumns(shift)
 			end
 		end
 
-	elseif not self.horizontal then
+	elseif not self.is_horizontal then
 		for i = 1, self.size do ret[i] = false	end -- set array length
 		for j = 1, grid.columns do
 			local in_this_column = pointIsInRect(self.gems[1].x + shift, self.gems[1].y,
@@ -382,7 +382,7 @@ function Piece:dropIntoBasin(coords, received_from_opponent)
 	end
 
 	local locations = {}
-	if self.horizontal then
+	if self.is_horizontal then
 		for i = 1, #self.gems do locations[i] = {1 + row_adj, coords[i]} end
 	else
 		for i = 1, #self.gems do locations[i] = {i + row_adj, coords[i]} end

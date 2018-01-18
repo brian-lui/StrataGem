@@ -127,7 +127,7 @@ function Hand:movePieceToGrid(grid, piece, locations)
 		end
 		grid[r][c].gem = gem
 		gem.row, gem.column = r, c
-		if not piece.horizontal and i ~= #piece.gems then
+		if not piece.is_horizontal and i ~= #piece.gems then
 			gem.no_yoshi_particle = true
 		end
 

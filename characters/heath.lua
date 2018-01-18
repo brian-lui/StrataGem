@@ -73,7 +73,7 @@ function Heath:init(...)
 	self.ready_fires = {} -- fires at t1, ready to burn
 	self.pending_gem_cols = {} -- pending gems, for extinguishing of ready_fires
 	self.generated_fires = false -- whether fire particles were generated yet
-	self.super_gems_to_destroy = {} -- gems to be reflagged and destroyed by super effect
+	self.super_gems = {} -- gems to be reflagged and destroyed by super effect
 	self.super_boom_effects = {} -- {row/col} of boom effects to be created
 end
 
@@ -231,9 +231,9 @@ function Boom.generateBoom(game, owner, row, col)
 
 	local p = common.instance(Boom, game.particles, params)
 	for i = 1, 20 do
-		Heath.particles.boomEffect._generateBoomParticle(game, p)
-		Heath.particles.boomEffect._generateBoomParticle(game, p, 5)
-		Heath.particles.boomEffect._generateBoomParticle(game, p, 10)
+		Heath.particle_fx.boom._generateBoomParticle(game, p)
+		Heath.particle_fx.boom._generateBoomParticle(game, p, 5)
+		Heath.particle_fx.boom._generateBoomParticle(game, p, 10)
 	end
 end
 
@@ -241,7 +241,7 @@ Boom = common.class("Boom", Boom, Pic)
 -------------------------------------------------------------------------------
 Heath.particle_fx = {
 	smallFire = SmallFire,
-	boomEffect = Boom,
+	boom = Boom,
 }
 -------------------------------------------------------------------------------
 
@@ -280,47 +280,40 @@ function Heath:beforeMatch(gem_table)
 	-- store horizontal fire locations, used in aftermatch phase
 	for _, gem in pairs(gem_table) do
 		local top_gem = gem.row-1 == grid:getFirstEmptyRow(gem.column)
-		if self.player_num == gem.owner and gem.horizontal and top_gem then
+		if self.player_num == gem.owner and gem.is_horizontal and top_gem then
 			self.pending_fires[gem.column] = true
 		end
 	end
 
-	-- super
-	-- flag gems using high_priority
-	-- store gems in self.super_gems_to_destroy, to be destroyed during afterMatch
+	-- store gems in self.super_gems, to be destroyed during afterMatch
 	-- store {row, col} of Booms in self.super_boom_effects to be created during afterMatch
 	if self.supering and game.scoring_combo == 0 then
 		self.super_this_turn = true
-		local delay = game.GEM_EXPLODE_FRAMES
-		local function gemInGemTable(gem)
-			for _, g in pairs(gem_table) do
-				if gem == g then return true end
-			end
-			return false
-		end
+		local gem_lists = grid:getMatchedGemLists()
+		for _, gem_list in ipairs(gem_lists) do
+			if self.player_num == gem_list[1].owner and gem_list[1].is_horizontal then
+				for i = 1, #gem_list do
+					local gem = gem_list[i]
+					local row, col = gem.row, gem.column
+					local upper = grid[row - 1][col].gem
+					local lower = grid[row + 1][col].gem
+					-- add to destroy queue
+					if upper then
+						upper:setOwner(0)
+						upper:addOwner(self.player_num)
+						upper:setProtectedFlag(true)
+						self.super_gems[#self.super_gems+1] = upper
+					end
+					if lower then
+						lower:setOwner(0)
+						lower:addOwner(self.player_num)
+						lower:setProtectedFlag(true)
+						self.super_gems[#self.super_gems+1] = lower
+					end
 
-		for _, gem in pairs(gem_table) do
-			if self.player_num == gem.owner and gem.horizontal then
-				-- reflag gem as super priority
-
-				local row, col = gem.row, gem.column
-				if grid[row - 1][col].gem then -- explode upper gem
-					game.queue:add(delay, grid.destroyGem, grid, 
-						{gem = grid[row - 1][col].gem, credit_to = self.player_num})
-				end
-				if grid[row + 1][col].gem then -- explode lower gem
-					game.queue:add(delay, grid.destroyGem, grid, 
-						{gem = grid[row + 1][col].gem, credit_to = self.player_num})
-				end
-
-				-- create boom particle if it's a middle gem
-				if grid[row][col - 1].gem and grid[row][col + 1].gem then
-					local left_gem = grid[row][col - 1].gem
-					local right_gem = grid[row][col + 1].gem
-					if left_gem.horizontal and right_gem.horizontal and
-					gemInGemTable(left_gem) and gemInGemTable(right_gem) then
-						game.queue:add(delay, self.particle_fx.boomEffect.generateBoom,
-							self.game, self, row, col)
+					-- add to boom particle queue
+					if i > 1 and i < #gem_list then
+						self.super_boom_effects[#self.super_boom_effects+1] = {row, col}
 					end
 				end
 			end
@@ -328,10 +321,21 @@ function Heath:beforeMatch(gem_table)
 	end
 end
 
+-- explode the super gems concurrently with gem matches
+function Heath:duringMatchAnimation()
+	if self.super_this_turn then
+		for _, gem in ipairs(self.super_gems) do
+			self.game.grid:destroyGem{gem = gem, credit_to = self.player_num}
+		end
+
+		for _, location in ipairs(self.super_boom_effects) do
+			self.particle_fx.boom.generateBoom(self.game, self, location[1], location[2])
+		end
+	end
+	self.super_gems, self.super_boom_effects = {}, {}
+end
+
 function Heath:afterMatch(gem_table)
-	-- explode the super gems
-
-
 	-- create fire particle for passive
 	if not self.generated_fires then -- only activate this once per turn
 		for i = 1, 8 do

@@ -28,7 +28,6 @@ end
 -- debug function, prints maximum score and piece drop to achieve it
 local function printMaximumScore(maximum_score, possible_moves)
 	print("Maximum possible score:", maximum_score)
-
 	if maximum_score ~= 0 then
 		for i = 1, #possible_moves do
 			print("At orientation " .. possible_moves[i][1] .. ", piece " .. possible_moves[i][2] ..
@@ -36,37 +35,9 @@ local function printMaximumScore(maximum_score, possible_moves)
 		end
 	end
 end
-
--- randomly rotate all pieces in hand by 1
--- ISSUE: rotateRandom(): mechanically useless, aesthetically unnecessary?
-local function rotateRandom()
-	for i = 1, self.player.hand_size do
-		if math.random() < 0.5 and self.player.hand[i].piece then
-			self.player.hand[i].piece:rotate()
-		end
-	end
-end
 --]]
 
---[[
--- rotate all pieces until they are horizontal
-local function rotateToHorizontal()
-	for i = 1, self.player.hand_size do
-		if self.player.hand[i].piece and not self.player.hand[i].piece.horizontal then
-			self.player.hand[i].piece:rotate()
-		end
-	end
-end
 
--- rotate all pieces until they are vertical
-local function rotateToVertical()
-	for i = 1, self.player.hand_size do
-		if self.player.hand[i].piece and self.player.hand[i].piece.horizontal then
-			self.player.hand[i].piece:rotate()
-		end
-	end
-end
---]]
 -- return a list of all valid pieces (excluding empty platforms)
 local function enumeratePieces(player)
 	local has_piece = {}
@@ -94,14 +65,14 @@ end
 local function selectRandomColumn(piece, player)
 	local start_col = player.start_col
 	local end_col = player.end_col
-	if piece.horizontal then end_col = end_col - 1 end
+	if piece.is_horizontal then end_col = end_col - 1 end
 	return math.random(start_col, end_col)
 end
 
 -- takes a column index, and returns table of argument column and the next column
 local function getCoords(piece, column)
 	local ret = {}
-	if piece.horizontal then
+	if piece.is_horizontal then
 		for i = 1, #piece.gems do ret[#ret+1] = column + i - 1 end
 	else
 		for i = 1, #piece.gems do ret[#ret+1] = column end
@@ -121,7 +92,6 @@ end
 local function generateScoreMatrices(grid, player)
 	local piece_list = enumeratePieces(player)
 
-	--rotateToHorizontal(player) -- settle down the pieces
 	-- rotate all pieces in hand by 1
 	local function rotateAll()
 		for i = 1, player.hand_size do
@@ -140,7 +110,7 @@ local function generateScoreMatrices(grid, player)
 			matrix[rotation][i] = {}
 			local start_col = player.start_col
 			local end_col = player.end_col
-			if piece.horizontal then end_col = end_col - 1 end
+			if piece.is_horizontal then end_col = end_col - 1 end
 			for col = start_col, end_col do -- j: total valid columns
 				matrix[rotation][i][col] = grid:simulateScore(piece, getCoords(piece, col))
 			end
@@ -185,7 +155,7 @@ function ai:evaluateActions()
 			placePiece(self, piece, getCoords(piece, selected.column))
 		elseif player.cur_burst >= player.RUSH_COST then
 			local piece = selectRandomPiece(player)
-			if piece.horizontal then	-- Always do vertical rushes.
+			if piece.is_horizontal then	-- Always do vertical rushes.
 				piece:rotate()
 			end
 

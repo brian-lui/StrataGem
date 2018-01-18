@@ -961,8 +961,8 @@ end
 
 -- the glow cloud behind a doublecast piece.
 -- called from anims.putPendingOnTop, and from anims.update
-function WordEffects.generateDoublecastCloud(game, gem1, gem2, horizontal)
-	local todraw = horizontal and image.words.doublecast_cloud_h or image.words.doublecast_cloud_v
+function WordEffects.generateDoublecastCloud(game, gem1, gem2, is_horizontal)
+	local todraw = is_horizontal and image.words.doublecast_cloud_h or image.words.doublecast_cloud_v
 	local p = common.instance(WordEffects, game.particles, (gem1.x + gem2.x) * 0.5, (gem1.y + gem2.y) * 0.5, todraw)
 	p.transparency = 0
 	p:change{duration = 20, transparency = 255, easing = "inCubic"}
@@ -975,12 +975,12 @@ end
 
 -- the glow cloud behind a rush piece.
 -- called from anims.putPendingOnTop, and from anims.update
-function WordEffects.generateRushCloud(game, gem1, gem2, horizontal)
-	local todraw = horizontal and image.words.rush_cloud_h or image.words.rush_cloud_v
+function WordEffects.generateRushCloud(game, gem1, gem2, is_horizontal)
+	local todraw = is_horizontal and image.words.rush_cloud_h or image.words.rush_cloud_v
 	local p = common.instance(WordEffects, game.particles, (gem1.x + gem2.x) * 0.5, (gem1.y + gem2.y) * 0.5, todraw)
 	p.transparency = 0
 	p:change{duration = 20, transparency = 255, easing = "inCubic"}
-	p:change{duration = 600, during = {8, 0, WordEffects.generateRushParticle, game, gem1, gem2, horizontal}}
+	p:change{duration = 600, during = {8, 0, WordEffects.generateRushParticle, game, gem1, gem2, is_horizontal}}
 	p.update = function(_self, dt)
 		Pic.update(_self, dt)
 		_self.x, _self.y = (gem1.x + gem2.x) * 0.5, (gem1.y + gem2.y) * 0.5
@@ -991,11 +991,11 @@ end
 -- the sparks coming out from the rush cloud.
 -- called from WordEffects.generateRushCloud
 function WordEffects.generateRushParticle(game, gem1, gem2)
-	local horizontal = gem1.row == gem2.row
+	local is_horizontal = gem1.row == gem2.row
 	local todraw = image.words.rush_particle
 	local x, y = (gem1.x + gem2.x) * 0.5, (gem1.y + gem2.y) * 0.5
 	local x_drift, y_adj
-	if horizontal then
+	if is_horizontal then
 		x_drift = (math.random() - 0.5) * image.GEM_WIDTH * 2
 		y_adj = -image.GEM_HEIGHT * 0.5
 	else
