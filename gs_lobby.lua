@@ -31,7 +31,7 @@ function lobby:enter()
 		self.sound:newBGM("bgm_menu", true)
 	end
 
-	lobby.current_background = common.instance(self.background.rabbitsnowstorm, self)
+	lobby.current_background = common.instance(self.background.checkmate, self)
 	lobby.current_users = {}
 	lobby.status_image = nil
 

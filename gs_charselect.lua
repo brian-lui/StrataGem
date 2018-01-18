@@ -198,7 +198,7 @@ function charselect:enter()
 		self.sound:newBGM("bgm_menu", true)
 	end
 
-	charselect.current_background = common.instance(self.background.rabbitsnowstorm, self)
+	charselect.current_background = common.instance(self.background.checkmate, self)
 	charselect.game_background = 1 -- what's chosen for the maingame background
 	charselect._createCharacterButtons(self)
 	charselect._createUIButtons(self)

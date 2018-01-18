@@ -87,7 +87,7 @@ function title:enter()
 			 	self.sound:newBGM("bgm_menu", true)
 			end end}}
 	end
-	title.current_background = common.instance(self.background.rabbitsnowstorm, self)
+	title.current_background = common.instance(self.background.checkmate, self)
 end
 
 function title:openSettingsMenu()
