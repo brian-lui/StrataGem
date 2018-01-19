@@ -345,6 +345,7 @@ function Heath:afterMatch(gem_table)
 			end
 		end
 		self.generated_fires = true
+		self.game.sound:newSFX("heathpassive")
 	end
 end
 
