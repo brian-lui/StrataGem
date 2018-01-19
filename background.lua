@@ -48,20 +48,18 @@ function Checkmate:init(game)
 	self.SCROLL_RATE = 180 -- pixels per second
 	self.OVERLAY_RATE = 180 -- pixels per second
 	self.OVERLAY_DURATION = (self.IMAGE_HEIGHT / self.OVERLAY_RATE) / game.timeStep
-	self.NEXT_SWAP_TIME = 5 -- seconds until next picture swap
+	self.NEXT_SWAP_TIME = 6.5 -- seconds until next picture swap
 	self.swap_time = self.NEXT_SWAP_TIME
+	self.images = {}
+	ID.background_particle = 0
 	self.background = common.instance(Pic, game, {
 		x = self.IMAGE_WIDTH * 0.5,
 		y = self.IMAGE_HEIGHT * 0.5,
 		image = image.background.checkmate[0],
-	})
-	self.overlay = common.instance(Pic, game, {
-		x = self.IMAGE_WIDTH * 0.5,
-		y = self.IMAGE_HEIGHT * -0.5,
-		image = image.background.checkmate[1],
+		container = self.images,
+		counter = "background_particle",
 	})
 	self.image_idx = 0
-	ID.background_particle = 0
 end
 
 function Checkmate:update(dt)
@@ -69,9 +67,14 @@ function Checkmate:update(dt)
 
 	-- scroll to the left
 	bk.x = bk.x - (dt * self.SCROLL_RATE)
-	over.x = over.x - (dt * self.SCROLL_RATE)
 	if bk.x <= self.IMAGE_WIDTH * -0.5 then bk.x = self.IMAGE_WIDTH * 0.5 end
-	if over.x <= self.IMAGE_WIDTH * -0.5 then over.x = self.IMAGE_WIDTH * 0.5 end
+
+	if self.overlay then
+		self.overlay.x = self.overlay.x - (dt * self.SCROLL_RATE)
+		if self.overlay.x <= self.IMAGE_WIDTH * -0.5 then
+			self.overlay.x = self.IMAGE_WIDTH * 0.5
+		end
+	end
 
 	-- swap images
 	self.swap_time = self.swap_time - dt
@@ -79,34 +82,40 @@ function Checkmate:update(dt)
 		self.swap_time = self.NEXT_SWAP_TIME
 		self.image_idx = (self.image_idx + 1) % 10
 		local new_bk = image.background.checkmate[self.image_idx]
-		local new_over = image.background.checkmate[(self.image_idx + 1) % 10]
+		self.overlay = common.instance(Pic, self.game, {
+			x = bk.x,
+			y = bk.y,
+			image = new_bk,
+			container = self.images,
+			counter = "background_particle",
+
+		})
 		self.overlay:change{
 			duration = self.OVERLAY_DURATION,
-			y = self.IMAGE_HEIGHT * 0.5,
-			exit = {function()
-				self.overlay.y = self.IMAGE_HEIGHT * -0.5
-				self.background.image = new_bk
-				self.overlay.image = new_over
-			end},
+			quad = {y = true, y_percentage = 1, y_anchor = 0},
+			exit = {
+				{self.background.newImage, self.background, new_bk},
+				{self.overlay.remove, self.overlay}
+			}
 		}
 	end
 
 	bk:update(dt)
-	over:update(dt)
+	if self.overlay then self.overlay:update(dt) end
 end
 
 function Checkmate:draw(params)
 	local draw_params = params or {}
 	self.background:draw(draw_params)
-	self.overlay:draw(draw_params)
+	if self.overlay then self.overlay:draw(draw_params) end
 
 	draw_params.x = self.background.x + self.IMAGE_WIDTH
 	self.background:draw(draw_params)
-	self.overlay:draw(draw_params)
+	if self.overlay then self.overlay:draw(draw_params) end
 
 	draw_params.x = self.background.x + self.IMAGE_WIDTH * 2
 	self.background:draw(draw_params)
-	self.overlay:draw(draw_params)
+	if self.overlay then self.overlay:draw(draw_params) end
 end
 
 Checkmate = common.class("Checkmate", Checkmate)

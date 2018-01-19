@@ -113,18 +113,25 @@ function Pic:newImage(img)
 	self.quad = love.graphics.newQuad(0, 0, self.width, self.height, self.width, self.height)
 end
 
--- clear the junk from all the tweens and stuff
--- runs exit function too. Takes either {func, args} or {{func, args}, {...}}
+-- clear the junk from all the tweens and stuff. runs exit function too.
 local function clearMove(self)
 	if self.exit then
 		if self.exit == true then -- delete
 			self:remove()
-		elseif type(self.exit[1]) == "table" then -- multiple funcs
-			for i = 1, #self.exit do
-				self.exit[i][1](table.unpack(self.exit[i], 2))
+		elseif type(self.exit) == "function" then -- single func, no args
+			self.exit()
+		elseif type(self.exit) == "table" then
+			if type(self.exit[1]) == "function" then -- single func, args
+				self.exit[1](unpack(self.exit, 2))
+			elseif type(self.exit[1]) == "table" then -- multiple funcs
+				for i = 1, #self.exit do
+					self.exit[i][1](unpack(self.exit[i], 2))
+				end
+			else -- wot
+				print("passed in something wrong for exit table")
 			end
-		else -- single func
-			self.exit[1](table.unpack(self.exit, 2))
+		else -- wot
+			print("maybe passed in something wrong for the exit property")
 		end
 	end
 	self.t, self.tweening, self.curve, self.move_func = nil, nil, nil, nil
@@ -236,7 +243,7 @@ end
 		queue: if true, will queue this move after the previous one is finished. default is true
 		here: if true, will instantly move from current position; false to move from end of previous position. only if queue is false
 		during: {frame_step, frame_start, func, args}, if any, to execute every dt_step while tweening.
-		exit: {func, args}, if any, to execute when the move finishes. Optional "true" to delete
+		exit: execute when the move finishes. Can be: 1) "true" to delete, 2) func, 3) {func, args},  4) {{f1, a1}, {f2, a2}, ...}
 		quad: {x = bool, y = bool, x_percentage = 0-1, y_percentage = 0-1, x_anchor = 0-1, y_anchor = 0-1} to tween a quad
 		debug: print some unhelpful debug info
 	Junk created: self.t, move_func, tweening, curve, exit, during. during_frame
@@ -321,7 +328,7 @@ function Pic:update(dt)
 				for i = 1, #self.during do
 					local step, start = self.during[i][1], self.during[i][2]
 					if (self.during_frame + start) % step == 0 then
-						self.during[i][3](table.unpack(self.during, 4))
+						self.during[i][3](table.unpack(self.during[i], 4))
 					end
 				end
 			else -- single func
