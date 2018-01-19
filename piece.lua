@@ -401,4 +401,14 @@ function Piece:dropIntoBasin(coords, received_from_opponent)
 	end
 end
 
+function Piece:gems()
+	local gems, index = {}, 0
+	for i = 1, #self.gems do gems[#gems+1] = self.gems[i] end
+
+	return function()
+		index = index + 1
+		return gems[index]
+	end
+end
+
 return common.class("Piece", Piece)
