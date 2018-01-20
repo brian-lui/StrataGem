@@ -339,13 +339,15 @@ end
 function Heath:afterMatch(gem_table)
 	-- create fire particle for passive
 	if not self.generated_fires then -- only activate this once per turn
+		local fire_sound = false
 		for i = 1, 8 do
 			if self.pending_fires[i] then
 				self.particle_fx.smallFire.generateSmallFire(self.game, self, i)
+				fire_sound = true
 			end
 		end
 		self.generated_fires = true
-		self.game.sound:newSFX("heathpassive")
+		if fire_sound then self.game.sound:newSFX("heathpassive") end
 	end
 end
 

@@ -144,7 +144,9 @@ function Phase:applyGravity(dt)
 end
 
 function Phase:getMatchedGems(dt)
-	local _, matches = self.game.grid:getMatchedGems() -- sets is_horizontal/is_vertical flags for matches
+	local game = self.game
+	local grid = game.grid
+	local _, matches = grid:getMatchedGems() -- sets is_horizontal/is_vertical flags for matches
 
 	if self.garbage_this_round then
 		local diff = game.p1.garbage_rows_created - game.p2.garbage_rows_created
@@ -154,9 +156,9 @@ function Phase:getMatchedGems(dt)
 	end
 
 	if matches > 0 then
-		self.game.current_phase = "FlagGems"
+		game.current_phase = "FlagGems"
 	else
-		self.game.current_phase = "ResolvedMatches"
+		game.current_phase = "ResolvedMatches"
 	end
 end
 
