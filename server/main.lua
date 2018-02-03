@@ -3,7 +3,7 @@
 require 'socket'
 local json = require 'dkjson'
 local server = {
-	version = "64.0"
+	version = "65.0"
 }
 local id_count = 1
 local dudes = {}
@@ -67,11 +67,12 @@ local function addDude(data, new_conn)
 	dudes[new_conn] = {
 		id = id_count,
 		queuing = false,
+		queue_details = {},
 		playing = false,
 		opponent = false,
 		connected = true,
 		partial_recv = "",
-		name = data.name
+		name = data.name,
 	}
 	id_count = id_count + 1
 	print("new connection added", new_conn)
@@ -86,7 +87,7 @@ local function sendDudes(conn)
 	end
 end
 
-local function joinQueue(conn)
+local function joinQueue(conn, queue_details)
 	print("Join queue request from", conn)
 	if dudes[conn] then
 		if dudes[conn].queuing then
@@ -94,6 +95,7 @@ local function joinQueue(conn)
 			server.send({type = "queue", action = "already_queued"}, conn)
 		else
 			dudes[conn].queuing = true
+			dudes[conn].queue_details = queue_details
 			server.send({type = "queue", action = "queued"}, conn)
 			sendDudes(conn)
 		end
@@ -107,6 +109,7 @@ local function leaveQueue(conn)
 	if dudes[conn] then
 		if dudes[conn].queuing then
 			dudes[conn].queuing = false
+			dudes[conn].queue_details = {}
 			server.send({type = "queue", action = "left"}, conn)
 			sendDudes(conn)
 		else
@@ -120,7 +123,7 @@ end
 
 local function receiveQueue(data, conn)
 	if data.action == "join" then
-		joinQueue(conn)
+		joinQueue(conn, data.queue_details)
 	elseif data.action == "leave" then
 		leaveQueue(conn)
 	else
@@ -181,13 +184,17 @@ local function startMatch(dude1, dude2)
 		type = "start",
 		side = 1,
 		opponent_id = dude2.id,
-		seed = rng_seed
+		my_details = dude1.queue_details,
+		opponent_details = dude2.queue_details,
+		seed = rng_seed,
 	}
 	local send2 = {
 		type = "start",
 		side = 2,
 		opponent_id = dude1.id,
-		seed = rng_seed
+		my_details = dude1.queue_details,
+		opponent_details = dude2.queue_details,
+		seed = rng_seed,
 	}
 	local conn1, conn2 = getConnFromID(dude1.id), getConnFromID(dude2.id)
 	server.send(send1, conn1)

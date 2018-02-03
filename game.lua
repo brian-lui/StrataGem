@@ -48,7 +48,7 @@ Game.GEM_FADE_FRAMES = 10
 Game.PLATFORM_FALL_EXPLODE_FRAMES = 30
 Game.PLATFORM_FALL_FADE_FRAMES = 8
 Game.EXPLODING_PLATFORM_FRAMES = 60
-Game.VERSION = "64.0"
+Game.VERSION = "65.0"
 
 function Game:init()
 	self.debug_drawGemOwners = true	-- TODO: Remove this someday.
@@ -254,8 +254,8 @@ function Game:_createSettingsMenu(gamestate, params)
 		name = "settings",
 		image = settings_icon,
 		image_pushed = settings_pushed_icon,
-		end_x = stage.settings_button[gamestate.name].x,
-		end_y = stage.settings_button[gamestate.name].y,
+		end_x = params.x or stage.settings_button[gamestate.name].x,
+		end_y = params.y or stage.settings_button[gamestate.name].y,
 		action = function()
 			if not self.settings_menu_open then gamestate.openSettingsMenu(self) end
 		end,

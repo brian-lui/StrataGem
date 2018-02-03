@@ -79,7 +79,8 @@ function stage:init(game)
 		gs_main = {x = self.x_mid, y = self.height * 0.957},
 		title = {x = self.width * 0.92, y = self.height * 0.92},
 		charselect = {x = self.width * 0.05, y = self.height * 0.08},
-		lobby = {x = self.width * 0.05, y = self.height * 0.08},
+		lobby = {x = self.width * 0.92, y = self.height * 0.92},
+		charselect_netplay = {x = self.width * 0.92, y = self.height * 0.92},
 	}
 end
 

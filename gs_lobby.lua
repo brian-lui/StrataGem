@@ -7,6 +7,8 @@ local pointIsInRect = require "utilities".pointIsInRect
 local lobby = {name = "lobby"}
 
 function lobby:init()
+	lobby.selectable_chars = {"heath", "walter", "gail", "holly",
+		"wolfgang", "hailey", "diggory", "buzz", "ivy", "joy"}
 	lobby.ui = {clickable = {}, static = {}, popup_clickable = {}, popup_static = {}}
 	self:_createSettingsMenu(lobby, {
 		exitstate = "gs_title",
@@ -23,6 +25,176 @@ function lobby:_createImage(params)
 	return self:_createImage(lobby, params)
 end
 
+-- creates the clickable buttons for selecting characters
+function lobby:_createCharacterButtons()
+	local stage = self.stage
+	lobby.clicked = nil
+	local end_x, end_y
+	for i = 1, #lobby.selectable_chars do
+		local char = lobby.selectable_chars[i]
+		if i >= 1 and i < 4 then
+			end_x = stage.width * (0.125 * i + 0.5)
+			end_y = stage.height * 0.2
+		elseif i >= 4 and i < 8 then
+			end_x = stage.width * (0.125 * i + 0.0625)
+			end_y = stage.height * 0.4
+		elseif i >= 8 and i < 11 then
+			end_x = stage.width * (0.125 * i - 0.375)
+			end_y = stage.height * 0.6
+		end
+		lobby._createButton(self, {
+			name = char,
+			image = image.charselect[char.."ring"],
+			image_pushed = image.charselect[char.."ring"], -- need new pics!
+			duration = 30,
+			start_x = -0.05 * i,
+			end_x = end_x,
+			start_y = 0.1 * i,
+			end_y = end_y,
+			start_transparency = 195,
+			easing = "inOutSine",
+			pushed_sfx = "buttoncharacter",
+			action = function() 
+				if lobby.my_character ~= char and not self.client.queuing then
+					lobby.my_character = char
+					lobby.displayed_character:newImage(image.charselect[char.."char"])
+					lobby.displayed_character_text:newImage(image.charselect[char.."name"])
+					lobby.displayed_character:reset()
+					lobby.displayed_character_text:reset()
+				end
+			end,
+		})
+	end
+end
+
+-- creates the clickable UI objects
+function lobby:_createUIButtons()
+	local stage = self.stage
+
+	-- start button
+	lobby._createButton(self, {
+		name = "start",
+		image = image.button.start,
+		image_pushed = image.button.startpush,
+		duration = 15,
+		end_x = stage.width * 0.25,
+		start_y = stage.height + image.button.start:getHeight(),
+		end_y = stage.height * 0.8,
+		easing = "outQuad",
+		action = function() 
+			if lobby.my_character and not self.client.queuing then
+				lobby.joinRankedQueue(self, "The Queue Details Thanks.") 
+				--[[
+				local gametype = lobby.gametype
+				local char1 = lobby.my_character
+				local char2 = lobby.opponent_character
+				local bkground = self.background:idx_to_str(lobby.game_background)
+				lobby.my_character = nil
+				self:start(gametype, char1, char2, bkground, nil, 1)
+				--]]
+			end
+		end,
+	})
+
+	-- left arrow for background select
+	lobby._createButton(self, {
+		name = "leftarrow",
+		image = image.button.leftarrow,
+		image_pushed = image.button.leftarrow,
+		duration = 60,
+		end_x = stage.width * 0.6,
+		end_y = stage.height * 0.8,
+		transparency = 127,
+		easing = "linear",
+		action = function()
+			lobby.game_background = (lobby.game_background - 2) % self.background.total + 1
+			local selected_background = self.background:idx_to_str(lobby.game_background)
+			local new_image = image.background[selected_background].thumbnail
+			lobby.game_background_image:newImage(new_image)
+		end,
+	})
+
+	-- right arrow for background select
+	lobby._createButton(self, {
+		name = "rightarrow",
+		image = image.button.rightarrow,
+		image_pushed = image.button.rightarrow,
+		duration = 60,
+		end_x = stage.width * 0.9,
+		end_y = stage.height * 0.8,
+		transparency = 127,
+		easing = "linear",
+		action = function()
+			lobby.game_background = lobby.game_background % self.background.total + 1
+			local selected_background = self.background:idx_to_str(lobby.game_background)
+			local new_image = image.background[selected_background].thumbnail
+			lobby.game_background_image:newImage(new_image)
+		end,
+	})
+end
+
+-- creates the unclickable UI display images
+function lobby:_createUIImages()
+	local stage = self.stage
+
+	-- large portrait with dummy pic
+	lobby.displayed_character = lobby._createImage(self, {
+		name = "maincharacter",
+		image = image.dummy,
+		duration = 6,
+		start_x = stage.width * 0.20,
+		end_x = stage.width * 0.25,
+		end_y = stage.height * 0.5,
+		transparency = 60,
+		easing = "outQuart",
+	})
+	lobby.displayed_character.reset = function(c)
+		c.x = stage.width * 0.20
+		c.transparency = 60
+		c:change{duration = 6, x = stage.width * 0.25, transparency = 255, easing = "outQuart"}
+	end
+
+	-- large portrait text with dummy pic
+	lobby.displayed_character_text = lobby._createImage(self, {
+		name = "maincharactertext",
+		image = image.dummy,
+		duration = 6,
+		end_x = stage.width * 0.25,
+		start_y = stage.height * 0.7,
+		end_y = stage.height * 0.65,
+		transparency = 60,
+		easing = "outQuart",
+	})
+	lobby.displayed_character_text.reset = function(c)
+		c.y = stage.height * 0.7
+		c.transparency = 60
+		c:change{duration = 6, y = stage.height * 0.65, transparency = 255, easing = "outQuart"}
+	end
+
+	-- background_image_frame
+	lobby._createImage(self, {
+		name = "backgroundframe",
+		image = image.unclickable.select_stageborder,
+		duration = 60,
+		end_x = stage.width * 0.75,
+		end_y = stage.height * 0.8,
+		transparency = 127,
+		easing = "linear",
+	})
+
+	local selected_background = self.background:idx_to_str(lobby.game_background)
+	-- background_image
+	lobby.game_background_image = lobby._createImage(self, {
+		name = "backgroundimage",
+		image = image.background[selected_background].thumbnail,
+		duration = 60,
+		end_x = stage.width * 0.75,
+		end_y = stage.height * 0.8,
+		transparency = 127,
+		easing = "linear",
+	})
+end
+
 function lobby:enter()
 	local stage = self.stage
 	lobby.clicked = nil
@@ -33,35 +205,16 @@ function lobby:enter()
 
 	lobby.current_background = common.instance(self.background.checkmate, self)
 	lobby.current_users = {}
-	lobby.status_image = nil
 
-	--create custom game
-	lobby._createButton(self, {
-		name = "creategame",
-		image = image.button.lobbycreatenew,
-		image_pushed = image.button.lobbycreatenew,
-		duration = 30,
-		start_x = 0,
-		end_x = stage.width * 0.75,
-		start_y = stage.height * 0.9,
-		end_y = stage.height * 0.3,
-		easing = "inOutBounce",
-		action = function() lobby.createCustomGame(self) end,
-	})
+	lobby.game_background = 1 -- what's chosen for the maingame background
 
-	-- queue in ranked match
-	lobby._createButton(self, {
-		name = "rankedmatch",
-		image = image.button.lobbyqueueranked,
-		image_pushed = image.button.lobbyqueueranked,
-		duration = 45,
-		start_x = stage.width,
-		end_x = stage.width * 0.25,
-		start_y = stage.height * 0.7,
-		end_y = stage.height * 0.3,
-		easing = "outElastic",
-		action = function() lobby.joinRankedQueue(self) end,
-	})
+	lobby._createCharacterButtons(self)
+	lobby._createUIButtons(self)
+	lobby._createUIImages(self)
+
+	lobby.my_character = nil -- selected character for gamestart
+	lobby.gametype = "1P" -- can change this later to re-use for netplay
+	lobby.opponent_character = "walter" -- ditto
 
 	-- cancel ranked match search
 	lobby._createButton(self, {
@@ -115,9 +268,10 @@ function lobby:spectateGame()
 	print("TBD - Spectate game")
 end
 
-function lobby:joinRankedQueue()
-	self.client:queue("join")
-	print("Joining queue...")
+function lobby:joinRankedQueue(queue_details)
+	self.client:queue("join", queue_details)
+	print("Joining queue with queue details:")
+	print(queue_details)
 end
 
 function lobby:cancelRankedQueue()
@@ -126,6 +280,7 @@ function lobby:cancelRankedQueue()
 end
 
 function lobby:goBack()
+	print("hello!")
 	local client = self.client
 
 	if client.queuing then

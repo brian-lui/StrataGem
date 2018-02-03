@@ -119,6 +119,7 @@ end
 function Character:beforeGravity()
 	
 end
+
 -- returns a list of {frames, func, args to execute}
 function Character:afterGravity()
 	return {}

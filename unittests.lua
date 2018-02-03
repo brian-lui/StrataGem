@@ -247,22 +247,8 @@ local function maxDamage(game)
 	end
 end
 
-local function makeHeathFire(game)
-	local h = game.p1
-	if h.character_id == "Heath" then
-		h.particle_effects.smallFire.generateSmallFire(game, h, 2)
-	else
-		print("p1 is not heath")
-	end
-end
-
-local function makeHeathBoom(game)
-	local h = game.p1
-	if h.character_id == "Heath" then
-		h.particle_effects.boomEffect.generateBoomEffect(game, h, 15, 2)
-	else
-		print("p1 is not heath")
-	end
+local function netplaySelect(game)
+	game.statemanager:switch(require "gs_netplay_charselect")
 end
 
 local Unittests = {
@@ -291,7 +277,7 @@ local Unittests = {
 	v = flagPropogateProblem,
 	b = makeAGarbage,
 	n = maxDamage,
-	m = makeHeathBoom,
+	m = netplaySelect,
 }
 
 return common.class("Unittests", Unittests)

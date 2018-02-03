@@ -221,6 +221,17 @@ end
 local function startMatch(self, recv)
 	assert(recv.side == 1 or recv.side == 2, "oh craps")
 	self.match_start_time = love.timer.getTime()
+	---[[
+	print("RECV DETAILS:\n-----------------")
+	for k, v in pairs(recv) do print(k, v) end
+	local my_details = recv.my_details
+	local opponent_details = recv.opponent_details
+	print("MY DETAILS:\n--------------")
+	for k, v in pairs(my_details) do print(k, v) end
+	print("OPPONENT DETAILS:\n-----------------")
+	for k, v in pairs(opponent_details) do print(k, v) end
+	--]]
+
 	local char1 = "heath" -- need to lookup the character name
 	local char2 = "heath" -- need to lookup the character name
 	local bkground = "rabbitsnowstorm"
@@ -399,8 +410,8 @@ end
 
 -- queue up for a match
 -- TODO: This needs to ask the matchmaker and not the peer.
-function Client:queue(action)
-	self:send{type = "queue", action = action}
+function Client:queue(action, queue_details)
+	self:send{type = "queue", action = action, queue_details = queue_details}
 end
 
 -- user-initiated disconnect from server
