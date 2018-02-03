@@ -83,15 +83,11 @@ function lobby:_createUIButtons()
 		easing = "outQuad",
 		action = function() 
 			if lobby.my_character and not self.client.queuing then
-				lobby.joinRankedQueue(self, "The Queue Details Thanks.") 
-				--[[
-				local gametype = lobby.gametype
-				local char1 = lobby.my_character
-				local char2 = lobby.opponent_character
-				local bkground = self.background:idx_to_str(lobby.game_background)
-				lobby.my_character = nil
-				self:start(gametype, char1, char2, bkground, nil, 1)
-				--]]
+				local queue_details = {
+					character = lobby.my_character,
+					background = self.background:idx_to_str(lobby.game_background),
+				}
+				lobby.joinRankedQueue(self, queue_details) 
 			end
 		end,
 	})
@@ -213,8 +209,7 @@ function lobby:enter()
 	lobby._createUIImages(self)
 
 	lobby.my_character = nil -- selected character for gamestart
-	lobby.gametype = "1P" -- can change this later to re-use for netplay
-	lobby.opponent_character = "walter" -- ditto
+	lobby.gametype = "Netplay"
 
 	-- cancel ranked match search
 	lobby._createButton(self, {

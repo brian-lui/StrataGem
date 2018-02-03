@@ -184,16 +184,16 @@ local function startMatch(dude1, dude2)
 		type = "start",
 		side = 1,
 		opponent_id = dude2.id,
-		my_details = dude1.queue_details,
-		opponent_details = dude2.queue_details,
+		p1_details = dude1.queue_details,
+		p2_details = dude2.queue_details,
 		seed = rng_seed,
 	}
 	local send2 = {
 		type = "start",
 		side = 2,
 		opponent_id = dude1.id,
-		my_details = dude1.queue_details,
-		opponent_details = dude2.queue_details,
+		p1_details = dude1.queue_details,
+		p2_details = dude2.queue_details,
 		seed = rng_seed,
 	}
 	local conn1, conn2 = getConnFromID(dude1.id), getConnFromID(dude2.id)

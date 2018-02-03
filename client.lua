@@ -221,23 +221,15 @@ end
 local function startMatch(self, recv)
 	assert(recv.side == 1 or recv.side == 2, "oh craps")
 	self.match_start_time = love.timer.getTime()
-	---[[
-	print("RECV DETAILS:\n-----------------")
-	for k, v in pairs(recv) do print(k, v) end
-	local my_details = recv.my_details
-	local opponent_details = recv.opponent_details
-	print("MY DETAILS:\n--------------")
-	for k, v in pairs(my_details) do print(k, v) end
-	print("OPPONENT DETAILS:\n-----------------")
-	for k, v in pairs(opponent_details) do print(k, v) end
-	--]]
 
-	local char1 = "heath" -- need to lookup the character name
-	local char2 = "heath" -- need to lookup the character name
-	local bkground = "rabbitsnowstorm"
+	local p1_details, p2_details = recv.p1_details, recv.p2_details
+	local p1_char, p2_char = p1_details.character, p2_details.character
+	local p1_background, p2_background = p1_details.background, p2_details.background
+
 	self.queuing = false
 	self.playing = true
-	self.game:start("Netplay", char1, char2, bkground, recv.seed, recv.side)
+
+	self.game:start("Netplay", p1_char, p2_char, p2_background, recv.seed, recv.side)
 end
 
 local function connectionAccepted(recv)
