@@ -247,8 +247,14 @@ local function maxDamage(game)
 	end
 end
 
-local function netplaySelect(game)
-	game.statemanager:switch(require "gs_netplay_charselect")
+local function healingParticleGenerate(game)
+	game.particles.healing.generate{
+		game = game,
+		x = 1000,
+		y = 400,
+		owner = game.p1,
+		delay = 15,
+	}
 end
 
 local Unittests = {
@@ -277,7 +283,7 @@ local Unittests = {
 	v = flagPropogateProblem,
 	b = makeAGarbage,
 	n = maxDamage,
-	m = netplaySelect,
+	m = healingParticleGenerate,
 }
 
 return common.class("Unittests", Unittests)

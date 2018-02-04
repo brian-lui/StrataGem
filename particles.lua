@@ -66,9 +66,11 @@ end
 function Particles:clearCount()
 	self.count.created.MP = {0, 0}
 	self.count.created.Damage = {0, 0}
+	self.count.created.Healing = {0, 0}
 	self.count.created.Garbage = {0, 0}
 	self.count.destroyed.MP = {0, 0}
 	self.count.destroyed.Damage = {0, 0}
+	self.count.destroyed.Healing = {0, 0}
 	self.count.destroyed.Garbage = {0, 0}
 end
 
@@ -76,6 +78,8 @@ function Particles:reset()
 	self.allParticles = {
 		Damage = {},
 		DamageTrail = {},
+		Healing = {},
+		HealingTrail = {},
 		SuperParticles = {},
 		GarbageParticles = {},
 		PopParticles = {},
@@ -94,8 +98,8 @@ function Particles:reset()
 		SuperFreezeEffects = {},
 	}
 	self.count = {
-		created = {MP = {0, 0}, Damage = {0, 0}, Garbage = {0, 0}},
-		destroyed = {MP = {0, 0}, Damage = {0, 0}, Garbage = {0, 0}},
+		created = {MP = {0, 0}, Damage = {0, 0}, Healing = {0, 0}, Garbage = {0, 0}},
+		destroyed = {MP = {0, 0}, Damage = {0, 0}, Healing = {0, 0}, Garbage = {0, 0}},
 	}
 
 	--check to see if no_rush is being animated. 0 no animation, 1 currently being animated, 2 mouse hovering over.
@@ -277,6 +281,91 @@ function SuperParticle.generate(game, gem, num_particles, delay_frames)
 end
 
 SuperParticle = common.class("SuperParticle", SuperParticle, Pic)
+
+-------------------------------------------------------------------------------
+-- Healing particles generated when a player makes a match
+local HealingParticle = {}
+function HealingParticle:init(manager, x, y, img, owner, particle_type)
+	Pic.init(self, manager.game, {x = x, y = y, image = img, transparency = 0})
+	self.particle_type = particle_type
+	self.owner = owner
+	manager.allParticles[particle_type][ID.particle] = self
+	self.manager = manager
+end
+
+function HealingParticle:remove()
+	if self.particle_type == "Healing" then
+		self.manager:incrementCount("destroyed", "Healing", self.owner.player_num)
+		self.manager.allParticles.Healing[self.ID] = nil
+	else
+		self.manager.allParticles.HealingTrail[self.ID] = nil
+	end
+end
+
+-- Mandatory: game, x, y, owner
+-- Optional: delay for delay frames, default 0
+function HealingParticle.generate(params)
+	local game = params.game
+	local x, y = params.x, params.y
+	local owner = params.owner
+	local delay = params.delay or 0
+
+	-- calculate bezier curve
+	local loc = 2 -- Always goes to 2nd platform to heal
+	local x4, y4 = owner.hand[loc].x, owner.hand[loc].y
+	local dist = ((x4 - x) ^ 2 + (y4 - y) ^ 2) ^ 0.5
+	local x3, y3 = 0.5 * (x + x4), 0.5 * (y + y4)
+
+	for _ = 1, 3 do
+		local img = image.lookup.particle_freq.random("healing")
+		local angle = math.random() * math.pi * 2
+		local x2 = x + math.cos(angle) * dist * 0.5
+		local y2 = y + math.sin(angle) * dist * 0.5
+		local curve = love.math.newBezierCurve(x, y, x2, y2, x3, y3, x4, y4)
+
+		-- create healing particle
+		local p = common.instance(HealingParticle, game.particles, x, y, img, owner, "Healing")
+		local duration = game.DAMAGE_PARTICLE_TO_PLATFORM_FRAMES + math.random() * 12
+		local rotation = math.random() * 5
+
+		-- determine final platform for healing glows
+		local created_particles = game.particles:getCount("created", "Damage", owner.player_num)
+		local last_damaged_platform = (owner.hand.turn_start_damage + created_particles/3)/4 + 1
+		local last_damaged_platform_idx = math.min(5, math.floor(last_damaged_platform))
+
+		local exit = function()
+			for i = 1, last_damaged_platform_idx do
+				local platform = owner.hand[i].platform
+				if platform then platform:healingGlow() end
+			end
+			p:remove()
+		end
+
+		if delay then
+			p:change{transparency = 0}
+		 	p:wait(delay)
+		 	p:change{duration = 0, transparency = 255}
+		end
+
+		p:change{duration = duration, rotation = rotation, curve = curve, exit = {exit}}
+
+		-- create healing trails
+		for i = 1, 3 do
+			local trail_image = image.lookup.trail_particle.healing
+			local trail = common.instance(HealingParticle, game.particles, x, y,
+				trail_image, owner, "HealingTrail")
+			trail.scaling = 1.25 - 0.25 * i
+			trail:change{transparency = 0}
+			trail:wait(delay + i * 2)
+			trail:change{duration = 0, transparency = 255}
+			trail:change{duration = duration, curve = curve, exit = true}
+		end
+
+		game.particles:incrementCount("created", "Healing", owner.player_num)
+	end
+end
+HealingParticle = common.class("HealingParticle", HealingParticle, Pic)
+
 
 -------------------------------------------------------------------------------
 -- Garbage particles generated when a piece falls off a platform
@@ -1213,6 +1302,7 @@ SuperFreezeEffects = common.class("SuperFreezeEffects", SuperFreezeEffects, Pic)
 
 Particles.damage = DamageParticle
 Particles._damageTrail = DamageTrailParticle
+Particles.healing = HealingParticle
 Particles.superParticles = SuperParticle
 Particles.popParticles = PopParticles
 Particles.explodingGem = ExplodingGem

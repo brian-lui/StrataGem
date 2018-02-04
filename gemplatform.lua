@@ -40,12 +40,19 @@ function GemPlatform:draw(params)
 	end
 end
 
+-- Called when platform takes damage
 function GemPlatform:screenshake(frames)
 	frames = frames or 6
 	self.shake = frames
 	if self.owner.hand[self.hand_idx].piece then
 		self.owner.hand[self.hand_idx].piece:screenshake(frames)
 	end
+end
+
+-- Called when platform heals damage
+function GemPlatform:healingGlow(frames)
+	frames = frames or 6
+	print("healing glow function called for platform")
 end
 
 function GemPlatform:setSpin(angle)

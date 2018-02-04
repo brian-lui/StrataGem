@@ -33,6 +33,11 @@ local image = {
 	yellow_particle2 = love.graphics.newImage('images/particles/yellowparticle2.png'),
 	yellow_particle3 = love.graphics.newImage('images/particles/yellowparticle3.png'),
 
+	healing_particle1 = love.graphics.newImage('images/particles/healingparticle1.png'),
+	healing_particle2 = love.graphics.newImage('images/particles/healingparticle2.png'),
+	healing_particle3 = love.graphics.newImage('images/particles/healingparticle3.png'),
+	healing_trail = love.graphics.newImage('images/particles/healingtrail.png'),
+
 	super_particle_red = love.graphics.newImage('images/particles/redsuperparticle.png'),
 	super_particle_blue = love.graphics.newImage('images/particles/bluesuperparticle.png'),
 	super_particle_green = love.graphics.newImage('images/particles/greensuperparticle.png'),
@@ -247,7 +252,8 @@ image.lookup.particle_freq = {
 	red = {[image.red_particle1] = 12, [image.red_particle2] = 7, [image.red_particle3] = 1},
 	blue = {[image.blue_particle1] = 12, [image.blue_particle2] = 7, [image.blue_particle3] = 1},
 	green = {[image.green_particle1] = 12, [image.green_particle2] = 7, [image.green_particle3] = 1},
-	yellow = {[image.yellow_particle1] = 12, [image.yellow_particle2] = 7, [image.yellow_particle3] = 1}
+	yellow = {[image.yellow_particle1] = 12, [image.yellow_particle2] = 7, [image.yellow_particle3] = 1},
+	healing = {[image.healing_particle1] = 12, [image.healing_particle2] = 7, [image.healing_particle3] = 1},
 }
 image.lookup.particle_freq.random = function(color)
 	local rand_table = {}
@@ -280,7 +286,8 @@ image.lookup.trail_particle = {
 	red = image.trail_particle_red,
 	blue = image.trail_particle_blue,
 	green = image.trail_particle_green,
-	yellow = image.trail_particle_yellow
+	yellow = image.trail_particle_yellow,
+	healing = image.healing_trail,
 }
 
 image.lookup.platform_star = {
