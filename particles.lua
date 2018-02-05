@@ -310,14 +310,13 @@ function HealingParticle.generate(params)
 	local owner = params.owner
 	local delay = params.delay or 0
 
-	-- calculate bezier curve
-	local loc = 2 -- Always goes to 2nd platform to heal
-	local x4, y4 = owner.hand[loc].x, owner.hand[loc].y
-	local dist = ((x4 - x) ^ 2 + (y4 - y) ^ 2) ^ 0.5
-	local x3, y3 = 0.5 * (x + x4), 0.5 * (y + y4)
-
 	for _ = 1, 3 do
+		-- calculate bezier curve
 		local img = image.lookup.particle_freq.random("healing")
+		local loc = math.random(1, 5) -- Goes to random platform
+		local x4, y4 = owner.hand[loc].x, owner.hand[loc].y
+		local dist = ((x4 - x) ^ 2 + (y4 - y) ^ 2) ^ 0.5
+		local x3, y3 = 0.5 * (x + x4), 0.5 * (y + y4)
 		local angle = math.random() * math.pi * 2
 		local x2 = x + math.cos(angle) * dist * 0.5
 		local y2 = y + math.sin(angle) * dist * 0.5
@@ -334,10 +333,8 @@ function HealingParticle.generate(params)
 		local last_damaged_platform_idx = math.min(5, math.floor(last_damaged_platform))
 
 		local exit = function()
-			for i = 1, last_damaged_platform_idx do
-				local platform = owner.hand[i].platform
-				if platform then platform:healingGlow() end
-			end
+			local platform = owner.hand[loc].platform
+			if platform then platform:healingGlow() end
 			p:remove()
 		end
 
