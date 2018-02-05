@@ -286,7 +286,7 @@ SuperParticle = common.class("SuperParticle", SuperParticle, Pic)
 -- Healing particles generated when a player makes a match
 local HealingParticle = {}
 function HealingParticle:init(manager, x, y, img, owner, particle_type)
-	Pic.init(self, manager.game, {x = x, y = y, image = img, transparency = 0})
+	Pic.init(self, manager.game, {x = x, y = y, image = img})
 	self.particle_type = particle_type
 	self.owner = owner
 	manager.allParticles[particle_type][ID.particle] = self
@@ -325,7 +325,7 @@ function HealingParticle.generate(params)
 
 		-- create healing particle
 		local p = common.instance(HealingParticle, game.particles, x, y, img, owner, "Healing")
-		local duration = game.DAMAGE_PARTICLE_TO_PLATFORM_FRAMES + math.random() * 12
+		local duration = game.DAMAGE_PARTICLE_TO_PLATFORM_FRAMES * 1.5 + math.random() * 12
 		local rotation = math.random() * 5
 
 		-- determine final platform for healing glows
@@ -349,21 +349,60 @@ function HealingParticle.generate(params)
 
 		p:change{duration = duration, rotation = rotation, curve = curve, exit = {exit}}
 
-		-- create healing trails
-		for i = 1, 3 do
-			local trail_image = image.lookup.trail_particle.healing
-			local trail = common.instance(HealingParticle, game.particles, x, y,
-				trail_image, owner, "HealingTrail")
-			trail.scaling = 1.25 - 0.25 * i
-			trail:change{transparency = 0}
-			trail:wait(delay + i * 2)
-			trail:change{duration = 0, transparency = 255}
-			trail:change{duration = duration, curve = curve, exit = true}
-		end
+		HealingParticle.generateTrail{game = game, x = x, y = y, owner = owner,
+			delay = delay, curve = curve, duration = duration}--]]
 
 		game.particles:incrementCount("created", "Healing", owner.player_num)
 	end
 end
+
+-- Mandatory: game, x, y, owner, curve, duration
+-- Optional: delay for delay frames, default 0
+function HealingParticle.generateTrail(params)
+	local game = params.game
+	local x, y = params.x, params.y
+	local owner = params.owner
+	local delay = params.delay or 0
+	local curve = params.curve
+	local duration = params.duration
+
+	for i = 1, 3 do
+		local trail_image = image.lookup.trail_particle.healing
+		local trail = common.instance(HealingParticle, game.particles, x, y,
+			trail_image, owner, "HealingTrail")
+		trail.scaling = 1.25 - 0.25 * i
+		trail:change{transparency = 0}
+		trail:wait(delay + i * 2)
+		trail:change{duration = 0, transparency = 255}
+		trail:change{duration = duration, curve = curve, exit = true}
+	end
+end
+
+-- Mandatory: game, owner_platform
+-- Twinkle effect around the platform when it arrives
+function HealingParticle.generateTwinkle(game, platform, delay_frames)
+	local stars_to_make = math.random(3, 6)
+	for i = 1, stars_to_make do
+		local img = image.lookup.particle_freq.random("healing")
+		local x_change = platform.width * 1.5 * (math.random() - 0.5)
+		local y_change = platform.height * 1.5 * (math.random() - 0.5)
+		local x = platform.owner.hand[platform.hand_idx].x + x_change
+		local y = platform.owner.hand[platform.hand_idx].y + y_change
+		local p = common.instance(HealingParticle, game.particles, x, y,
+			img, platform.owner, "HealingTrail")
+		p.scaling = 0
+
+		if delay_frames then
+			p:change{transparency = 0}
+		 	p:wait(delay_frames)
+		 	p:change{duration = 0, transparency = 255}
+		end
+
+		p:change{duration = 30, scaling = 1}
+		p:change{duration = 30, scaling = 0, exit = true}
+	end
+end
+
 HealingParticle = common.class("HealingParticle", HealingParticle, Pic)
 
 

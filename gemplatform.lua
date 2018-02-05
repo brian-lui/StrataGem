@@ -20,6 +20,8 @@ function GemPlatform:init(game, owner, location)
 		y = owner.hand[location].y,
 		image = owner.ID == "P1" and image.UI.platform_gold or image.UI.platform_silver,
 	})
+	self.width = image.UI.platform_gold:getWidth()
+	self.height = image.UI.platform_gold:getHeight()
 end
 
 function GemPlatform:draw(params) 
@@ -40,7 +42,7 @@ function GemPlatform:draw(params)
 	end
 end
 
--- Called when platform takes damage
+-- Called when platform takes damage, shakes the platform
 function GemPlatform:screenshake(frames)
 	frames = frames or 6
 	self.shake = frames
@@ -49,10 +51,9 @@ function GemPlatform:screenshake(frames)
 	end
 end
 
--- Called when platform heals damage
-function GemPlatform:healingGlow(frames)
-	frames = frames or 6
-	print("healing glow function called for platform")
+-- Called when platform heals damage, makes twinkling stars
+function GemPlatform:healingGlow()
+	self.game.particles.healing.generateTwinkle(self.game, self)
 end
 
 function GemPlatform:setSpin(angle)
@@ -70,8 +71,9 @@ function GemPlatform:update(dt)
 	local loc = self.hand_idx
 
 	-- set spin and redness
-	local destroyed_particles = self.game.particles:getCount("destroyed", "Damage", player.enemy.player_num)
-	local displayed_damage = (player.hand.turn_start_damage + destroyed_particles/3) * 0.25
+	local destroyed_damage_particles = self.game.particles:getCount("destroyed", "Damage", player.enemy.player_num)
+	local destroyed_healing_particles = self.game.particles:getCount("destroyed", "Healing", player.enemy.player_num)
+	local displayed_damage = (player.hand.turn_start_damage + destroyed_damage_particles/3 - destroyed_healing_particles/3) * 0.25
 
 	if displayed_damage >= loc then	-- fully red, full spin
 		self.redness = math.min(self.redness + 16, 255)

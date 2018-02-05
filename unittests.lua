@@ -257,6 +257,10 @@ local function healingParticleGenerate(game)
 	}
 end
 
+local function healingTwinkleGenerate(game)
+	game.particles.healing.generateTwinkle(game, game.p1.hand[2].platform)
+end
+
 local Unittests = {
 	q = garbageMatch,
 	w = multiCombo,
@@ -282,7 +286,8 @@ local Unittests = {
 	c = testGemImage,
 	v = flagPropogateProblem,
 	b = makeAGarbage,
-	n = maxDamage,
+	--n = maxDamage,
+	n = healingTwinkleGenerate,
 	m = healingParticleGenerate,
 }
 
