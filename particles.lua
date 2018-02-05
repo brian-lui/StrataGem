@@ -381,6 +381,7 @@ end
 -- Mandatory: game, owner_platform
 -- Twinkle effect around the platform when it arrives
 function HealingParticle.generateTwinkle(game, platform, delay_frames)
+	delay_frames = delay_frames or 0
 	local stars_to_make = math.random(3, 6)
 	for i = 1, stars_to_make do
 		local img = image.lookup.particle_freq.random("healing")
@@ -390,14 +391,9 @@ function HealingParticle.generateTwinkle(game, platform, delay_frames)
 		local y = platform.owner.hand[platform.hand_idx].y + y_change
 		local p = common.instance(HealingParticle, game.particles, x, y,
 			img, platform.owner, "HealingTrail")
-		p.scaling = 0
-
-		if delay_frames then
-			p:change{transparency = 0}
-		 	p:wait(delay_frames)
-		 	p:change{duration = 0, transparency = 255}
-		end
-
+		p.scaling, p.transparency = 0, 0
+	 	p:wait(delay_frames + (i - 1) * 15)
+	 	p:change{duration = 0, transparency = 255}
 		p:change{duration = 30, scaling = 1}
 		p:change{duration = 30, scaling = 0, exit = true}
 	end
