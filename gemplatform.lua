@@ -20,8 +20,8 @@ function GemPlatform:init(game, owner, location)
 		y = owner.hand[location].y,
 		image = owner.ID == "P1" and image.UI.platform_gold or image.UI.platform_silver,
 	})
-	self.width = image.UI.platform_gold:getWidth()
-	self.height = image.UI.platform_gold:getHeight()
+	self.width = self.pic.width
+	self.height = self.pic.height
 end
 
 function GemPlatform:draw(params) 
