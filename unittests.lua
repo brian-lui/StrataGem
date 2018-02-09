@@ -207,10 +207,11 @@ local function showDebugInfo(game)
 	game.debug_drawGamestate = not game.debug_drawGamestate
 	game.debug_drawDamage = not game.debug_drawDamage
 	game.debug_drawGrid = not game.debug_drawGrid	
-end
-
-local function showDebugOverlay(game)
-	game.debug_overlay = function() return game.current_phase end
+	if game.debug_overlay then
+		game.debug_overlay = nil
+	else
+		game.debug_overlay = function() return game.current_phase end
+	end
 end
 
 local function toggleSlowdown(game)
@@ -281,7 +282,7 @@ local Unittests = {
 	j = addSuperAndBurst,
 	k = showAnimationCanvas,
 	l = showDebugInfo,
-	z = showDebugOverlay,
+	--z = showDebugOverlay,
 	x = toggleSlowdown,
 	c = testGemImage,
 	v = flagPropogateProblem,
