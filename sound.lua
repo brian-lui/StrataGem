@@ -19,7 +19,7 @@ local sfx_files = {"dummy", "button", "buttonback", "buttonsuper", "buttonbacksu
 	"buttoncharacter", "gembreak1", "gembreak2", "gembreak3", "gembreak4",
 	"gembreak5", "gembreakgrey", "gemrotate", "gemdrop", "rush", "doublecast", 
 	"fountaingo", "fountainrush", "fountaindoublecast", "superactivate", "starbreak",
-	"trashrow", "countdown3", "countdown2", "countdown1",
+	"trashrow", "countdown3", "countdown2", "countdown1", "healing",
 
 	"heathpassive",
 }

@@ -54,6 +54,7 @@ end
 -- Called when platform heals damage, makes twinkling stars
 function GemPlatform:healingGlow()
 	self.game.particles.healing.generateTwinkle(self.game, self)
+	self.game.sound:newSFX("healing")
 end
 
 function GemPlatform:setSpin(angle)
