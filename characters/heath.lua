@@ -4,11 +4,7 @@ most gem in that column. Fire tiles last for one turn. At the end of the turn,
 they destroy the gem below them UNLESS a gem is placed on top of them (the gem
 can come from either player). Heath owns the damage from the fire burn.
 
-Super: If Heath makes a horizontal match on the turn he activates super, it
-clears out the gems in the row above and below match. (example, a match 3 would
-clear out a 3x3 box with the matched row being the middle box. a match 4 would
-clear out a 4x3 box with the matched row being the middle box.)
-(this should leave fire also) --]]
+Super: Clear the top gem in each friendly column. --]]
 
 -- *This part is the setup part where we initialize the working variables and images
 local love = _G.love

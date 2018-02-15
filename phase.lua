@@ -20,6 +20,7 @@ function Phase:reset()
 	for i = 1, self.game.grid.columns do self.no_rush[i] = true end
 	self.after_match_delay = self.game.GEM_FADE_FRAMES
 	self.matched_this_round = {false, false} -- p1 made a match, p2 made a match
+	self.before_cleanup_delay_frames = 0
 	self.game_is_over = false
 	self.gameover_pause = self.INIT_GAMEOVER_PAUSE
 	self.garbage_this_round = false
@@ -317,8 +318,26 @@ function Phase:platformsMoving(dt)
 		if self.garbage_this_round then
 			game.current_phase = "Gravity"
 		else
-			game.current_phase = "Cleanup"
+			local p1_delay = game.p1.getEndOfTurnDelay()
+			local p2_delay = game.p2.getEndOfTurnDelay()
+			self.before_cleanup_delay_frames = math.max(p1_delay, p2_delay)
+			self.should_call_char_ability_this_phase = true
+			game.current_phase = "BeforeCleanup"
 		end
+	end
+end
+
+function Phase:beforeCleanup(dt)
+	for player in self.game:players() do player.hand:update(dt) end
+	if self.should_call_char_ability_this_phase then 
+		for player in self.game:players() do player:beforeCleanup() end
+		self.should_call_char_ability_this_phase = false
+	end
+
+	if self.before_cleanup_delay_frames > 0 then
+		self.before_cleanup_delay_frames = self.before_cleanup_delay_frames - 1
+	else
+		self.game.current_phase = "Cleanup"
 	end
 end
 
@@ -405,6 +424,7 @@ Phase.lookup = {
 	PlatformsExploding = Phase.platformsExploding,
 	GarbageRowCreation = Phase.garbageRowCreation,
 	PlatformsMoving = Phase.platformsMoving,
+	BeforeCleanup = Phase.beforeCleanup,
 	Cleanup = Phase.cleanup,
 	Sync = Phase.sync,
 	GameOver = Phase.gameOver

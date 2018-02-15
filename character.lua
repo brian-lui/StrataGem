@@ -145,6 +145,16 @@ end
 function Character:afterAllMatches()
 end
 
+-- how many frames to delay before cleanup phase
+function Character:getEndOfTurnDelay()
+	return 0
+end
+
+-- character actions to be run before cleanup
+-- If no end of turn delay, it will proceed instantly to next turn
+function Character:beforeCleanup()
+end
+
 function Character:cleanup()
 	self:resetMP()
 	self.supering = false

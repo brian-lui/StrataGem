@@ -290,6 +290,10 @@ function Hand:addDamage(damage)
 	self.damage = math.min(self.damage + damage, 20)
 end
 
+function Hand:healDamage(damage)
+	self.damage = math.max(self.damage - damage, 4)
+end
+
 -- Update function only called after action phase
 function Hand:afterActionPhaseUpdate()
 	for i = 1, 5 do
