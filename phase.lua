@@ -318,8 +318,8 @@ function Phase:platformsMoving(dt)
 		if self.garbage_this_round then
 			game.current_phase = "Gravity"
 		else
-			local p1_delay = game.p1.getEndOfTurnDelay()
-			local p2_delay = game.p2.getEndOfTurnDelay()
+			local p1_delay = game.p1:getEndOfTurnDelay()
+			local p2_delay = game.p2:getEndOfTurnDelay()
 			self.before_cleanup_delay_frames = math.max(p1_delay, p2_delay)
 			self.should_call_char_ability_this_phase = true
 			game.current_phase = "BeforeCleanup"

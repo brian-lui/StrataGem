@@ -234,7 +234,8 @@ function Boom.generateBoom(game, owner, row, col)
 end
 
 Boom = common.class("Boom", Boom, Pic)
--------------------------------------------------------------------------------
+
+
 Heath.particle_fx = {
 	smallFire = SmallFire,
 	boom = Boom,
