@@ -330,12 +330,13 @@ function Phase:platformsMoving(dt)
 		if self.garbage_this_round then
 			game.current_phase = "Gravity"
 		else
-			local p1_delay = game.p1:getEndOfTurnDelay()
-			local p2_delay = game.p2:getEndOfTurnDelay()
+			local delay = 0
+			for player in game:players() do
+				local player_delay = player:beforeCleanup()
+				delay = math.max(delay, player_delay or 0)
+			end
+			self:setPause(delay, "Cleanup", true, false)
 			self.should_call_char_ability_this_phase = true
-
-			for player in game:players() do player:beforeCleanup() end
-			self:setPause(math.max(p1_delay, p2_delay), "Cleanup", true, false)
 		end
 	end
 end

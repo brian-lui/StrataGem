@@ -232,16 +232,11 @@ function Walter:afterMatch()
 	end
 end
 
-function Walter:getEndOfTurnDelay()
+function Walter:beforeCleanup()
 	local delay = 0
 	for i = 1, 8 do
 		if self.pending_clouds[i] then delay = self.CLOUD_SLIDE_DURATION end
 	end
-	return delay
-end
-
-
-function Walter:beforeCleanup()
 	for i = 1, 8 do
 		if self.pending_clouds[i] then
 			local TURNS_TO_EXIST = 1
@@ -250,6 +245,8 @@ function Walter:beforeCleanup()
 		end
 	end
 	self.pending_clouds = {}
+
+	return delay	
 end
 
 function Walter:cleanup()

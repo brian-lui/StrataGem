@@ -79,22 +79,7 @@ function Character:setup()
 
 	self.hand = common.instance(Hand, self.game, self)
 	self.hand:makeInitialPieces()
---[[
-	-- burst meter
-	local burst_frame_img = self.ID == "P1" and image.UI.gauge_gold or image.UI.gauge_silver
-	local BURST_SEGMENTS = 2
-	self.burst_frame = common.instance(Pic, self.game, {x = stage.burst[self.ID].frame.x,
-		y = stage.burst[self.ID].frame.y, image = burst_frame_img})
-	self.burst_block, self.burst_partial, self.burst_glow = {}, {}, {}
-	for i = 1, BURST_SEGMENTS do
-		self.burst_block[i] = common.instance(Pic, self.game, {x = stage.burst[self.ID][i].x,
-			y = stage.burst[self.ID][i].y, image = self.burst_images.full})
-		self.burst_partial[i] = common.instance(Pic, self.game, {x = stage.burst[self.ID][i].x,
-			y = stage.burst[self.ID][i].y, image = self.burst_images.partial})
-		self.burst_glow[i] = common.instance(Pic, self.game, {x = stage.burst[self.ID][i].glow_x,
-			y = stage.burst[self.ID][i].glow_y, image = self.burst_images.glow[i]})
-	end
---]]
+
 	-- super meter
 	self.super_frame = common.instance(Pic, self.game, {x = stage.super[self.ID].x,
 		y = stage.super[self.ID].y, image = self.super_images.empty})
@@ -116,44 +101,19 @@ end
 function Character:actionPhase(dt)
 end
 
-function Character:beforeGravity()
-	
-end
 
--- returns a list of {frames, func, args to execute}
-function Character:afterGravity()
-	return {}
-end
-
--- before gems are matched
-function Character:beforeMatch()
-end
-
--- while matches are exploding
-function Character:duringMatchAnimation()
-end
-
--- after each match
-function Character:afterMatch()
-end
-
--- at garbage row creation
-function Character:whenCreatingGarbageRow()
-end
-
--- after all matches are finished (i.e. after chain combos and so on)
-function Character:afterAllMatches()
-end
-
--- how many frames to delay before cleanup phase
-function Character:getEndOfTurnDelay()
-	return 0
-end
-
--- character actions to be run before cleanup
--- If no end of turn delay, it will proceed instantly to next turn
-function Character:beforeCleanup()
-end
+-------------------------------------------------------------------------------
+-- All these abilities can optionally return the number of frames
+-- to pause for the animation.
+-------------------------------------------------------------------------------
+function Character:beforeGravity() end
+function Character:afterGravity() end
+function Character:beforeMatch() end -- before gems are matched
+function Character:duringMatchAnimation() end -- while matches are exploding
+function Character:afterMatch() end -- after each match
+function Character:whenCreatingGarbageRow() end -- at garbage row creation
+function Character:afterAllMatches() end -- after all chain combos finished
+function Character:beforeCleanup() end
 
 function Character:cleanup()
 	self:resetMP()
