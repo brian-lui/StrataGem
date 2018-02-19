@@ -134,7 +134,7 @@ end
 function Game:newTurn()
 	self.turn = self.turn + 1
 	self.current_phase = "Action"
-	self.frozen = false
+	self.inputs_frozen = false
 	self.phase.time_to_next = self.phase.INIT_TIME_TO_NEXT
 end
 
@@ -143,7 +143,7 @@ function Game:reset()
 	self.turn = 1
 	self.phase.time_to_next = self.phase.INIT_TIME_TO_NEXT
 	self.netplay_wait = 0
-	self.frozen = false
+	self.inputs_frozen = false
 	self.scoring_combo = 0
 	self.round_ended = false
 	self.me_player = false

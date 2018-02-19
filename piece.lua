@@ -342,7 +342,7 @@ function Piece:deselect()
 		(place_type == "rush" and self:isValidRush()) or
 		(place_type == "double" and player.cur_burst >= player.current_double_cost)
 	local char_ability_ok = player:pieceDroppedOK(self, shift)
-	if valid and not self.game.frozen and go_ahead and char_ability_ok and self.game.current_phase == "Action" then
+	if valid and not self.game.inputs_frozen and go_ahead and char_ability_ok and self.game.current_phase == "Action" then
 		player.place_type = place_type
 		self:dropIntoBasin(cols)
 	else -- snap back to original place. Can't use change because it interferes with rotate tween

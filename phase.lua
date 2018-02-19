@@ -6,7 +6,7 @@ local Phase = {}
 function Phase:init(game)
 	self.game = game
 	self.INIT_TIME_TO_NEXT = 430 -- frames in each action phase
-	self.INIT_PLATFORM_SPIN_DELAY_FRAMES = 30 -- frames to animate platforms exploding
+	self.PLATFORM_SPIN_DELAY = 30 -- frames to animate platforms exploding
 	self.INIT_SUPER_PAUSE = 90 -- frames to animate super activation
 	self.INIT_GAMEOVER_PAUSE = 180 -- how long to stay on gameover screen
 end
@@ -15,16 +15,46 @@ function Phase:reset()
 	self.time_to_next = self.INIT_TIME_TO_NEXT
 	self.super_play = nil
 	self.super_pause = 0
-	self.platform_spin_delay_frames = self.INIT_PLATFORM_SPIN_DELAY_FRAMES
 	self.no_rush = {} --whether no_rush is eligible for animation
 	for i = 1, self.game.grid.columns do self.no_rush[i] = true end
-	self.after_match_delay = self.game.GEM_FADE_FRAMES
 	self.matched_this_round = {false, false} -- p1 made a match, p2 made a match
-	self.before_cleanup_delay_frames = 0
 	self.game_is_over = false
 	self.gameover_pause = self.INIT_GAMEOVER_PAUSE
 	self.garbage_this_round = false
 	self.should_call_char_ability_this_phase = true
+end
+
+-- default is for both hand and grid to update
+function Phase:setPause(frames, next_phase, update_hand, update_grid)
+	self.frames_until_next_phase = frames
+	self.next_phase = next_phase
+	if update_hand == false then
+		self.update_hand = false
+	else
+		self.update_hand = true
+	end
+
+	if update_grid == false then
+		self.update_grid = false
+	else
+		self.update_grid = true
+	end
+	self.game.current_phase = "Pause"
+end
+
+function Phase:_pause(dt)
+	if self.frames_until_next_phase > 0 then
+		if self.update_hand then
+			for player in self.game:players() do player.hand:update(dt) end
+		end
+		if self.update_grid then
+			grid:updateGravity(dt)
+		end
+		self.frames_until_next_phase = self.frames_until_next_phase - 1
+	else
+		self.game.current_phase = self.next_phase
+		self.next_phase = nil
+	end
 end
 
 function Phase:intro(dt)
@@ -78,7 +108,7 @@ function Phase:resolve(dt)
 	if game.me_player.place_type == nil then print("PLACE TYPE BUG") end
 	for player in game:players() do player.hand:afterActionPhaseUpdate() end
 	game.grid:updateRushPriority()
-	game.frozen = true
+	game.inputs_frozen = true
 	game.current_phase = "SuperFreeze"
 end
 
@@ -187,13 +217,8 @@ function Phase:matchAnimations(dt)
 	end
 
 	if self.game.particles:getNumber("GemImage") == 0 then
-		if self.after_match_delay == 0 then
-			self.game.current_phase = "ResolvingMatches"
-			self.after_match_delay = self.game.GEM_FADE_FRAMES
-			self.should_call_char_ability_this_phase = true
-		else
-			self.after_match_delay = self.after_match_delay - 1
-		end
+		self:setPause(self.game.GEM_FADE_FRAMES, "ResolvingMatches", true, false)
+		self.should_call_char_ability_this_phase = true
 	end
 end
 
@@ -236,19 +261,8 @@ function Phase:resolvedMatches(dt)
 				end
 			end
 		end
-		game.current_phase = "PlatformSpinDelay"
 		self.should_call_char_ability_this_phase = true
-	end
-end
-
-function Phase:platformSpinDelay(dt)
-	for player in self.game:players() do player.hand:update(dt) end
-	if self.platform_spin_delay_frames > 0 then
-		for player in self.game:players() do player.hand:update(dt) end
-		self.platform_spin_delay_frames = self.platform_spin_delay_frames - 1
-	else
-		self.platform_spin_delay_frames = self.INIT_PLATFORM_SPIN_DELAY_FRAMES
-		self.game.current_phase = "DestroyDamagedPlatforms"
+		self:setPause(self.PLATFORM_SPIN_DELAY, "DestroyDamagedPlatforms", true, false)
 	end
 end
 
@@ -320,24 +334,11 @@ function Phase:platformsMoving(dt)
 		else
 			local p1_delay = game.p1:getEndOfTurnDelay()
 			local p2_delay = game.p2:getEndOfTurnDelay()
-			self.before_cleanup_delay_frames = math.max(p1_delay, p2_delay)
 			self.should_call_char_ability_this_phase = true
-			game.current_phase = "BeforeCleanup"
+
+			for player in game:players() do player:beforeCleanup() end
+			self:setPause(math.max(p1_delay, p2_delay), "Cleanup", true, false)
 		end
-	end
-end
-
-function Phase:beforeCleanup(dt)
-	for player in self.game:players() do player.hand:update(dt) end
-	if self.should_call_char_ability_this_phase then 
-		for player in self.game:players() do player:beforeCleanup() end
-		self.should_call_char_ability_this_phase = false
-	end
-
-	if self.before_cleanup_delay_frames > 0 then
-		self.before_cleanup_delay_frames = self.before_cleanup_delay_frames - 1
-	else
-		self.game.current_phase = "Cleanup"
 	end
 end
 
@@ -407,6 +408,7 @@ function Phase:gameOver(dt)
 end
 
 Phase.lookup = {
+	Pause = Phase._pause,
 	Intro = Phase.intro,
 	Action = Phase.action,
 	Resolve = Phase.resolve,
