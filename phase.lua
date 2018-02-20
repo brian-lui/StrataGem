@@ -12,6 +12,8 @@ function Phase:init(game)
 end
 
 function Phase:reset()
+	self.next_phase = nil
+	self.frames_until_next_phase = 0
 	self.time_to_next = self.INIT_TIME_TO_NEXT
 	self.super_play = nil
 	self.super_pause = 0
@@ -22,32 +24,19 @@ function Phase:reset()
 	self.should_call_char_ability_this_phase = true
 end
 
--- default is for both hand and grid to update
-function Phase:setPause(frames, next_phase, update_hand, update_grid)
+-- helper function to set duration of the pause until next phase
+function Phase:setPause(frames)
 	self.frames_until_next_phase = frames
-	self.next_phase = next_phase
-	if update_hand == false then
-		self.update_hand = false
-	else
-		self.update_hand = true
-	end
+end
 
-	if update_grid == false then
-		self.update_grid = false
-	else
-		self.update_grid = true
-	end
+-- pause for the amount set in setPause
+function Phase:activatePause(next_phase)
+	self.next_phase = next_phase
 	self.game.current_phase = "Pause"
 end
 
 function Phase:_pause(dt)
 	if self.frames_until_next_phase > 0 then
-		if self.update_hand then
-			for player in self.game:players() do player.hand:update(dt) end
-		end
-		if self.update_grid then
-			grid:updateGravity(dt)
-		end
 		self.frames_until_next_phase = self.frames_until_next_phase - 1
 	else
 		self.game.current_phase = self.next_phase
@@ -57,9 +46,6 @@ end
 
 function Phase:intro(dt)
 	local game = self.game
-	for player in game:players() do
-		player.hand:update(dt)
-	end
 	if game.frame == 30 then
 		game.particles.words.generateReady(self.game)
 	end
@@ -77,7 +63,6 @@ function Phase:action(dt)
 	local ai = game.ai
 
 	for player in game:players() do
-		player.hand:update(dt)
 		if player.actionPhase then player:actionPhase(dt) end
 	end
 	self.game.ui:update()
@@ -104,10 +89,17 @@ end
 function Phase:resolve(dt)
 	local game = self.game
 	if game.me_player.place_type == nil then print("PLACE TYPE BUG") end
-	for player in game:players() do player.hand:afterActionPhaseUpdate() end
+
+	local delay = 0
+	for player in game:players() do
+		local player_delay = player.hand:afterActionPhaseUpdate()
+		delay = math.max(delay, player_delay or 0)
+	end
+	self:setPause(delay)
+	self:activatePause("SuperFreeze")
+
 	game.grid:updateRushPriority()
 	game.inputs_frozen = true
-	game.current_phase = "SuperFreeze"
 end
 
 local function superPlays(self)
@@ -127,7 +119,7 @@ function Phase:superFreeze(dt)
 	if self.super_pause > 0 then
 		self.super_pause = self.super_pause - 1
 	elseif self.super_play[1] then
-		self.super_play[1]:superSlideIn()
+		self.super_play[1]:superSlideInAnim()
 		self.super_pause = self.INIT_SUPER_PAUSE
 		table.remove(self.super_play, 1)
 	else
@@ -137,15 +129,19 @@ function Phase:superFreeze(dt)
 end
 
 function Phase:beforeGravity(dt)
-	for player in self.game:players() do player:beforeGravity() end
-	self.game.current_phase = "GemTween"
+	local delay = 0
+	for player in self.game:players() do
+		local player_delay = player:beforeGravity()
+		delay = math.max(delay, player_delay or 0)
+	end
+	self:setPause(delay)
+	self:activatePause("GemTween")
 end
 
 function Phase:applyGemTween(dt)
 	local game = self.game
 	local grid = game.grid
 	grid:updateGravity(dt) -- animation
-	for player in self.game:players() do player.hand:update(dt) end
 	local animation_done = grid:isSettled() --  tween-from-top is done
 	if animation_done then
 		grid:dropColumns()
@@ -157,10 +153,16 @@ function Phase:applyGravity(dt)
 	local game = self.game
 	local grid = game.grid
 	grid:updateGravity(dt) -- animation
-	for player in self.game:players() do player.hand:update(dt) end
 	if grid:isSettled() then
 		game.particles.wordEffects.clear(game.particles)
-		for player in game:players() do player:afterGravity() end
+
+		local delay = 0
+		for player in self.game:players() do
+			local player_delay = player:afterGravity()
+			delay = math.max(delay, player_delay or 0)
+		end
+		self:setPause(delay)
+
 		for i = 1, grid.columns do --checks if no_rush should be possible again
 			if not self.no_rush[i] then
 				if not grid[8][i].gem  then
@@ -168,7 +170,7 @@ function Phase:applyGravity(dt)
 				end
 			end
 		end
-		game.current_phase = "GetMatchedGems"
+		self:activatePause("GetMatchedGems")
 	end
 end
 
@@ -185,70 +187,82 @@ function Phase:getMatchedGems(dt)
 	end
 
 	if matches > 0 then
-		game.current_phase = "FlagGems"
+		grid:flagMatchedGems() -- sets flags
+
+		local delay = 0
+		for player in game:players() do
+			local player_delay = player:beforeMatch()
+			delay = math.max(delay, player_delay or 0)
+		end
+		self:setPause(delay)
+		self:activatePause("DestroyMatchedGems")
 	else
 		game.current_phase = "ResolvedMatches"
 	end
 end
 
 -- flag above gems, destroy matched gems, and generate the exploding gem particles
-function Phase:flagGems(dt)
+function Phase:destroyMatchedGems(dt)
 	local game = self.game
 	local grid = game.grid
 
-	grid:flagMatchedGems() -- sets flags
-	for player in game:players() do player:beforeMatch() end
-	self.matched_this_round = grid:checkMatchedThisTurn()
+	self.matched_this_round = grid:checkMatchedThisTurn() -- which players made a match
 	grid:destroyMatchedGems(game.scoring_combo)
 	game.current_phase = "MatchAnimations"
 end
 
 -- wait for gem explode animation
 function Phase:matchAnimations(dt)
-	for player in self.game:players() do player.hand:update(dt) end	
-	
 	if self.should_call_char_ability_this_phase then
+		local delay = 0
 		for player in self.game:players() do
-			player:duringMatchAnimation()
-		end	
+			local player_delay = player:duringMatchAnimation()
+			delay = math.max(delay, player_delay or 0)
+		end
+		self:setPause(self.game.GEM_FADE_FRAMES + delay)
 		self.should_call_char_ability_this_phase = false
 	end
-
 	if self.game.particles:getNumber("GemImage") == 0 then
-		self:setPause(self.game.GEM_FADE_FRAMES, "ResolvingMatches", true, false)
+		self:activatePause("ResolvingMatches")
 		self.should_call_char_ability_this_phase = true
 	end
 end
 
 function Phase:resolvingMatches(dt)
-	local grid = self.game.grid
+	local game = self.game
+	local grid = game.grid
 	local gem_table = grid:getMatchedGems()
 
-	for player in self.game:players() do player:afterMatch(gem_table) end
-	self.game.scoring_combo = self.game.scoring_combo + 1
+	local delay = 0
+	for player in game:players() do
+		local player_delay = player:afterMatch()
+		delay = math.max(delay, player_delay or 0)
+	end
+	self:setPause(delay)
+
+	game.scoring_combo = game.scoring_combo + 1
 	if not self.matched_this_round[1] then grid:removeAllGemOwners(1) end
 	if not self.matched_this_round[2] then grid:removeAllGemOwners(2) end
 	grid:dropColumns()
 	grid:updateGrid()
-	self.game.current_phase = "Gravity"
+	self:activatePause("Gravity")
 end
 
 function Phase:resolvedMatches(dt)
 	local game = self.game
 	local grid = game.grid
 	if self.should_call_char_ability_this_phase then 
+		local delay = 0
 		for player in game:players() do
-			player:afterAllMatches()
+			local player_delay = player:afterAllMatches()
+			delay = math.max(delay, player_delay or 0)
 		end
+		self:setPause(self.PLATFORM_SPIN_DELAY + delay)
 		self.should_call_char_ability_this_phase = false
 	end
 	if game.particles:getCount("onscreen", "Damage", 1) + game.particles:getCount("onscreen", "Damage", 2) > 0 then
-		for player in game:players() do player.hand:update(dt) end
 	else	-- all damage particles finished
-		for player in game:players() do
-			player.hand:update(dt)
-			player.place_type = "normal"
-		end
+		for player in game:players() do player.place_type = "normal" end
 		game.scoring_combo = 0
 		game.grid:setAllGemOwners(0)
 		for i = 1, grid.columns do --checks if should generate no rush
@@ -260,7 +274,7 @@ function Phase:resolvedMatches(dt)
 			end
 		end
 		self.should_call_char_ability_this_phase = true
-		self:setPause(self.PLATFORM_SPIN_DELAY, "DestroyDamagedPlatforms", true, false)
+		self:activatePause("DestroyDamagedPlatforms")
 	end
 end
 
@@ -282,7 +296,6 @@ end
 
 function Phase:platformsExploding(dt)
 	local game = self.game
-	for player in game:players() do player.hand:update(dt) end
 	if game.particles:getNumber("ExplodingPlatform") == 0 then
 		game.particles:clearCount()	-- clear here so the platforms display redness/spin correctly
 		game.current_phase = "GarbageRowCreation"
@@ -293,15 +306,24 @@ function Phase:garbageRowCreation(dt)
 	local game = self.game
 	local grid = game.grid
 
-	for player in game:players() do player.hand:update(dt) end
 	grid:updateGravity(dt)
 
-	if game.particles:getNumber("GarbageParticles") == 0 and self.should_call_char_ability_this_phase then
-		for player in game:players() do
-			player:whenCreatingGarbageRow()
+	if game.particles:getNumber("GarbageParticles") == 0 then
+		local delay = 0
+		for player in self.game:players() do
+			local player_delay = player:whenCreatingGarbageRow()
+			delay = math.max(delay, player_delay or 0)
 		end
-		self.should_call_char_ability_this_phase = false
+		self:setPause(delay)
+		self:activatePause("GarbageMoving")
 	end
+end
+
+function Phase:garbageMoving(dt)
+	local game = self.game
+	local grid = game.grid
+
+	grid:updateGravity(dt)
 
 	if grid:isSettled() and game.particles:getNumber("GarbageParticles") == 0 then
 		for player in game:players() do
@@ -310,7 +332,6 @@ function Phase:garbageRowCreation(dt)
 			player:resetMP()
 		end
 		game.current_phase = "PlatformsMoving"
-		self.should_call_char_ability_this_phase = true
 	end
 end
 
@@ -320,7 +341,6 @@ function Phase:platformsMoving(dt)
 
 	local handsettled = true
 	for player in game:players() do
-		player.hand:update(dt)
 		if not player.hand:isSettled() then handsettled = false end
 	end
 
@@ -335,7 +355,8 @@ function Phase:platformsMoving(dt)
 				local player_delay = player:beforeCleanup()
 				delay = math.max(delay, player_delay or 0)
 			end
-			self:setPause(delay, "Cleanup", true, false)
+			self:setPause(delay)
+			self:activatePause("Cleanup")
 			self.should_call_char_ability_this_phase = true
 		end
 	end
@@ -356,7 +377,14 @@ function Phase:cleanup(dt)
 	end
 
 	grid:updateGrid()
-	for player in game:players() do player:cleanup() end
+
+	local delay = 0
+	for player in self.game:players() do
+		local player_delay = player:cleanup()
+		delay = math.max(delay, player_delay or 0)
+	end
+	self:setPause(delay)
+
 	game.ai:newTurn()
 	self.garbage_this_round = false
 	p1.dropped_piece, p2.dropped_piece = false, false
@@ -368,12 +396,16 @@ function Phase:cleanup(dt)
 	for player in game:players() do player.hand:endOfTurnUpdate() end
 
 	if grid:getLoser() then
-		game.current_phase = "GameOver"
+		self:activatePause("Gameover")
 	elseif game.type == "Netplay" then
-		game.current_phase = "Sync"
+		self:activatePause("Sync")
 	else
-		game:newTurn()
+		self:activatePause("NewTurn")
 	end
+end
+
+function Phase:newTurn(dt)
+	self.game:newTurn()
 end
 
 function Phase:sync(dt)
@@ -383,7 +415,6 @@ function Phase:sync(dt)
 	if not self.game.client.connected then
 		self.game.type = "1P"
 		print("Disconnected from server :( changing to 1P mode")
-		self.game:newTurn()
 	end
 end
 
@@ -391,7 +422,8 @@ function Phase:gameOver(dt)
 	local game = self.game
 	game.grid:animateGameOver(game.grid:getLoser())
 	if game.type == "Netplay" then game.client:endMatch() end
-	self:setPause(self.GAMEOVER_DELAY, "Leave", true, false)
+	self:setPause(self.GAMEOVER_DELAY)
+	self:activatePause("Leave")
 end
 
 function Phase:leave(dt)
@@ -413,7 +445,7 @@ Phase.lookup = {
 	GemTween = Phase.applyGemTween,
 	Gravity = Phase.applyGravity,
 	GetMatchedGems = Phase.getMatchedGems,
-	FlagGems = Phase.flagGems,
+	DestroyMatchedGems = Phase.destroyMatchedGems,
 	MatchAnimations = Phase.matchAnimations,
 	ResolvingMatches = Phase.resolvingMatches,
 	ResolvedMatches = Phase.resolvedMatches,
@@ -421,10 +453,12 @@ Phase.lookup = {
 	DestroyDamagedPlatforms = Phase.destroyDamagedPlatforms,
 	PlatformsExploding = Phase.platformsExploding,
 	GarbageRowCreation = Phase.garbageRowCreation,
+	GarbageMoving = Phase.garbageMoving,
 	PlatformsMoving = Phase.platformsMoving,
 	BeforeCleanup = Phase.beforeCleanup,
 	Cleanup = Phase.cleanup,
 	Sync = Phase.sync,
+	NewTurn = Phase.newTurn,
 	GameOver = Phase.gameOver,
 	Leave = Phase.leave,
 }
@@ -433,6 +467,7 @@ function Phase:run(...)
 	if not self.game.paused then
 		local todo = Phase.lookup[self.game.current_phase]
 		assert(todo, "You did a typo for the current phase idiot - " .. self.game.current_phase)
+		for player in self.game:players() do player.hand:update(...) end
 		todo(self, ...)
 		self.game.queue:update()
 	end

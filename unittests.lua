@@ -63,6 +63,14 @@ end
 
 ---------------------------------- PATTERNS -----------------------------------
 
+-- test Walter passive
+local function testWalterPassive(game)
+	nrow(game, 5, "YRGB    ")
+	nrow(game, 6, "YRGB    ")
+	nrow(game, 7, "RGBY    ")
+	nrow(game, 8, "RGBY    ")
+end
+
 -- test garbage matches
 local function garbageMatch(game)
 	nrow(game, 7, " YRRBBY ")
@@ -288,7 +296,7 @@ local Unittests = {
 	v = flagPropogateProblem,
 	b = makeAGarbage,
 	--n = maxDamage,
-	n = healingTwinkleGenerate,
+	n = testWalterPassive,
 	m = healingParticleGenerate,
 }
 
