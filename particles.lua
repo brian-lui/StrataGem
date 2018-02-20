@@ -1328,6 +1328,54 @@ function SuperFreezeEffects:remove()
 	self.manager.allParticles.SuperFreezeEffects[self.ID] = nil
 end
 
+function SuperFreezeEffects.generate(game, player, shadow_image, action_image, fuzz_image)
+	local stage = game.stage
+	local sign = player.player_num == 2 and -1 or 1
+
+	local shadow = common.instance(SuperFreezeEffects, game.particles, {
+		image = shadow_image,
+		draw_order = 2,
+		x = stage.width * (0.5 - sign * 0.7),
+		y = stage.height * 0.5,
+		flip = sign == -1
+	})
+	shadow:change{duration = 30, x = stage.width * (0.5 + 0.025 * sign), easing = "outQuart"}
+	shadow:wait(25)
+	shadow:change{duration = 5, transparency = 0, exit = true}
+
+	local portrait = common.instance(SuperFreezeEffects, game.particles, {
+		image = action_image,
+		draw_order = 3,
+		x = stage.width * (0.5 - sign * 0.7),
+		y = stage.height * 0.5,
+		flip = sign == -1
+	})
+	portrait:change{duration = 30, x = stage.width * (0.5 + 0.025 * sign), easing = "outQuart"}
+	portrait:wait(25)
+	portrait:change{duration = 5, transparency = 0, exit = true}
+
+	local top_fuzz = common.instance(SuperFreezeEffects, game.particles, {
+		image = fuzz_image,
+		draw_order = 1,
+		x = stage.width * 0.5,
+		y = fuzz_image:getHeight() * -0.5
+	})
+	top_fuzz:change{duration = 21, y = 0, easing = "outQuart"}
+	top_fuzz:wait(40)
+	top_fuzz:change{duration = 5, transparency = 0, exit = true}
+
+	local bottom_fuzz = common.instance(SuperFreezeEffects, game.particles, {
+		image = fuzz_image,
+		draw_order = 1,
+		x = stage.width * 0.5,
+		y = fuzz_image:getHeight() * 0.5 + stage.height,
+	})
+	bottom_fuzz:change{duration = 21, y = stage.height, easing = "outQuart"}
+	bottom_fuzz:wait(40)
+	bottom_fuzz:change{duration = 5, transparency = 0, exit = true}
+	game.sound:newSFX("superactivate")	
+end
+
 SuperFreezeEffects = common.class("SuperFreezeEffects", SuperFreezeEffects, Pic)
 
 -------------------------------------------------------------------------------
