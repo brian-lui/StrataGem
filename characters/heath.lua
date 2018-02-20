@@ -144,6 +144,7 @@ function SmallFire.generateSmallFire(game, owner, col)
 	local p = common.instance(SmallFire, game.particles, params)
 	p:change{duration = 15, y = bounce_top_y, scaling = 0.5}
 	p:change{duration = 15, y = start_y, scaling = 1}
+	return 30
 end
 
 SmallFire = common.class("SmallFire", SmallFire, Pic)
@@ -333,19 +334,21 @@ function Heath:duringMatchAnimation()
 	self.super_gems, self.super_boom_effects = {}, {}
 end
 
-function Heath:afterMatch(gem_table)
-	-- create fire particle for passive
+-- create fire particle for passive
+function Heath:afterMatch()
+	local delay_to_return = 0
 	if not self.generated_fires then -- only activate this once per turn
 		local fire_sound = false
 		for i = 1, 8 do
 			if self.pending_fires[i] then
-				self.particle_fx.smallFire.generateSmallFire(self.game, self, i)
+				delay_to_return = self.particle_fx.smallFire.generateSmallFire(self.game, self, i)
 				fire_sound = true
 			end
 		end
 		self.generated_fires = true
 		if fire_sound then self.game.sound:newSFX("heathpassive") end
 	end
+	return delay_to_return
 end
 
 -- take away super meter, make fires

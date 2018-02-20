@@ -56,7 +56,6 @@ function Walter:init(...)
 	self.pending_clouds = {} -- clouds for vertical matches generates at t0
 	self.ready_clouds = {} -- clouds at t1, gives healing
 	self.ready_clouds_state = {} -- keep track of the state
-	self.healing_by_columns = {0, 0, 0, 0, 0, 0, 0, 0} -- how much damage to heal by each column
 end
 
 -------------------------------------------------------------------------------
@@ -78,7 +77,15 @@ in the ratio of 70% 20% 10% and also they need to rotate such that the bottom of
 image is facing the current trajectory. (think about how an arrow flies)
 
 Super pseudocode:
+	particles.popParticles.generate for ___ frames
+	particles.explodingGem.generate for ___ frames
 
+FoamSpout class:
+	foam appear at grid.y[grid.BOTTOM_ROW + 1]
+	foam change with exit: make spout
+	foam has during property with drop 1/2/3 in parabolas
+	spout reaches top at duration ___.
+	every ___ frames, destroyGem in row grid.BOTTOM_ROW to grid.BOTTOM_ROW - 7 
 --]]
 
 -------------------------------------------------------------------------------
@@ -198,6 +205,8 @@ function Walter:beforeMatch()
 	local game = self.game
 	local grid = game.grid
 
+	local delay = 0
+	local anim_duration = 120
 	local gem_table = grid:getMatchedGems()
 
 	for _, gem in pairs(gem_table) do
@@ -208,13 +217,37 @@ function Walter:beforeMatch()
 		end
 
 		-- Whether to heal damage for any matches
-		if self.player_num == gem.owner and self.ready_clouds[col] then
-			self.healing_by_columns[col] = self.healing_by_columns[col] + 1 
+		if self.player_num == gem.owner and self.ready_clouds_state[col] then
+
+			self.hand:healDamage(1)
+
+			-- gem glow
+			game.particles.popParticles.generate{game = game, gem = gem, duration = anim_duration}
+			game.particles.explodingGem.generateReverseExplode{
+				game = game,
+				x = gem.x,
+				y = gem.y,
+				image = image.lookup.gem_explode[gem.color],
+				duration = anim_duration,
+			}
+
+			-- healing particles
+			game.particles.healing.generate{
+				game = game,
+				x = gem.x,
+				y = gem.y,
+				owner = self,
+			}
+			delay = anim_duration
+
+			game.sound:newSFX("healing")
 		end
 	end
+	return delay
 end
 
 function Walter:afterMatch()
+	--[[
 	local game = self.game
 	local grid = game.grid
 
@@ -230,6 +263,7 @@ function Walter:afterMatch()
 			}
 		end
 	end
+	--]]
 end
 
 function Walter:beforeCleanup()
