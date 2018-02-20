@@ -22,7 +22,7 @@ Row 21: bottom grid row where trash gems tween from. (now it's just a sentinel)
 --]]
 function Grid:init(game)
 	self.LOSE_ROW = 12 -- game over if a gem ends the turn in this row or above
-	self.RUSH_ROW = 14 -- can only rush if this row is empty
+	self.RUSH_ROW = 15 -- can only rush if this row is empty
 	self.BOTTOM_ROW = 20 -- used for garbage appearance
 	
 	local stage = game.stage
@@ -569,6 +569,7 @@ function Grid:updateRushPriority()
 	--check p1 place type, p2 place type
 end
 
+-- Which players made a match this turn
 function Grid:checkMatchedThisTurn()
 	local gem_table = self:getMatchedGems()
 	local matched = {false, false}
@@ -604,10 +605,11 @@ end
 -- removes a gem from the grid, and plays all of the associated animations
 --[[ TODO: Takes a table of:
 	gem: gem to destroy
-	credit_to: optional player_num (to deal damage to player_num's opponent)
-	extra_damage: how much extra damage to do
 	super_meter: if false, don't build super meter
 	damage: if false, don't deal damage
+	extra_damage: optional how much extra damage to do
+	credit_to: optional player_num (to deal damage to player_num's opponent)
+	glow_delay: optional extra frames to stay in full-glow phase
 --]]
 function Grid:destroyGem(params)
 	local gem = params.gem

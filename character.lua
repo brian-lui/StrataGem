@@ -38,7 +38,7 @@ Character.SUPER_COST = 64
 Character.mp = 0
 Character.turn_start_mp = 0
 Character.MAX_BURST = 6
-Character.RUSH_COST = 6
+Character.RUSH_COST = 3
 Character.DOUBLE_COST = 3
 Character.cur_burst = 3
 Character.hand_size = 5
@@ -156,52 +156,9 @@ function Character:pieceDroppedOK(piece, shift)
 end
 
 
-function Character:superSlideIn()
-	local stage = self.game.stage
-	local particles = self.game.particles
-	local sign = self.ID == "P2" and -1 or 1
-
-	local shadow = common.instance(particles.superFreezeEffects, particles, {
-		image = self.shadow_image,
-		draw_order = 2,
-		x = stage.width * (0.5 - sign * 0.7),
-		y = stage.height * 0.5,
-		flip = sign == -1
-	})
-	shadow:change{duration = 30, x = stage.width * (0.5 + 0.025 * sign), easing = "outQuart"}
-	shadow:wait(25)
-	shadow:change{duration = 5, transparency = 0, exit = true}
-	local portrait = common.instance(particles.superFreezeEffects, particles, {
-		image = self.action_image,
-		draw_order = 3,
-		x = stage.width * (0.5 - sign * 0.7),
-		y = stage.height * 0.5,
-		flip = sign == -1
-	})
-	portrait:change{duration = 30, x = stage.width * (0.5 + 0.025 * sign), easing = "outQuart"}
-	portrait:wait(25)
-	portrait:change{duration = 5, transparency = 0, exit = true}
-
-	local top_fuzz = common.instance(particles.superFreezeEffects, particles, {
-		image = self.super_fuzz_image,
-		draw_order = 1,
-		x = stage.width * 0.5,
-		y = self.super_fuzz_image:getHeight() * -0.5
-	})
-	top_fuzz:change{duration = 21, y = 0, easing = "outQuart"}
-	top_fuzz:wait(40)
-	top_fuzz:change{duration = 5, transparency = 0, exit = true}
-
-	local bottom_fuzz = common.instance(particles.superFreezeEffects, particles, {
-		image = self.super_fuzz_image,
-		draw_order = 1,
-		x = stage.width * 0.5,
-		y = self.super_fuzz_image:getHeight() * 0.5 + stage.height,
-	})
-	bottom_fuzz:change{duration = 21, y = stage.height, easing = "outQuart"}
-	bottom_fuzz:wait(40)
-	bottom_fuzz:change{duration = 5, transparency = 0, exit = true}
-	self.game.sound:newSFX("superactivate")
+function Character:superSlideInAnim()
+	self.game.particles.superFreezeEffects.generate(self.game, self,
+		self.shadow_image, self.action_image, self.super_fuzz_image)
 end
 
 return common.class("Character", Character)
