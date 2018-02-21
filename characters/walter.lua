@@ -57,7 +57,7 @@ Walter.sounds = {
 function Walter:init(...)
 	Character.init(self, ...)
 
-	self.CLOUD_SLIDE_DURATION = 45 -- how long for the cloud incoming tween
+	self.CLOUD_SLIDE_DURATION = 36 -- how long for the cloud incoming tween
 	self.CLOUD_ROW = 11 -- which row for clouds to appear on
 
 	self.pending_clouds = {} -- clouds for vertical matches generates at t0
@@ -200,9 +200,7 @@ function HealingCloud:countdown()
 	self.turns_remaining = self.turns_remaining - 1
 	if self.turns_remaining < 0 then
 		self.owner.ready_clouds[self.col] = nil
-		print("deleting cloud")
 	end
-	print("healing cloud in col " .. self.col .. " has " .. self.turns_remaining .. " turns remaining")
 end
 
 function HealingCloud.generate(game, owner, col, turns_remaining)
@@ -229,7 +227,8 @@ function HealingCloud.generate(game, owner, col, turns_remaining)
 			Droplet.generate(game, owner, x, y, destination_y)
 			_self.elapsed_frames = 0
 		end
-		if _self.turns_remaining < 0 and _self:isStationary() then
+		if _self.turns_remaining < 0 then
+			_self:wait(60)
 			_self:change{duration = 32, transparency = 0, remove = true}
 		end
 	end
@@ -259,8 +258,8 @@ function HealingCloud.generate(game, owner, col, turns_remaining)
 	}
 
 	-- blue dust vortexing
-	local dust_fade_in_duration = 10
-	local dust_tween_duration = duration - dust_fade_in_duration
+	local DUST_FADE_IN_DURATION = 10
+	local dust_tween_duration = duration - DUST_FADE_IN_DURATION
 	for i = 1, 96 do
 		local dust_distance = img_width * (math.random() + 1)
 		local dust_rotation = math.random() < 0.5 and 30 or -30
@@ -274,7 +273,7 @@ function HealingCloud.generate(game, owner, col, turns_remaining)
 
  		local p = common.instance(game.particles.dust, game.particles, x_start, y_start, dust_image, dust_p_type)
  		p.transparency = 0
- 		p:change{duration = dust_fade_in_duration, transparency = 255}
+ 		p:change{duration = DUST_FADE_IN_DURATION, transparency = 255}
  		p:change{
  			duration = dust_tween_duration,
  			rotation = dust_rotation,
@@ -313,7 +312,7 @@ function Walter:beforeMatch()
 		end
 
 		-- Whether to heal damage for any matches
-		if self.player_num == gem.owner and self.ready_clouds_state[col] then
+		if self.ready_clouds_state[col] then
 
 			self.hand:healDamage(1)
 
@@ -342,24 +341,7 @@ function Walter:beforeMatch()
 	return delay
 end
 
-function Walter:beforeCleanup()
-	local delay = 0
-	for i = 1, 8 do
-		if self.pending_clouds[i] then delay = self.CLOUD_SLIDE_DURATION end
-	end
-	for i = 1, 8 do
-		if self.pending_clouds[i] then
-			local TURNS_TO_EXIST = 1
-			self:_makeCloud(i, TURNS_TO_EXIST)
-			self.ready_clouds_state[i] = TURNS_TO_EXIST
-		end
-	end
-	self.pending_clouds = {}
-
-	return delay	
-end
-
-function Walter:cleanup()
+function Walter:afterAllMatches()
 	for i = 1, 8 do
 		if self.ready_clouds[i] then -- animation
 			self.ready_clouds[i]:countdown()
@@ -370,6 +352,36 @@ function Walter:cleanup()
 			if self.ready_clouds_state[i] < 0 then self.ready_clouds_state[i] = nil end
 		end
 	end
+	self.healing_by_columns = {0, 0, 0, 0, 0, 0, 0, 0}
+end
+
+function Walter:beforeCleanup()
+	local delay = 0
+	for i = 1, 8 do
+		if self.pending_clouds[i] then
+			delay = self.CLOUD_SLIDE_DURATION
+			local TURNS_TO_EXIST = 0
+			self:_makeCloud(i, TURNS_TO_EXIST)
+			self.ready_clouds_state[i] = TURNS_TO_EXIST
+		end
+	end
+	self.pending_clouds = {}
+
+	return delay	
+end
+
+function Walter:cleanup()
+	--[[
+	for i = 1, 8 do
+		if self.ready_clouds[i] then -- animation
+			self.ready_clouds[i]:countdown()
+		end
+
+		if self.ready_clouds_state[i] then -- state
+			self.ready_clouds_state[i] = self.ready_clouds_state[i] - 1
+			if self.ready_clouds_state[i] < 0 then self.ready_clouds_state[i] = nil end
+		end
+	end--]]
 	self.healing_by_columns = {0, 0, 0, 0, 0, 0, 0, 0}
 
 	-- If overheal, reset damage
