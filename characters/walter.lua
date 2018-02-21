@@ -121,13 +121,16 @@ function Splatter.generate(game, owner, x, y, img)
 
 		local x_vel = stage.gem_width * (math.random() - 0.5) * 4
 		local y_vel = stage.gem_height * - (math.random() * 0.5 + 0.5) * 4
-		local gravity = stage.gem_height * 3
+		local gravity = stage.gem_height * 2.5
 		local x_dest1 = x + 1 * x_vel
 		local x_dest2 = x + 1.5 * x_vel
 		local y_func1 = function() return y + p.t * y_vel + p.t^2 * gravity end
 		local y_func2 = function() return y + (p.t + 1) * y_vel + (p.t + 1)^2 * gravity end
-		local rotation_func = function()
-			return math.atan2(y_vel + gravity * 1, x_vel) - (math.pi * 0.5)
+		local rotation_func1 = function()
+			return math.atan2(y_vel + p.t * 2 * gravity, x_vel) - (math.pi * 0.5)
+		end
+		local rotation_func2 = function()
+			return math.atan2(y_vel + (p.t + 1) * 2 * gravity, x_vel) - (math.pi * 0.5)
 		end
 
 		if delay_frames then
@@ -136,8 +139,8 @@ function Splatter.generate(game, owner, x, y, img)
 			p:change{duration = 0, transparency = 255}
 		end
 
-		p:change{duration = 60, x = x_dest1, y = y_func1, rotation = rotation_func}
-		p:change{duration = 30, x = x_dest2, y = y_func2, rotation = rotation_func,
+		p:change{duration = 30, x = x_dest1, y = y_func1, rotation = rotation_func1}
+		p:change{duration = 15, x = x_dest2, y = y_func2, rotation = rotation_func2,
 			transparency = 0, remove = true}
 	end
 end
@@ -157,7 +160,7 @@ end
 
 function Droplet.generate(game, owner, x, y, dest_y)
 	local grid = game.grid
-	local SPEED = game.stage.height * 0.008
+	local SPEED = game.stage.height * 0.011
 	local image_table = {1, 1, 1, 1, 1, 1, 1, 2, 2, 3}
 	local image_index = image_table[math.random(#image_table)]
 	local droplet_image = owner.special_images.drop[image_index]
@@ -175,7 +178,8 @@ function Droplet.generate(game, owner, x, y, dest_y)
 
 	local exit_func = {Splatter.generate, game, owner, x, dest_y, splatter_image}
 	local p = common.instance(Droplet, game.particles, params)
-	p:change{duration = duration, y = dest_y, remove = true, exit_func = exit_func}
+	p:change{duration = duration, y = dest_y, easing = "inQuad",
+		remove = true, exit_func = exit_func}
 end
 
 Droplet = common.class("Droplet", Droplet, Pic)
@@ -194,6 +198,11 @@ end
 
 function HealingCloud:countdown()
 	self.turns_remaining = self.turns_remaining - 1
+	if self.turns_remaining < 0 then
+		self.owner.ready_clouds[self.col] = nil
+		print("deleting cloud")
+	end
+	print("healing cloud in col " .. self.col .. " has " .. self.turns_remaining .. " turns remaining")
 end
 
 function HealingCloud.generate(game, owner, col, turns_remaining)
@@ -331,26 +340,6 @@ function Walter:beforeMatch()
 		end
 	end
 	return delay
-end
-
-function Walter:afterMatch()
-	--[[
-	local game = self.game
-	local grid = game.grid
-
-	for i = 1, 8 do
-		local this_column_healing = self.healing_by_columns[i]
-		for heals = 1, this_column_healing do
-			self.hand:healDamage(1)
-			game.particles.healing.generate{
-				game = game,
-				x = grid.x[i],
-				y = grid.y[self.CLOUD_ROW],
-				owner = self,
-			}
-		end
-	end
-	--]]
 end
 
 function Walter:beforeCleanup()

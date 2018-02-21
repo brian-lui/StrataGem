@@ -145,7 +145,7 @@ end
 -- Takes optional gem_table for gem frequencies
 function Hand:getNewTurnPieces(gem_table)
 	local pieces_to_get = math.floor(self.damage * 0.25)
-	if pieces_to_get == 0 then return end
+	if pieces_to_get < 1 then return end
 
 	for i = 6, pieces_to_get + 5 do
 		self[i].piece = common.instance(Piece, self.game, {

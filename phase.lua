@@ -396,7 +396,7 @@ function Phase:cleanup(dt)
 	for player in game:players() do player.hand:endOfTurnUpdate() end
 
 	if grid:getLoser() then
-		self:activatePause("Gameover")
+		self:activatePause("GameOver")
 	elseif game.type == "Netplay" then
 		self:activatePause("Sync")
 	else

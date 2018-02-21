@@ -268,6 +268,9 @@ local function healingParticleGenerate(game)
 	}
 end
 
+local function healingCloudGenerate(game)
+	game.p1:_makeCloud(3, 1)
+end
 local function healingTwinkleGenerate(game)
 	game.particles.healing.generateTwinkle(game, game.p1.hand[2].platform)
 end
@@ -299,7 +302,7 @@ local Unittests = {
 	b = makeAGarbage,
 	--n = maxDamage,
 	n = testWalterPassive,
-	m = healingParticleGenerate,
+	m = healingCloudGenerate,
 }
 
 return common.class("Unittests", Unittests)
