@@ -38,9 +38,16 @@ Walter.special_images = {
 	cloud = love.graphics.newImage('images/specials/walter/cloud.png'),
 	foam = love.graphics.newImage('images/specials/walter/foam.png'),
 	spout = love.graphics.newImage('images/specials/walter/spout.png'),
-	drop1 = love.graphics.newImage('images/specials/walter/drop1.png'),
-	drop2 = love.graphics.newImage('images/specials/walter/drop2.png'),
-	drop3 = love.graphics.newImage('images/specials/walter/drop3.png'),
+	drop = {
+		love.graphics.newImage('images/specials/walter/drop1.png'),
+		love.graphics.newImage('images/specials/walter/drop2.png'),
+		love.graphics.newImage('images/specials/walter/drop3.png'),
+	},
+	splatter = {
+		love.graphics.newImage('images/specials/walter/splatter1.png'),
+		love.graphics.newImage('images/specials/walter/splatter2.png'),
+		love.graphics.newImage('images/specials/walter/splatter3.png'),
+	},
 }
 
 Walter.sounds = {
@@ -89,6 +96,54 @@ FoamSpout class:
 --]]
 
 -------------------------------------------------------------------------------
+local Splatter = {}
+function Splatter:init(manager, tbl)
+	Pic.init(self, manager.game, tbl)
+	manager.allParticles.CharEffects[ID.particle] = self
+	self.manager = manager
+end
+
+function Splatter:remove()
+	self.manager.allParticles.CharEffects[self.ID] = nil
+end
+
+function Splatter.generate(game, owner, x, y, img)
+	local stage = game.stage
+	local params = {
+		x = x,
+		y = y,
+		image = img,
+		owner = owner,
+		player_num = owner.player_num,
+	}
+	for i = 1, math.random(2, 4) do
+		local p = common.instance(Splatter, game.particles, params)
+
+		local x_vel = stage.gem_width * (math.random() - 0.5) * 4
+		local y_vel = stage.gem_height * - (math.random() * 0.5 + 0.5) * 4
+		local gravity = stage.gem_height * 3
+		local x_dest1 = x + 1 * x_vel
+		local x_dest2 = x + 1.5 * x_vel
+		local y_func1 = function() return y + p.t * y_vel + p.t^2 * gravity end
+		local y_func2 = function() return y + (p.t + 1) * y_vel + (p.t + 1)^2 * gravity end
+		local rotation_func = function()
+			return math.atan2(y_vel + gravity * 1, x_vel) - (math.pi * 0.5)
+		end
+
+		if delay_frames then
+			p.transparency = 0
+			p:wait(delay_frames)
+			p:change{duration = 0, transparency = 255}
+		end
+
+		p:change{duration = 60, x = x_dest1, y = y_func1, rotation = rotation_func}
+		p:change{duration = 30, x = x_dest2, y = y_func2, rotation = rotation_func,
+			transparency = 0, remove = true}
+	end
+end
+
+Splatter = common.class("Splatter", Splatter, Pic)
+-------------------------------------------------------------------------------
 local Droplet = {}
 function Droplet:init(manager, tbl)
 	Pic.init(self, manager.game, tbl)
@@ -100,34 +155,27 @@ function Droplet:remove()
 	self.manager.allParticles.CharEffects[self.ID] = nil
 end
 
-function Droplet.generate(game, owner, x, y)
-	local image_table = {
-		owner.special_images.drop1,
-		owner.special_images.drop1,
-		owner.special_images.drop1,
-		owner.special_images.drop1,
-		owner.special_images.drop1,
-		owner.special_images.drop1,
-		owner.special_images.drop1,
-		owner.special_images.drop2,
-		owner.special_images.drop2,
-		owner.special_images.drop3,
-	}
-	local img = image_table[math.random(#image_table)]
-	local duration = 90
-	local dest_y = game.stage.height * 1.1
+function Droplet.generate(game, owner, x, y, dest_y)
+	local grid = game.grid
+	local SPEED = game.stage.height * 0.008
+	local image_table = {1, 1, 1, 1, 1, 1, 1, 2, 2, 3}
+	local image_index = image_table[math.random(#image_table)]
+	local droplet_image = owner.special_images.drop[image_index]
+	local splatter_image = owner.special_images.splatter[image_index]
+	local duration = (dest_y - y) / SPEED
 
 	local params = {
 		x = x,
 		y = y,
-		image = img,
+		image = droplet_image,
 		owner = owner,
 		player_num = owner.player_num,
 		name = "WalterDroplet",
 	}
 
+	local exit_func = {Splatter.generate, game, owner, x, dest_y, splatter_image}
 	local p = common.instance(Droplet, game.particles, params)
-	p:change{duration = duration, y = dest_y, exit = true}
+	p:change{duration = duration, y = dest_y, remove = true, exit_func = exit_func}
 end
 
 Droplet = common.class("Droplet", Droplet, Pic)
@@ -154,32 +202,38 @@ function HealingCloud.generate(game, owner, col, turns_remaining)
 
 	local FRAMES_BETWEEN_DROPLETS = 5
 	local y = grid.y[owner.CLOUD_ROW]
-	local dest_x = grid.x[col]
+	local x = grid.x[col]
 	local sign = owner.player_num == 2 and 1 or -1
-	local start_x = dest_x + stage.width * 0.5 * sign
 	local img = owner.special_images.cloud
 	local duration = owner.CLOUD_SLIDE_DURATION
-	local img_width = img:getWidth() * 0.5
+	local img_width = img:getWidth()
+	local img_height = img:getHeight()
 
 	local function update_func(_self, dt)
 		Pic.update(_self, dt)
 		_self.elapsed_frames = _self.elapsed_frames + 1
 		if _self.elapsed_frames >= FRAMES_BETWEEN_DROPLETS then
-			local x = _self.x + (math.random() - 0.5) * img_width
-			Droplet.generate(game, owner, x, y)
+			local destination_y = grid.y[grid:getFirstEmptyRow(col, true)] + 0.5 * image.GEM_WIDTH
+			local droplet_loc = table.remove(_self.droplet_x, math.random(#_self.droplet_x))
+			if #_self.droplet_x == 0 then _self.droplet_x = {-1.5, -0.5, 0.5, 1.5} end
+			local x = _self.x + img_width * 0.75 * ((droplet_loc + (math.random() - 0.5)) * 0.25)
+			Droplet.generate(game, owner, x, y, destination_y)
 			_self.elapsed_frames = 0
 		end
 		if _self.turns_remaining < 0 and _self:isStationary() then
-			_self:change{duration = 32, transparency = 0, exit = true}
+			_self:change{duration = 32, transparency = 0, remove = true}
 		end
 	end
 	
 	local params = {
-		x = start_x,
+		x = x,
 		y = y,
 		image = img,
+		scaling = 3,
+		transparency = 0,
 		turns_remaining = turns_remaining,
 		elapsed_frames = -duration, -- only create droplets after finished move
+		droplet_x = {-1.5, -0.5, 0.5, 1.5}, -- possible columns for droplets to appear in
 		col = col,
 		update = update_func,
 		owner = owner,
@@ -188,7 +242,39 @@ function HealingCloud.generate(game, owner, col, turns_remaining)
 	}
 
 	owner.ready_clouds[col] = common.instance(HealingCloud, game.particles, params)
-	owner.ready_clouds[col]:change{duration = duration, x = dest_x, easing = "outQuart"}
+	owner.ready_clouds[col]:change{
+		duration = duration,
+		scaling = 1,
+		transparency = 255,
+		easing = "inQuad",
+	}
+
+	-- blue dust vortexing
+	local dust_fade_in_duration = 10
+	local dust_tween_duration = duration - dust_fade_in_duration
+	for i = 1, 96 do
+		local dust_distance = img_width * (math.random() + 1)
+		local dust_rotation = math.random() < 0.5 and 30 or -30
+		local dust_p_type = math.random() < 0.5 and "Dust" or "OverDust"
+		local dust_image = image.lookup.dust.small("blue", false)
+ 		local angle = math.random() * math.pi * 2
+ 		local x_start = dust_distance * math.cos(angle) + x
+ 		local y_start = dust_distance * math.sin(angle) + y
+ 		local x_dest = img_width * 0.7 * (math.random() - 0.5) + x
+ 		local y_dest = img_height * 0.5 * (math.random() - 0.5) + y
+
+ 		local p = common.instance(game.particles.dust, game.particles, x_start, y_start, dust_image, dust_p_type)
+ 		p.transparency = 0
+ 		p:change{duration = dust_fade_in_duration, transparency = 255}
+ 		p:change{
+ 			duration = dust_tween_duration,
+ 			rotation = dust_rotation,
+ 			x = x_dest,
+ 			y = y_dest,
+ 			easing = "inQuart",
+ 			remove = true,
+ 		}
+	end
 end
 HealingCloud = common.class("HealingCloud", HealingCloud, Pic)
 
@@ -206,7 +292,8 @@ function Walter:beforeMatch()
 	local grid = game.grid
 
 	local delay = 0
-	local anim_duration = 120
+	local total_anim_duration = 120
+	local glow_duration = 60
 	local gem_table = grid:getMatchedGems()
 
 	for _, gem in pairs(gem_table) do
@@ -228,7 +315,7 @@ function Walter:beforeMatch()
 				x = gem.x,
 				y = gem.y,
 				image = image.lookup.gem_explode[gem.color],
-				duration = anim_duration,
+				duration = glow_duration,
 			}
 
 			-- healing particles
@@ -238,7 +325,7 @@ function Walter:beforeMatch()
 				y = gem.y,
 				owner = self,
 			}
-			delay = anim_duration
+			delay = total_anim_duration
 
 			game.sound:newSFX("healing")
 		end
@@ -295,6 +382,11 @@ function Walter:cleanup()
 		end
 	end
 	self.healing_by_columns = {0, 0, 0, 0, 0, 0, 0, 0}
+
+	-- If overheal, reset damage
+	if self.hand.damage < 4 then self.hand.damage = 0 end
+
+	Character.cleanup(self)
 end
 
 return common.class("Walter", Walter, Character)

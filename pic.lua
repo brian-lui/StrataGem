@@ -115,28 +115,27 @@ end
 
 -- clear the junk from all the tweens and stuff. runs exit function too.
 local function clearMove(self)
-	if self.exit then
-		if self.exit == true then -- delete
-			self:remove()
-		elseif type(self.exit) == "function" then -- single func, no args
-			self.exit()
-		elseif type(self.exit) == "table" then
-			if type(self.exit[1]) == "function" then -- single func, args
-				self.exit[1](unpack(self.exit, 2))
-			elseif type(self.exit[1]) == "table" then -- multiple funcs
-				for i = 1, #self.exit do
-					self.exit[i][1](unpack(self.exit[i], 2))
+	if self.exit_func then
+		if type(self.exit_func) == "function" then -- single func, no args
+			self.exit_func()
+		elseif type(self.exit_func) == "table" then
+			if type(self.exit_func[1]) == "function" then -- single func, args
+				self.exit_func[1](unpack(self.exit_func, 2))
+			elseif type(self.exit_func[1]) == "table" then -- multiple funcs
+				for i = 1, #self.exit_func do
+					self.exit_func[i][1](unpack(self.exit_func[i], 2))
 				end
 			else -- wot
-				print("passed in something wrong for exit table")
+				print("passed in something wrong for exit_func table")
 			end
 		else -- wot
-			print("maybe passed in something wrong for the exit property")
+			print("maybe passed in something wrong for the exit_func property")
 		end
 	end
+	if self.remove_on_exit then self:remove() end	
 	self.t, self.tweening, self.curve, self.move_func = nil, nil, nil, nil
 	self.during, self.during_frame = nil, nil
-	self.exit = nil
+	self.exit, self.exit_func = nil, nil
 end
 
 -- this is called from createMoveFunc and from some UI functions
@@ -174,7 +173,8 @@ local function createMoveFunc(self, target)
 
 	-- create some yummy state
 	self.during, self.during_frame = target.during, 0
-	self.exit = target.exit
+	self.remove_on_exit = target.remove
+	self.exit_func = target.exit_func
 	self.t = 0
 	self.tweening = tween.new(target.duration, self, target.tween_target, target.easing)
 	if target.debug then print("duration:", target.duration) end
@@ -243,7 +243,8 @@ end
 		queue: if true, will queue this move after the previous one is finished. default is true
 		here: if true, will instantly move from current position; false to move from end of previous position. only if queue is false
 		during: {frame_step, frame_start, func, args}, if any, to execute every dt_step while tweening.
-		exit: execute when the move finishes. Can be: 1) "true" to delete, 2) func, 3) {func, args},  4) {{f1, a1}, {f2, a2}, ...}
+		remove: execute when the move finishes. Can be: 1) "true" to delete, 2) func, 3) {func, args},  4) {{f1, a1}, {f2, a2}, ...}
+		exit_func: execute when the move finishes. Can be 1) func, 2) {func, args}, 3) {{f1, a1}, {f2, a2}, ...}
 		quad: {x = bool, y = bool, x_percentage = 0-1, y_percentage = 0-1, x_anchor = 0-1, y_anchor = 0-1} to tween a quad
 		debug: print some unhelpful debug info
 	Junk created: self.t, move_func, tweening, curve, exit, during. during_frame
@@ -316,6 +317,7 @@ function Pic:clear()
 	self.t, self.tweening, self.curve, self.move_func = nil, nil, nil, nil
 	self.during, self.during_frame = nil, nil
 	self.exit = nil
+	self.exit_func = nil
 	self.queued_moves = {}
 end
 

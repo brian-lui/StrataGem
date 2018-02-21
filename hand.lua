@@ -77,7 +77,7 @@ function Hand:movePiece(start_pos, end_pos)
 		y = self[end_pos].y,
 		during = {1, 10, to_move.updateGems, to_move},
 		duration = duration,
-		exit = {to_move.updateGems, to_move},
+		exit_func = {to_move.updateGems, to_move},
 	}
 
 	-- state
@@ -290,8 +290,9 @@ function Hand:addDamage(damage)
 	self.damage = math.min(self.damage + damage, 20)
 end
 
+-- can go negative because who cares
 function Hand:healDamage(damage)
-	self.damage = math.max(self.damage - damage, 4)
+	self.damage = self.damage - damage
 end
 
 -- Update function only called after action phase

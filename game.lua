@@ -179,7 +179,7 @@ function Game:_createButton(gamestate, params)
 	})
 	button:change{duration = params.duration, x = params.end_x, y = params.end_y,
 		transparency = params.end_transparency or 255,
-		easing = params.easing or "linear", exit = params.exit}
+		easing = params.easing or "linear", exit_func = params.exit_func}
 	button.pushed = params.pushed or function()
 		self.sound:newSFX(params.pushed_sfx or "button")
 		button:newImage(params.image_pushed)
@@ -209,7 +209,7 @@ function Game:_createImage(gamestate, params)
 		container = params.container or gamestate.ui.static,
 	})
 	button:change{duration = params.duration, x = params.end_x, y = params.end_y,
-		transparency = params.end_transparency or 255, easing = params.easing, exit = params.exit}
+		transparency = params.end_transparency or 255, easing = params.easing, exit_func = params.exit_func}
 	return button
 end
 

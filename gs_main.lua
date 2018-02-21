@@ -332,8 +332,9 @@ function gs_main:drawText(params)
 		end
 		if self.debug_drawDamage then
 			local p1hand, p2hand = self.p1.hand, self.p2.hand
-			love.graphics.print(p1hand.damage, p1hand[2].x - 60, p1hand[2].y)
-			love.graphics.print(p2hand.damage, p2hand[2].x + 60, p2hand[2].y)
+			love.graphics.setFont(FONT.SLIGHTLY_BIGGER)
+			love.graphics.print(p1hand.damage, p1hand[2].x - 150, p1hand[2].y)
+			love.graphics.print(p2hand.damage, p2hand[2].x + 150, p2hand[2].y)
 		end
 	love.graphics.pop()
 end

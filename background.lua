@@ -93,7 +93,7 @@ function Checkmate:update(dt)
 		self.overlay:change{
 			duration = self.OVERLAY_DURATION,
 			quad = {y = true, y_percentage = 1, y_anchor = 0},
-			exit = {
+			exit_func = {
 				{self.background.newImage, self.background, new_bk},
 				{self.overlay.remove, self.overlay}
 			}
@@ -193,7 +193,7 @@ function Clouds:_newCloud(size, starting_x)
 
 	local cloud = common.instance(Pic, self.game, {x = x, y = y, image = image,
 		container = container, counter = "background_particle"})
-	cloud:change{duration = duration, x = stage.width + cloud.width, exit = true}
+	cloud:change{duration = duration, x = stage.width + cloud.width, remove = true}
 end
 
 function Clouds:_initClouds()
@@ -282,7 +282,7 @@ function Starfall:_generateStar()
 
 	local star = common.instance(Pic, self.game,
 		{x = start_x, y = start_y, image = img, container = self.stars, counter = "background_particle"})
-	star:change{duration = duration, x = end_x, y = end_y, rotation = rotation, exit = true}
+	star:change{duration = duration, x = end_x, y = end_y, rotation = rotation, remove = true}
 end
 
 function Starfall:update(dt)
@@ -327,7 +327,7 @@ function Colors:_newColor(image)
 	local stage = self.game.stage
 	self.previous_color = self.current_color
 	self.previous_color:change{duration = 180, transparency = 0,
-		exit = {function() self.previous_color = nil end}}
+		exit_func = function() self.previous_color = nil end}
 	self.current_color = common.instance(Pic, self.game, 
 		{x = stage.x_mid, y = stage.y_mid, image = image, transparency = 0})
 	self.current_color:change{duration = 90, transparency = 255}

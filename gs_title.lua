@@ -69,13 +69,12 @@ function title:init()
 		end_y = stage.height * 0.35,
 		start_transparency = 0,
 		easing = "linear",
-		exit = {function() 
+		exit_func = function() 
 			if self.sound:getCurrentBGM() ~= "bgm_menu" then 
 				self.sound:newBGM("bgm_menu", true)
 			end
-		end},
+		end,
 	})
-
 end
 
 function title:enter()
@@ -83,10 +82,11 @@ function title:enter()
 	self.settings_menu_open = false
 	if self.sound:getCurrentBGM() ~= "bgm_menu" then
 		self.sound:stopBGM()
-		title.ui.static.logo:change{duration = 45,
-			exit = {function() if self.sound:getCurrentBGM() ~= "bgm_menu" then
-			 	self.sound:newBGM("bgm_menu", true)
-			end end}}
+		title.ui.static.logo:change{duration = 45, exit_func = function()
+				if self.sound:getCurrentBGM() ~= "bgm_menu" then
+			 		self.sound:newBGM("bgm_menu", true)
+				end
+			end}
 	end
 	title.current_background = common.instance(self.background.checkmate, self)
 end

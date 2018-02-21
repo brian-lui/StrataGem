@@ -10,11 +10,6 @@ local image = {
 	green_gem = love.graphics.newImage('images/gems/greengem.png'),
 	yellow_gem = love.graphics.newImage('images/gems/yellowgem.png'),
 
-	red_explode = love.graphics.newImage('images/gems/redgemexplode.png'),
-	blue_explode = love.graphics.newImage('images/gems/bluegemexplode.png'),
-	green_explode = love.graphics.newImage('images/gems/greengemexplode.png'),
-	yellow_explode = love.graphics.newImage('images/gems/yellowgemexplode.png'),
-
 	red_grey = love.graphics.newImage('images/gems/redgemgrey.png'),
 	blue_grey = love.graphics.newImage('images/gems/bluegemgrey.png'),
 	green_grey = love.graphics.newImage('images/gems/greengemgrey.png'),
@@ -235,10 +230,10 @@ image.lookup.words_ready = function(size)
 end
 
 image.lookup.gem_explode = {
-	blue = image.blue_explode,
-	red = image.red_explode,
-	green = image.green_explode,
-	yellow = image.yellow_explode,
+	blue = love.graphics.newImage('images/gems/bluegemexplode.png'),
+	red = love.graphics.newImage('images/gems/redgemexplode.png'),
+	green = love.graphics.newImage('images/gems/greengemexplode.png'),
+	yellow = love.graphics.newImage('images/gems/yellowgemexplode.png'),
 }
 
 image.lookup.grey_gem_crumble = {
@@ -299,7 +294,7 @@ image.lookup.platform_star = {
 
 image.lookup.dust = {
 	small = function(color, big_possible)
-		big_possible = big_possible or true
+		if big_possible ~= false then big_possible = true end
 		local rand = math.random(3)
 		local star_instead = big_possible and math.random() < 0.05
 		if star_instead then

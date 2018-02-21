@@ -281,10 +281,12 @@ function Grid:setAllGemReadOnlyFlags(bool)
 	for gem in self:gems() do gem:setProtectedFlag(bool) end
 end
 
-function Grid:getFirstEmptyRow(column)
+-- ignore_pending boolean will return the first empty row ignoring pending gems
+function Grid:getFirstEmptyRow(column, ignore_pending)
 	if column then
-		local empty_spaces = 0
-		for i = 1, self.rows do
+		local empty_spaces = ignore_pending and 12 or 0 -- pending cols as empty
+		local start_row = ignore_pending and 13 or 1
+		for i = start_row, self.BOTTOM_ROW do
 			if not self[i][column].gem then empty_spaces = empty_spaces + 1 end
 		end
 		return empty_spaces
@@ -373,7 +375,7 @@ function Grid:moveGemAnim(gem, row, column)
 		x = target_x,
 		y = target_y,
 		duration = duration,
-		exit = target_y > gem.y and {gem.landedInGrid, gem} or nil
+		exit_func = target_y > gem.y and {gem.landedInGrid, gem} or nil
 		-- only call landing function if it was moving downwards
 	}
 end

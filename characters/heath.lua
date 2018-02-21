@@ -99,7 +99,7 @@ function SmallFire:updateYPos()
 end
 
 function SmallFire:fadeOut()
-	self:change{duration = 32, transparency = 0, exit = true}
+	self:change{duration = 32, transparency = 0, remove = true}
 end
 
 function SmallFire:countdown()
@@ -118,7 +118,7 @@ function SmallFire.generateSmallFire(game, owner, col)
 			_self.elapsed_frames = 0
 		end
 		if _self.turns_remaining < 0 and _self:isStationary() then
-			_self:change{duration = 32, transparency = 0, exit = true}
+			_self:change{duration = 32, transparency = 0, remove = true}
 		end
 	end
 
@@ -193,7 +193,7 @@ function Boom._generateBoomParticle(game, boom, delay_frames)
 
 	p:change{duration = 60, x = x_dest1, y = y_func1, rotation = rotation_func}
 	p:change{duration = 30, x = x_dest2, y = y_func2, rotation = rotation_func,
-		transparency = 0, exit = true}
+		transparency = 0, remove = true}
 end
 
 function Boom.generateBoom(game, owner, row, col)

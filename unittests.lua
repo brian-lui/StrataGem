@@ -65,6 +65,8 @@ end
 
 -- test Walter passive
 local function testWalterPassive(game)
+	nrow(game, 3, " GYR    ")
+	nrow(game, 4, " GYR    ")
 	nrow(game, 5, "YRGB    ")
 	nrow(game, 6, "YRGB    ")
 	nrow(game, 7, "RGBY    ")
