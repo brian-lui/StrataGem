@@ -59,6 +59,8 @@ function Walter:init(...)
 
 	self.CLOUD_SLIDE_DURATION = 36 -- how long for the cloud incoming tween
 	self.CLOUD_ROW = 11 -- which row for clouds to appear on
+	self.HEALING_ANIM_DURATION = 120
+	self.HEALING_GLOW_DURATION = 100
 
 	self.pending_clouds = {} -- clouds for vertical matches generates at t0
 	self.ready_clouds = {} -- clouds at t1, gives healing
@@ -300,8 +302,6 @@ function Walter:beforeMatch()
 	local grid = game.grid
 
 	local delay = 0
-	local total_anim_duration = 120
-	local glow_duration = 60
 	local gem_table = grid:getMatchedGems()
 
 	for _, gem in pairs(gem_table) do
@@ -323,7 +323,7 @@ function Walter:beforeMatch()
 				x = gem.x,
 				y = gem.y,
 				image = image.lookup.gem_explode[gem.color],
-				duration = glow_duration,
+				duration = self.HEALING_GLOW_DURATION,
 			}
 
 			-- healing particles
@@ -333,7 +333,7 @@ function Walter:beforeMatch()
 				y = gem.y,
 				owner = self,
 			}
-			delay = total_anim_duration
+			delay = self.HEALING_ANIM_DURATION
 
 			game.sound:newSFX("healing")
 		end

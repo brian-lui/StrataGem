@@ -6,7 +6,7 @@ local pointIsInRect = require "utilities".pointIsInRect
 local charselect = {name = "charselect"}
 function charselect:init()
 	charselect.selectable_chars = {"heath", "walter", "gail", "holly",
-		"wolfgang", "hailey", "diggory", "buzz", "ivy", "joy"}
+		"wolfgang", "hailey", "diggory", "buzz", "ivy", "joy", "mort", "damon"}
 	charselect.ui = {clickable = {}, static = {}, popup_clickable = {}, popup_static = {}}
 	self:_createSettingsMenu(charselect, {
 		exitstate = "gs_title",
@@ -31,13 +31,13 @@ function charselect:_createCharacterButtons()
 	local end_x, end_y
 	for i = 1, #charselect.selectable_chars do
 		local char = charselect.selectable_chars[i]
-		if i >= 1 and i < 4 then
+		if i >= 1 and i < 5 then
 			end_x = stage.width * (0.125 * i + 0.5)
 			end_y = stage.height * 0.2
-		elseif i >= 4 and i < 8 then
+		elseif i >= 5 and i < 9 then
 			end_x = stage.width * (0.125 * i + 0.0625)
 			end_y = stage.height * 0.4
-		elseif i >= 8 and i < 11 then
+		elseif i >= 9 and i < 13 then
 			end_x = stage.width * (0.125 * i - 0.375)
 			end_y = stage.height * 0.6
 		end
