@@ -21,21 +21,25 @@ Rows 13-20: basin. Row 13 is at top, 20 at bottom.
 Row 21: bottom grid row where trash gems tween from. (now it's just a sentinel)
 --]]
 function Grid:init(game)
+	self.COLUMNS = 8
+	self.ROWS = 20
 	self.LOSE_ROW = 12 -- game over if a gem ends the turn in this row or above
 	self.RUSH_ROW = 15 -- can only rush if this row is empty
 	self.BOTTOM_ROW = 20 -- used for garbage appearance
-	
+	self.PENDING_START_ROW = 1
+	self.PENDING_END_ROW = 12
+	self.BASIN_START_ROW = 13
+	self.BASIN_END_ROW = 20
+
 	local stage = game.stage
 	local tub_bottom = stage.height * 0.95
 	self.game = game
-	self.columns = 8
-	self.rows = 20
 	self.x = {}
 	self.y = {}
 	self.active_rect = {}
 
-	for i = 0, self.columns + 1 do
-		self.x[i] = stage.x_mid + (i - (self.columns / 2) - 0.5) * stage.gem_width
+	for i = 0, self.COLUMNS + 1 do
+		self.x[i] = stage.x_mid + (i - (self.COLUMNS / 2) - 0.5) * stage.gem_width
 		self.active_rect[i] = {self.x[i] - 0.5 * stage.gem_width, 0, stage.gem_width, stage.height}
 	end
 
@@ -51,22 +55,22 @@ function Grid:init(game)
 	self.y[12] = tub_bottom - 8.75 * stage.gem_height
 
 	-- basin positions
-	for i = 13, self.rows + 1 do
-		self.y[i] = tub_bottom + (i - self.rows - 0.75) * stage.gem_height
+	for i = self.BASIN_START_ROW, self.BASIN_END_ROW + 1 do
+		self.y[i] = tub_bottom + (i - self.ROWS - 0.75) * stage.gem_height
 	end
 
-	for row = 1, self.rows + 1 do
+	for row = self.PENDING_START_ROW, self.BASIN_END_ROW + 1 do
 		self[row] = {}
-		for col = 0, self.columns + 1 do
+		for col = 0, self.COLUMNS + 1 do
 			self[row][col] = {gem = nil, owner = 0}
 		end
 	end
 end
 
 function Grid:reset()
-	for row = 0, self.rows + 1 do
+	for row = self.PENDING_START_ROW, self.BASIN_END_ROW + 1 do
 		self[row] = {}
-		for col = 0, self.columns + 1 do
+		for col = 0, self.COLUMNS + 1 do
 			self[row][col] = {gem = false, owner = 0}
 		end
 	end
@@ -74,8 +78,42 @@ end
 
 function Grid:gems()
 	local gems, rows, columns, index = {}, {}, {}, 0
-	for i = 0, self.rows + 1 do
-		for j = 0, self.columns + 1 do
+	for i = self.PENDING_START_ROW, self.BASIN_END_ROW + 1 do
+		for j = 0, self.COLUMNS + 1 do
+			if self[i][j].gem then
+				gems[#gems+1] = self[i][j].gem
+				rows[#rows+1] = i
+				columns[#columns+1] = j
+			end
+		end
+	end
+	return function()
+		index = index + 1
+		return gems[index], rows[index], columns[index]
+	end
+end
+
+function Grid:basinGems()
+	local gems, rows, columns, index = {}, {}, {}, 0
+	for i = self.BASIN_START_ROW, self.BASIN_END_ROW + 1 do
+		for j = 0, self.COLUMNS + 1 do
+			if self[i][j].gem then
+				gems[#gems+1] = self[i][j].gem
+				rows[#rows+1] = i
+				columns[#columns+1] = j
+			end
+		end
+	end
+	return function()
+		index = index + 1
+		return gems[index], rows[index], columns[index]
+	end
+end
+
+function Grid:pendingGems()
+	local gems, rows, columns, index = {}, {}, {}, 0
+	for i = self.PENDING_START_ROW, self.PENDING_END_ROW do
+		for j = 0, self.COLUMNS + 1 do
 			if self[i][j].gem then
 				gems[#gems+1] = self[i][j].gem
 				rows[#rows+1] = i
@@ -91,9 +129,9 @@ end
 
 -- sends all gems to the bottom immediately
 function Grid:simulateGravity()
-	for j = 1, self.columns do
+	for j = 1, self.COLUMNS do
 		local sorted_column = self:columnSort(j)
-		for i = 1, self.rows do
+		for i = 1, self.ROWS do
 			self[i][j].gem = sorted_column[i]
 		end
 	end
@@ -313,8 +351,8 @@ function Grid:getPermittedColors(column, banned_color1, banned_color2)
 	local avail_color = {"red", "blue", "green", "yellow"}
 	local ban1 = false
 	local ret = {}
-	if self[self.rows - 1][column].gem then
-		ban1 = self[self.rows - 1][column].gem.color
+	if self[self.ROWS - 1][column].gem then
+		ban1 = self[self.ROWS - 1][column].gem.color
 	end
 	for i = 1, 4 do
 		if ban1 ~= avail_color[i] and banned_color1 ~= avail_color[i]
@@ -382,7 +420,7 @@ end
 
 function Grid:moveAllUp(player, rows_to_add)
 -- Moves all gems in the player's half up by rows_to_add.
-	local last_row = self.rows - rows_to_add
+	local last_row = self.ROWS - rows_to_add
 	local start_col, end_col = 1, 4
 	if player.ID == "P2" then start_col, end_col = 5, 8 end
 	for r = 1, last_row do
@@ -395,7 +433,7 @@ function Grid:moveAllUp(player, rows_to_add)
 			end
 		end
 	end
-	for i = last_row + 1, self.rows do
+	for i = last_row + 1, self.ROWS do
 		for j = start_col, end_col do
 			self[i][j].gem = false
 		end
@@ -421,9 +459,9 @@ function Grid:addBottomRow(player, skip_animation)
 		if col > game.p1.start_col and col < game.p2.end_col then
 			local prev_col = (col - step)
 			local next_col = (col + step)
-			ban1 = self[self.rows][prev_col].gem.color
-			if self[self.rows][next_col].gem then
-				ban2 = self[self.rows][next_col].gem.color
+			ban1 = self[self.ROWS][prev_col].gem.color
+			if self[self.ROWS][next_col].gem then
+				ban2 = self[self.ROWS][next_col].gem.color
 			end
 		end
 		local gem_color = self:generate1by1(col, ban1, ban2, player.enemy)
@@ -465,15 +503,15 @@ end
 
 function Grid:columnSort(column_num)
 	local column = {}
-	for i = 1, self.rows do
+	for i = 1, self.ROWS do
 		column[i] = self[i][column_num].gem
 	end
-	for i = self.rows, 1, -1 do
+	for i = self.ROWS, 1, -1 do
 		 if not column[i] then
 			 table.remove(column, i)
 		 end
 	end
-	for _ = 1, self.rows - #column do
+	for _ = 1, self.ROWS - #column do
 		table.insert(column, 1, false)
 	end
 	return column
@@ -483,9 +521,9 @@ end
 -- Set skip_animation to true to not show animation
 function Grid:dropColumns(params)
 	params = params or {}
-	for c = 1, self.columns do
+	for c = 1, self.COLUMNS do
 		local sorted_column = self:columnSort(c)
-		for r = 1, self.rows do
+		for r = 1, self.ROWS do
 			self[r][c].gem = sorted_column[r]
 			local cell = self[r][c].gem
 			if cell then cell.row, cell.column = r, c end
@@ -545,15 +583,15 @@ function Grid:getIDs()
 	return ret
 end
 
-function Grid:updateGravity(dt)
+function Grid:updateGravity(dt) -- animation only
 	if self.game.grid_wait == 0 then
 		for gem in self:gems() do gem:update(dt) end -- move gems to new positions
 	end
 end
 
 function Grid:updateGrid()
-	for row = 0, self.rows + 1 do
-		for col = 0, self.columns + 1 do
+	for row = self.PENDING_START_ROW, self.BASIN_END_ROW + 1 do
+		for col = 0, self.COLUMNS + 1 do
 			-- update the gem row/column information after columnSort
 			if self[row][col].gem then
 				self[row][col].gem.row = row
@@ -614,10 +652,12 @@ end
 	glow_delay: optional extra frames to stay in full-glow phase
 --]]
 function Grid:destroyGem(params)
-	local gem = params.gem
-	local extra_damage = params.extra_damage or 0
 	local game = self.game
 	local particles = game.particles
+	local gem = params.gem
+	local extra_damage = params.extra_damage or 0
+	local glow_delay = params.glow_delay or 0
+	local delay_until_explode = game.GEM_EXPLODE_FRAMES + glow_delay
 	if gem.is_destroyed then return end
 	if params.credit_to then gem:setOwner(params.credit_to) end
 
@@ -629,23 +669,31 @@ function Grid:destroyGem(params)
 		-- state
 		local super_to_add = player.meter_gain[gem.color]
 		if super_to_add == nil then print("Nil value found when looking up super meter gain!") end
-		player.enemy:addDamage(1 + extra_damage)
-		game.queue:add(game.GEM_EXPLODE_FRAMES, player.addSuper, player, super_to_add)
-		game.queue:add(game.GEM_EXPLODE_FRAMES, game.ui.screenshake, game.ui, 1)
+		game.queue:add(delay_until_explode, player.enemy.addDamage, player.enemy, 1 + extra_damage)
+		--player.enemy:addDamage(1 + extra_damage)
+		game.queue:add(delay_until_explode, player.addSuper, player, super_to_add)
+		game.queue:add(delay_until_explode, game.ui.screenshake, game.ui, 1)
 
 		-- animations
 		local soundfile_name = "gembreak" .. math.min(5, game.scoring_combo + 1)
-		local sfx = game.sound:newSFX(soundfile_name)
-		sfx:setPosition((gem.column - 4.5) * 0.02, 0, 0)
+		game.queue:add(delay_until_explode, game.sound.newSFX, game.sound, soundfile_name)
+		--game.sound:newSFX(soundfile_name)
+
 		local num_super_particles = player.supering and 0 or player.meter_gain[gem.color]
-		particles.superParticles.generate(game, gem, num_super_particles, game.GEM_EXPLODE_FRAMES)
-		particles.damage.generate(game, gem, game.GEM_EXPLODE_FRAMES)
-		particles.popParticles.generate{game = game, gem = gem, delay_frames = game.GEM_EXPLODE_FRAMES}
-		particles.dust.generateBigFountain{game = game, gem = gem, delay_frames = game.GEM_EXPLODE_FRAMES}
-		for i = 1, extra_damage do particles.damage.generate(game, gem, game.GEM_EXPLODE_FRAMES) end
+		particles.superParticles.generate(game, gem, num_super_particles, delay_until_explode)
+		particles.damage.generate(game, gem, delay_until_explode)
+		particles.dust.generateBigFountain{game = game, gem = gem, delay_frames = delay_until_explode}
+		for i = 1, extra_damage do particles.damage.generate(game, gem, delay_until_explode) end
+
+		particles.popParticles.generate{
+			game = game,
+			gem = gem,
+			delay_frames = game.GEM_EXPLODE_FRAMES,
+			glow_duration = glow_delay,
+		}
 	end
 
-	particles.explodingGem.generate{game = game, gem = gem}
+	particles.explodingGem.generate{game = game, gem = gem, glow_duration = glow_delay}
 
 	-- remove gem
 	if params.propogate_flags_up ~= false then
@@ -698,7 +746,7 @@ end
 
 function Grid:getLoser()
 	local p1loss, p2loss = false, false
-	for i = 1, self.columns do
+	for i = 1, self.COLUMNS do
 		local empty_row = self:getFirstEmptyRow(i)
 		if empty_row < self.LOSE_ROW then
 			if i <= 4 then p1loss = true else p2loss = true end

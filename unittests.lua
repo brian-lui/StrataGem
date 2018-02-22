@@ -275,6 +275,40 @@ local function healingTwinkleGenerate(game)
 	game.particles.healing.generateTwinkle(game, game.p1.hand[2].platform)
 end
 
+local function glowDestroyTest(game)
+	local grid = game.grid
+	grid:updateGrid()
+	grid:destroyGem{
+		gem = grid[20][1].gem,
+		glow_delay = 120,
+	}
+end
+
+local super_toggle_state = 0
+local function superToggle(game)
+	for player in game:players() do
+		player:addSuper(10000)
+		player:resetMP()
+	end
+
+	if super_toggle_state == 0 then
+		game.p1.supering = true
+		game.p2.supering = false
+		super_toggle_state = 1
+	elseif super_toggle_state == 1 then
+		game.p1.supering = false
+		game.p2.supering = true
+		super_toggle_state = 2
+	elseif super_toggle_state == 2 then
+		game.p1.supering = true
+		game.p2.supering = true
+		super_toggle_state = 3
+	elseif super_toggle_state == 3 then
+		game.p1.supering = false
+		game.p2.supering = false
+		super_toggle_state = 0
+	end
+end
 local Unittests = {
 	q = garbageMatch,
 	w = multiCombo,
@@ -293,7 +327,7 @@ local Unittests = {
 	g = addDamageP1,
 	h = addDamageP2,
 	j = addSuperAndBurst,
-	k = showAnimationCanvas,
+	k = superToggle,
 	l = showDebugInfo,
 	--z = showDebugOverlay,
 	x = toggleSlowdown,

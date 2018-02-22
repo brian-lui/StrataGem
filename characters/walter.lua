@@ -317,7 +317,11 @@ function Walter:beforeMatch()
 			self.hand:healDamage(1)
 
 			-- gem glow
-			game.particles.popParticles.generate{game = game, gem = gem, duration = anim_duration}
+			game.particles.popParticles.generate{
+				game = game,
+				gem = gem,
+				duration = self.HEALING_GLOW_DURATION,
+			}
 			game.particles.explodingGem.generateReverseExplode{
 				game = game,
 				x = gem.x,

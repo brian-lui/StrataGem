@@ -156,9 +156,10 @@ function Character:pieceDroppedOK(piece, shift)
 end
 
 
-function Character:superSlideInAnim()
-	self.game.particles.superFreezeEffects.generate(self.game, self,
-		self.shadow_image, self.action_image, self.super_fuzz_image)
+function Character:superSlideInAnim(delay_frames)
+	local delay = self.game.particles.superFreezeEffects.generate(self.game, self,
+		self.shadow_image, self.action_image, self.super_fuzz_image, delay_frames)
+	return delay
 end
 
 return common.class("Character", Character)

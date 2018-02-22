@@ -104,7 +104,7 @@ function Particles:reset()
 
 	--check to see if no_rush is being animated. 0 no animation, 1 currently being animated, 2 mouse hovering over.
 	self.no_rush_check = {}
-	for i = 1, self.game.grid.columns do self.no_rush_check[i] = 0 end
+	for i = 1, self.game.grid.COLUMNS do self.no_rush_check[i] = 0 end
 	self.next_tinystar_frame, self.next_star_frame = 0, 0
 end
 
@@ -416,16 +416,16 @@ end
 
 -- player.hand.damage is the damage before this round's match(es) is scored
 function GarbageParticles.generate(game, gem, delay_frames)
+	local grid = game.grid
 	local player = game:playerByIndex(gem.owner)
 	local start_col, end_col = 1, 4
-	local end_row = game.grid.rows
 	if player.ID == "P2" then start_col = 5 end_col = 8 end
 
 	local duration = 54 + game.particles:getNumber("GarbageParticles")
 	-- calculate bezier curve
 	for i = start_col, end_col do
 		local x1, y1 = gem.x, gem.y -- start
-		local x4, y4 = game.grid.x[i], game.grid.y[end_row] -- end
+		local x4, y4 = grid.x[i], grid.y[grid.BOTTOM_ROW] -- end
 		local dist = ((x4 - x1) ^ 2 + (y4 - y1) ^ 2) ^ 0.5
 		local x3, y3 = 0.5 * (x1 + x4), 0.5 * (y1 + y4)
 
@@ -480,7 +480,9 @@ function PopParticles:remove()
 end
 
 --[[ Mandatory game and either a gem or [x, y, image].
-	Optional: duration, delay by delay_frames --]]
+	Optional: delay by delay_frames
+	Optional: glow_duration, for how long it stays at max glow
+	Optiona: duration, animation duration --]]
 function PopParticles.generate(params)
 	local manager = params.game.particles
 	local x = params.x or params.gem.x 
@@ -496,8 +498,10 @@ function PopParticles.generate(params)
 	 	p:change{duration = 0, transparency = 255}
 	end
 
+	if params.glow_duration then p:wait(params.glow_duration) end
 	p:change{duration = duration, transparency = 0, scaling = 4, remove = true}
-	return duration
+
+	return duration + (params.glow_duration or 0)
 end
 
 --[[The same animation but in reverse. Used for garbage particle
@@ -546,6 +550,7 @@ end
 
 --[[ game and gem are mandatory
 	explode_frames: optional duration of exploding part. Defaults to game.GEM_EXPLODE_FRAMES
+	glow_duration: optional duration of after-explosion part. Default 0
 	fade_frames: optional duration of fade part. Defaults to game.GEM_FADE_FRAMES
 	shake: boolean for whether to bounce the gam. Used by garbage gem. Defaults to false.
 	delay_frames: optional amount of time to delay the start of animation.
@@ -565,6 +570,8 @@ function ExplodingGem.generate(params)
 	else
 		p:change{duration = explode_frames, transparency = 255}
 	end
+
+	if params.glow_duration then p:wait(params.glow_duration) end
 
 	if gem.owner == 3 then
 		p:change{duration = fade_frames, remove = true}
@@ -1326,7 +1333,7 @@ function SuperFreezeEffects:remove()
 	self.manager.allParticles.SuperFreezeEffects[self.ID] = nil
 end
 
-function SuperFreezeEffects.generate(game, player, shadow_image, action_image, fuzz_image)
+function SuperFreezeEffects.generate(game, player, shadow_image, action_image, fuzz_image, delay_frames)
 	local stage = game.stage
 	local sign = player.player_num == 2 and -1 or 1
 
@@ -1337,6 +1344,11 @@ function SuperFreezeEffects.generate(game, player, shadow_image, action_image, f
 		y = stage.height * 0.5,
 		flip = sign == -1
 	})
+	if delay_frames then
+		shadow:change{transparency = 0}
+	 	shadow:wait(delay_frames)
+	 	shadow:change{duration = 0, transparency = 255}
+	end
 	shadow:change{duration = 30, x = stage.width * (0.5 + 0.025 * sign), easing = "outQuart"}
 	shadow:wait(25)
 	shadow:change{duration = 5, transparency = 0, remove = true}
@@ -1348,6 +1360,11 @@ function SuperFreezeEffects.generate(game, player, shadow_image, action_image, f
 		y = stage.height * 0.5,
 		flip = sign == -1
 	})
+	if delay_frames then
+		portrait:change{transparency = 0}
+	 	portrait:wait(delay_frames)
+	 	portrait:change{duration = 0, transparency = 255}
+	end	
 	portrait:change{duration = 30, x = stage.width * (0.5 + 0.025 * sign), easing = "outQuart"}
 	portrait:wait(25)
 	portrait:change{duration = 5, transparency = 0, remove = true}
@@ -1358,6 +1375,11 @@ function SuperFreezeEffects.generate(game, player, shadow_image, action_image, f
 		x = stage.width * 0.5,
 		y = fuzz_image:getHeight() * -0.5
 	})
+	if delay_frames then
+		top_fuzz:change{transparency = 0}
+	 	top_fuzz:wait(delay_frames)
+	 	top_fuzz:change{duration = 0, transparency = 255}
+	end	
 	top_fuzz:change{duration = 21, y = 0, easing = "outQuart"}
 	top_fuzz:wait(40)
 	top_fuzz:change{duration = 5, transparency = 0, remove = true}
@@ -1368,10 +1390,17 @@ function SuperFreezeEffects.generate(game, player, shadow_image, action_image, f
 		x = stage.width * 0.5,
 		y = fuzz_image:getHeight() * 0.5 + stage.height,
 	})
+	if delay_frames then
+		bottom_fuzz:change{transparency = 0}
+	 	bottom_fuzz:wait(delay_frames)
+	 	bottom_fuzz:change{duration = 0, transparency = 255}
+	end	
 	bottom_fuzz:change{duration = 21, y = stage.height, easing = "outQuart"}
 	bottom_fuzz:wait(40)
 	bottom_fuzz:change{duration = 5, transparency = 0, remove = true}
-	game.sound:newSFX("superactivate")	
+	game.sound:newSFX("superactivate")
+
+	return 90
 end
 
 SuperFreezeEffects = common.class("SuperFreezeEffects", SuperFreezeEffects, Pic)

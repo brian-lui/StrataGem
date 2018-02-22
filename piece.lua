@@ -189,7 +189,7 @@ function Piece:getColumns(shift)
 	if self.is_horizontal then
 		for i = 1, self.size do
 			ret[i] = false
-			for j = 1, grid.columns do
+			for j = 1, grid.COLUMNS do
 				local in_this_column = pointIsInRect(self.gems[i].x + shift, self.gems[i].y,
 					table.unpack(grid.active_rect[j]))
 				if in_this_column then ret[i] = j end
@@ -198,7 +198,7 @@ function Piece:getColumns(shift)
 
 	elseif not self.is_horizontal then
 		for i = 1, self.size do ret[i] = false	end -- set array length
-		for j = 1, grid.columns do
+		for j = 1, grid.COLUMNS do
 			local in_this_column = pointIsInRect(self.gems[1].x + shift, self.gems[1].y,
 				table.unpack(grid.active_rect[j]))
 			if in_this_column then

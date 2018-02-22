@@ -18,7 +18,7 @@ function Phase:reset()
 	self.super_play = nil
 	self.super_pause = 0
 	self.no_rush = {} --whether no_rush is eligible for animation
-	for i = 1, self.game.grid.columns do self.no_rush[i] = true end
+	for i = 1, self.game.grid.COLUMNS do self.no_rush[i] = true end
 	self.matched_this_round = {false, false} -- p1 made a match, p2 made a match
 	self.garbage_this_round = false
 	self.should_call_char_ability_this_phase = true
@@ -102,30 +102,13 @@ function Phase:resolve(dt)
 	game.inputs_frozen = true
 end
 
-local function superPlays(self)
-	local ret = {}
-	for player in self.game:players() do
-		if player.supering then
-			ret[#ret + 1] = player
-		end
-	end
-	return ret
-end
-
--- TODO: refactor this lame stuff
 function Phase:superFreeze(dt)
-	self.super_play = self.super_play or superPlays(self)
-
-	if self.super_pause > 0 then
-		self.super_pause = self.super_pause - 1
-	elseif self.super_play[1] then
-		self.super_play[1]:superSlideInAnim()
-		self.super_pause = self.INIT_SUPER_PAUSE
-		table.remove(self.super_play, 1)
-	else
-		self.super_play = nil
-		self.game.current_phase = "BeforeGravity"
-	end
+	local game = self.game
+	local p1delay, p2delay = 0, 0
+	if game.p1.supering then p1delay = game.p1:superSlideInAnim() end
+	if game.p2.supering then p2delay = game.p2:superSlideInAnim(p1delay) end
+	self:setPause(p1delay + p2delay)
+	self:activatePause("BeforeGravity")
 end
 
 function Phase:beforeGravity(dt)
@@ -144,7 +127,7 @@ function Phase:applyGemTween(dt)
 	grid:updateGravity(dt) -- animation
 	local animation_done = grid:isSettled() --  tween-from-top is done
 	if animation_done then
-		grid:dropColumns()
+		grid:dropColumns() -- state
 		game.current_phase = "Gravity"
 	end
 end
@@ -163,7 +146,7 @@ function Phase:applyGravity(dt)
 		end
 		self:setPause(delay)
 
-		for i = 1, grid.columns do --checks if no_rush should be possible again
+		for i = 1, grid.COLUMNS do --checks if no_rush should be possible again
 			if not self.no_rush[i] then
 				if not grid[8][i].gem  then
 					self.no_rush[i] = true
@@ -265,7 +248,7 @@ function Phase:resolvedMatches(dt)
 		for player in game:players() do player.place_type = "normal" end
 		game.scoring_combo = 0
 		game.grid:setAllGemOwners(0)
-		for i = 1, grid.columns do --checks if should generate no rush
+		for i = 1, grid.COLUMNS do --checks if should generate no rush
 			if self.no_rush[i] then
 				if grid[grid.RUSH_ROW][i].gem then
 					game.particles.words.generateNoRush(self.game, i)
@@ -367,7 +350,7 @@ function Phase:cleanup(dt)
 	local grid = game.grid
 	local p1, p2 = game.p1, game.p2
 
-	for i = 1, grid.columns do --checks if should generate no rush
+	for i = 1, grid.COLUMNS do --checks if should generate no rush
 		if self.no_rush[i] then
 			if grid[grid.RUSH_ROW][i].gem then
 				game.particles.words.generateNoRush(self.game, i)

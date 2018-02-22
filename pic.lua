@@ -297,7 +297,7 @@ function Pic:change(target)
 	end
 end
 
--- queues a wait during the move animation, in frames.
+-- queues a wait during the move animation, in frames. 0 duration is ok I guess
 function Pic:wait(frames)
 	self:change{duration = frames}
 end

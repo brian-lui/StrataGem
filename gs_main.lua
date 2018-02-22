@@ -274,10 +274,10 @@ function gs_main:drawText(params)
 	if self.debug_drawGrid then
 		love.graphics.push("all")
 			love.graphics.setColor(0, 255, 0)
-			for r = 0, grid.rows + 1 do
+			for r = 1, grid.ROWS + 1 do
 				love.graphics.print(r, 200, grid.y[r])
 			end
-			for c = 0, grid.columns + 1 do
+			for c = 0, grid.COLUMNS + 1 do
 				love.graphics.print(c, grid.x[c], 200)
 			end
 		love.graphics.pop()
@@ -319,7 +319,7 @@ function gs_main:drawText(params)
 			local toprint = {}
 			local i = 1
 			local colors = {red = "R", blue = "B", green = "G", yellow = "Y"}
-			for row = 0, 14 do
+			for row = grid.PENDING_START_ROW, grid.BASIN_END_ROW do
 				for col = 1, 8 do
 					toprint[i] = grid[row][col].gem and colors[grid[row][col].gem.color] or " "
 					i = i + 1
