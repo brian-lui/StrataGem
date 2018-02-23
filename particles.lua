@@ -1150,6 +1150,101 @@ function WordEffects.generateGoStar(game, x, y, x_vel, y_vel)
 	p:change{duration = 120, x = x + x_vel, y = y_func, remove = true}
 end
 
+-- The "impact" type emphasis bars to indicate a passive ability was triggered
+-- takes a table of matched gems, and the color of the emphasis bar
+function WordEffects.generateEmphasisBars(game, gem_table, color)
+	local grid = game.grid
+	local stage = game.stage
+	local img = image.lookup.colorline[color]
+	assert(img, "Invalid color specified for emphasis bar")
+
+	local horizontal, vertical = true, true
+	for i = 1, #gem_table do
+		if not gem_table[i].is_horizontal then horizontal = false end
+		if not gem_table[i].is_vertical then vertical = false end
+	end
+
+	local DURATION_1 = 5
+	local DURATION_2 = 40
+	local DURATION_3 = 40
+
+	if horizontal then
+		local row = gem_table[1].row
+		local center_y = grid.y[row]
+		local center_dist = image.GEM_HEIGHT * 0.5 + img:getHeight() * 0.5
+
+		for i = 1, #gem_table do -- top and bottom bars
+			local column = gem_table[i].column
+			local x = grid.x[column]
+			local top_start = center_y - center_dist - stage.height * 0.5
+			local top_dest = center_y - center_dist
+			local bottom_start = center_y + center_dist + stage.height * 0.5
+			local bottom_dest = center_y + center_dist
+		
+			local top = common.instance(WordEffects, game.particles, x, top_start, img)
+			local bottom = common.instance(WordEffects, game.particles, x, bottom_start, img)
+			top:change{duration = DURATION, y = top_dest, easing = "inOutQuart", remove = true}
+			top:change{duration = DURATION, y = bottom_dest, easing = "inOutQuart", remove = true}
+		end
+
+		-- left and right bars
+	end
+
+	if vertical then
+		local column = gem_table[1].column
+		local center_x = grid.x[column]
+		local center_dist = image.GEM_WIDTH * 0.5 + img:getHeight() * 0.5
+
+		for i = 1, #gem_table do -- left and right bars
+			local row = gem_table[i].row
+			local y = grid.y[row]
+			local left_start = center_x - center_dist - image.GEM_WIDTH * 6
+			local left_mid = center_x - center_dist - image.GEM_WIDTH * 5
+			local left_dest = center_x - center_dist
+			local right_start = center_x + center_dist + image.GEM_WIDTH * 6
+			local right_mid = center_x + center_dist + image.GEM_WIDTH * 5
+			local right_dest = center_x + center_dist
+
+			local left = common.instance(WordEffects, game.particles, left_start, y, img)
+			left:change{rotation = math.pi * 0.5, transparency = 0}
+			left:change{duration = DURATION_1, transparency = 255, x = left_mid}
+			left:change{duration = DURATION_2, x = left_dest, easing = "inOutCubic"}
+			left:change{duration = DURATION_3, transparency = 0, easing = "inBounce", remove = true}
+
+			local right = common.instance(WordEffects, game.particles, right_start, y, img)
+			right:change{rotation = math.pi * 0.5, transparency = 0}
+			right:change{duration = DURATION_1, transparency = 255, x = right_mid}
+			right:change{duration = DURATION_2, x = right_dest, easing = "inOutCubic"}
+			right:change{duration = DURATION_3, transparency = 0, easing = "inBounce", remove = true}
+		end
+
+		-- top and bottom bars
+		center_dist = image.GEM_HEIGHT * 0.5 + img:getHeight() * 0.5
+		local top_y = grid.y[gem_table[1].row] - center_dist
+		local top_start = top_y - image.GEM_HEIGHT * 6
+		local top_mid =  top_y - image.GEM_HEIGHT * 5
+		local top_dest = top_y
+		local bottom_y = grid.y[gem_table[#gem_table].row] + center_dist
+		local bottom_start = bottom_y + image.GEM_HEIGHT * 6
+		local bottom_mid = bottom_y + image.GEM_HEIGHT * 5
+		local bottom_dest = bottom_y
+
+		local top = common.instance(WordEffects, game.particles, center_x, top_start, img)
+		top:change{transparency = 0}
+		top:change{duration = DURATION_1, transparency = 255, y = top_mid}
+		top:change{duration = DURATION_2, y = top_dest, easing = "inOutCubic"}
+		top:change{duration = DURATION_3, transparency = 0, easing = "inBounce", remove = true}
+
+		local bottom = common.instance(WordEffects, game.particles, center_x, bottom_start, img)
+		bottom:change{transparency = 0}
+		bottom:change{duration = DURATION_1, transparency = 255, y = bottom_mid}
+		bottom:change{duration = DURATION_2, y = bottom_dest, easing = "inOutCubic"}
+		bottom:change{duration = DURATION_3, transparency = 0, easing = "inBounce", remove = true}
+	end
+	return DURATION_1 + DURATION_2
+end
+
+
 -- DoublecastCloud, RushCloud, RushParticle, ReadyParticle, GoStar
 function WordEffects.generate(game, effect_type, ...)
 	local particle = {
@@ -1158,6 +1253,7 @@ function WordEffects.generate(game, effect_type, ...)
 		RushParticle = WordEffects.generateRushParticle,
 		ReadyParticle = WordEffects.generateReadyParticle,
 		GoStar = WordEffects.generateGoStar,
+		EmphasisBars = WordEffects.generateEmphasisBars,
 	}
 	particle[effect_type](game, ...)
 end

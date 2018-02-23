@@ -10,11 +10,6 @@ local image = {
 	green_gem = love.graphics.newImage('images/gems/greengem.png'),
 	yellow_gem = love.graphics.newImage('images/gems/yellowgem.png'),
 
-	red_grey = love.graphics.newImage('images/gems/redgemgrey.png'),
-	blue_grey = love.graphics.newImage('images/gems/bluegemgrey.png'),
-	green_grey = love.graphics.newImage('images/gems/greengemgrey.png'),
-	yellow_grey = love.graphics.newImage('images/gems/yellowgemgrey.png'),
-
 	red_particle1 = love.graphics.newImage('images/particles/redparticle1.png'),
 	red_particle2 = love.graphics.newImage('images/particles/redparticle2.png'),
 	red_particle3 = love.graphics.newImage('images/particles/redparticle3.png'),
@@ -31,22 +26,6 @@ local image = {
 	healing_particle1 = love.graphics.newImage('images/particles/healingparticle1.png'),
 	healing_particle2 = love.graphics.newImage('images/particles/healingparticle2.png'),
 	healing_particle3 = love.graphics.newImage('images/particles/healingparticle3.png'),
-	healing_trail = love.graphics.newImage('images/particles/healingtrail.png'),
-
-	super_particle_red = love.graphics.newImage('images/particles/redsuperparticle.png'),
-	super_particle_blue = love.graphics.newImage('images/particles/bluesuperparticle.png'),
-	super_particle_green = love.graphics.newImage('images/particles/greensuperparticle.png'),
-	super_particle_yellow = love.graphics.newImage('images/particles/yellowsuperparticle.png'),
-
-	trail_particle_red = love.graphics.newImage('images/particles/redtrail.png'),
-	trail_particle_blue = love.graphics.newImage('images/particles/bluetrail.png'),
-	trail_particle_green = love.graphics.newImage('images/particles/greentrail.png'),
-	trail_particle_yellow = love.graphics.newImage('images/particles/yellowtrail.png'),
-
-	pop_particle_red = love.graphics.newImage('images/gems/popred.png'),
-	pop_particle_blue = love.graphics.newImage('images/gems/popblue.png'),
-	pop_particle_green = love.graphics.newImage('images/gems/popgreen.png'),
-	pop_particle_yellow = love.graphics.newImage('images/gems/popyellow.png'),
 
 	star_particle_silver1 = love.graphics.newImage('images/particles/silverstar1.png'),
 	star_particle_silver2 = love.graphics.newImage('images/particles/silverstar2.png'),
@@ -61,6 +40,7 @@ local image = {
 	tinystar_particle_gold2 = love.graphics.newImage('images/particles/tinystargold2.png'),
 	tinystar_particle_gold3 = love.graphics.newImage('images/particles/tinystargold3.png'),
 }
+
 image.GEM_WIDTH = image.red_gem:getWidth()
 image.GEM_HEIGHT = image.red_gem:getHeight()
 
@@ -237,10 +217,10 @@ image.lookup.gem_explode = {
 }
 
 image.lookup.grey_gem_crumble = {
-	red = image.red_grey,
-	blue = image.blue_grey,
-	green = image.green_grey,
-	yellow = image.yellow_grey,
+	red = love.graphics.newImage('images/gems/redgemgrey.png'),
+	blue = love.graphics.newImage('images/gems/bluegemgrey.png'),
+	green = love.graphics.newImage('images/gems/greengemgrey.png'),
+	yellow = love.graphics.newImage('images/gems/yellowgemgrey.png'),
 }
 
 image.lookup.particle_freq = {
@@ -264,25 +244,25 @@ image.lookup.particle_freq.random = function(color)
 end
 
 image.lookup.super_particle = {
-	red = image.super_particle_red,
-	blue = image.super_particle_blue,
-	green = image.super_particle_green,
-	yellow = image.super_particle_yellow
+	red = love.graphics.newImage('images/particles/redsuperparticle.png'),
+	blue = love.graphics.newImage('images/particles/bluesuperparticle.png'),
+	green = love.graphics.newImage('images/particles/greensuperparticle.png'),
+	yellow = love.graphics.newImage('images/particles/yellowsuperparticle.png'),
 }
 
 image.lookup.pop_particle = {
-	red = image.pop_particle_red,
-	blue = image.pop_particle_blue,
-	green = image.pop_particle_green,
-	yellow = image.pop_particle_yellow
+	red = love.graphics.newImage('images/gems/popred.png'),
+	blue = love.graphics.newImage('images/gems/popblue.png'),
+	green = love.graphics.newImage('images/gems/popgreen.png'),
+	yellow = love.graphics.newImage('images/gems/popyellow.png'),
 }
 
 image.lookup.trail_particle = {
-	red = image.trail_particle_red,
-	blue = image.trail_particle_blue,
-	green = image.trail_particle_green,
-	yellow = image.trail_particle_yellow,
-	healing = image.healing_trail,
+	red = love.graphics.newImage('images/particles/redtrail.png'),
+	blue = love.graphics.newImage('images/particles/bluetrail.png'),
+	green = love.graphics.newImage('images/particles/greentrail.png'),
+	yellow = love.graphics.newImage('images/particles/yellowtrail.png'),
+	healing = love.graphics.newImage('images/particles/healingtrail.png'),
 }
 
 image.lookup.platform_star = {
@@ -328,4 +308,10 @@ image.lookup.dust = {
 	end
 }
 
+image.lookup.colorline = {
+	red = love.graphics.newImage('images/ui/blueline.png'),
+	blue = love.graphics.newImage('images/ui/blueline.png'),
+	green = love.graphics.newImage('images/ui/blueline.png'),
+	yellow = love.graphics.newImage('images/ui/blueline.png'),
+}
 return image

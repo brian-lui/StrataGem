@@ -342,7 +342,16 @@ function Walter:beforeMatch()
 			game.sound:newSFX("healing")
 		end
 	end
-	return delay
+
+	local gem_list = grid:getMatchedGemLists()
+	local emphasis_delay = 0
+	for _, list in pairs(gem_list) do
+		if self.player_num == list[1].owner and list[1].is_vertical then
+			emphasis_delay = game.particles.wordEffects.generateEmphasisBars(game, list, "blue")
+		end
+	end
+
+	return math.max(delay, emphasis_delay)
 end
 
 function Walter:afterAllMatches()

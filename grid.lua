@@ -163,7 +163,7 @@ end
 
 -- Returns a list of matches, where each match is listed as the row and column
 -- of its topmost/leftmost gem, a length, and whether it's horizontal.
-function Grid:getMatches(minimumLength)
+function Grid:_getRawMatches(minimumLength)
 	local function getColor(row, column)
 		return self[row][column].gem and self[row][column].gem.color
 	end
@@ -205,7 +205,7 @@ end
 -- matches (not number of matched gems).
 -- also sets the .is_horizontal and/or .is_vertical attribute of the gem.
 function Grid:getMatchedGems(minimumLength)
-	local matches = self:getMatches(minimumLength or 3)
+	local matches = self:_getRawMatches(minimumLength or 3)
 	local gem_set = {}
 
 	for _, match in pairs(matches) do
@@ -239,19 +239,25 @@ end
 -- same as above, but returns in the format {list1, list2, ...}
 -- e.g. {{gem1, gem2, gem3}, {gem4, gem5, gem6, gem7}}
 function Grid:getMatchedGemLists(min_length)
-	local matches = self:getMatches(min_length or 3)
+	local matches = self:_getRawMatches(min_length or 3)
 	local ret = {}
 	for _, match in pairs(matches) do
 		local gem_list = {}
 		if match.is_horizontal then
 			for i = 1, match.length do
 				local this_gem = self[match.row][match.column + i - 1].gem
-				if this_gem then gem_list[#gem_list+1] = this_gem end
+				if this_gem then
+					gem_list[#gem_list+1] = this_gem
+					this_gem.is_horizontal = true
+				end
 			end
 		else
 			for i = 1, match.length do
 				local this_gem = self[match.row + i - 1][match.column].gem
-				if this_gem then gem_list[#gem_list+1] = this_gem end
+				if this_gem then
+					gem_list[#gem_list+1] = this_gem
+					this_gem.is_vertical = true
+				end
 			end
 		end
 		ret[#ret+1] = gem_list
@@ -263,7 +269,7 @@ end
 -- If any gem in a set is owned by a player, make all other gems in its match
 -- also owned by that player (may be owned by both players).
 function Grid:flagMatchedGems()
-	local matches = self:getMatches()
+	local matches = self:_getRawMatches()
 	for i = 1, #matches do
 		local p1flag, p2flag = false, false
 		if matches[i].is_horizontal then

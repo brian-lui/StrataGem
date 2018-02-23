@@ -153,7 +153,8 @@ function ai:evaluateActions()
 			end
 
 			placePiece(self, piece, getCoords(piece, selected.column))
-		elseif player.cur_burst >= player.RUSH_COST then
+		elseif player.cur_burst >= player.RUSH_COST and
+		self.game.grid:getFirstEmptyRow(1) >= self.game.grid.RUSH_ROW then
 			local piece = selectRandomPiece(player)
 			if piece.is_horizontal then	-- Always do vertical rushes.
 				piece:rotate()
