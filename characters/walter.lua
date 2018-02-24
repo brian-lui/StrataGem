@@ -89,8 +89,15 @@ in the ratio of 70% 20% 10% and also they need to rotate such that the bottom of
 image is facing the current trajectory. (think about how an arrow flies)
 
 Super pseudocode:
-	particles.popParticles.generate for ___ frames
-	particles.explodingGem.generate for ___ frames
+	STATE:
+	beforeGravity:
+		local super_column = highest_col()
+		for each gem in super_column:
+			destroyGem with glow delay
+
+	ANIM:
+	beforeGravity:
+		foamspout instance appears at grid.y[grid.BOTTOM_ROW + 1]
 
 FoamSpout class:
 	foam appear at grid.y[grid.BOTTOM_ROW + 1]
@@ -319,35 +326,22 @@ function Walter:beforeMatch()
 
 	-- Healing damage from rainclouds
 	for col = 1, grid.COLUMNS do
-		if not self.this_turn_column_healed[col] then 
-			local first_empty_row = grid:getFirstEmptyRow(col)
-			if self.ready_clouds_state[col] and first_empty_row < grid.BOTTOM_ROW then
-				self.hand:healDamage(1)
-				self.this_turn_column_healed[col] = true
+		if self.ready_clouds_state[col] and not self.this_turn_column_healed[col] then
+			local cloud = self.ready_clouds[col] -- healing particles
+			particles.healing.generate{
+				game = game,
+				x = cloud.x,
+				y = cloud.y,
+				y_range = 100, -- improve later
+				owner = self,
+			}
 
-				local gem = grid[first_empty_row + 1][col].gem
-				-- gem glow
-				particles.popParticles.generate{
-					game = game,
-					gem = gem,
-					duration = self.HEALING_GLOW_DURATION,
-				}
-				particles.explodingGem.generateReverseExplode{
-					game = game,
-					x = gem.x,
-					y = gem.y,
-					image = image.lookup.gem_explode[gem.color],
-					duration = self.HEALING_GLOW_DURATION,
-				}
-				-- healing particles
-				particles.healing.generate{game = game, x = gem.x, y = gem.y, owner = self}
-
-				delay = self.HEALING_ANIM_DURATION
-				game.sound:newSFX("healing")
-			end
+			self.hand:healDamage(1)
+			self.this_turn_column_healed[col] = true
+			game.sound:newSFX("healing")
+			delay = self.HEALING_ANIM_DURATION
 		end
 	end
-
 
 	-- Which columns to get rainclouds next turn
 	local gem_table = grid:getMatchedGems()

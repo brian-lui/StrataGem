@@ -4,7 +4,12 @@ most gem in that column. Fire tiles last for one turn. At the end of the turn,
 they destroy the gem below them UNLESS a gem is placed on top of them (the gem
 can come from either player). Heath owns the damage from the fire burn.
 
-Super: Clear the top gem in each friendly column. --]]
+Super: Clear the top gem in each friendly column.
+
+Super pseudocode:
+	BeforeGravity:
+		destroyGem in top row of each column
+ --]]
 
 -- *This part is the setup part where we initialize the working variables and images
 local love = _G.love

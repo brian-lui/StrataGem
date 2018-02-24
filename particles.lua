@@ -303,14 +303,20 @@ end
 
 -- Mandatory: game, x, y, owner
 -- Optional: delay for delay frames, default 0
+-- Optional: x_range, y_range (pixels +/- the x/y value. 100 = +/- 100)
 function HealingParticle.generate(params)
 	local game = params.game
 	local x, y = params.x, params.y
+	local x_rng, y_rng = params.x_range, params.y_range
 	local owner = params.owner
 	local delay = params.delay or 0
 
 	for _ = 1, 3 do
 		-- calculate bezier curve
+		local x, y = params.x, params.y
+		if x_rng then x = math.random(x + x_rng, x - x_rng) end
+		if y_rng then y = math.random(y + y_rng, y - y_rng) end
+
 		local img = image.lookup.particle_freq.random("healing")
 		local loc = math.random(1, 5) -- Goes to random platform
 		local x4, y4 = owner.hand[loc].x, owner.hand[loc].y
