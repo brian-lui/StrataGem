@@ -61,10 +61,13 @@ function Walter:init(...)
 	self.CLOUD_ROW = 11 -- which row for clouds to appear on
 	self.HEALING_ANIM_DURATION = 120
 	self.HEALING_GLOW_DURATION = 100
+	self.CLOUD_EXIST_TURNS = 3 -- how many turns a cloud exists for
+	self.CLOUD_INIT_DROPLET_FRAMES = 5 -- initial frames between droplets
 
 	self.pending_clouds = {} -- clouds for vertical matches generates at t0
 	self.ready_clouds = {} -- clouds at t1, gives healing
 	self.ready_clouds_state = {} -- keep track of the state
+	self.this_turn_column_healed = {false, false, false, false, false, false, false, false}
 end
 
 -------------------------------------------------------------------------------
@@ -196,20 +199,29 @@ end
 
 function HealingCloud:remove()
 	self.manager.allParticles.CharEffects[self.ID] = nil
+	self.owner.ready_clouds[self.col] = nil
 end
 
 function HealingCloud:countdown()
 	self.turns_remaining = self.turns_remaining - 1
-	if self.turns_remaining < 0 then
-		self.owner.ready_clouds[self.col] = nil
+	self.frames_between_droplets = (self.owner.CLOUD_EXIST_TURNS - self.turns_remaining) * self.owner.CLOUD_INIT_DROPLET_FRAMES
+	if self.turns_remaining <= 0 then
+		self:remove()
 	end
+	print("Cloud in column " .. self.col .. " turns remaining: " .. self.turns_remaining)
 end
+
+function HealingCloud:renewCloud(turns_remaining)
+	self.turns_remaining = turns_remaining or self.owner.CLOUD_EXIST_TURNS
+	self.frames_between_droplets = self.owner.CLOUD_INIT_DROPLET_FRAMES
+	print("Cloud in column " .. self.col .. " turns remaining: " .. self.turns_remaining)
+end
+
 
 function HealingCloud.generate(game, owner, col, turns_remaining)
 	local grid = game.grid
 	local stage = game.stage
 
-	local FRAMES_BETWEEN_DROPLETS = 5
 	local y = grid.y[owner.CLOUD_ROW]
 	local x = grid.x[col]
 	local sign = owner.player_num == 2 and 1 or -1
@@ -221,7 +233,7 @@ function HealingCloud.generate(game, owner, col, turns_remaining)
 	local function update_func(_self, dt)
 		Pic.update(_self, dt)
 		_self.elapsed_frames = _self.elapsed_frames + 1
-		if _self.elapsed_frames >= FRAMES_BETWEEN_DROPLETS then
+		if _self.elapsed_frames >= _self.frames_between_droplets then
 			local destination_y = grid.y[grid:getFirstEmptyRow(col, true)] + 0.5 * image.GEM_WIDTH
 			local droplet_loc = table.remove(_self.droplet_x, math.random(#_self.droplet_x))
 			if #_self.droplet_x == 0 then _self.droplet_x = {-1.5, -0.5, 0.5, 1.5} end
@@ -242,6 +254,7 @@ function HealingCloud.generate(game, owner, col, turns_remaining)
 		scaling = 3,
 		transparency = 0,
 		turns_remaining = turns_remaining,
+		frames_between_droplets = owner.CLOUD_INIT_DROPLET_FRAMES,
 		elapsed_frames = -duration, -- only create droplets after finished move
 		droplet_x = {-1.5, -0.5, 0.5, 1.5}, -- possible columns for droplets to appear in
 		col = col,
@@ -300,106 +313,91 @@ end
 function Walter:beforeMatch()
 	local game = self.game
 	local grid = game.grid
+	local particles = game.particles
 
 	local delay = 0
-	local gem_table = grid:getMatchedGems()
 
-	for _, gem in pairs(gem_table) do
-		local col = gem.column
-		-- Which columns to get rainclouds next turn
-		if self.player_num == gem.owner and gem.is_vertical then
-			self.pending_clouds[col] = true
-		end
+	-- Healing damage from rainclouds
+	for col = 1, grid.COLUMNS do
+		if not self.this_turn_column_healed[col] then 
+			local first_empty_row = grid:getFirstEmptyRow(col)
+			if self.ready_clouds_state[col] and first_empty_row < grid.BOTTOM_ROW then
+				self.hand:healDamage(1)
+				self.this_turn_column_healed[col] = true
 
-		-- Whether to heal damage for any matches
-		if self.ready_clouds_state[col] then
+				local gem = grid[first_empty_row + 1][col].gem
+				-- gem glow
+				particles.popParticles.generate{
+					game = game,
+					gem = gem,
+					duration = self.HEALING_GLOW_DURATION,
+				}
+				particles.explodingGem.generateReverseExplode{
+					game = game,
+					x = gem.x,
+					y = gem.y,
+					image = image.lookup.gem_explode[gem.color],
+					duration = self.HEALING_GLOW_DURATION,
+				}
+				-- healing particles
+				particles.healing.generate{game = game, x = gem.x, y = gem.y, owner = self}
 
-			self.hand:healDamage(1)
-
-			-- gem glow
-			game.particles.popParticles.generate{
-				game = game,
-				gem = gem,
-				duration = self.HEALING_GLOW_DURATION,
-			}
-			game.particles.explodingGem.generateReverseExplode{
-				game = game,
-				x = gem.x,
-				y = gem.y,
-				image = image.lookup.gem_explode[gem.color],
-				duration = self.HEALING_GLOW_DURATION,
-			}
-
-			-- healing particles
-			game.particles.healing.generate{
-				game = game,
-				x = gem.x,
-				y = gem.y,
-				owner = self,
-			}
-			delay = self.HEALING_ANIM_DURATION
-
-			game.sound:newSFX("healing")
+				delay = self.HEALING_ANIM_DURATION
+				game.sound:newSFX("healing")
+			end
 		end
 	end
 
+
+	-- Which columns to get rainclouds next turn
+	local gem_table = grid:getMatchedGems()
+	for _, gem in pairs(gem_table) do
+		if self.player_num == gem.owner and gem.is_vertical then
+			self.pending_clouds[gem.column] = true
+		end
+	end
+
+	-- visual indicator of a vertical match
 	local gem_list = grid:getMatchedGemLists()
-	local emphasis_delay = 0
 	for _, list in pairs(gem_list) do
 		if self.player_num == list[1].owner and list[1].is_vertical then
-			emphasis_delay = game.particles.wordEffects.generateEmphasisBars(game, list, "blue")
+			local d = particles.wordEffects.generateEmphasisBars(game, list, "blue")
+			delay = math.max(delay, d)
 		end
 	end
 
-	return math.max(delay, emphasis_delay)
+	return delay
 end
 
-function Walter:afterAllMatches()
-	for i = 1, 8 do
-		if self.ready_clouds[i] then -- animation
-			self.ready_clouds[i]:countdown()
-		end
-
-		if self.ready_clouds_state[i] then -- state
-			self.ready_clouds_state[i] = self.ready_clouds_state[i] - 1
-			if self.ready_clouds_state[i] < 0 then self.ready_clouds_state[i] = nil end
-		end
-	end
-	self.healing_by_columns = {0, 0, 0, 0, 0, 0, 0, 0}
-end
 
 function Walter:beforeCleanup()
 	local delay = 0
 	for i = 1, 8 do
 		if self.pending_clouds[i] then
-			delay = self.CLOUD_SLIDE_DURATION
-			local TURNS_TO_EXIST = 0
-			self:_makeCloud(i, TURNS_TO_EXIST)
-			self.ready_clouds_state[i] = TURNS_TO_EXIST
+			if not self.ready_clouds_state[i] then -- anim for new cloud
+				delay = self.CLOUD_SLIDE_DURATION
+				self:_makeCloud(i, self.CLOUD_EXIST_TURNS)
+			else -- update existing cloud anim
+				self.ready_clouds[i]:renewCloud()
+			end
+			self.ready_clouds_state[i] = self.CLOUD_EXIST_TURNS -- state update
+		else -- update existing clouds, if any
+			if self.ready_clouds[i] then self.ready_clouds[i]:countdown() end -- anim
+			if self.ready_clouds_state[i] then -- state
+				self.ready_clouds_state[i] = self.ready_clouds_state[i] - 1
+				if self.ready_clouds_state[i] <= 0 then self.ready_clouds_state[i] = nil end
+			end
 		end
 	end
 	self.pending_clouds = {}
+
+	self.hand.damage = math.max(4, self.hand.damage)
 
 	return delay	
 end
 
 function Walter:cleanup()
-	--[[
-	for i = 1, 8 do
-		if self.ready_clouds[i] then -- animation
-			self.ready_clouds[i]:countdown()
-		end
-
-		if self.ready_clouds_state[i] then -- state
-			self.ready_clouds_state[i] = self.ready_clouds_state[i] - 1
-			if self.ready_clouds_state[i] < 0 then self.ready_clouds_state[i] = nil end
-		end
-	end--]]
-	self.healing_by_columns = {0, 0, 0, 0, 0, 0, 0, 0}
-
-	-- If overheal, reset damage
-	if self.hand.damage < 4 then self.hand.damage = 0 end
-
+	self.this_turn_column_healed = {false, false, false, false, false, false, false, false}
 	Character.cleanup(self)
 end
 

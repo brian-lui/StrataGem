@@ -112,7 +112,9 @@ function Character:beforeMatch() end -- before gems are matched
 function Character:duringMatchAnimation() end -- while matches are exploding
 function Character:afterMatch() end -- after each match
 function Character:whenCreatingGarbageRow() end -- at garbage row creation
-function Character:afterAllMatches() end -- after all chain combos finished
+function Character:afterAllMatches()
+-- after all chain combos finished. Can be called multiple times in a turn if garbage is created
+end 
 function Character:beforeCleanup() end
 
 function Character:cleanup()

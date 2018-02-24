@@ -7,7 +7,6 @@ function Phase:init(game)
 	self.game = game
 	self.INIT_TIME_TO_NEXT = 430 -- frames in each action phase
 	self.PLATFORM_SPIN_DELAY = 30 -- frames to animate platforms exploding
-	self.INIT_SUPER_PAUSE = 90 -- frames to animate super activation
 	self.GAMEOVER_DELAY = 180 -- how long to stay on gameover screen
 end
 
@@ -15,8 +14,6 @@ function Phase:reset()
 	self.next_phase = nil
 	self.frames_until_next_phase = 0
 	self.time_to_next = self.INIT_TIME_TO_NEXT
-	self.super_play = nil
-	self.super_pause = 0
 	self.no_rush = {} --whether no_rush is eligible for animation
 	for i = 1, self.game.grid.COLUMNS do self.no_rush[i] = true end
 	self.matched_this_round = {false, false} -- p1 made a match, p2 made a match
@@ -162,6 +159,8 @@ function Phase:getMatchedGems(dt)
 	local grid = game.grid
 	local _, matches = grid:getMatchedGems() -- sets is_horizontal/is_vertical flags for matches
 
+	local delay = 0
+
 	if self.garbage_this_round then
 		local diff = game.p1.garbage_rows_created - game.p2.garbage_rows_created
 		grid:setGarbageMatchFlags(diff)
@@ -169,18 +168,17 @@ function Phase:getMatchedGems(dt)
 		game.p1.garbage_rows_created, game.p2.garbage_rows_created = 0		
 	end
 
+	for player in game:players() do
+		local player_delay = player:beforeMatch()
+		delay = math.max(delay, player_delay or 0)
+	end
+	self:setPause(delay)
+
 	if matches > 0 then
 		grid:flagMatchedGems() -- sets flags
-
-		local delay = 0
-		for player in game:players() do
-			local player_delay = player:beforeMatch()
-			delay = math.max(delay, player_delay or 0)
-		end
-		self:setPause(delay)
 		self:activatePause("DestroyMatchedGems")
 	else
-		game.current_phase = "ResolvedMatches"
+		self:activatePause("ResolvedMatches")
 	end
 end
 

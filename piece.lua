@@ -321,10 +321,12 @@ end
 
 -- When player picks up a piece. Called from gs_main.lua.
 function Piece:select()
-	self.game.active_piece = self
+	local game = self.game
+	game.active_piece = self
 	self:resolve()
 	for i = 1, self.size do -- generate some particles!
-		self.game.particles.dust.generateFountain(self.game, self.gems[i], math.random(2, 6))
+		local x, y, color = self.gems[i].x, self.gems[i].y, self.gems[i].color
+		game.particles.dust.generateFountain(self.game, x, y, color, math.random(2, 6))
 	end
 end
 
