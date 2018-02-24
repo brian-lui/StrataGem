@@ -332,9 +332,20 @@ function gs_main:drawText(params)
 		end
 		if self.debug_drawDamage then
 			local p1hand, p2hand = self.p1.hand, self.p2.hand
+
+			local p1_destroyed_damage_particles = self.particles:getCount("destroyed", "Damage", 2)
+			local p1_destroyed_healing_particles = self.particles:getCount("destroyed", "Healing", 1)
+			local p1_displayed_damage = (self.p1.hand.turn_start_damage + p1_destroyed_damage_particles/3 - p1_destroyed_healing_particles/5)
+
+			local p2_destroyed_damage_particles = self.particles:getCount("destroyed", "Damage", 1)
+			local p2_destroyed_healing_particles = self.particles:getCount("destroyed", "Healing", 2)
+			local p2_displayed_damage = (self.p2.hand.turn_start_damage + p2_destroyed_damage_particles/3 - p2_destroyed_healing_particles/5)
+
+			local p1print = "Actual damage " .. p1hand.damage .. "\nShown damage " .. p1_displayed_damage
+			local p2print = "Actual damage " .. p2hand.damage .. "\nShown damage " .. p2_displayed_damage
 			love.graphics.setFont(FONT.SLIGHTLY_BIGGER)
-			love.graphics.print(p1hand.damage, p1hand[2].x - 150, p1hand[2].y)
-			love.graphics.print(p2hand.damage, p2hand[2].x + 150, p2hand[2].y)
+			love.graphics.print(p1print, p1hand[2].x - 120, 150)
+			love.graphics.print(p2print, p2hand[2].x - 180, 150)
 		end
 	love.graphics.pop()
 end

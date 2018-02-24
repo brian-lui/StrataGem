@@ -59,8 +59,6 @@ function Walter:init(...)
 
 	self.CLOUD_SLIDE_DURATION = 36 -- how long for the cloud incoming tween
 	self.CLOUD_ROW = 11 -- which row for clouds to appear on
-	self.HEALING_ANIM_DURATION = 120
-	self.HEALING_GLOW_DURATION = 100
 	self.CLOUD_EXIST_TURNS = 3 -- how many turns a cloud exists for
 	self.CLOUD_INIT_DROPLET_FRAMES = 5 -- initial frames between droplets
 
@@ -327,19 +325,21 @@ function Walter:beforeMatch()
 	-- Healing damage from rainclouds
 	for col = 1, grid.COLUMNS do
 		if self.ready_clouds_state[col] and not self.this_turn_column_healed[col] then
-			local cloud = self.ready_clouds[col] -- healing particles
-			particles.healing.generate{
+			local x = grid.x[col]
+			local y = (grid.y[grid.BASIN_START_ROW] + grid.y[grid.BASIN_END_ROW]) * 0.5
+			local y_range = image.GEM_HEIGHT * 4
+
+			delay = particles.healing.generate{
 				game = game,
-				x = cloud.x,
-				y = cloud.y,
-				y_range = 100, -- improve later
+				x = x,
+				y = y,
+				y_range = y_range,
 				owner = self,
 			}
 
 			self.hand:healDamage(1)
 			self.this_turn_column_healed[col] = true
 			game.sound:newSFX("healing")
-			delay = self.HEALING_ANIM_DURATION
 		end
 	end
 

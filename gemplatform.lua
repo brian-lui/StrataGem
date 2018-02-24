@@ -73,8 +73,8 @@ function GemPlatform:update(dt)
 
 	-- set spin and redness
 	local destroyed_damage_particles = self.game.particles:getCount("destroyed", "Damage", player.enemy.player_num)
-	local destroyed_healing_particles = self.game.particles:getCount("destroyed", "Healing", player.enemy.player_num)
-	local displayed_damage = (player.hand.turn_start_damage + destroyed_damage_particles/3 - destroyed_healing_particles/3) * 0.25
+	local destroyed_healing_particles = self.game.particles:getCount("destroyed", "Healing", player.player_num)
+	local displayed_damage = (player.hand.turn_start_damage + destroyed_damage_particles/3 - destroyed_healing_particles/5) * 0.25
 
 	if displayed_damage >= loc then	-- fully red, full spin
 		self.redness = math.min(self.redness + 16, 255)

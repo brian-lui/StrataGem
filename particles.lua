@@ -307,19 +307,18 @@ end
 function HealingParticle.generate(params)
 	local game = params.game
 	local x, y = params.x, params.y
-	local x_rng, y_rng = params.x_range, params.y_range
+	local x_range, y_range = params.x_range, params.y_range
 	local owner = params.owner
 	local delay = params.delay or 0
 
-	for _ = 1, 3 do
+	for i = 1, 5 do
 		-- calculate bezier curve
 		local x, y = params.x, params.y
-		if x_rng then x = math.random(x + x_rng, x - x_rng) end
-		if y_rng then y = math.random(y + y_rng, y - y_rng) end
+		if x_range then x = math.random(x + x_range, x - x_range) end
+		if y_range then y = math.random(y + y_range, y - y_range) end
 
 		local img = image.lookup.particle_freq.random("healing")
-		local loc = math.random(1, 5) -- Goes to random platform
-		local x4, y4 = owner.hand[loc].x, owner.hand[loc].y
+		local x4, y4 = owner.hand[i].x, owner.hand[i].y
 		local dist = ((x4 - x) ^ 2 + (y4 - y) ^ 2) ^ 0.5
 		local x3, y3 = 0.5 * (x + x4), 0.5 * (y + y4)
 		local angle = math.random() * math.pi * 2
@@ -331,15 +330,8 @@ function HealingParticle.generate(params)
 		local p = common.instance(HealingParticle, game.particles, x, y, img, owner, "Healing")
 		local duration = game.DAMAGE_PARTICLE_TO_PLATFORM_FRAMES * 1.5 + math.random() * 12
 		local rotation = math.random() * 5
-
-		-- determine final platform for healing glows
-		local created_particles = game.particles:getCount("created", "Damage", owner.player_num)
-		local last_damaged_platform = (owner.hand.turn_start_damage + created_particles/3)/4 + 1
-		local last_damaged_platform_idx = math.min(5, math.floor(last_damaged_platform))
-
 		local exit_func = function()
-			local platform = owner.hand[loc].platform
-			if platform then platform:healingGlow() end
+			if owner.hand[i].platform then owner.hand[i].platform:healingGlow() end
 		end
 
 		if delay then
@@ -347,15 +339,14 @@ function HealingParticle.generate(params)
 		 	p:wait(delay)
 		 	p:change{duration = 0, transparency = 255}
 		end
-
 		p:change{duration = duration, rotation = rotation, curve = curve,
 			exit_func = exit_func, remove = true}
-
 		HealingParticle.generateTrail{game = game, x = x, y = y, owner = owner,
 			delay = delay, curve = curve, duration = duration}
-
 		game.particles:incrementCount("created", "Healing", owner.player_num)
 	end
+
+	return 120
 end
 
 -- Mandatory: game, x, y, owner, curve, duration
