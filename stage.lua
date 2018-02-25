@@ -81,6 +81,15 @@ function stage:init(game)
 		lobby = {x = self.width * 0.92, y = self.height * 0.91},
 		charselect_netplay = {x = self.width * 0.92, y = self.height * 0.91},
 	}
+	self.settings_locations = {
+		frame = {x = self.width * 0.5, y = self.height * 0.5},
+		pause_text = {x = self.width * 0.5, y = self.height * 0.4},
+		quit_button = {x = self.width * 0.43, y = self.height * 0.67},
+		confirm_quit_text = {x = self.width * 0.5, y = self.height * 0.32},
+		close_menu_button = {x = self.width * 0.63, y = self.height * 0.67},
+		confirm_quit_button = {x = self.width * 0.5, y = self.height * 0.5},
+		cancel_quit_button = {x = self.width * 0.5, y = self.height * 0.65},
+	}
 end
 
 function stage:isOnLeft()

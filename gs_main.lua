@@ -351,12 +351,10 @@ function gs_main:drawText(params)
 end
 
 function gs_main:drawButtons(params)
-	gs_main.ui.popup_static.settingsframe:draw(params)
-	gs_main.ui.popup_static.settingstext:draw(params)
-	gs_main.ui.popup_clickable.confirm:draw(params)
-	gs_main.ui.popup_clickable.cancel:draw(params)
 	gs_main.ui.clickable.settings:draw(params)
+	self:_drawSettingsMenu(gs_main, params)
 end
+
 function gs_main:drawUI(params)
 	local draws = {"tub", "P1burstframe", "P2burstframe", "P1burstblock1",
 		"P1burstblock2", "P2burstblock1", "P2burstblock2", "P1burstpartial1",

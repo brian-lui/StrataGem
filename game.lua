@@ -216,30 +216,70 @@ end
 -- creates the pop-up settings menu overlays with default parameters
 function Game:_openSettingsMenu(gamestate, params)
 	local stage = self.stage
+	local clickable = gamestate.ui.popup_clickable
+	local static = gamestate.ui.popup_static
 	self.settings_menu_open = true
-	gamestate.ui.popup_clickable.confirm:change{x = stage.width * 0.45, y = stage.height * 0.6}
-	gamestate.ui.popup_clickable.confirm:change{duration = 15, transparency = 255}
-	gamestate.ui.popup_clickable.cancel:change{x = stage.width * 0.55, y = stage.height * 0.6}
-	gamestate.ui.popup_clickable.cancel:change{duration = 15, transparency = 255}
-	gamestate.ui.popup_static.settingstext:change{duration = 15, transparency = 255}
-	gamestate.ui.popup_static.settingsframe:change{duration = 15, transparency = 255}
+	static.settings_text:change{duration = 15, transparency = 255}
+	static.settingsframe:change{duration = 15, transparency = 255}
+	clickable.open_quit_menu:change{duration = 0, x = stage.settings_locations.quit_button.x}
+	clickable.open_quit_menu:change{duration = 15, transparency = 255}
+	clickable.close_settings_menu:change{duration = 0, x = stage.settings_locations.close_menu_button.x}
+	clickable.close_settings_menu:change{duration = 15, transparency = 255}
+end
+
+-- change to the quitconfirm menu
+function Game:_openQuitConfirmMenu(gamestate, params)
+	local stage = self.stage
+	local clickable = gamestate.ui.popup_clickable
+	local static = gamestate.ui.popup_static
+	self.settings_menu_open = true
+
+	clickable.confirm_quit:change{duration = 0, x = stage.settings_locations.confirm_quit_button.x}
+	clickable.confirm_quit:change{duration = 15, transparency = 255}
+	clickable.close_quit_menu:change{duration = 0, x = stage.settings_locations.cancel_quit_button.x}
+	clickable.close_quit_menu:change{duration = 15, transparency = 255}
+	static.settings_text:change{duration = 10, transparency = 0}
+	static.sure_to_quit:change{duration = 15, transparency = 255}
+	clickable.open_quit_menu:change{duration = 0, x = -stage.width, transparency = 0}
+	clickable.close_settings_menu:change{duration = 0, x = -stage.width, transparency = 0}
+end
+
+-- change back to the settings menu
+function Game:_closeQuitConfirmMenu(gamestate, params)
+	local stage = self.stage
+	local clickable = gamestate.ui.popup_clickable
+	local static = gamestate.ui.popup_static
+	self.settings_menu_open = true
+
+	clickable.confirm_quit:change{duration = 0, x = -stage.width, transparency = 0}
+	clickable.close_quit_menu:change{duration = 0, x = -stage.width, transparency = 0}
+	static.settings_text:change{duration = 15, transparency = 255}
+	static.sure_to_quit:change{duration = 10, transparency = 0}
+	clickable.open_quit_menu:change{duration = 0, x = stage.settings_locations.quit_button.x}
+	clickable.open_quit_menu:change{duration = 15, transparency = 255}
+	clickable.close_settings_menu:change{duration = 0, x = stage.settings_locations.close_menu_button.x}
+	clickable.close_settings_menu:change{duration = 15, transparency = 255}
 end
 
 function Game:_closeSettingsMenu(gamestate, params)
 	local stage = self.stage
+	local clickable = gamestate.ui.popup_clickable
+	local static = gamestate.ui.popup_static
 	self.settings_menu_open = false
-	gamestate.ui.popup_clickable.confirm:change{duration = 10, transparency = 0}
-	gamestate.ui.popup_clickable.confirm:change{x = -stage.width, y = -stage.height}
-	gamestate.ui.popup_clickable.cancel:change{duration = 10, transparency = 0}
-	gamestate.ui.popup_clickable.cancel:change{x = -stage.width, y = -stage.height}
-	gamestate.ui.popup_static.settingstext:change{duration = 10, transparency = 0}
-	gamestate.ui.popup_static.settingsframe:change{duration = 10, transparency = 0}	
+
+	clickable.confirm_quit:change{duration = 0, x = -stage.width, transparency = 0}
+	clickable.close_quit_menu:change{duration = 0, x = -stage.width, transparency = 0}
+	static.settings_text:change{duration = 10, transparency = 0}
+	static.sure_to_quit:change{duration = 10, transparency = 0}
+	static.settingsframe:change{duration = 10, transparency = 0}	
+	clickable.open_quit_menu:change{duration = 0, x = -stage.width, transparency = 0}
+	clickable.close_settings_menu:change{duration = 0, x = -stage.width, transparency = 0}
 end
 
 --[[	optional arguments:
 	settings_icon: image for the settings icon (defaults to image.button.settings)
 	settings_iconpush: image for the pushed settings icon (defaults to image.button.settingspush)
-	settings_text: image for the text display (defaults to image.unclickable.settingstext)
+	settings_text: image for the text display (defaults to image.unclickable.pausetext)
 	exitstate: state to exit upon confirm (e.g. "gs_title", "gs_gamestate", "gs_main", "gs_lobby")
 		Defaults to quitting the game if not provided
 --]]
@@ -248,7 +288,7 @@ function Game:_createSettingsMenu(gamestate, params)
 	local stage = self.stage
 	local settings_icon = params.settings_icon or image.button.settings
 	local settings_pushed_icon = params.settings_iconpush or image.button.settingspush
-	local settings_text = params.settings_text or image.unclickable.settingstext
+	local settings_text = params.settings_text or image.unclickable.pausetext
 
 	self:_createButton(gamestate, {
 		name = "settings",
@@ -261,45 +301,78 @@ function Game:_createSettingsMenu(gamestate, params)
 		end,
 	})
 	self:_createImage(gamestate, {
-		name = "settingstext",
+		name = "settings_text",
 		container = gamestate.ui.popup_static,
 		image = settings_text,
-		end_x = stage.width * 0.5,
-		end_y = stage.height * 0.4,
-		end_transparency = 0,
-	})
-	self:_createImage(gamestate, {
-		name = "settingsframe",
-		container = gamestate.ui.popup_static,
-		image = image.unclickable.settingsframe,
-		end_x = stage.width * 0.5,
-		end_y = stage.height * 0.5,
+		end_x = stage.settings_locations.pause_text.x,
+		end_y = stage.settings_locations.pause_text.y,
 		end_transparency = 0,
 	})
 	self:_createButton(gamestate, {
-		name = "cancel",
+		name = "open_quit_menu",
 		container = gamestate.ui.popup_clickable,
-		image = image.button.cancel,
-		image_pushed = image.button.cancelpush,
-		end_x = -stage.width,
-		end_y = -stage.height,
-		end_transparency = 0,
+		image = image.button.quit,
+		image_pushed = image.button.quitpush,
+		end_x = stage.settings_locations.quit_button.x,
+		end_y = stage.settings_locations.quit_button.y,
+		action = function()
+			if self.settings_menu_open then self:_openQuitConfirmMenu(gamestate) end
+		end,
+	})
+	self:_createButton(gamestate, {
+		name = "close_settings_menu",
+		container = gamestate.ui.popup_clickable,
+		image = image.button.back,
+		image_pushed = image.button.backpush,
+		end_x = stage.settings_locations.close_menu_button.x,
+		end_y = stage.settings_locations.close_menu_button.y,
 		action = function()
 			if self.settings_menu_open then gamestate.closeSettingsMenu(self) end
 		end,
 	})
+
+	self:_createImage(gamestate, {
+		name = "sure_to_quit",
+		container = gamestate.ui.popup_static,
+		image = image.unclickable.suretoquit,
+		end_x = stage.settings_locations.confirm_quit_text.x,
+		end_y = stage.settings_locations.confirm_quit_text.y,
+		end_transparency = 0,
+	})
+
+	self:_createImage(gamestate, {
+		name = "settingsframe",
+		container = gamestate.ui.popup_static,
+		image = image.unclickable.settingsframe,
+		end_x = stage.settings_locations.frame.x,
+		end_y = stage.settings_locations.frame.y,
+		end_transparency = 0,
+	})
 	self:_createButton(gamestate, {
-		name = "confirm",
+		name = "close_quit_menu",
 		container = gamestate.ui.popup_clickable,
-		image = image.button.confirm,
-		image_pushed = image.button.confirmpush,
-		end_x = -stage.width,
-		end_y = -stage.height,
+		image = image.button.no,
+		image_pushed = image.button.nopush,
+		end_x = stage.settings_locations.cancel_quit_button.x,
+		end_y = stage.settings_locations.cancel_quit_button.y,
+		end_transparency = 0,
+		action = function()
+			if self.settings_menu_open then self:_closeQuitConfirmMenu(gamestate) end
+		end,
+	})
+	self:_createButton(gamestate, {
+		name = "confirm_quit",
+		container = gamestate.ui.popup_clickable,
+		image = image.button.yes,
+		image_pushed = image.button.yespush,
+		end_x = stage.settings_locations.confirm_quit_button.x,
+		end_y = stage.settings_locations.confirm_quit_button.y,
 		pushed_sfx = "buttonback",
 		end_transparency = 0,
 		action = function()
 			if self.settings_menu_open then
 				if params.exitstate then
+					self:_closeQuitConfirmMenu(gamestate)
 					self.settings_menu_open = false
 					self.statemanager:switch(require (params.exitstate))
 				else
@@ -314,7 +387,8 @@ function Game:_drawSettingsMenu(gamestate, params)
 	if self.settings_menu_open then
 		params = params or {}
 		gamestate.ui.popup_static.settingsframe:draw()
-		gamestate.ui.popup_static.settingstext:draw()
+		gamestate.ui.popup_static.settings_text:draw()
+		gamestate.ui.popup_static.sure_to_quit:draw()
 		for _, v in pairs(gamestate.ui.popup_clickable) do v:draw() end
 	end
 end
