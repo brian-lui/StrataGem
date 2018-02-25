@@ -144,8 +144,8 @@ end
 -- creates the new pieces for the turn.
 -- Takes optional gem_table for gem frequencies
 function Hand:getNewTurnPieces(gem_table)
+	self.damage = math.max(self.damage, 4) -- min of 1 piece per turn
 	local pieces_to_get = math.floor(self.damage * 0.25)
-	if pieces_to_get < 1 then return end
 
 	for i = 6, pieces_to_get + 5 do
 		self[i].piece = common.instance(Piece, self.game, {
@@ -164,12 +164,11 @@ function Hand:getNewTurnPieces(gem_table)
 		if self[i].piece then self:movePiece(i, end_pos) end
 		if self[i].platform then self:movePlatform(i, end_pos) end
 	end
-end
 
-function Hand:clearDamage()
 	self.damage = self.damage % 4
 	self.turn_start_damage = self.damage
 end
+
 
 --[[This creates the animation for the gems falling off platform, and particles
 	arriving at the bottom of basin. Does NOT create the animation for the

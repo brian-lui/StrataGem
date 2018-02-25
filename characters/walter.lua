@@ -385,8 +385,6 @@ function Walter:beforeCleanup()
 	end
 	self.pending_clouds = {}
 
-	self.hand.damage = math.max(4, self.hand.damage)
-
 	return delay	
 end
 

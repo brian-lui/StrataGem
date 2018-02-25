@@ -309,7 +309,6 @@ function Phase:garbageMoving(dt)
 	if grid:isSettled() and game.particles:getNumber("GarbageParticles") == 0 then
 		for player in game:players() do
 			player.hand:getNewTurnPieces()
-			player.hand:clearDamage()
 			player:resetMP()
 		end
 		game.current_phase = "PlatformsMoving"
