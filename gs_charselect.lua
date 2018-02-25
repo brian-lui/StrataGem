@@ -2,17 +2,13 @@ local common = require "class.commons"
 local image = require 'image'
 local Pic = require 'pic'
 local pointIsInRect = require "utilities".pointIsInRect
+local spairs = require "utilities".spairs
 
 local charselect = {name = "charselect"}
 function charselect:init()
 	charselect.selectable_chars = {"heath", "walter", "gail", "holly",
 		"wolfgang", "hailey", "diggory", "buzz", "ivy", "joy", "mort", "damon"}
 	charselect.ui = {clickable = {}, static = {}, popup_clickable = {}, popup_static = {}}
-	self:_createSettingsMenu(charselect, {
-		exitstate = "gs_title",
-		settings_icon = image.button.back,
-		settings_iconpush = image.button.backpush,
-	})
 end
 
 -- refer to game.lua for instructions for _createButton and _createImage
@@ -32,14 +28,14 @@ function charselect:_createCharacterButtons()
 	for i = 1, #charselect.selectable_chars do
 		local char = charselect.selectable_chars[i]
 		if i >= 1 and i < 5 then
-			end_x = stage.width * (0.125 * i + 0.5)
-			end_y = stage.height * 0.2
+			end_x = stage.width * (0.1 * i + 0.525)
+			end_y = stage.height * 0.125
 		elseif i >= 5 and i < 9 then
-			end_x = stage.width * (0.125 * i + 0.0625)
-			end_y = stage.height * 0.4
+			end_x = stage.width * (0.1 * i + 0.0725)
+			end_y = stage.height * 0.3
 		elseif i >= 9 and i < 13 then
-			end_x = stage.width * (0.125 * i - 0.375)
-			end_y = stage.height * 0.6
+			end_x = stage.width * (0.1 * i - 0.275)
+			end_y = stage.height * 0.475
 		end
 		charselect._createButton(self, {
 			name = char,
@@ -76,9 +72,9 @@ function charselect:_createUIButtons()
 		image = image.button.start,
 		image_pushed = image.button.startpush,
 		duration = 15,
-		end_x = stage.width * 0.25,
+		end_x = stage.width * 0.15,
 		start_y = stage.height + image.button.start:getHeight(),
-		end_y = stage.height * 0.8,
+		end_y = stage.height * 0.9,
 		easing = "outQuad",
 		action = function() 
 			if charselect.my_character then
@@ -89,6 +85,36 @@ function charselect:_createUIButtons()
 				charselect.my_character = nil
 				self:start(gametype, char1, char2, bkground, nil, 1)
 			end
+		end,
+	})
+
+	-- details button
+	charselect._createButton(self, {
+		name = "details",
+		image = image.button.details,
+		image_pushed = image.button.detailspush,
+		duration = 15,
+		end_x = stage.width * 0.155 + image.button.details:getWidth(),
+		start_y = stage.height + image.button.start:getHeight(),
+		end_y = stage.height * 0.9,
+		easing = "outQuad",
+		action = function() 
+			if charselect.my_character then
+				print("Some details!")
+			end
+		end,
+	})
+
+	-- back button
+	charselect._createButton(self, {
+		name = "back",
+		image = image.button.back,
+		image_pushed = image.button.backpush,
+		duration = 15,
+		end_x = stage.width * 0.05,
+		end_y = stage.height * 0.09,
+		action = function()
+			self.statemanager:switch(require "gs_title")
 		end,
 	})
 
@@ -138,16 +164,16 @@ function charselect:_createUIImages()
 		name = "maincharacter",
 		image = image.dummy,
 		duration = 6,
-		start_x = stage.width * 0.20,
-		end_x = stage.width * 0.25,
-		end_y = stage.height * 0.5,
+		start_x = stage.width * 0.25,
+		end_x = stage.width * 0.3,
+		end_y = stage.height * 0.45,
 		transparency = 60,
 		easing = "outQuart",
 	})
 	charselect.displayed_character.reset = function(c)
-		c.x = stage.width * 0.20
+		c.x = stage.width * 0.25
 		c.transparency = 60
-		c:change{duration = 6, x = stage.width * 0.25, transparency = 255, easing = "outQuart"}
+		c:change{duration = 6, x = stage.width * 0.3, transparency = 255, easing = "outQuart"}
 	end
 
 	-- large portrait text with dummy pic
@@ -226,7 +252,7 @@ end
 function charselect:draw()
 	local darkened = self.settings_menu_open
 	charselect.current_background:draw{darkened = darkened}
-	for _, v in pairs(charselect.ui.static) do v:draw{darkened = darkened} end
+	for _, v in spairs(charselect.ui.static) do v:draw{darkened = darkened} end
 	for _, v in pairs(charselect.ui.clickable) do v:draw{darkened = darkened} end
 	self:_drawSettingsMenu(charselect)
 end
