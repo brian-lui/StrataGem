@@ -8,6 +8,7 @@ function Phase:init(game)
 	self.INIT_TIME_TO_NEXT = 430 -- frames in each action phase
 	self.PLATFORM_SPIN_DELAY = 30 -- frames to animate platforms exploding
 	self.GAMEOVER_DELAY = 180 -- how long to stay on gameover screen
+	self.NETPLAY_DELTA_WAIT = 360 -- how many frames to wait for delta before lost connection
 end
 
 function Phase:reset()
@@ -18,6 +19,7 @@ function Phase:reset()
 	for i = 1, self.game.grid.COLUMNS do self.no_rush[i] = true end
 	self.matched_this_round = {false, false} -- p1 made a match, p2 made a match
 	self.garbage_this_round = false
+	self.force_minimum_1_piece = true -- get at least 1 piece per turn
 	self.should_call_char_ability_this_phase = true
 end
 
@@ -81,6 +83,17 @@ function Phase:action(dt)
 		game.particles.upGem.removeAll(game.particles)
 		game.particles.placedGem.removeAll(game.particles)
 	end
+end
+
+function Phase:netplayConfirmDeltas(dt)
+	--[[
+	we should confirm that both players received a delta from the other guy.
+	stay in this phase for self.NETPLAY_DELTA_WAIT frames until deltas received.
+	once it's confirmed that deltas are received, play the deltas from ai_net playPiece.
+	then go to resolve phase.
+
+	if self.NETPLAY_DELTA_WAIT frames pass, then go to "lost connection".
+	--]]
 end
 
 function Phase:resolve(dt)
@@ -308,7 +321,8 @@ function Phase:garbageMoving(dt)
 
 	if grid:isSettled() and game.particles:getNumber("GarbageParticles") == 0 then
 		for player in game:players() do
-			player.hand:getNewTurnPieces()
+			player.hand:getNewTurnPieces(self.force_minimum_1_piece)
+			self.force_minimum_1_piece = false
 			player:resetMP()
 		end
 		game.current_phase = "PlatformsMoving"
@@ -367,6 +381,7 @@ function Phase:cleanup(dt)
 
 	game.ai:newTurn()
 	self.garbage_this_round = false
+	self.force_minimum_1_piece = true
 	p1.dropped_piece, p2.dropped_piece = false, false
 	p1.played_pieces, p2.played_pieces = {}, {}
 	game.finished_getting_pieces = false

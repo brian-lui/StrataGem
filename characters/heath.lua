@@ -263,7 +263,7 @@ end
 
 -- extinguish ready_fires where a gem landed on them
 function Heath:afterGravity()
-	for i = 1, 8 do
+	for i in self.game.grid:cols() do
 		if self.pending_gem_cols[i] then
 			self.ready_fires[i] = false
 			for _, particle in pairs(self.game.particles.allParticles.CharEffects) do
@@ -344,7 +344,7 @@ function Heath:afterMatch()
 	local delay_to_return = 0
 	if not self.generated_fires then -- only activate this once per turn
 		local fire_sound = false
-		for i = 1, 8 do
+		for i in self.game.grid:cols() do
 			if self.pending_fires[i] then
 				delay_to_return = self.particle_fx.smallFire.generateSmallFire(self.game, self, i)
 				fire_sound = true
@@ -366,7 +366,7 @@ function Heath:afterAllMatches()
 	end
 
 	-- activate horizontal match fires
-	for i = 1, 8 do
+	for i in grid:cols() do
 		if self.ready_fires[i] then
 			local row = grid:getFirstEmptyRow(i) + 1
 			if grid[row][i].gem then

@@ -181,7 +181,7 @@ function charselect:_createUIImages()
 		name = "maincharactertext",
 		image = image.dummy,
 		duration = 6,
-		end_x = stage.width * 0.25,
+		end_x = stage.width * 0.272,
 		start_y = stage.height * 0.7,
 		end_y = stage.height * 0.65,
 		transparency = 60,

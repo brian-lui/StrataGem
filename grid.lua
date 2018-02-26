@@ -127,9 +127,19 @@ function Grid:pendingGems()
 	end
 end
 
+function Grid:cols(player_num)
+	local c, i = {1, 2, 3, 4, 5, 6, 7, 8}, 0
+	if player_num == 1 then c = {1, 2, 3, 4} end
+	if player_num == 2 then c = {8, 7, 6, 5} end
+	return function()
+		i = i + 1
+		return c[i]
+	end
+end
+
 -- sends all gems to the bottom immediately
 function Grid:simulateGravity()
-	for j = 1, self.COLUMNS do
+	for j in self:cols() do
 		local sorted_column = self:columnSort(j)
 		for i = 1, self.ROWS do
 			self[i][j].gem = sorted_column[i]
@@ -427,10 +437,11 @@ end
 function Grid:moveAllUp(player, rows_to_add)
 -- Moves all gems in the player's half up by rows_to_add.
 	local last_row = self.ROWS - rows_to_add
-	local start_col, end_col = 1, 4
-	if player.ID == "P2" then start_col, end_col = 5, 8 end
+	--local start_col, end_col = 1, 4
+	--if player.ID == "P2" then start_col, end_col = 5, 8 end
 	for r = 1, last_row do
-		for c = start_col, end_col do
+		for c in self:cols(player.player_num) do
+		--for c = start_col, end_col do
 			self[r][c].gem = self[r+rows_to_add][c].gem
 			if self[r][c].gem then
 				self:moveGemAnim(self[r][c].gem, r, c)
@@ -440,7 +451,8 @@ function Grid:moveAllUp(player, rows_to_add)
 		end
 	end
 	for i = last_row + 1, self.ROWS do
-		for j = start_col, end_col do
+		for j in self:cols(player.player_num) do
+		--for j = start_col, end_col do
 			self[i][j].gem = false
 		end
 	end
@@ -527,7 +539,8 @@ end
 -- Set skip_animation to true to not show animation
 function Grid:dropColumns(params)
 	params = params or {}
-	for c = 1, self.COLUMNS do
+	for c in self:cols() do
+	--for c = 1, self.COLUMNS do
 		local sorted_column = self:columnSort(c)
 		for r = 1, self.ROWS do
 			self[r][c].gem = sorted_column[r]
@@ -676,14 +689,12 @@ function Grid:destroyGem(params)
 		local super_to_add = player.meter_gain[gem.color]
 		if super_to_add == nil then print("Nil value found when looking up super meter gain!") end
 		game.queue:add(delay_until_explode, player.enemy.addDamage, player.enemy, 1 + extra_damage)
-		--player.enemy:addDamage(1 + extra_damage)
 		game.queue:add(delay_until_explode, player.addSuper, player, super_to_add)
 		game.queue:add(delay_until_explode, game.ui.screenshake, game.ui, 1)
 
 		-- animations
 		local soundfile_name = "gembreak" .. math.min(5, game.scoring_combo + 1)
 		game.queue:add(delay_until_explode, game.sound.newSFX, game.sound, soundfile_name)
-		--game.sound:newSFX(soundfile_name)
 
 		local num_super_particles = player.supering and 0 or player.meter_gain[gem.color]
 		particles.superParticles.generate(game, gem, num_super_particles, delay_until_explode)
@@ -699,9 +710,11 @@ function Grid:destroyGem(params)
 		}
 	end
 
+	-- animations
 	particles.explodingGem.generate{game = game, gem = gem, glow_duration = glow_delay}
+	particles.gemImage.generate{game = game, gem = gem, duration = delay_until_explode}
 
-	-- remove gem
+	-- flag above gems
 	if params.propogate_flags_up ~= false then
 		local above_gems = {}
 		for i = (gem.row or 1), 1, -1 do
@@ -716,7 +729,7 @@ function Grid:destroyGem(params)
 		end
 	end
 
-	particles.gemImage.generate{game = game, gem = gem, duration = game.GEM_EXPLODE_FRAMES}
+	-- state
 	gem.is_destroyed = true -- in case we try to destroy it again
 	self[gem.row][gem.column].gem = false
 end

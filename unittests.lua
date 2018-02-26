@@ -334,9 +334,8 @@ local Unittests = {
 	c = testGemImage,
 	v = flagPropogateProblem,
 	b = makeAGarbage,
-	--n = maxDamage,
 	n = testWalterPassive,
-	m = healingCloudGenerate,
+	m = glowDestroyTest,
 }
 
 return common.class("Unittests", Unittests)

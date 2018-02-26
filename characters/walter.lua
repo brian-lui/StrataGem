@@ -37,7 +37,6 @@ Walter.burst_images = {
 Walter.special_images = {
 	cloud = love.graphics.newImage('images/specials/walter/cloud.png'),
 	foam = love.graphics.newImage('images/specials/walter/foam.png'),
-	spout = love.graphics.newImage('images/specials/walter/spout.png'),
 	drop = {
 		love.graphics.newImage('images/specials/walter/drop1.png'),
 		love.graphics.newImage('images/specials/walter/drop2.png'),
@@ -47,6 +46,11 @@ Walter.special_images = {
 		love.graphics.newImage('images/specials/walter/splatter1.png'),
 		love.graphics.newImage('images/specials/walter/splatter2.png'),
 		love.graphics.newImage('images/specials/walter/splatter3.png'),
+	},
+	spout = {
+		love.graphics.newImage('images/specials/walter/spout1.png'),
+		love.graphics.newImage('images/specials/walter/spout2.png'),
+		love.graphics.newImage('images/specials/walter/spout3.png'),
 	},
 }
 
@@ -78,7 +82,8 @@ should quickly shoot out from the bottom of the column until the top of spout.pn
 reaches the top of the column. As the spout hits gems, they should explode.
 ONLY THE PORTION OF SPOUT ABOVE THE FOAM SHOULD BE VISIBLE. Once it reaches the top,
 it should bob up and down by about 40 pixels above and below the top of the basin.
-After three bobs everything should fade.
+After three bobs everything should fade. (Instead of a single spout image, there are
+three. It should constantly be fading between spout 1.2.3 while it's on screen. thanks.)
 
 While this is all going on, drop1 2 and 3 should be shooting out from the foam in 
 tight parabolic arcs. (they shouldn't go more than an 2 columns horizontally, but
@@ -323,7 +328,7 @@ function Walter:beforeMatch()
 	local delay = 0
 
 	-- Healing damage from rainclouds
-	for col = 1, grid.COLUMNS do
+	for col in grid:cols() do
 		if self.ready_clouds_state[col] and not self.this_turn_column_healed[col] then
 			local x = grid.x[col]
 			local y = (grid.y[grid.BASIN_START_ROW] + grid.y[grid.BASIN_END_ROW]) * 0.5
@@ -366,7 +371,7 @@ end
 
 function Walter:beforeCleanup()
 	local delay = 0
-	for i = 1, 8 do
+	for i in self.game.grid:cols() do
 		if self.pending_clouds[i] then
 			if not self.ready_clouds_state[i] then -- anim for new cloud
 				delay = self.CLOUD_SLIDE_DURATION
