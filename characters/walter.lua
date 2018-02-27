@@ -15,17 +15,17 @@ local Walter = {}
 Walter.character_id = "Walter"
 Walter.meter_gain = {red = 4, blue = 8, green = 4, yellow = 4}
 
-Walter.full_size_image = love.graphics.newImage('images/characters/walter.png')
-Walter.small_image = love.graphics.newImage('images/characters/waltersmall.png')
-Walter.action_image = love.graphics.newImage('images/characters/walteraction.png')
-Walter.shadow_image = love.graphics.newImage('images/characters/waltershadow.png')
+Walter.full_size_image = love.graphics.newImage('images/portraits/walter.png')
+Walter.small_image = love.graphics.newImage('images/portraits/waltersmall.png')
+Walter.action_image = love.graphics.newImage('images/portraits/walteraction.png')
+Walter.shadow_image = love.graphics.newImage('images/portraits/waltershadow.png')
 
 Walter.super_images = {
 	word = image.UI.super.blue_word,
 	empty = image.UI.super.blue_empty,
 	full = image.UI.super.blue_full,
 	glow = image.UI.super.blue_glow,
-	overlay = love.graphics.newImage('images/specials/walter/walterlogo.png'),
+	overlay = love.graphics.newImage('images/characters/walter/walterlogo.png'),
 }
 
 Walter.burst_images = {
@@ -35,27 +35,28 @@ Walter.burst_images = {
 }
 
 Walter.special_images = {
-	cloud = love.graphics.newImage('images/specials/walter/cloud.png'),
-	foam = love.graphics.newImage('images/specials/walter/foam.png'),
+	cloud = love.graphics.newImage('images/characters/walter/cloud.png'),
+	foam = love.graphics.newImage('images/characters/walter/foam.png'),
 	drop = {
-		love.graphics.newImage('images/specials/walter/drop1.png'),
-		love.graphics.newImage('images/specials/walter/drop2.png'),
-		love.graphics.newImage('images/specials/walter/drop3.png'),
+		love.graphics.newImage('images/characters/walter/drop1.png'),
+		love.graphics.newImage('images/characters/walter/drop2.png'),
+		love.graphics.newImage('images/characters/walter/drop3.png'),
 	},
 	splatter = {
-		love.graphics.newImage('images/specials/walter/splatter1.png'),
-		love.graphics.newImage('images/specials/walter/splatter2.png'),
-		love.graphics.newImage('images/specials/walter/splatter3.png'),
+		love.graphics.newImage('images/characters/walter/splatter1.png'),
+		love.graphics.newImage('images/characters/walter/splatter2.png'),
+		love.graphics.newImage('images/characters/walter/splatter3.png'),
 	},
 	spout = {
-		love.graphics.newImage('images/specials/walter/spout1.png'),
-		love.graphics.newImage('images/specials/walter/spout2.png'),
-		love.graphics.newImage('images/specials/walter/spout3.png'),
+		love.graphics.newImage('images/characters/walter/spout1.png'),
+		love.graphics.newImage('images/characters/walter/spout2.png'),
+		love.graphics.newImage('images/characters/walter/spout3.png'),
 	},
 }
 
 Walter.sounds = {
 	bgm = "bgm_walter",
+	raincloud = "sound/walter/raincloud.ogg",
 }
 
 function Walter:init(...)
@@ -281,6 +282,7 @@ function HealingCloud.generate(game, owner, col, turns_remaining)
 		transparency = 255,
 		easing = "inQuad",
 	}
+	game.sound:newSFX(owner.sounds.raincloud)
 
 	-- blue dust vortexing
 	local DUST_FADE_IN_DURATION = 10

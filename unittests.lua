@@ -309,6 +309,15 @@ local function superToggle(game)
 		super_toggle_state = 0
 	end
 end
+
+local function heathFireFadeTest(game)
+	game.p2.particle_fx.smallFire.generateSmallFireFadeTest(game, game.p2, 8)
+end
+
+local function gailPetalTest(game)
+	game.p1.particle_fx.testPetal.generate(game, game.p1)
+end
+
 local Unittests = {
 	q = garbageMatch,
 	w = multiCombo,
@@ -320,7 +329,7 @@ local Unittests = {
 	i = displayNoRush,
 	o = tweenPlacedGemDown,
 	p = tweenPlacedGemUp,
-	a = addBottomRowP1,
+	a = gailPetalTest, -- gail petal
 	s = addBottomRowP2,
 	d = printSaveDirectory,
 	f = skipToTurnEnd,
@@ -329,7 +338,7 @@ local Unittests = {
 	j = addSuperAndBurst,
 	k = superToggle,
 	l = showDebugInfo,
-	--z = showDebugOverlay,
+	z = heathFireFadeTest, -- heath fire
 	x = toggleSlowdown,
 	c = testGemImage,
 	v = flagPropogateProblem,

@@ -6,8 +6,8 @@ local image = require 'image'
 
 local Ivy = {}
 
-Ivy.full_size_image = love.graphics.newImage('images/characters/ivy.png')
-Ivy.small_image = love.graphics.newImage('images/characters/ivysmall.png')
+Ivy.full_size_image = love.graphics.newImage('images/portraits/ivy.png')
+Ivy.small_image = love.graphics.newImage('images/portraits/ivysmall.png')
 Ivy.character_id = "Ivy"
 Ivy.meter_gain = {red = 4, blue = 8, green = 4, yellow = 4}
 

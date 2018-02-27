@@ -6,8 +6,8 @@ local image = require 'image'
 
 local Buzz = {}
 
-Buzz.full_size_image = love.graphics.newImage('images/characters/buzz.png')
-Buzz.small_image = love.graphics.newImage('images/characters/buzzsmall.png')
+Buzz.full_size_image = love.graphics.newImage('images/portraits/buzz.png')
+Buzz.small_image = love.graphics.newImage('images/portraits/buzzsmall.png')
 Buzz.character_id = "Buzz"
 Buzz.meter_gain = {red = 4, blue = 8, green = 4, yellow = 4}
 Buzz.super_images = {

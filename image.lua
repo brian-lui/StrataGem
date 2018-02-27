@@ -152,7 +152,7 @@ end
 local selectable_chars = {"heath", "walter", "gail", "holly", "wolfgang", "hailey", "diggory", "buzz", "ivy", "joy", "mort", "damon"}
 image.charselect = {}
 for _, v in pairs(selectable_chars) do
-	image.charselect[v.."char"] = love.graphics.newImage('images/characters/'..v.."action.png")
+	image.charselect[v.."char"] = love.graphics.newImage('images/portraits/'..v.."action.png")
 	image.charselect[v.."name"] = love.graphics.newImage('images/words/'..v.."name.png")
 	image.charselect[v.."ring"] = love.graphics.newImage('images/charselect/'..v.."ring.png")
 end

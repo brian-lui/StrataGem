@@ -29,13 +29,13 @@ function charselect:_createCharacterButtons()
 		local char = charselect.selectable_chars[i]
 		if i >= 1 and i < 5 then
 			end_x = stage.width * (0.1 * i + 0.525)
-			end_y = stage.height * 0.125
+			end_y = stage.height * 0.175
 		elseif i >= 5 and i < 9 then
 			end_x = stage.width * (0.1 * i + 0.0725)
-			end_y = stage.height * 0.3
+			end_y = stage.height * 0.35
 		elseif i >= 9 and i < 13 then
 			end_x = stage.width * (0.1 * i - 0.275)
-			end_y = stage.height * 0.475
+			end_y = stage.height * 0.525
 		end
 		charselect._createButton(self, {
 			name = char,

@@ -6,8 +6,8 @@ local image = require 'image'
 
 local Holly = {}
 
-Holly.full_size_image = love.graphics.newImage('images/characters/holly.png')
-Holly.small_image = love.graphics.newImage('images/characters/hollysmall.png')
+Holly.full_size_image = love.graphics.newImage('images/portraits/holly.png')
+Holly.small_image = love.graphics.newImage('images/portraits/hollysmall.png')
 Holly.character_id = "Holly"
 Holly.meter_gain = {red = 4, blue = 8, green = 4, yellow = 4}
 Holly.super_images = {

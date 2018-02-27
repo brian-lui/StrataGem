@@ -94,7 +94,7 @@ function Checkmate:update(dt)
 			duration = self.OVERLAY_DURATION,
 			quad = {y = true, y_percentage = 1, y_anchor = 0},
 			exit_func = {
-				{self.background.newImage, self.background, new_bk},
+				{self.background.newImage, self.background, new_bk, true},
 				{self.overlay.remove, self.overlay}
 			}
 		}

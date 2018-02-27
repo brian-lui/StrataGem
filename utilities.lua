@@ -28,6 +28,10 @@ function utilities.pointIsInRect(x, y, rx, ry, rw, rh)
 	return x >= rx and y >= ry and x < rx + rw and y < ry + rh
 end
 
+function utilities.stringEndsWith(String,End)
+   return End=='' or string.sub(String,-string.len(End))==End
+end
+
 local deepcpy_mapping = {}
 local function real_deepcpy(tab)
   if deepcpy_mapping[tab] ~= nil then

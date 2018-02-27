@@ -62,8 +62,8 @@ function Pic:draw(params)
 
 	params = params or {}
 	love.graphics.push("all")
-		local x_scale = params.scale or self.scaling
-		local y_scale = params.scale or self.scaling
+		local x_scale = params.scale or self.x_scaling or self.scaling
+		local y_scale = params.scale or self.y_scaling or self.scaling
 		local rgbt = self.RGB or {255, 255, 255}
 		rgbt[4] = self.transparency or 255
 
@@ -106,11 +106,23 @@ function Pic:getRect()
 	return self.x - (self.width / 2), self.y - (self.height / 2), self.width, self.height
 end
 
-function Pic:newImage(img)
-	self.image = img
-	self.width = img:getWidth()
-	self.height = img:getHeight()
-	self.quad = love.graphics.newQuad(0, 0, self.width, self.height, self.width, self.height)
+-- Set instant to true to immediately swap image, otherwise goes into queue
+function Pic:newImage(img, instant)
+	if instant then
+		self.image = img
+		self.width = img:getWidth()
+		self.height = img:getHeight()
+		self.quad = love.graphics.newQuad(0, 0, self.width, self.height, self.width, self.height)
+	else
+		local new_width, new_height = img:getWidth(), img:getHeight()
+		self.queued_moves[#self.queued_moves+1] = {
+			image_swap = true,
+			image = img,
+			width = new_width,
+			height = new_height,
+			quad = love.graphics.newQuad(0, 0, new_width, new_height, new_width, new_height)
+		}
+	end
 end
 
 -- clear the junk from all the tweens and stuff. runs exit function too.
@@ -154,12 +166,12 @@ end
 -- create the move_func that's updated each pic:update()
 local function createMoveFunc(self, target)
 	-- convert numbers into function equivalents
-	local functionize = {"x", "y", "rotation", "transparency", "scaling"}
+	local functionize = {"x", "y", "rotation", "transparency", "scaling", "x_scaling", "y_scaling"}
 	for i = 1, #functionize do
 		local item = functionize[i]
 		if target[item] then
 			if type(target[item]) == "number" then
-				local original = self[item]
+				local original = self[item] or 1
 				local diff = target[item] - original
 				target[item] = function() return original + diff * self.t end
 				if target.debug then print("converting number into function for " .. item) end
@@ -213,6 +225,8 @@ local function createMoveFunc(self, target)
 		_self.x, _self.y = xy_func(_self)
 		_self.rotation, _self.transparency = target.rotation(), target.transparency()
 		_self.scaling = target.scaling()
+		_self.x_scaling = target.x_scaling()
+		_self.y_scaling = target.y_scaling()
 		if quad_func then quad_func(_self, dt) end
 		if target.debug then
 			target.debugCounter = ((target.debugCounter or 0) + 1) % 10
@@ -236,6 +250,7 @@ end
 		y: target y location, or function
 		rotation: target rotation, or function
 		scaling: target scaling, or function
+		x_scaling, y_scaling: target scaling in one axis, takes precedence over scaling
 		transparency: target transparency, or function
 		easing: easing, default is "linear"
 		tween_target: variables to tween, default is {t = 1}
@@ -264,6 +279,8 @@ function Pic:change(target)
 		self.y = target.y or self.y
 		self.rotation = target.rotation or self.rotation
 		self.scaling = target.scaling or self.scaling
+		self.x_scaling = target.x_scaling or self.x_scaling
+		self.y_scaling = target.y_scaling or self.y_scaling
 		self.transparency = target.transparency or self.transparency
 		if target.debug then print("Instantly moving image") end
 	elseif not self.move_func then -- no active tween, apply this immediately
@@ -345,8 +362,21 @@ function Pic:update(dt)
 		if finished then
 			clearMove(self)
 			if #self.queued_moves > 0 then
-				local new_target = table.remove(self.queued_moves, 1)
-				self.move_func = createMoveFunc(self, new_target)
+				local is_image_swap = true
+				while is_image_swap do
+					local new_target = table.remove(self.queued_moves, 1)
+					is_image_swap = new_target.image_swap
+					if is_image_swap then
+						self.image = new_target.image
+						self.width = new_target.width
+						self.height = new_target.height
+						self.quad = new_target.quad
+						self.move_func = function() return true end
+						if #self.queued_moves == 0 then break end
+					else
+						self.move_func = createMoveFunc(self, new_target)
+					end
+				end
 			end
 		end
 	end

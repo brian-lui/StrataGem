@@ -22,17 +22,17 @@ local Heath = {}
 Heath.character_id = "Heath"
 Heath.meter_gain = {red = 8, blue = 4, green = 4, yellow = 4}
 
-Heath.full_size_image = love.graphics.newImage('images/characters/heath.png')
-Heath.small_image = love.graphics.newImage('images/characters/heathsmall.png')
-Heath.action_image = love.graphics.newImage('images/characters/heathaction.png')
-Heath.shadow_image = love.graphics.newImage('images/characters/heathshadow.png')
+Heath.full_size_image = love.graphics.newImage('images/portraits/heath.png')
+Heath.small_image = love.graphics.newImage('images/portraits/heathsmall.png')
+Heath.action_image = love.graphics.newImage('images/portraits/heathaction.png')
+Heath.shadow_image = love.graphics.newImage('images/portraits/heathshadow.png')
 
 Heath.super_images = {
 	word = image.UI.super.red_word,
 	empty = image.UI.super.red_empty,
 	full = image.UI.super.red_full,
 	glow = image.UI.super.red_glow,
-	overlay = love.graphics.newImage('images/specials/heath/firelogo.png')
+	overlay = love.graphics.newImage('images/characters/heath/firelogo.png')
 }
 
 Heath.burst_images = {
@@ -43,27 +43,28 @@ Heath.burst_images = {
 
 Heath.special_images = {
 	fire = {
-		love.graphics.newImage('images/specials/heath/fire1.png'),
-		love.graphics.newImage('images/specials/heath/fire2.png'),
-		love.graphics.newImage('images/specials/heath/fire3.png'),
+		love.graphics.newImage('images/characters/heath/fire1.png'),
+		love.graphics.newImage('images/characters/heath/fire2.png'),
+		love.graphics.newImage('images/characters/heath/fire3.png'),
 	},
-	fire_particle = love.graphics.newImage('images/specials/heath/fireparticle.png'),
+	fire_particle = love.graphics.newImage('images/characters/heath/fireparticle.png'),
 	boom = {
-		love.graphics.newImage('images/specials/heath/explode1.png'),
-		love.graphics.newImage('images/specials/heath/explode2.png'),
-		love.graphics.newImage('images/specials/heath/explode3.png'),
-		love.graphics.newImage('images/specials/heath/explode4.png'),
-		love.graphics.newImage('images/specials/heath/explode5.png'),
+		love.graphics.newImage('images/characters/heath/explode1.png'),
+		love.graphics.newImage('images/characters/heath/explode2.png'),
+		love.graphics.newImage('images/characters/heath/explode3.png'),
+		love.graphics.newImage('images/characters/heath/explode4.png'),
+		love.graphics.newImage('images/characters/heath/explode5.png'),
 	},
 	boom_particle = {
-		love.graphics.newImage('images/specials/heath/boomparticle1.png'),
-		love.graphics.newImage('images/specials/heath/boomparticle2.png'),
-		love.graphics.newImage('images/specials/heath/boomparticle3.png'),
+		love.graphics.newImage('images/characters/heath/boomparticle1.png'),
+		love.graphics.newImage('images/characters/heath/boomparticle2.png'),
+		love.graphics.newImage('images/characters/heath/boomparticle3.png'),
 	},
 }
 
 Heath.sounds = {
 	bgm = "bgm_heath",
+	passive = "sound/heath/passive.ogg",
 }
 
 function Heath:init(...)
@@ -152,6 +153,49 @@ function SmallFire.generateSmallFire(game, owner, col)
 	return 30
 end
 
+function SmallFire.generateSmallFireFadeTest(game, owner, col)
+	local grid = game.grid
+	local function update_func(_self, dt)
+		Pic.update(_self, dt)
+		_self.elapsed_frames = _self.elapsed_frames + 1
+		if _self.elapsed_frames >= 6 then -- loop through images
+			print("new image")
+			_self.current_image_idx = _self.current_image_idx % 3 + 1
+			_self:change{duration = 5, transparency = 0}
+			_self:newImage(Heath.special_images.fire[_self.current_image_idx])	
+			_self:change{duration = 0, transparency = 255}
+			_self.elapsed_frames = 0
+		end
+		if _self.turns_remaining < 0 and _self:isStationary() then
+			_self:change{duration = 32, transparency = 0, remove = true}
+		end
+	end
+
+	local start_row = grid:getFirstEmptyRow(col)
+	local start_y = grid.y[start_row]
+	local bounce_top_y = grid.y[start_row - 1]
+
+	local params = {
+		x = grid.x[col],
+		y = start_y,
+		col = col,
+		scaling = 0,
+		image = Heath.special_images.fire[1],
+		turns_remaining = 1,
+		current_image_idx = 1,
+		elapsed_frames = 0,
+		update = update_func,
+		owner = owner,
+		player_num = owner.player_num,
+		name = "HeathFire",
+	}
+
+	local p = common.instance(SmallFire, game.particles, params)
+	p:change{duration = 15, y = bounce_top_y, scaling = 0.5}
+	p:change{duration = 15, y = start_y, scaling = 1}
+	return 30	
+end
+
 SmallFire = common.class("SmallFire", SmallFire, Pic)
 -------------------------------------------------------------------------------
 local Boom = {}
@@ -211,7 +255,8 @@ function Boom.generateBoom(game, owner, row, col)
 		if _self.elapsed_frames >= 6 then -- loop through images
 			if _self.current_image_idx < 5 then
 				_self.current_image_idx = _self.current_image_idx + 1
-				_self:newImage(Heath.special_images.boom[_self.current_image_idx])	
+				_self:change{duration = 30, y = _self.y - 100}	
+				_self:newImage(Heath.special_images.boom[_self.current_image_idx])
 				_self.elapsed_frames = 0
 			else
 				_self:remove()
@@ -351,7 +396,7 @@ function Heath:afterMatch()
 			end
 		end
 		self.generated_fires = true
-		if fire_sound then self.game.sound:newSFX("heathpassive") end
+		if fire_sound then self.game.sound:newSFX(self.sounds.passive) end
 	end
 	return delay_to_return
 end

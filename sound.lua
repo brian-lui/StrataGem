@@ -1,5 +1,6 @@
 local love = _G.love
 local common = require "class.commons"
+local stringEndsWith = require "utilities".stringEndsWith
 
 local soundfiles = {
 	bgm_buzz = {filename = "music/buzz.ogg", loop_from = 70.235, loop_to = 1.058},
@@ -21,7 +22,7 @@ local sfx_files = {"dummy", "button", "buttonback", "buttonsuper", "buttonbacksu
 	"fountaingo", "fountainrush", "fountaindoublecast", "superactivate", "starbreak",
 	"trashrow", "countdown3", "countdown2", "countdown1", "healing",
 
-	"heathpassive",
+	--"heathpassive",
 }
 for _, v in pairs(sfx_files) do
 	soundfiles[v] = {filename = "sound/" .. v .. ".ogg"}
@@ -51,6 +52,14 @@ end
 -- instead it will just not create any sound effect
 function SoundObject.generate(game, sound_name, is_bgm, no_repeats)
 	local s = soundfiles[sound_name]
+
+	if stringEndsWith(sound_name, ".ogg") then
+		s = {filename = sound_name}
+		-- register it too
+		game.sound.active_sounds[sound_name] = game.sound.active_sounds[sound_name] or {}
+		game.sound.last_played_frame[sound_name] = game.sound.last_played_frame[sound_name] or -1
+	end
+
 	if s then
 		local start_frame = game.frame
 		local previous_play = game.sound.last_played_frame[sound_name]
@@ -207,6 +216,7 @@ function Sound:getCurrentBGM()
 	if self.current_bgm then return self.current_bgm.sound_name end
 end
 
+-- can also accept a link to full location of sound file
 function Sound:newSFX(sound_name, no_repeats)
 	return self.object.generate(self.game, sound_name, false, no_repeats)
 end

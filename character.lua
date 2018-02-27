@@ -6,10 +6,10 @@ local Pic = require 'pic'
 local Hand = require 'hand'
 
 local Character = {}
-Character.full_size_image = love.graphics.newImage('images/characters/heath.png')
-Character.small_image = love.graphics.newImage('images/characters/heathsmall.png')
-Character.action_image = love.graphics.newImage('images/characters/heathaction.png')
-Character.shadow_image = love.graphics.newImage('images/characters/heathshadow.png')
+Character.full_size_image = love.graphics.newImage('images/portraits/heath.png')
+Character.small_image = love.graphics.newImage('images/portraits/heathsmall.png')
+Character.action_image = love.graphics.newImage('images/portraits/heathaction.png')
+Character.shadow_image = love.graphics.newImage('images/portraits/heathshadow.png')
 Character.super_fuzz_image = love.graphics.newImage('images/ui/superfuzzred.png')
 
 Character.character_id = "Lamer"
