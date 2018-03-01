@@ -164,6 +164,16 @@ function Phase:applyGravity(dt)
 			end
 		end
 		self:activatePause("GetMatchedGems")
+
+		-- screencap
+		if game.debug_screencaps then
+			game.debug_screencap_number = game.debug_screencap_number or 0
+			game.debug_screencap_number = game.debug_screencap_number + 1
+			local screenshot = love.graphics.newScreenshot()
+			local filename = "turn" .. game.turn .. "cap" .. game.debug_screencap_number .. ".png"
+			screenshot:encode("png", filename)
+			print("Saved file: " .. filename)
+		end
 	end
 end
 

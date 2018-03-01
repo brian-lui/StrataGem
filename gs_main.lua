@@ -4,6 +4,7 @@ local common = require "class.commons"
 local image = require 'image'
 local Pic = require 'pic'
 local pointIsInRect = require "utilities".pointIsInRect
+local spairs = require "utilities".spairs
 
 local gs_main = {name = "gs_main"}
 
@@ -195,6 +196,17 @@ end
 -- draw gems and related objects (platforms, particles)
 function gs_main:drawGems(params)
 	local allParticles = self.particles.allParticles
+
+	-- cache CharEffects draw order to save CPU
+	local char_effect_draws = {}
+	for i = -4, 5 do char_effect_draws[i] = {n = 0} end
+	for _, v in spairs(allParticles.CharEffects) do
+		local draw_order = v.draw_order or 1
+		local group = char_effect_draws[draw_order]
+		group.n = group.n + 1
+		group[group.n] = v
+	end
+
 	-- gem platforms
 	for player in self:players() do
 		for i = 0, #player.hand do
@@ -208,7 +220,10 @@ function gs_main:drawGems(params)
 	for _, instance in pairs(allParticles.WordEffects) do instance:draw(params) end
 	for _, instance in pairs(allParticles.Dust) do instance:draw(params) end
 	for _, instance in pairs(allParticles.PopParticles) do instance:draw(params) end
-
+	for i = -4, 0 do
+		local char_effects = char_effect_draws[i]
+		for j = 1, char_effects.n do char_effects[j]:draw() end
+	end
 
 	-- hand gems and pending-garbage gems
 	for player in self:players() do
@@ -241,7 +256,10 @@ function gs_main:drawGems(params)
 	for _, v in pairs(allParticles.Healing) do v:draw(params) end
 	for _, v in pairs(allParticles.Damage) do v:draw(params) end
 	for _, v in pairs(allParticles.ExplodingGem) do v:draw(params) end
-	for _, v in pairs(allParticles.CharEffects) do v:draw(params) end
+	for i = 1, 5 do
+		local char_effects = char_effect_draws[i]
+		for j = 1, char_effects.n do char_effects[j]:draw() end
+	end
 	for i = 1, 3 do
 		for _, v in pairs(allParticles.SuperFreezeEffects) do
 			if v.draw_order == i then v:draw(params) end

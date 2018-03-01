@@ -240,6 +240,8 @@ function HealingCloud.generate(game, owner, col, turns_remaining)
 	local duration = owner.CLOUD_SLIDE_DURATION
 	local img_width = img:getWidth()
 	local img_height = img:getHeight()
+	local draw_order = col % 2 == 0 and 2 or 3
+	print("layer " .. draw_order .. " for cloud in column " .. col)
 
 	local function update_func(_self, dt)
 		Pic.update(_self, dt)
@@ -271,6 +273,7 @@ function HealingCloud.generate(game, owner, col, turns_remaining)
 		col = col,
 		update = update_func,
 		owner = owner,
+		draw_order = draw_order,
 		player_num = owner.player_num,
 		name = "WalterCloud",
 	}
@@ -312,6 +315,46 @@ function HealingCloud.generate(game, owner, col, turns_remaining)
 	end
 end
 HealingCloud = common.class("HealingCloud", HealingCloud, Pic)
+
+
+local HealingColumnAura = {}
+function HealingColumnAura:init(manager, tbl)
+	Pic.init(self, manager.game, tbl)
+	manager.allParticles.CharEffects[ID.particle] = self
+	self.manager = manager
+end
+
+function HealingColumnAura:remove()
+	self.manager.allParticles.CharEffects[self.ID] = nil
+	self.owner.ready_clouds[self.col] = nil
+end
+
+function HealingColumnAura.generate(game, owner, col)
+	local grid = game.grid
+
+	local draw_order = -4
+
+	local params = {
+		x = x,
+		y = y,
+		image = img,
+		scaling = 3,
+		transparency = 0,
+		turns_remaining = turns_remaining,
+		frames_between_droplets = owner.CLOUD_INIT_DROPLET_FRAMES,
+		elapsed_frames = -duration, -- only create droplets after finished move
+		droplet_x = {-1.5, -0.5, 0.5, 1.5}, -- possible columns for droplets to appear in
+		col = col,
+		update = update_func,
+		owner = owner,
+		draw_order = draw_order,
+		player_num = owner.player_num,
+		name = "WalterCloud",
+	}	
+end
+HealingColumnAura = common.class("HealingColumnAura", HealingColumnAura, Pic)
+
+
 
 Walter.particle_fx = {
 	healingCloud = HealingCloud,

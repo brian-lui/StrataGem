@@ -318,6 +318,15 @@ local function gailPetalTest(game)
 	game.p1.particle_fx.testPetal.generate(game, game.p1)
 end
 
+local function toggleScreencaps(game)
+	if game.debug_screencaps then
+		print("Screencaps off")
+		game.debug_screencaps = false
+	else
+		print("Screencaps saving to " .. love.filesystem.getSaveDirectory())
+		game.debug_screencaps = true
+	end
+end
 local Unittests = {
 	q = garbageMatch,
 	w = multiCombo,
@@ -331,7 +340,7 @@ local Unittests = {
 	p = tweenPlacedGemUp,
 	a = gailPetalTest, -- gail petal
 	s = addBottomRowP2,
-	d = printSaveDirectory,
+	d = toggleScreencaps,
 	f = skipToTurnEnd,
 	g = addDamageP1,
 	h = addDamageP2,

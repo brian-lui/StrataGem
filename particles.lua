@@ -1418,7 +1418,11 @@ Words = common.class("Words", Words, Pic)
 -------------------------------------------------------------------------------
 
 local CharEffects = {}
--- required stuff in table: x, y, image
+--[[ required stuff in table: x, y, image
+	optional stuff: layer, defaults to 1.
+	1+: above the gems. Images are drawn with 1 at bottom, 5 on top
+	0-: below the gems. Images are drawn with -4 at bottom, 0 on top
+--]]
 function CharEffects:init(manager, tbl)
 	Pic.init(self, manager.game, tbl)
 	manager.allParticles.CharEffects[ID.particle] = self
