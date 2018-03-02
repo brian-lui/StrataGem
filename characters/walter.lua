@@ -37,6 +37,7 @@ Walter.burst_images = {
 Walter.special_images = {
 	cloud = love.graphics.newImage('images/characters/walter/cloud.png'),
 	foam = love.graphics.newImage('images/characters/walter/foam.png'),
+	aura = love.graphics.newImage('images/characters/walter/healrain.png'),
 	drop = {
 		love.graphics.newImage('images/characters/walter/drop1.png'),
 		love.graphics.newImage('images/characters/walter/drop2.png'),
@@ -241,7 +242,6 @@ function HealingCloud.generate(game, owner, col, turns_remaining)
 	local img_width = img:getWidth()
 	local img_height = img:getHeight()
 	local draw_order = col % 2 == 0 and 2 or 3
-	print("layer " .. draw_order .. " for cloud in column " .. col)
 
 	local function update_func(_self, dt)
 		Pic.update(_self, dt)
@@ -316,7 +316,7 @@ function HealingCloud.generate(game, owner, col, turns_remaining)
 end
 HealingCloud = common.class("HealingCloud", HealingCloud, Pic)
 
-
+-------------------------------------------------------------------------------
 local HealingColumnAura = {}
 function HealingColumnAura:init(manager, tbl)
 	Pic.init(self, manager.game, tbl)
@@ -331,33 +331,29 @@ end
 
 function HealingColumnAura.generate(game, owner, col)
 	local grid = game.grid
-
-	local draw_order = -4
-
 	local params = {
-		x = x,
-		y = y,
-		image = img,
-		scaling = 3,
+		x = grid.x[col],
+		y = (grid.y[grid.BASIN_START_ROW] + grid.y[grid.BASIN_END_ROW]) * 0.5,
+		image = owner.special_images.aura,
 		transparency = 0,
-		turns_remaining = turns_remaining,
-		frames_between_droplets = owner.CLOUD_INIT_DROPLET_FRAMES,
-		elapsed_frames = -duration, -- only create droplets after finished move
-		droplet_x = {-1.5, -0.5, 0.5, 1.5}, -- possible columns for droplets to appear in
 		col = col,
-		update = update_func,
 		owner = owner,
-		draw_order = draw_order,
+		draw_order = -4,
 		player_num = owner.player_num,
-		name = "WalterCloud",
-	}	
+		name = "WalterAura",
+	}
+
+	local p = common.instance(HealingColumnAura, game.particles, params)
+	p:change{duration = 10, transparency = 255}
+	p:wait(30)
+	p:change{duration = 20, transparency = 0, remove = true}
 end
 HealingColumnAura = common.class("HealingColumnAura", HealingColumnAura, Pic)
 
 
-
 Walter.particle_fx = {
 	healingCloud = HealingCloud,
+	healingColumnAura = HealingColumnAura,
 }
 -------------------------------------------------------------------------------
 
@@ -390,6 +386,7 @@ function Walter:beforeMatch()
 			self.hand:healDamage(1)
 			self.this_turn_column_healed[col] = true
 			game.sound:newSFX("healing")
+			self.particle_fx.healingColumnAura.generate(self.game, self, col)
 		end
 	end
 
