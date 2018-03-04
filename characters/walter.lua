@@ -415,7 +415,7 @@ function Walter:beforeCleanup()
 	local delay = 0
 	for i in self.game.grid:cols() do
 		if self.pending_clouds[i] then
-			if not self.ready_clouds_state[i] then -- anim for new cloud
+			if not self.ready_clouds[i] then -- anim for new cloud
 				delay = self.CLOUD_SLIDE_DURATION
 				self:_makeCloud(i, self.CLOUD_EXIST_TURNS)
 			else -- update existing cloud anim
@@ -432,6 +432,15 @@ function Walter:beforeCleanup()
 	end
 	self.pending_clouds = {}
 
+	-- debug
+	for i in self.game.grid:cols() do
+		if self.ready_clouds[i] and not self.ready_clouds_state[i] then
+			print("walter cloud warning! cloud anim found in col " .. i .. " but cloud state doesn't exist")
+		elseif not self.ready_clouds[i] and self.ready_clouds_state[i] then
+			print("walter cloud warning! cloud state found in col " .. i .. " but cloud anim doesn't exist")
+		end
+	end
+	
 	return delay	
 end
 
