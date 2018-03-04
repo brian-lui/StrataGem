@@ -115,15 +115,23 @@ end
 function Phase:superFreeze(dt)
 	local game = self.game
 	local p1delay, p2delay = 0, 0
-	if game.p1.supering then p1delay = game.p1:superSlideInAnim() end
-	if game.p2.supering then p2delay = game.p2:superSlideInAnim(p1delay) end
+	if game.p1.supering then
+		game.screen_darkened = true
+		p1delay = game.p1:superSlideInAnim()
+	end
+	if game.p2.supering then
+		game.screen_darkened = true
+		p2delay = game.p2:superSlideInAnim(p1delay)
+	end
 	self:setPause(p1delay + p2delay)
 	self:activatePause("BeforeGravity")
 end
 
 function Phase:beforeGravity(dt)
+	local game = self.game
+	if not game.settings_menu_open then game.screen_darkened = false end
 	local delay = 0
-	for player in self.game:players() do
+	for player in game:players() do
 		local player_delay = player:beforeGravity()
 		delay = math.max(delay, player_delay or 0)
 	end

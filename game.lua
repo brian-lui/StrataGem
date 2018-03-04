@@ -157,12 +157,14 @@ function Game:reset()
 	self.frame = 0
 	self.paused = false
 	self.settings_menu_open = false
+	self.screen_darkened = false
 end
 
 --[[ create a clickable object
 	mandatory parameters: name, image, image_pushed, end_x, end_y, action
 	optional parameters: duration, start_transparency, end_transparency,
-		start_x, start_y, easing, exit, pushed, pushed_sfx, released, released_sfx
+		start_x, start_y, easing, exit, pushed, pushed_sfx, released,
+		released_sfx, force_max_alpha
 --]]
 function Game:_createButton(gamestate, params)
 	params = params or {}
@@ -176,6 +178,7 @@ function Game:_createButton(gamestate, params)
 		transparency = params.start_transparency or 255,
 		image = params.image,
 		container = params.container or gamestate.ui.clickable,
+		force_max_alpha = params.force_max_alpha,
 	})
 	button:change{duration = params.duration, x = params.end_x, y = params.end_y,
 		transparency = params.end_transparency or 255,
@@ -194,7 +197,8 @@ end
 
 --[[ creates an object that can be tweened but not clicked
 	mandatory parameters: name, image, end_x, end_y
-	optional parameters: duration, start_transparency, end_transparency, start_x, start_y, easing, exit
+	optional parameters: duration, start_transparency, end_transparency,
+		start_x, start_y, easing, exit, force_max_alpha
 --]]
 function Game:_createImage(gamestate, params)
 	params = params or {}
@@ -207,6 +211,7 @@ function Game:_createImage(gamestate, params)
 		transparency = params.start_transparency or 255,
 		image = params.image,
 		container = params.container or gamestate.ui.static,
+		force_max_alpha = params.force_max_alpha,
 	})
 	button:change{duration = params.duration, x = params.end_x, y = params.end_y,
 		transparency = params.end_transparency or 255, easing = params.easing, exit_func = params.exit_func}
@@ -219,6 +224,7 @@ function Game:_openSettingsMenu(gamestate, params)
 	local clickable = gamestate.ui.popup_clickable
 	local static = gamestate.ui.popup_static
 	self.settings_menu_open = true
+	self.screen_darkened = true
 	static.settings_text:change{duration = 15, transparency = 255}
 	static.settingsframe:change{duration = 15, transparency = 255}
 	clickable.open_quit_menu:change{duration = 0, x = stage.settings_locations.quit_button.x}
@@ -233,6 +239,7 @@ function Game:_openQuitConfirmMenu(gamestate, params)
 	local clickable = gamestate.ui.popup_clickable
 	local static = gamestate.ui.popup_static
 	self.settings_menu_open = true
+	self.screen_darkened = true
 
 	clickable.confirm_quit:change{duration = 0, x = stage.settings_locations.confirm_quit_button.x}
 	clickable.confirm_quit:change{duration = 15, transparency = 255}
@@ -250,6 +257,7 @@ function Game:_closeQuitConfirmMenu(gamestate, params)
 	local clickable = gamestate.ui.popup_clickable
 	local static = gamestate.ui.popup_static
 	self.settings_menu_open = true
+	self.screen_darkened = true
 
 	clickable.confirm_quit:change{duration = 0, x = -stage.width, transparency = 0}
 	clickable.close_quit_menu:change{duration = 0, x = -stage.width, transparency = 0}
@@ -266,6 +274,7 @@ function Game:_closeSettingsMenu(gamestate, params)
 	local clickable = gamestate.ui.popup_clickable
 	local static = gamestate.ui.popup_static
 	self.settings_menu_open = false
+	self.screen_darkened = false
 
 	clickable.confirm_quit:change{duration = 0, x = -stage.width, transparency = 0}
 	clickable.close_quit_menu:change{duration = 0, x = -stage.width, transparency = 0}
@@ -307,6 +316,7 @@ function Game:_createSettingsMenu(gamestate, params)
 		end_x = stage.settings_locations.pause_text.x,
 		end_y = stage.settings_locations.pause_text.y,
 		end_transparency = 0,
+		force_max_alpha = true,
 	})
 	self:_createButton(gamestate, {
 		name = "open_quit_menu",
@@ -318,6 +328,7 @@ function Game:_createSettingsMenu(gamestate, params)
 		action = function()
 			if self.settings_menu_open then self:_openQuitConfirmMenu(gamestate) end
 		end,
+		force_max_alpha = true,
 	})
 	self:_createButton(gamestate, {
 		name = "close_settings_menu",
@@ -329,8 +340,8 @@ function Game:_createSettingsMenu(gamestate, params)
 		action = function()
 			if self.settings_menu_open then gamestate.closeSettingsMenu(self) end
 		end,
+		force_max_alpha = true,
 	})
-
 	self:_createImage(gamestate, {
 		name = "sure_to_quit",
 		container = gamestate.ui.popup_static,
@@ -338,8 +349,8 @@ function Game:_createSettingsMenu(gamestate, params)
 		end_x = stage.settings_locations.confirm_quit_text.x,
 		end_y = stage.settings_locations.confirm_quit_text.y,
 		end_transparency = 0,
+		force_max_alpha = true,
 	})
-
 	self:_createImage(gamestate, {
 		name = "settingsframe",
 		container = gamestate.ui.popup_static,
@@ -347,6 +358,7 @@ function Game:_createSettingsMenu(gamestate, params)
 		end_x = stage.settings_locations.frame.x,
 		end_y = stage.settings_locations.frame.y,
 		end_transparency = 0,
+		force_max_alpha = true,
 	})
 	self:_createButton(gamestate, {
 		name = "close_quit_menu",
@@ -359,6 +371,7 @@ function Game:_createSettingsMenu(gamestate, params)
 		action = function()
 			if self.settings_menu_open then self:_closeQuitConfirmMenu(gamestate) end
 		end,
+		force_max_alpha = true,
 	})
 	self:_createButton(gamestate, {
 		name = "confirm_quit",
@@ -374,12 +387,14 @@ function Game:_createSettingsMenu(gamestate, params)
 				if params.exitstate then
 					self:_closeQuitConfirmMenu(gamestate)
 					self.settings_menu_open = false
+					self.screen_darkened = false
 					self.statemanager:switch(require (params.exitstate))
 				else
 					love.event.quit()
 				end
 			end
 		end,
+		force_max_alpha = true,
 	})
 end
 

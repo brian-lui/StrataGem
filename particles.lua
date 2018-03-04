@@ -1459,7 +1459,8 @@ function SuperFreezeEffects.generate(game, player, shadow_image, action_image, f
 		draw_order = 2,
 		x = stage.width * (0.5 - sign * 0.7),
 		y = stage.height * 0.5,
-		flip = sign == -1
+		flip = sign == -1,
+		force_max_alpha = true,
 	})
 	if delay_frames then
 		shadow:change{transparency = 0}
@@ -1475,7 +1476,8 @@ function SuperFreezeEffects.generate(game, player, shadow_image, action_image, f
 		draw_order = 3,
 		x = stage.width * (0.5 - sign * 0.7),
 		y = stage.height * 0.5,
-		flip = sign == -1
+		flip = sign == -1,
+		force_max_alpha = true,
 	})
 	if delay_frames then
 		portrait:change{transparency = 0}
@@ -1490,7 +1492,8 @@ function SuperFreezeEffects.generate(game, player, shadow_image, action_image, f
 		image = fuzz_image,
 		draw_order = 1,
 		x = stage.width * 0.5,
-		y = fuzz_image:getHeight() * -0.5
+		y = fuzz_image:getHeight() * -0.5,
+		force_max_alpha = true,
 	})
 	if delay_frames then
 		top_fuzz:change{transparency = 0}
@@ -1506,6 +1509,7 @@ function SuperFreezeEffects.generate(game, player, shadow_image, action_image, f
 		draw_order = 1,
 		x = stage.width * 0.5,
 		y = fuzz_image:getHeight() * 0.5 + stage.height,
+		force_max_alpha = true,
 	})
 	if delay_frames then
 		bottom_fuzz:change{transparency = 0}

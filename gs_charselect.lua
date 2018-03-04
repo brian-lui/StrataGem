@@ -250,7 +250,7 @@ function charselect:update(dt)
 end
 
 function charselect:draw()
-	local darkened = self.settings_menu_open
+	local darkened = self.screen_darkened
 	charselect.current_background:draw{darkened = darkened}
 	for _, v in spairs(charselect.ui.static) do v:draw{darkened = darkened} end
 	for _, v in pairs(charselect.ui.clickable) do v:draw{darkened = darkened} end

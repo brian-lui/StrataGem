@@ -55,7 +55,7 @@ end
 		scale: scaling to draw
 		RGBTable: colors to draw, given as {red, green, blue, alpha}
 		image: image to draw
-		darkened: draw darker (when a pop-up menu is onscreen)
+		darkened: draw darker (when a pop-up menu is onscreen). Overridden by force_max_alpha boolean
 --]]
 function Pic:draw(params)
 	if self.transparency == 0 then return end
@@ -67,7 +67,7 @@ function Pic:draw(params)
 		local rgbt = self.RGB or {255, 255, 255}
 		rgbt[4] = self.transparency or 255
 
-		if params.darkened then
+		if params.darkened and not self.force_max_alpha then
 			love.graphics.setColor(127, 127, 127)
 		elseif params.RGBTable then
 			love.graphics.setColor(params.RGBTable)

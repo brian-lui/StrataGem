@@ -92,7 +92,7 @@ end
 function Gem:draw(params)
 	params = params or {}
 	local rgbt = params.RGBTable or {255, 255, 255, self.transparency or 255}
-	if params.darkened then
+	if params.darkened and not self.force_max_alpha then
 		rgbt[1], rgbt[2], rgbt[3] = rgbt[1] * 0.5, rgbt[2] * 0.5, rgbt[3] * 0.5
 	end
 
