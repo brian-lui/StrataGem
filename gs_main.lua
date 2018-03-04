@@ -160,7 +160,7 @@ function gs_main:update(dt)
 		gs_main.current_background:update(dt) -- variable fps
 		self.ui.timer:update(dt)
 		self.ui:updateBursts(gs_main)
-		self.ui:updateSupers(gs_main)	
+		self.ui:updateSupers(gs_main)
 		self.animations:updateAll(dt)
 		self.screenshake_frames = math.max(0, self.screenshake_frames - 1)
 		self.timeBucket = self.timeBucket + dt
