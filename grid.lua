@@ -278,8 +278,6 @@ end
 
 -- If any gem in a set is owned by a player, make all other gems in its match
 -- also owned by that player (may be owned by both players).
--- the addOwner method adds a matched_this_turn flag to the gem, too, for use
--- in propagating the flags upwards, in the destroyGem method
 function Grid:flagMatchedGems()
 	local matches = self:_getRawMatches()
 	for i = 1, #matches do
@@ -297,8 +295,8 @@ function Grid:flagMatchedGems()
 			for j = 1, matches[i].length do
 				local row = matches[i].row
 				local column = matches[i].column + (j-1)
-				if p1flag then self[row][column].gem:addOwner(1, true) end
-				if p2flag then self[row][column].gem:addOwner(2, true) end
+				if p1flag then self[row][column].gem:addOwner(1) end
+				if p2flag then self[row][column].gem:addOwner(2) end
 			end
 		else
 			-- Check whether p1 or p2 own any of the gems in this match
@@ -313,8 +311,8 @@ function Grid:flagMatchedGems()
 			for j = 1, matches[i].length do
 				local row = matches[i].row + (j-1)
 				local column = matches[i].column
-				if p1flag then self[row][column].gem:addOwner(1, true) end
-				if p2flag then self[row][column].gem:addOwner(2, true) end
+				if p1flag then self[row][column].gem:addOwner(1) end
+				if p2flag then self[row][column].gem:addOwner(2) end
 			end
 		end
 	end
@@ -671,7 +669,6 @@ end
 	extra_damage: optional how much extra damage to do
 	credit_to: optional player_num (to deal damage to player_num's opponent)
 	glow_delay: optional extra frames to stay in full-glow phase
-	propagate_flags_up: optionally credit above gems to owner. Default true
 --]]
 function Grid:destroyGem(params)
 	local game = self.game
@@ -718,14 +715,14 @@ function Grid:destroyGem(params)
 	particles.gemImage.generate{game = game, gem = gem, duration = delay_until_explode}
 
 	-- flag above gems
-	if params.propagate_flags_up ~= false then
+	if params.propogate_flags_up ~= false then
 		local above_gems = {}
-		assert(gem.row, "Gem doesn't have .row property!")
-		for i = gem.row - 1, 1, -1 do
+		for i = (gem.row or 1), 1, -1 do
 			local current_gem = self[i][gem.column].gem
 			if current_gem then
-				 -- skip propagation if this gem was part of a match
-				if not current_gem.matched_this_turn then
+				if current_gem.owner ~= 0 then
+					break
+				else
 					current_gem:setOwner(gem.owner)
 				end
 			end
