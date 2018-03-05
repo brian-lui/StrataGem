@@ -189,6 +189,7 @@ function Phase:getMatchedGems(dt)
 	local game = self.game
 	local grid = game.grid
 	local _, matches = grid:getMatchedGems() -- sets is_horizontal/is_vertical flags for matches
+	if matches > 0 then grid:flagMatchedGems() end
 
 	local delay = 0
 
@@ -206,7 +207,6 @@ function Phase:getMatchedGems(dt)
 	self:setPause(delay)
 
 	if matches > 0 then
-		grid:flagMatchedGems() -- sets flags
 		self:activatePause("DestroyMatchedGems")
 	else
 		self:activatePause("ResolvedMatches")
