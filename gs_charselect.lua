@@ -120,9 +120,9 @@ function charselect:_createUIButtons()
 
 	-- left arrow for background select
 	charselect._createButton(self, {
-		name = "leftarrow",
-		image = image.button.leftarrow,
-		image_pushed = image.button.leftarrow,
+		name = "backgroundleft",
+		image = image.button.backgroundleft,
+		image_pushed = image.button.backgroundleft,
 		duration = 60,
 		end_x = stage.width * 0.6,
 		end_y = stage.height * 0.8,
@@ -138,9 +138,9 @@ function charselect:_createUIButtons()
 
 	-- right arrow for background select
 	charselect._createButton(self, {
-		name = "rightarrow",
-		image = image.button.rightarrow,
-		image_pushed = image.button.rightarrow,
+		name = "backgroundright",
+		image = image.button.backgroundright,
+		image_pushed = image.button.backgroundright,
 		duration = 60,
 		end_x = stage.width * 0.9,
 		end_y = stage.height * 0.8,
@@ -231,7 +231,7 @@ function charselect:enter()
 	charselect._createUIImages(self)
 	charselect.my_character = nil -- selected character for gamestart
 	charselect.gametype = "1P" -- can change this later to re-use for netplay
-	charselect.opponent_character = "walter" -- ditto
+	charselect.opponent_character = math.random() < 0.5 and "walter" or "heath"-- ditto
 end
 
 function charselect:openSettingsMenu()

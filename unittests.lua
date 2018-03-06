@@ -117,6 +117,20 @@ local function flagPropogateProblem(game)
 	nrow(game, 8, "    GGRY")
 end
 
+local function flagVerticalHorizontal(game)
+	nrow(game, 6, "        ")
+	nrow(game, 7, "  Y RY  ")
+	nrow(game, 8, "  R RRG ")
+end
+
+local function charselectScreenCPUCharToggle(game)
+	if game.opponent_character == "walter" then
+		game.opponent_character = "heath"
+	elseif game.opponent_character == "heath" then
+		game.opponent_character = "walter"
+	end
+end
+
 -------------------------------------------------------------------------------
 ------------------------------ TEST OTHER THINGS ------------------------------
 -------------------------------------------------------------------------------
@@ -330,8 +344,8 @@ end
 local Unittests = {
 	q = garbageMatch,
 	w = multiCombo,
-	e = overflow,
-	r = p2VerticalMatch,
+	e = charselectScreenCPUCharToggle,
+	r = flagVerticalHorizontal,
 	t = allRedGems,
 	y = shuffleHands,
 	u = resetGame,

@@ -276,48 +276,79 @@ function Grid:getMatchedGemLists(min_length)
 end
 
 
--- If any gem in a set is owned by a player, make all other gems in its match
--- also owned by that player (may be owned by both players).
--- the addOwner method adds a matched_this_turn flag to the gem, too, for use
--- in propagating the flags upwards, in the destroyGem method
+--[[ If any gem in a set is owned by a player, make all other gems in its match
+	also owned by that player (may be owned by both players).
+	Call this function only once per matching, otherwise intersecting matches
+	will be flagged incorrectly.
+	the addOwner method adds a matched_this_turn flag to the gem, too, for use
+	in propagating the flags upwards, in the destroyGem method.
+--]]
+
 function Grid:flagMatchedGems()
 	local matches = self:_getRawMatches()
-	for i = 1, #matches do
-		local p1flag, p2flag = false, false
-		if matches[i].is_horizontal then
-			-- Check whether p1 or p2 own any of the gems in this match
-			for j = 1, matches[i].length do
-				local row = matches[i].row
-				local column = matches[i].column + (j-1)
-				if self[row][column].gem.owner == 1 then p1flag = true end
-				if self[row][column].gem.owner == 2 then p2flag = true end
-				if self[row][column].gem.owner == 3 then p1flag = true p2flag = true end
-			end
-			-- Propagate owners to all gems in the match
-			for j = 1, matches[i].length do
-				local row = matches[i].row
-				local column = matches[i].column + (j-1)
-				if p1flag then self[row][column].gem:addOwner(1, true) end
-				if p2flag then self[row][column].gem:addOwner(2, true) end
+	local gem_flags = {} -- a set
+	
+	-- get gem owners
+	for _, match in ipairs(matches) do
+		local this_match_p1, this_match_p2 = false, false
+		local gems = {}
+		if match.is_horizontal then
+			for i = 1, match.length do
+				local row = match.row
+				local column = match.column + i - 1
+				local gem = self[row][column].gem
+				if gem.owner == 1 then
+					this_match_p1 = true
+				elseif gem.owner == 2 then
+					this_match_p2 = true
+				elseif gem.owner == 3 then
+					this_match_p1, this_match_p2 = true, true
+				end
+				gems[#gems+1] = gem
 			end
 		else
-			-- Check whether p1 or p2 own any of the gems in this match
-			for j = 1, matches[i].length do
-				local row = matches[i].row + (j-1)
-				local column = matches[i].column
-				if self[row][column].gem.owner == 1 then p1flag = true end
-				if self[row][column].gem.owner == 2 then p2flag = true end
-				if self[row][column].gem.owner == 3 then p1flag = true p2flag = true end
+			for i = 1, match.length do
+				local row = match.row + i - 1
+				local column = match.column
+				local gem = self[row][column].gem
+				if gem.owner == 1 then
+					this_match_p1 = true
+				elseif gem.owner == 2 then
+					this_match_p2 = true
+				elseif gem.owner == 3 then
+					this_match_p1, this_match_p2 = true, true
+				end
+				gems[#gems+1] = gem
 			end
-			-- Propagate owners to all gems in the match
-			for j = 1, matches[i].length do
-				local row = matches[i].row + (j-1)
-				local column = matches[i].column
-				if p1flag then self[row][column].gem:addOwner(1, true) end
-				if p2flag then self[row][column].gem:addOwner(2, true) end
+		end
+
+		-- calculate new flags
+		local owner_num = 0
+		if this_match_p1 then owner_num = owner_num + 1 end
+		if this_match_p2 then owner_num = owner_num + 2 end
+
+		-- store flags
+		for _, gem in pairs(gems) do
+			if gem_flags[gem] then
+				if gem_flags[gem] == 0 then
+					print("This shouldn't happen")
+				elseif gem_flags[gem] == 1 then
+					if owner_num == 2 or owner_num == 3 then gem_flags[gem] = 3 end
+				elseif gem_flags[gem] == 2 then
+					if owner_num == 1 or owner_num == 3 then gem_flags[gem] = 3 end
+				elseif gem_flags[gem] == 3 then
+					-- nothing to add
+				else
+					print("This shouldn't happen either")
+				end
+			else
+				gem_flags[gem] = owner_num
 			end
 		end
 	end
+
+	-- apply the flags
+	for gem, owner_num in pairs(gem_flags) do gem:addOwner(owner_num, true) end
 end
 
 -- get score of simulated piece placements

@@ -131,7 +131,7 @@ end
 assert(image.UI.burst.red_partial)
 
 local buttons = {"vscpu", "vscpupush", "netplay", "netplaypush", "back", "backpush",
-	"details", "detailspush", "start", "startpush", "leftarrow", "rightarrow",
+	"details", "detailspush", "start", "startpush", "backgroundleft", "backgroundright",
 	"lobbycreatenew", "lobbyqueueranked", "lobbycancelsearch", "pause", "stop",
 	"settings", "settingspush", "yes", "yespush", "no", "nopush", "quit", "quitpush"}
 image.button = {}
