@@ -74,6 +74,23 @@ function Particles:clearCount()
 	self.count.destroyed.Garbage = {0, 0}
 end
 
+-- an iterator which returns all matching instances
+function Particles:getInstances(category, name, player_num)
+	assert(category, "Category not provided!")
+	assert(self.allParticles[category], "Category doesn't exist!")
+	local instances, index = {}, 0
+	for _, instance in pairs(self.allParticles[category]) do
+		local name_ok = (not name) or instance.name == name
+		local player_ok = (not player_num) or instance.player_num == player_num
+		if name_ok and player_ok then instances[#instances+1] = instance end
+	end
+
+	return function()
+		index = index + 1
+		return instances[index]
+	end
+end
+
 function Particles:reset()
 	self.allParticles = {
 		Damage = {},

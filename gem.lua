@@ -111,7 +111,7 @@ end
 
 -- these can take either the player object or the number
 -- respects cannot_remove_owners
-function Gem:setOwner(player)
+function Gem:setOwner(player, set_due_to_match)
 	if type(player) == "table" then player = player.player_num end
 	if not (player == 0 or player == 1 or player == 2 or player == 3) then
 		print("Error: tried to set invalid gem owner as player:", player)
@@ -123,9 +123,10 @@ function Gem:setOwner(player)
 	else
 		self.owner = player
 	end
+	if set_due_to_match then self.matched_this_turn = true end
 end
 
-function Gem:addOwner(player, add_due_to_match)
+function Gem:addOwner(player)
 	if type(player) == "table" then player = player.player_num end
 	if not (player == 1 or player == 2 or player == 3) then
 		print("Error: tried to add invalid gem owner as player:", player)
@@ -139,8 +140,6 @@ function Gem:addOwner(player, add_due_to_match)
 	elseif self.owner == 2 then
 		if player == 1 or player == 3 then self.owner = 3 end
 	end
-
-	if add_due_to_match then self.matched_this_turn = true end
 end
 
 function Gem:removeOwner(player)

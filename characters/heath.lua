@@ -74,7 +74,7 @@ function Heath:init(...)
 	self.pending_fires = {} -- fires for horizontal matches generated at t0
 	self.ready_fires = {} -- fires at t1, ready to burn
 	self.pending_gem_cols = {} -- pending gems, for extinguishing of ready_fires
-	self.generated_fires = false -- whether fire particles were generated yet
+	self.generated_fire_images = {} -- whether fire particles were generated yet. one for each col
 	self.super_gems = {} -- gems to be reflagged and destroyed by super effect
 	self.super_boom_effects = {} -- {row/col} of boom effects to be created
 end
@@ -388,17 +388,16 @@ end
 -- create fire particle for passive
 function Heath:afterMatch()
 	local delay_to_return = 0
-	if not self.generated_fires then -- only activate this once per turn
-		local fire_sound = false
-		for i in self.game.grid:cols() do
-			if self.pending_fires[i] then
-				delay_to_return = self.particle_fx.smallFire.generateSmallFire(self.game, self, i)
-				fire_sound = true
-			end
+	local fire_sound = false
+	for i in self.game.grid:cols() do
+		if not self.generated_fire_images[i] and self.pending_fires[i] then
+			delay_to_return = self.particle_fx.smallFire.generateSmallFire(self.game, self, i)
+			self.generated_fire_images[i] = true
+			fire_sound = true
 		end
-		self.generated_fires = true
-		if fire_sound then self.game.sound:newSFX(self.sounds.passive) end
 	end
+	if fire_sound then self.game.sound:newSFX(self.sounds.passive) end
+
 	return delay_to_return
 end
 
@@ -449,7 +448,7 @@ function Heath:cleanup()
 	-- prepare the active fire columns for next turn
 	self.ready_fires = self.pending_fires
 	self.pending_fires = {}
-	self.generated_fires = false
+	self.generated_fire_images = {}
 
 	Character.cleanup(self)
 end

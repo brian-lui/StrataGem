@@ -348,7 +348,7 @@ function Grid:flagMatchedGems()
 	end
 
 	-- apply the flags
-	for gem, owner_num in pairs(gem_flags) do gem:addOwner(owner_num, true) end
+	for gem, owner_num in pairs(gem_flags) do gem:setOwner(owner_num, true) end
 end
 
 -- get score of simulated piece placements

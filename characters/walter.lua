@@ -68,9 +68,8 @@ function Walter:init(...)
 	self.CLOUD_EXIST_TURNS = 3 -- how many turns a cloud exists for
 	self.CLOUD_INIT_DROPLET_FRAMES = 5 -- initial frames between droplets
 
-	self.pending_clouds = {} -- clouds for vertical matches generates at t0
-	self.ready_clouds = {} -- clouds at t1, gives healing
-	self.ready_clouds_state = {} -- keep track of the state
+	self.pending_clouds = {} -- boolean, clouds for vertical matches generates at t0
+	self.cloud_turns_remaining = {0, 0, 0, 0, 0, 0, 0, 0} -- keep track of the state
 	self.this_turn_column_healed = {false, false, false, false, false, false, false, false}
 end
 
@@ -211,26 +210,24 @@ end
 
 function HealingCloud:remove()
 	self.manager.allParticles.CharEffects[self.ID] = nil
-	self.owner.ready_clouds[self.col] = nil
+	--self.owner.cloud_instance[self.col] = nil
 end
 
 function HealingCloud:countdown()
-	self.turns_remaining = self.turns_remaining - 1
-	self.frames_between_droplets = (self.owner.CLOUD_EXIST_TURNS - self.turns_remaining) * self.owner.CLOUD_INIT_DROPLET_FRAMES
-	if self.turns_remaining <= 0 then
-		self:remove()
+	local turns_remaining = self.owner.cloud_turns_remaining[self.col] 
+	self.frames_between_droplets = (self.owner.CLOUD_EXIST_TURNS - turns_remaining) * self.owner.CLOUD_INIT_DROPLET_FRAMES
+	if turns_remaining == 0 then 
+		self:wait(60)
+		self:change{duration = 32, transparency = 0, remove = true}
 	end
-	print("Cloud in column " .. self.col .. " turns remaining: " .. self.turns_remaining)
 end
 
-function HealingCloud:renewCloud(turns_remaining)
-	self.turns_remaining = turns_remaining or self.owner.CLOUD_EXIST_TURNS
+function HealingCloud:renewCloud()
 	self.frames_between_droplets = self.owner.CLOUD_INIT_DROPLET_FRAMES
-	print("Cloud in column " .. self.col .. " turns remaining: " .. self.turns_remaining)
 end
 
 
-function HealingCloud.generate(game, owner, col, turns_remaining)
+function HealingCloud.generate(game, owner, col)
 	local grid = game.grid
 	local stage = game.stage
 
@@ -254,10 +251,6 @@ function HealingCloud.generate(game, owner, col, turns_remaining)
 			Droplet.generate(game, owner, x, y, destination_y)
 			_self.elapsed_frames = 0
 		end
-		if _self.turns_remaining < 0 then
-			_self:wait(60)
-			_self:change{duration = 32, transparency = 0, remove = true}
-		end
 	end
 	
 	local params = {
@@ -266,7 +259,6 @@ function HealingCloud.generate(game, owner, col, turns_remaining)
 		image = img,
 		scaling = 3,
 		transparency = 0,
-		turns_remaining = turns_remaining,
 		frames_between_droplets = owner.CLOUD_INIT_DROPLET_FRAMES,
 		elapsed_frames = -duration, -- only create droplets after finished move
 		droplet_x = {-1.5, -0.5, 0.5, 1.5}, -- possible columns for droplets to appear in
@@ -278,8 +270,10 @@ function HealingCloud.generate(game, owner, col, turns_remaining)
 		name = "WalterCloud",
 	}
 
-	owner.ready_clouds[col] = common.instance(HealingCloud, game.particles, params)
-	owner.ready_clouds[col]:change{
+	local p = common.instance(HealingCloud, game.particles, params)
+	--owner.cloud_instance[col] = common.instance(HealingCloud, game.particles, params)
+		p:change{
+	--owner.cloud_instance[col]:change{
 		duration = duration,
 		scaling = 1,
 		transparency = 255,
@@ -326,7 +320,6 @@ end
 
 function HealingColumnAura:remove()
 	self.manager.allParticles.CharEffects[self.ID] = nil
-	self.owner.ready_clouds[self.col] = nil
 end
 
 function HealingColumnAura.generate(game, owner, col)
@@ -357,8 +350,8 @@ Walter.particle_fx = {
 }
 -------------------------------------------------------------------------------
 
-function Walter:_makeCloud(column, turns_remaining)
-	self.particle_fx.healingCloud.generate(self.game, self, column, turns_remaining)
+function Walter:_makeCloud(column)
+	self.particle_fx.healingCloud.generate(self.game, self, column)
 end
 
 function Walter:beforeMatch()
@@ -370,7 +363,7 @@ function Walter:beforeMatch()
 
 	-- Healing damage from rainclouds
 	for col in grid:cols() do
-		if self.ready_clouds_state[col] and not self.this_turn_column_healed[col] then
+		if self.cloud_turns_remaining[col] > 0 and not self.this_turn_column_healed[col] then
 			local x = grid.x[col]
 			local y = (grid.y[grid.BASIN_START_ROW] + grid.y[grid.BASIN_END_ROW]) * 0.5
 			local y_range = image.GEM_HEIGHT * 4
@@ -413,34 +406,37 @@ end
 
 function Walter:beforeCleanup()
 	local delay = 0
-	for i in self.game.grid:cols() do
-		if self.pending_clouds[i] then
-			if not self.ready_clouds[i] then -- anim for new cloud
-				delay = self.CLOUD_SLIDE_DURATION
-				self:_makeCloud(i, self.CLOUD_EXIST_TURNS)
-			else -- update existing cloud anim
-				self.ready_clouds[i]:renewCloud()
-			end
-			self.ready_clouds_state[i] = self.CLOUD_EXIST_TURNS -- state update
-		else -- update existing clouds, if any
-			if self.ready_clouds[i] then self.ready_clouds[i]:countdown() end -- anim
-			if self.ready_clouds_state[i] then -- state
-				self.ready_clouds_state[i] = self.ready_clouds_state[i] - 1
-				if self.ready_clouds_state[i] <= 0 then self.ready_clouds_state[i] = nil end
-			end
+
+	-- update cloud turns remaining
+	for col in self.game.grid:cols() do
+		if self.pending_clouds[col] then
+			self.cloud_turns_remaining[col] = self.CLOUD_EXIST_TURNS
+		else
+			self.cloud_turns_remaining[col] = math.max(self.cloud_turns_remaining[col] - 1, 0)
 		end
 	end
+
+	-- updating existing cloud animations
+	local cloud_in_col = {}
+	for cloud in self.game.particles:getInstances("CharEffects", "WalterCloud", self.player_num) do
+		cloud_in_col[cloud.col] = true
+		if self.pending_clouds[cloud.col] then
+			cloud:renewCloud()
+		else
+			cloud:countdown()
+		end
+	end
+
+	-- make new cloud animations
+	for col in self.game.grid:cols() do
+		if self.pending_clouds[col] and not cloud_in_col[col] then
+			delay = self.CLOUD_SLIDE_DURATION
+			self:_makeCloud(col, self.CLOUD_EXIST_TURNS)
+		end
+	end
+
 	self.pending_clouds = {}
 
-	-- debug
-	for i in self.game.grid:cols() do
-		if self.ready_clouds[i] and not self.ready_clouds_state[i] then
-			print("walter cloud warning! cloud anim found in col " .. i .. " but cloud state doesn't exist")
-		elseif not self.ready_clouds[i] and self.ready_clouds_state[i] then
-			print("walter cloud warning! cloud state found in col " .. i .. " but cloud anim doesn't exist")
-		end
-	end
-	
 	return delay	
 end
 

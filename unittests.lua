@@ -70,7 +70,7 @@ local function testWalterPassive(game)
 	nrow(game, 5, "YRGB    ")
 	nrow(game, 6, "YRGB    ")
 	nrow(game, 7, "RGBY    ")
-	nrow(game, 8, "RGBY    ")
+	nrow(game, 8, "RGBYY   ")
 end
 
 -- test garbage matches
