@@ -210,14 +210,14 @@ function Hand:destroyPlatform(pos, skip_animations, delay_frames)
 	delay_frames = delay_frames or 0
 	local garbage_delay = delay_frames + 15
 	local game = self.game
-	local arrival_frame
+	local garbage_arrival_frame
 	if not skip_animations then
 		if self[pos].platform then
 			game.queue:add(delay_frames, game.sound.newSFX, game.sound, "starbreak")
 			game.particles.explodingPlatform.generate(game, self[pos].platform.pic, delay_frames)
 			if self[pos].piece then
 				self:updatePieceGems()
-				arrival_frame = self:createGarbageAnimation(pos, garbage_delay)
+				garbage_arrival_frame = self:createGarbageAnimation(pos, garbage_delay)
 				self.owner.garbage_rows_created = self.owner.garbage_rows_created + 1
 			end
 		else
@@ -225,19 +225,20 @@ function Hand:destroyPlatform(pos, skip_animations, delay_frames)
 		end
 	end
 	game.queue:add(delay_frames, function() self[pos].platform = nil end)
-	return arrival_frame
+	return garbage_arrival_frame
 end
 
-function Hand:destroyDamagedPlatforms()
+function Hand:destroyDamagedPlatforms(force_minimum_1_piece)
 	local platform_delay = 10
 	local to_destroy = math.min(5, math.floor(self.damage * 0.25))
-	local arrival_frames = {}
+	if force_minimum_1_piece then to_destroy = math.max(to_destroy, 1) end
+
+	local garbage_arrival_frames = {}
 	for i = 1, to_destroy do
 		local frame = self:destroyPlatform(i, false, (i - 1) * platform_delay)
-		--if frame then arrival_frames[#arrival_frames+1] = frame + self.game.frame end
-		if frame then arrival_frames[#arrival_frames+1] = frame end
+		if frame then garbage_arrival_frames[#garbage_arrival_frames+1] = frame end
 	end
-	return arrival_frames
+	return garbage_arrival_frames
 end
 
 -- Checks whether a player's pieces have stopped moving.

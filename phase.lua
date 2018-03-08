@@ -213,31 +213,26 @@ function Phase:getMatchedGems(dt)
 	end
 end
 
--- flag above gems, destroy matched gems, and generate the exploding gem particles
+-- destroy matched gems, and create the gems-being-exploded animation
 function Phase:destroyMatchedGems(dt)
 	local game = self.game
 	local grid = game.grid
 
 	self.matched_this_round = grid:checkMatchedThisTurn() -- which players made a match
 	grid:destroyMatchedGems(game.scoring_combo)
-	game.current_phase = "MatchAnimations"
-end
 
--- wait for gem explode animation
-function Phase:matchAnimations(dt)
 	if self.should_call_char_ability_this_phase then
 		local delay = 0
-		for player in self.game:players() do
+		for player in game:players() do
 			local player_delay = player:duringMatchAnimation()
 			delay = math.max(delay, player_delay or 0)
 		end
-		self:setPause(self.game.GEM_FADE_FRAMES + delay)
+		self:setPause(game.GEM_EXPLODE_FRAMES + game.GEM_FADE_FRAMES + delay)
 		self.should_call_char_ability_this_phase = false
 	end
-	if self.game.particles:getNumber("GemImage") == 0 then
-		self:activatePause("ResolvingMatches")
-		self.should_call_char_ability_this_phase = true
-	end
+
+	self:activatePause("ResolvingMatches")
+	self.should_call_char_ability_this_phase = true
 end
 
 function Phase:resolvingMatches(dt)
@@ -272,8 +267,8 @@ function Phase:resolvedMatches(dt)
 		self:setPause(self.PLATFORM_SPIN_DELAY + delay)
 		self.should_call_char_ability_this_phase = false
 	end
-	if game.particles:getCount("onscreen", "Damage", 1) + game.particles:getCount("onscreen", "Damage", 2) > 0 then
-	else	-- all damage particles finished
+	if game.particles:getCount("onscreen", "Damage", 1) + game.particles:getCount("onscreen", "Damage", 2) == 0 then
+	-- all damage particles finished
 		for player in game:players() do player.place_type = "normal" end
 		game.scoring_combo = 0
 		game.grid:setAllGemOwners(0)
@@ -293,31 +288,26 @@ end
 function Phase:destroyDamagedPlatforms(dt)
 	local game = self.game
 	local grid = game.grid
-	local max_delay = 0
+	local max_delay = game.EXPLODING_PLATFORM_FRAMES
 	for player in game:players() do
-		local arrival_frames = player.hand:destroyDamagedPlatforms()
-		for _, delay in pairs(arrival_frames) do
+		local garbage_arrival_frames = player.hand:destroyDamagedPlatforms(self.force_minimum_1_piece)
+
+		for _, delay in pairs(garbage_arrival_frames) do
 			game.queue:add(delay, grid.addBottomRow, grid, player)
 			max_delay = math.max(max_delay, delay)
 			self.garbage_this_round = true
 		end
 	end
 
-	game.current_phase = "PlatformsExploding"
-end
-
-function Phase:platformsExploding(dt)
-	local game = self.game
-	if game.particles:getNumber("ExplodingPlatform") == 0 then
-		game.particles:clearCount()	-- clear here so the platforms display redness/spin correctly
-		game.current_phase = "GarbageRowCreation"
-	end
+	self:setPause(max_delay)
+	self:activatePause("GarbageRowCreation")
 end
 
 function Phase:garbageRowCreation(dt)
 	local game = self.game
 	local grid = game.grid
 
+	game.particles:clearCount()	-- clear here so the platforms display redness/spin correctly
 	grid:updateGravity(dt)
 
 	if game.particles:getNumber("GarbageParticles") == 0 then
@@ -459,12 +449,10 @@ Phase.lookup = {
 	Gravity = Phase.applyGravity,
 	GetMatchedGems = Phase.getMatchedGems,
 	DestroyMatchedGems = Phase.destroyMatchedGems,
-	MatchAnimations = Phase.matchAnimations,
 	ResolvingMatches = Phase.resolvingMatches,
 	ResolvedMatches = Phase.resolvedMatches,
 	PlatformSpinDelay = Phase.platformSpinDelay,
 	DestroyDamagedPlatforms = Phase.destroyDamagedPlatforms,
-	PlatformsExploding = Phase.platformsExploding,
 	GarbageRowCreation = Phase.garbageRowCreation,
 	GarbageMoving = Phase.garbageMoving,
 	PlatformsMoving = Phase.platformsMoving,

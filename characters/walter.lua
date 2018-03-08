@@ -66,7 +66,12 @@ function Walter:init(...)
 	self.CLOUD_SLIDE_DURATION = 36 -- how long for the cloud incoming tween
 	self.CLOUD_ROW = 11 -- which row for clouds to appear on
 	self.CLOUD_EXIST_TURNS = 3 -- how many turns a cloud exists for
-	self.CLOUD_INIT_DROPLET_FRAMES = 5 -- initial frames between droplets
+	self.CLOUD_INIT_DROPLET_FRAMES = { -- frames between droplets, by turns remaining
+		[0] = math.huge,
+		[1] = 20,
+		[2] = 10,
+		[3] = 5,
+	} 
 
 	self.pending_clouds = {} -- boolean, clouds for vertical matches generates at t0
 	self.cloud_turns_remaining = {0, 0, 0, 0, 0, 0, 0, 0} -- keep track of the state
@@ -210,12 +215,13 @@ end
 
 function HealingCloud:remove()
 	self.manager.allParticles.CharEffects[self.ID] = nil
-	--self.owner.cloud_instance[self.col] = nil
 end
 
-function HealingCloud:countdown()
+function HealingCloud:updateDropletFrequency()
+	local droplet_lookup = {}
 	local turns_remaining = self.owner.cloud_turns_remaining[self.col] 
-	self.frames_between_droplets = (self.owner.CLOUD_EXIST_TURNS - turns_remaining) * self.owner.CLOUD_INIT_DROPLET_FRAMES
+	self.frames_between_droplets = self.owner.CLOUD_INIT_DROPLET_FRAMES[turns_remaining]
+
 	if turns_remaining == 0 then 
 		self:wait(60)
 		self:change{duration = 32, transparency = 0, remove = true}
@@ -223,7 +229,7 @@ function HealingCloud:countdown()
 end
 
 function HealingCloud:renewCloud()
-	self.frames_between_droplets = self.owner.CLOUD_INIT_DROPLET_FRAMES
+	self.frames_between_droplets = self.owner.CLOUD_INIT_DROPLET_FRAMES[self.owner.CLOUD_EXIST_TURNS]
 end
 
 
@@ -259,7 +265,7 @@ function HealingCloud.generate(game, owner, col)
 		image = img,
 		scaling = 3,
 		transparency = 0,
-		frames_between_droplets = owner.CLOUD_INIT_DROPLET_FRAMES,
+		frames_between_droplets = owner.CLOUD_INIT_DROPLET_FRAMES[owner.CLOUD_EXIST_TURNS],
 		elapsed_frames = -duration, -- only create droplets after finished move
 		droplet_x = {-1.5, -0.5, 0.5, 1.5}, -- possible columns for droplets to appear in
 		col = col,
@@ -271,9 +277,7 @@ function HealingCloud.generate(game, owner, col)
 	}
 
 	local p = common.instance(HealingCloud, game.particles, params)
-	--owner.cloud_instance[col] = common.instance(HealingCloud, game.particles, params)
 		p:change{
-	--owner.cloud_instance[col]:change{
 		duration = duration,
 		scaling = 1,
 		transparency = 255,
@@ -420,11 +424,7 @@ function Walter:beforeCleanup()
 	local cloud_in_col = {}
 	for cloud in self.game.particles:getInstances("CharEffects", "WalterCloud", self.player_num) do
 		cloud_in_col[cloud.col] = true
-		if self.pending_clouds[cloud.col] then
-			cloud:renewCloud()
-		else
-			cloud:countdown()
-		end
+		cloud:updateDropletFrequency()
 	end
 
 	-- make new cloud animations

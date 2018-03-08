@@ -1079,6 +1079,8 @@ function GemImage.generate(params)
 	else
 		p:change{duration = params.duration, remove = true}
 	end
+
+	return params.duration + (params.delay_frames or 0)
 end
 
 function GemImage.removeAll(manager)
