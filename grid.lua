@@ -604,6 +604,7 @@ function Grid:getPendingGems(player)
 end
 
 function Grid:getPendingGemsByNum(player_num)
+	player_num = player_num or 3
 	local ret = {}
 	local col_start, col_end
 	if player_num == 1 then
@@ -836,7 +837,7 @@ function Grid:animateGameOver(loser_num)
 
 	for row = 20, 5, -1 do
 		local delay = (20 - row) * EACH_ROW_DELAY + 1
-		local duration = game.phase.INIT_GAMEOVER_PAUSE
+		local duration = game.phase.GAMEOVER_DELAY
 
 		for col = start_col, end_col do
 			if self[row][col].gem then

@@ -75,8 +75,8 @@ function Heath:init(...)
 	self.ready_fires = {} -- fires at t1, ready to burn
 	self.pending_gem_cols = {} -- pending gems, for extinguishing of ready_fires
 	self.generated_fire_images = {} -- whether fire particles were generated yet. one for each col
-	self.super_gems = {} -- gems to be reflagged and destroyed by super effect
-	self.super_boom_effects = {} -- {row/col} of boom effects to be created
+	--self.super_gems = {} -- gems to be reflagged and destroyed by super effect
+	--self.super_boom_effects = {} -- {row/col} of boom effects to be created
 end
 
 -- *This part creates the animations for the character's specials and supers
@@ -299,7 +299,7 @@ Heath.particle_fx = {
 
 -- get the list of pending gem columns for extinguishing in afterGravity
 function Heath:beforeGravity()
-	local pending_gems = self.game.grid:getPendingGemsByNum(3)
+	local pending_gems = self.game.grid:getPendingGemsByNum()
 	self.pending_gem_cols = {}
 	for _, gem in ipairs(pending_gems) do
 		self.pending_gem_cols[gem.column] = true
@@ -329,16 +329,23 @@ function Heath:beforeMatch()
 
 	-- store horizontal fire locations, used in aftermatch phase
 	for _, gem in pairs(gem_table) do
+		local h = "not horizontal"
+		if gem.is_horizontal then h = "horizontal" end
+		print("Turn " .. self.game.turn .. ", gem in column " .. gem.column .. ", row " .. gem.row .. ", color " .. gem.color .. ", " .. h)
+
 		local top_gem = gem.row-1 == grid:getFirstEmptyRow(gem.column)
 		if self.player_num == gem.owner and gem.is_horizontal and top_gem then
 			self.pending_fires[gem.column] = true
 		end
 	end
 
+	--[[
 	-- store gems in self.super_gems, to be destroyed during afterMatch
 	-- store {row, col} of Booms in self.super_boom_effects to be created during afterMatch
 	if self.supering and game.scoring_combo == 0 then
+		
 		self.super_this_turn = true
+
 		local gem_lists = grid:getMatchedGemLists()
 		for _, gem_list in ipairs(gem_lists) do
 			if self.player_num == gem_list[1].owner and gem_list[1].is_horizontal then
@@ -369,10 +376,12 @@ function Heath:beforeMatch()
 			end
 		end
 	end
+	--]]
 end
 
 -- explode the super gems concurrently with gem matches
 function Heath:duringMatchAnimation()
+	--[[
 	if self.super_this_turn then
 		for _, gem in ipairs(self.super_gems) do
 			self.game.grid:destroyGem{gem = gem, credit_to = self.player_num}
@@ -383,6 +392,7 @@ function Heath:duringMatchAnimation()
 		end
 	end
 	self.super_gems, self.super_boom_effects = {}, {}
+	--]]
 end
 
 -- create fire particle for passive
