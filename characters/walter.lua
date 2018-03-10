@@ -390,7 +390,7 @@ function Walter:beforeMatch()
 	-- Which columns to get rainclouds next turn
 	local gem_table = grid:getMatchedGems()
 	for _, gem in pairs(gem_table) do
-		if self.player_num == gem.owner and gem.is_vertical then
+		if self.player_num == gem.owner and gem.is_in_a_vertical_match then
 			self.pending_clouds[gem.column] = true
 		end
 	end
@@ -398,7 +398,7 @@ function Walter:beforeMatch()
 	-- visual indicator of a vertical match
 	local gem_list = grid:getMatchedGemLists()
 	for _, list in pairs(gem_list) do
-		if self.player_num == list[1].owner and list[1].is_vertical then
+		if self.player_num == list[1].owner and list[1].is_in_a_vertical_match then
 			local d = particles.wordEffects.generateEmphasisBars(game, list, "blue")
 			delay = math.max(delay, d)
 		end

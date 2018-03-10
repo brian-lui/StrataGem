@@ -192,7 +192,7 @@ function Grid:_getRawMatches(minimumLength)
 					until tostring(getColor(row, column + matchLength)):lower() ~= c
 				end
 				if matchLength >= minimumLength then
-					ret[#ret+1] = {length = matchLength, row = row, column = column, is_horizontal = true}
+					ret[#ret+1] = {length = matchLength, row = row, column = column, is_a_horizontal_match = true}
 				end
 
 				-- VERTICAL MATCHES
@@ -203,7 +203,7 @@ function Grid:_getRawMatches(minimumLength)
 					until tostring(getColor(row + matchLength, column, self)):lower() ~= c
 				end
 				if matchLength >= minimumLength then
-					ret[#ret+1] = {length = matchLength, row = row, column = column, is_horizontal = false}
+					ret[#ret+1] = {length = matchLength, row = row, column = column, is_a_vertical_match = true}
 				end
 			end
 		end
@@ -213,30 +213,32 @@ end
 
 -- Returns a list of gems which are part of matches, and the total number of
 -- matches (not number of matched gems).
--- also sets the .is_horizontal and/or .is_vertical attribute of the gem.
+-- also sets the .is_in_a_horizontal_match and/or .is_in_a_vertical_match attribute of the gem.
 function Grid:getMatchedGems(minimumLength)
 	local matches = self:_getRawMatches(minimumLength or 3)
 	local gem_set = {}
 
 	for _, match in pairs(matches) do
-		if match.is_horizontal then
+		if match.is_a_horizontal_match then
 			for i = 1, match.length do
 				local r, c = match.row, match.column + i - 1
 				local this_gem = self[r][c].gem
 				if this_gem then
 					gem_set[this_gem] = true
-					this_gem.is_horizontal = true
+					this_gem.is_in_a_horizontal_match = true
 				end
 			end
-		else
+		elseif match.is_a_vertical_match then
 			for i = 1, match.length do
 				local r, c = match.row + i - 1, match.column
 				local this_gem = self[r][c].gem
 				if this_gem then
 					gem_set[this_gem] = true
-					this_gem.is_vertical = true
+					this_gem.is_in_a_vertical_match = true
 				end
 			end
+		else
+			print("Warning: a match was created that was neither horizontal nor vertical")
 		end
 	end
 
@@ -253,22 +255,24 @@ function Grid:getMatchedGemLists(min_length)
 	local ret = {}
 	for _, match in pairs(matches) do
 		local gem_list = {}
-		if match.is_horizontal then
+		if match.is_a_horizontal_match then
 			for i = 1, match.length do
 				local this_gem = self[match.row][match.column + i - 1].gem
 				if this_gem then
 					gem_list[#gem_list+1] = this_gem
-					this_gem.is_horizontal = true
+					this_gem.is_in_a_horizontal_match = true
 				end
 			end
-		else
+		elseif match.is_a_vertical_match then
 			for i = 1, match.length do
 				local this_gem = self[match.row + i - 1][match.column].gem
 				if this_gem then
 					gem_list[#gem_list+1] = this_gem
-					this_gem.is_vertical = true
+					this_gem.is_in_a_vertical_match = true
 				end
 			end
+		else
+			print("Warning: a match was created that was neither horizontal nor vertical")
 		end
 		ret[#ret+1] = gem_list
 	end
@@ -292,7 +296,7 @@ function Grid:flagMatchedGems()
 	for _, match in ipairs(matches) do
 		local this_match_p1, this_match_p2 = false, false
 		local gems = {}
-		if match.is_horizontal then
+		if match.is_a_horizontal_match then
 			for i = 1, match.length do
 				local row = match.row
 				local column = match.column + i - 1
@@ -306,7 +310,7 @@ function Grid:flagMatchedGems()
 				end
 				gems[#gems+1] = gem
 			end
-		else
+		elseif match.is_a_vertical_match then
 			for i = 1, match.length do
 				local row = match.row + i - 1
 				local column = match.column
@@ -320,6 +324,8 @@ function Grid:flagMatchedGems()
 				end
 				gems[#gems+1] = gem
 			end
+		else
+			print("Warning: a match was created which was neither a horizontal nor vertical match")
 		end
 
 		-- calculate new flags

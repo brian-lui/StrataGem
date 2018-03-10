@@ -311,6 +311,7 @@ end
 -- Update function only called at end of turn
 function Hand:endOfTurnUpdate()
 	for i = 1, 5 do
+		assert(self[i].platform, "There was no platform in hand position " .. i .. "!! Please report bug. Platforms: ")
 		self[i].platform:setFastSpin(false)
 	end
 	self.damage = self.damage + 4

@@ -329,12 +329,12 @@ function Heath:beforeMatch()
 
 	-- store horizontal fire locations, used in aftermatch phase
 	for _, gem in pairs(gem_table) do
-		local h = "not horizontal"
-		if gem.is_horizontal then h = "horizontal" end
+		local h = "vertical"
+		if gem.is_in_a_horizontal_match then h = "horizontal" end
 		print("Turn " .. self.game.turn .. ", gem in column " .. gem.column .. ", row " .. gem.row .. ", color " .. gem.color .. ", " .. h)
 
 		local top_gem = gem.row-1 == grid:getFirstEmptyRow(gem.column)
-		if self.player_num == gem.owner and gem.is_horizontal and top_gem then
+		if self.player_num == gem.owner and gem.is_in_a_horizontal_match and top_gem then
 			self.pending_fires[gem.column] = true
 		end
 	end
@@ -348,7 +348,7 @@ function Heath:beforeMatch()
 
 		local gem_lists = grid:getMatchedGemLists()
 		for _, gem_list in ipairs(gem_lists) do
-			if self.player_num == gem_list[1].owner and gem_list[1].is_horizontal then
+			if self.player_num == gem_list[1].owner and gem_list[1].is_in_a_horizontal_match then
 				for i = 1, #gem_list do
 					local gem = gem_list[i]
 					local row, col = gem.row, gem.column

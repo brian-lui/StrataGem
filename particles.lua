@@ -1175,8 +1175,8 @@ function WordEffects.generateEmphasisBars(game, gem_table, color)
 
 	local horizontal, vertical = true, true
 	for i = 1, #gem_table do
-		if not gem_table[i].is_horizontal then horizontal = false end
-		if not gem_table[i].is_vertical then vertical = false end
+		if not gem_table[i].is_in_a_horizontal_match then horizontal = false end
+		if not gem_table[i].is_in_a_vertical_match then vertical = false end
 	end
 
 	local DURATION_1, DURATION_2, DURATION_3 = 5, 40, 45

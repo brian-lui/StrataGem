@@ -140,7 +140,7 @@ function Piece:breakUp()
 	return self.gems
 end
 
--- draw gems with displacement depending on piece is_horizontal/is_vertical
+-- draw gems with displacement depending on piece is_horizontal
 function Piece:draw(params)
 	local frame = self.game.frame
 	local stage = self.game.stage
@@ -385,9 +385,15 @@ function Piece:dropIntoBasin(coords, received_from_opponent)
 
 	local locations = {}
 	if self.is_horizontal then
-		for i = 1, #self.gems do locations[i] = {1 + row_adj, coords[i]} end
+		for i = 1, #self.gems do
+			self.gems[i].is_from_horizontal_piece = true
+			locations[i] = {1 + row_adj, coords[i]}
+		end
 	else
-		for i = 1, #self.gems do locations[i] = {i + row_adj, coords[i]} end
+		for i = 1, #self.gems do
+			self.gems[i].is_from_vertical_piece = true
+			locations[i] = {i + row_adj, coords[i]}
+		end
 	end
 
 	hand:movePieceToGrid(grid, self, locations)

@@ -16,8 +16,8 @@ function Gem:init(game, x, y, color, garbage)
 	self.game = game
 	Pic.init(self, game, {x = x, y = y, image = gemImages[color:lower()]})
 	ID.gem = ID.gem + 1
-	self.is_horizontal = false -- for gem matches
-	self.is_vertical = false -- for gem matches
+	self.is_in_a_horizontal_match = false -- for gem matches
+	self.is_in_a_vertical_match = false -- for gem matches
 	self.target_x = x
 	self.target_y = y
 	self.target_rotation = 0
