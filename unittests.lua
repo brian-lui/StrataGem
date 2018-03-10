@@ -217,7 +217,7 @@ local function addSuperAndBurst(game)
 	for player in game:players() do
 		player.cur_burst = math.min(player.cur_burst + 1, player.MAX_BURST)
 		player:addSuper(10000)
-		player:resetMP()
+		player:updateTurnStartMPForDisplay()
 	end
 end
 
@@ -302,7 +302,7 @@ local super_toggle_state = 0
 local function superToggle(game)
 	for player in game:players() do
 		player:addSuper(10000)
-		player:resetMP()
+		player:updateTurnStartMPForDisplay()
 	end
 
 	if super_toggle_state == 0 then

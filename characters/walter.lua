@@ -358,6 +358,41 @@ function Walter:_makeCloud(column)
 	self.particle_fx.healingCloud.generate(self.game, self, column)
 end
 
+function Walter:afterGravity()
+	local delay = 0
+
+	if self.supering then
+		local game = self.game
+		local grid = game.grid
+	
+		-- find highest column
+		local col, start_row = -1, grid.BOTTOM_ROW
+		for i in grid:cols(self.player_num) do
+			local rows =  grid:getFirstEmptyRow(i) + 1
+			if rows < start_row then col, start_row = i, rows end
+		end
+
+		if col ~= -1 then
+			for row = grid.BOTTOM_ROW, start_row, -1 do
+				local gem = grid[row][col].gem
+				gem:setOwner(self.player_num)
+				delay = (grid.BOTTOM_ROW - row) * 10 + 10
+				grid:destroyGem{
+					gem = gem,
+					super_meter = false,
+					glow_delay = delay,
+				}
+			end
+		end
+
+		self:emptyMP()
+		self.supering = false
+	end
+
+
+	return delay + 20
+end
+
 function Walter:beforeMatch()
 	local game = self.game
 	local grid = game.grid

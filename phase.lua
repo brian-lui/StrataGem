@@ -331,7 +331,7 @@ function Phase:garbageMoving(dt)
 		for player in game:players() do
 			player.hand:getNewTurnPieces(self.force_minimum_1_piece)
 			self.force_minimum_1_piece = false
-			player:resetMP()
+			player:updateTurnStartMPForDisplay()
 		end
 		game.current_phase = "PlatformsMoving"
 	end

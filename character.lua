@@ -46,7 +46,6 @@ Character.garbage_rows_created = 0
 Character.dropped_piece = false
 Character.supering = false
 Character.super_params = {}
-Character.super_this_turn = false
 Character.place_type = "normal"
 
 function Character:init(player_num, game)
@@ -98,14 +97,20 @@ function Character:setup()
 
 end
 
-function Character:actionPhase(dt)
+function Character:emptyMP()
+	self.turn_start_mp = 0
+	self.mp = 0
 end
 
+function Character:updateTurnStartMPForDisplay()
+	self.turn_start_mp = self.mp
+end
 
 -------------------------------------------------------------------------------
 -- All these abilities can optionally return the number of frames
 -- to pause for the animation.
 -------------------------------------------------------------------------------
+function Character:actionPhase(dt) end
 function Character:beforeGravity() end
 function Character:afterGravity() end
 function Character:beforeMatch() end -- before gems are matched
@@ -118,14 +123,10 @@ end
 function Character:beforeCleanup() end
 
 function Character:cleanup()
-	self:resetMP()
+	self:updateTurnStartMPForDisplay()
 	self.supering = false
-	self.super_this_turn = false
 end
 
-function Character:resetMP()
-	self.turn_start_mp = self.mp
-end
 
 function Character:toggleSuper(received_from_opponent)
 	local game = self.game

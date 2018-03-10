@@ -704,8 +704,8 @@ end
 -- removes a gem from the grid, and plays all of the associated animations
 --[[ TODO: Takes a table of:
 	gem: gem to destroy
-	super_meter: if false, don't build super meter
-	damage: if false, don't deal damage
+	super_meter: optional if false, don't build super meter
+	damage: optional if false, don't deal damage
 	extra_damage: optional how much extra damage to do
 	credit_to: optional player_num (to deal damage to player_num's opponent)
 	glow_delay: optional extra frames to stay in full-glow phase
@@ -729,8 +729,12 @@ function Grid:destroyGem(params)
 		-- state
 		local super_to_add = player.meter_gain[gem.color]
 		if super_to_add == nil then print("Nil value found when looking up super meter gain!") end
-		game.queue:add(delay_until_explode, player.enemy.addDamage, player.enemy, 1 + extra_damage)
-		game.queue:add(delay_until_explode, player.addSuper, player, super_to_add)
+		if params.damage ~= false then
+			game.queue:add(delay_until_explode, player.enemy.addDamage, player.enemy, 1 + extra_damage)
+		end
+		if params.super_meter ~= false then
+			game.queue:add(delay_until_explode, player.addSuper, player, super_to_add)
+		end
 		game.queue:add(delay_until_explode, game.ui.screenshake, game.ui, 1)
 
 		-- animations
