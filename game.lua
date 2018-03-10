@@ -57,6 +57,7 @@ function Game:init()
 	self.debug_drawDamage = true
 	self.debug_drawGrid = true
 	self.debug_overlay = function() return self.current_phase end
+	self.debug_screencaps = true
 	
 	self.rng = love.math.newRandomGenerator()
 	self.unittests = common.instance(require "unittests", self) -- debug testing

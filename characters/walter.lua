@@ -358,6 +358,7 @@ function Walter:_makeCloud(column)
 	self.particle_fx.healingCloud.generate(self.game, self, column)
 end
 
+--TODO: Should this be beforeGravity, and it only check grid firstemptyrow without the pending gems?
 function Walter:afterGravity()
 	local delay = 0
 
