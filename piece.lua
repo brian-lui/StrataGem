@@ -104,11 +104,13 @@ end
 function Piece:rotate()
 	if self._rotateTween then self._rotateTween:set(math.huge) end
 
-	self.is_horizontal = not self.is_horizontal
+	self.rotation_index = (self.rotation_index + 1) % 4
+	--self.is_horizontal = not self.is_horizontal
+	self.is_horizontal = self.rotation_index % 2 == 0
 	if self.is_horizontal then
 		self.gems = reverseTable(self.gems)
 	end
-	self.rotation_index = (self.rotation_index + 1) % 4
+
 	self:updateGems()
 	self.rotation = self.rotation % (2 * math.pi)
 

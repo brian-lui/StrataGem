@@ -1,3 +1,5 @@
+-- TODO: need to update the fire y-position after each chain combo, too. Currently, it only updates at the end of the turn. So if there is a chain combo underneath the fire, it won't update.
+
 --[[ Color: red
 Passive: Horizontal matches create a fire tile if the matched gem was the top
 most gem in that column. Fire tiles last for one turn. At the end of the turn,
@@ -408,6 +410,13 @@ function Heath:afterMatch()
 	end
 	if fire_sound then self.game.sound:newSFX(self.sounds.passive) end
 
+	-- fire passive update, in case of chain combo for a gem below the fire
+	for _, particle in pairs(self.game.particles.allParticles.CharEffects) do
+		if particle.player_num == self.player_num and particle.name == "HeathFire" then
+			particle:updateYPos()
+		end
+	end
+
 	return delay_to_return
 end
 
@@ -439,6 +448,7 @@ function Heath:afterAllMatches()
 end
 
 function Heath:whenCreatingGarbageRow()
+	-- fire passive update
 	for _, particle in pairs(self.game.particles.allParticles.CharEffects) do
 		if particle.player_num == self.player_num and particle.name == "HeathFire" then
 			particle:updateYPos()
@@ -447,7 +457,7 @@ function Heath:whenCreatingGarbageRow()
 end
 
 function Heath:cleanup()
-	-- particle update
+	-- fire passive update
 	for _, particle in pairs(self.game.particles.allParticles.CharEffects) do
 		if particle.player_num == self.player_num and particle.name == "HeathFire" then
 			particle:updateYPos()
