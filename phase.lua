@@ -130,6 +130,9 @@ end
 function Phase:beforeGravity(dt)
 	local game = self.game
 	if not game.settings_menu_open then game.screen_darkened = false end
+	if game.p1.supering then game.p1:emptyMP() end
+	if game.p2.supering then game.p2:emptyMP() end
+
 	local delay = 0
 	for player in game:players() do
 		local player_delay = player:beforeGravity()
@@ -331,7 +334,6 @@ function Phase:garbageMoving(dt)
 		for player in game:players() do
 			player.hand:getNewTurnPieces(self.force_minimum_1_piece)
 			self.force_minimum_1_piece = false
-			player:updateTurnStartMPForDisplay()
 		end
 		game.current_phase = "PlatformsMoving"
 	end

@@ -319,14 +319,14 @@ function gs_main:drawText(params)
 				love.graphics.print("OWN:" .. gem.owner, gem.x - gem.width * 0.4, gem.y - gem.height * 0.3)
 				love.graphics.print("ROW:" .. gem.row, gem.x - gem.width * 0.4, gem.y - gem.height * 0.1)
 				love.graphics.print("COL:" .. gem.column, gem.x - gem.width * 0.4, gem.y + gem.height * 0.1)
-			end
-
-			for player in self:players() do
-				for gem in player.hand:gems() do
-					love.graphics.print("X:" .. math.floor(gem.x), gem.x - gem.width * 0.4, gem.y - gem.height * 0.1)
-					love.graphics.print("Y:" .. math.floor(gem.y), gem.x - gem.width * 0.4, gem.y + gem.height * 0.1)
+				if gem.is_in_a_horizontal_match then
+					love.graphics.print("H", gem.x - gem.width * 0.2, gem.y + gem.height * 0.3)
+				end
+				if gem.is_in_a_vertical_match then
+					love.graphics.print("V", gem.x + gem.width * 0.2, gem.y + gem.height * 0.3)
 				end
 			end
+
 		end
 		if self.debug_drawParticleDestinations then
 			for _, p in pairs(self.particles.allParticles.Damage) do
@@ -361,6 +361,7 @@ function gs_main:drawText(params)
 
 			local p1print = "Actual damage " .. p1hand.damage .. "\nShown damage " .. p1_displayed_damage
 			local p2print = "Actual damage " .. p2hand.damage .. "\nShown damage " .. p2_displayed_damage
+			
 			love.graphics.setFont(FONT.SLIGHTLY_BIGGER)
 			love.graphics.print(p1print, p1hand[2].x - 120, 150)
 			love.graphics.print(p2print, p2hand[2].x - 180, 150)

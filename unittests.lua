@@ -71,12 +71,14 @@ local function testWalterPassive(game)
 	nrow(game, 6, "YRGB    ")
 	nrow(game, 7, "RGBY    ")
 	nrow(game, 8, "RGBYY   ")
+	game.grid:updateGrid()
 end
 
 -- test garbage matches
 local function garbageMatch(game)
 	nrow(game, 7, " YRRBBY ")
 	nrow(game, 8, " GBBRRG ")
+	game.grid:updateGrid()
 end
 
 -- test big combos
@@ -86,6 +88,7 @@ local function multiCombo(game)
 	nrow(game, 6, "  GRBYYR")
 	nrow(game, 7, " RRGBGGY")
 	nrow(game, 8, " YYRGBBR")
+	game.grid:updateGrid()
 end
 
 -- test match end/basin overflow
@@ -98,6 +101,7 @@ local function overflow(game)
 	nrow(game, 6, "BGB     ")
 	nrow(game, 7, "BRR     ")
 	nrow(game, 8, "RGGY    ")
+	game.grid:updateGrid()
 end
 
 local function p2VerticalMatch(game)
@@ -115,12 +119,14 @@ local function flagPropogateProblem(game)
 	nrow(game, 6, "     R  ")
 	nrow(game, 7, "    BRGR")
 	nrow(game, 8, "    GGRY")
+	game.grid:updateGrid()
 end
 
 local function flagVerticalHorizontal(game)
 	nrow(game, 6, "        ")
 	nrow(game, 7, "  Y RY  ")
 	nrow(game, 8, "  R RRG ")
+	game.grid:updateGrid()
 end
 
 local function charselectScreenCPUCharToggle(game)
@@ -217,7 +223,6 @@ local function addSuperAndBurst(game)
 	for player in game:players() do
 		player.cur_burst = math.min(player.cur_burst + 1, player.MAX_BURST)
 		player:addSuper(10000)
-		player:updateTurnStartMPForDisplay()
 	end
 end
 
@@ -302,7 +307,6 @@ local super_toggle_state = 0
 local function superToggle(game)
 	for player in game:players() do
 		player:addSuper(10000)
-		player:updateTurnStartMPForDisplay()
 	end
 
 	if super_toggle_state == 0 then

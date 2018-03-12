@@ -213,7 +213,6 @@ end
 
 -- Returns a list of gems which are part of matches, and the total number of
 -- matches (not number of matched gems).
--- also sets the .is_in_a_horizontal_match and/or .is_in_a_vertical_match attribute of the gem.
 function Grid:getMatchedGems(minimumLength)
 	local matches = self:_getRawMatches(minimumLength or 3)
 	local gem_set = {}
@@ -223,19 +222,13 @@ function Grid:getMatchedGems(minimumLength)
 			for i = 1, match.length do
 				local r, c = match.row, match.column + i - 1
 				local this_gem = self[r][c].gem
-				if this_gem then
-					gem_set[this_gem] = true
-					this_gem.is_in_a_horizontal_match = true
-				end
+				if this_gem then gem_set[this_gem] = true end
 			end
 		elseif match.is_a_vertical_match then
 			for i = 1, match.length do
 				local r, c = match.row + i - 1, match.column
 				local this_gem = self[r][c].gem
-				if this_gem then
-					gem_set[this_gem] = true
-					this_gem.is_in_a_vertical_match = true
-				end
+				if this_gem then gem_set[this_gem] = true end
 			end
 		else
 			print("Warning: a match was created that was neither horizontal nor vertical")
@@ -243,7 +236,7 @@ function Grid:getMatchedGems(minimumLength)
 	end
 
 	local gem_table = {}
-	for gem, _ in pairs(gem_set) do gem_table[#gem_table+1] = gem end
+	for gem in pairs(gem_set) do gem_table[#gem_table+1] = gem end
 
 	return gem_table, #matches
 end
@@ -257,19 +250,13 @@ function Grid:getMatchedGemLists(min_length)
 		local gem_list = {}
 		if match.is_a_horizontal_match then
 			for i = 1, match.length do
-				local this_gem = self[match.row][match.column + i - 1].gem
-				if this_gem then
-					gem_list[#gem_list+1] = this_gem
-					this_gem.is_in_a_horizontal_match = true
-				end
+				local gem = self[match.row][match.column + i - 1].gem
+				if gem then gem_list[#gem_list+1] = gem end
 			end
 		elseif match.is_a_vertical_match then
 			for i = 1, match.length do
-				local this_gem = self[match.row + i - 1][match.column].gem
-				if this_gem then
-					gem_list[#gem_list+1] = this_gem
-					this_gem.is_in_a_vertical_match = true
-				end
+				local gem = self[match.row + i - 1][match.column].gem
+				if gem then gem_list[#gem_list+1] = gem end
 			end
 		else
 			print("Warning: a match was created that was neither horizontal nor vertical")
@@ -286,6 +273,8 @@ end
 	will be flagged incorrectly.
 	the addOwner method adds a matched_this_turn flag to the gem, too, for use
 	in propagating the flags upwards, in the destroyGem method.
+	
+	Also sets .is_in_a_horizontal_match and/or .is_in_a_vertical_match attributes of gems
 --]]
 
 function Grid:flagMatchedGems()
@@ -308,6 +297,7 @@ function Grid:flagMatchedGems()
 				elseif gem.owner == 3 then
 					this_match_p1, this_match_p2 = true, true
 				end
+				gem.is_in_a_horizontal_match = true
 				gems[#gems+1] = gem
 			end
 		elseif match.is_a_vertical_match then
@@ -322,6 +312,7 @@ function Grid:flagMatchedGems()
 				elseif gem.owner == 3 then
 					this_match_p1, this_match_p2 = true, true
 				end
+				gem.is_in_a_vertical_match = true
 				gems[#gems+1] = gem
 			end
 		else
@@ -727,13 +718,12 @@ function Grid:destroyGem(params)
 		sfx:setPosition((gem.column - 4.5) * 0.02, 0, 0)
 	else
 		-- state
-		local super_to_add = player.meter_gain[gem.color]
-		if super_to_add == nil then print("Nil value found when looking up super meter gain!") end
 		if params.damage ~= false then
 			game.queue:add(delay_until_explode, player.enemy.addDamage, player.enemy, 1 + extra_damage)
 		end
 		if params.super_meter ~= false then
-			game.queue:add(delay_until_explode, player.addSuper, player, super_to_add)
+			assert(player.meter_gain[gem.color], "Nil value found when looking up super meter gain!")
+			player:addSuper(player.meter_gain[gem.color])
 		end
 		game.queue:add(delay_until_explode, game.ui.screenshake, game.ui, 1)
 

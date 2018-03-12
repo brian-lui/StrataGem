@@ -75,13 +75,13 @@ function Particles:clearCount()
 end
 
 -- an iterator which returns all matching instances
-function Particles:getInstances(category, name, player_num)
+function Particles:getInstances(category, player_num, name)
 	assert(category, "Category not provided!")
 	assert(self.allParticles[category], "Category doesn't exist!")
 	local instances, index = {}, 0
 	for _, instance in pairs(self.allParticles[category]) do
-		local name_ok = (not name) or instance.name == name
 		local player_ok = (not player_num) or instance.player_num == player_num
+		local name_ok = (not name) or instance.name == name
 		if name_ok and player_ok then instances[#instances+1] = instance end
 	end
 
@@ -252,16 +252,16 @@ DamageTrailParticle = common.class("DamageTrailParticle", DamageTrailParticle, P
 -------------------------------------------------------------------------------
 -- particles for super meter generated when a gem is matched
 local SuperParticle = {}
-function SuperParticle:init(manager, gem)
-	local img = image.lookup.super_particle[gem.color]
-	Pic.init(self, manager.game, {x = gem.x, y = gem.y, image = img})
-	self.owner = gem.owner
+function SuperParticle:init(manager, x, y, img, owner, color)
+	Pic.init(self, manager.game, {x = x, y = y, image = img})
+	self.player_num = owner
+	self.color = color
 	manager.allParticles.SuperParticles[ID.particle] = self
 	self.manager = manager
 end
 
 function SuperParticle:remove()
-	self.manager:incrementCount("destroyed", "MP", self.owner)
+	self.manager:incrementCount("destroyed", "MP", self.player_num)
 	self.manager.allParticles.SuperParticles[self.ID] = nil
 end
 
@@ -281,7 +281,9 @@ function SuperParticle.generate(game, gem, num_particles, delay_frames)
 		local curve = love.math.newBezierCurve(x1, y1, x2, y2, x3, y3, x4, y4)
 
 		-- create particle
-		local p = common.instance(SuperParticle, game.particles, gem)
+		local img = image.lookup.super_particle[gem.color]
+		local p = common.instance(SuperParticle, game.particles, gem.x, gem.y,
+			img, gem.owner, gem.color)
 		game.particles:incrementCount("created", "MP", gem.owner)
 
 		if delay_frames then

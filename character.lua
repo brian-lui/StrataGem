@@ -36,7 +36,6 @@ Character.MAX_DAMAGE = 20
 Character.MAX_MP = 64
 Character.SUPER_COST = 64
 Character.mp = 0
-Character.turn_start_mp = 0
 Character.MAX_BURST = 6
 Character.RUSH_COST = 3
 Character.DOUBLE_COST = 3
@@ -98,12 +97,7 @@ function Character:setup()
 end
 
 function Character:emptyMP()
-	self.turn_start_mp = 0
 	self.mp = 0
-end
-
-function Character:updateTurnStartMPForDisplay()
-	self.turn_start_mp = self.mp
 end
 
 -------------------------------------------------------------------------------
@@ -123,7 +117,6 @@ end
 function Character:beforeCleanup() end
 
 function Character:cleanup()
-	self:updateTurnStartMPForDisplay()
 	self.supering = false
 end
 

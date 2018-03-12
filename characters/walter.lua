@@ -358,8 +358,7 @@ function Walter:_makeCloud(column)
 	self.particle_fx.healingCloud.generate(self.game, self, column)
 end
 
---TODO: Should this be beforeGravity, and it only check grid firstemptyrow without the pending gems?
-function Walter:afterGravity()
+function Walter:beforeGravity()
 	local delay = 0
 
 	if self.supering then
@@ -369,7 +368,7 @@ function Walter:afterGravity()
 		-- find highest column
 		local col, start_row = -1, grid.BOTTOM_ROW
 		for i in grid:cols(self.player_num) do
-			local rows =  grid:getFirstEmptyRow(i) + 1
+			local rows =  grid:getFirstEmptyRow(i, true) + 1
 			if rows < start_row then col, start_row = i, rows end
 		end
 
@@ -377,7 +376,8 @@ function Walter:afterGravity()
 			for row = grid.BOTTOM_ROW, start_row, -1 do
 				local gem = grid[row][col].gem
 				gem:setOwner(self.player_num)
-				delay = (grid.BOTTOM_ROW - row) * 10 + 10
+				delay = (grid.BOTTOM_ROW - row) * 8 + 10
+				print("gem", gem.row, gem.column)
 				grid:destroyGem{
 					gem = gem,
 					super_meter = false,
@@ -386,7 +386,6 @@ function Walter:afterGravity()
 			end
 		end
 
-		self:emptyMP()
 		self.supering = false
 	end
 
@@ -458,7 +457,7 @@ function Walter:beforeCleanup()
 
 	-- updating existing cloud animations
 	local cloud_in_col = {}
-	for cloud in self.game.particles:getInstances("CharEffects", "WalterCloud", self.player_num) do
+	for cloud in self.game.particles:getInstances("CharEffects", self.player_num, "WalterCloud") do
 		cloud_in_col[cloud.col] = true
 		cloud:updateDropletFrequency()
 	end
