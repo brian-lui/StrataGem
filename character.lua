@@ -64,7 +64,8 @@ function Character:init(player_num, game)
 end
 
 function Character:addSuper(amt)
-	self.mp = math.min(self.mp + amt, self.MAX_MP)
+	--self.mp = math.min(self.mp + amt, self.MAX_MP)
+	self.mp = self.mp + amt
 end
 
 function Character:addDamage(damage)
