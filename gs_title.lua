@@ -107,7 +107,7 @@ function title:update(dt)
 end
 
 function title:draw()
-	local darkened = self.screen_darkened
+	local darkened = self:isScreenDark()
 	title.current_background:draw{darkened = darkened}
 	for _, v in pairs(title.ui.static) do v:draw{darkened = darkened} end
 	for _, v in pairs(title.ui.clickable) do v:draw{darkened = darkened} end

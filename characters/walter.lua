@@ -374,23 +374,25 @@ function Walter:beforeGravity()
 
 		if col ~= -1 then
 			for row = grid.BOTTOM_ROW, start_row, -1 do
+				delay = (grid.BOTTOM_ROW - row) * 8 + 10
 				local gem = grid[row][col].gem
 				gem:setOwner(self.player_num)
-				delay = (grid.BOTTOM_ROW - row) * 8 + 10
-				print("gem", gem.row, gem.column)
 				grid:destroyGem{
 					gem = gem,
 					super_meter = false,
 					glow_delay = delay,
+					force_max_alpha = true,
 				}
 			end
 		end
-
-		self.supering = false
 	end
 
+	return delay + 30
+end
 
-	return delay + 20
+function Walter:beforeTween()
+	self.supering = false
+	self.game:brightenScreen(self.player_num)
 end
 
 function Walter:beforeMatch()

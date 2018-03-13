@@ -158,7 +158,25 @@ function Game:reset()
 	self.frame = 0
 	self.paused = false
 	self.settings_menu_open = false
-	self.screen_darkened = false
+	self.screen_dark = {false, false, false}
+end
+
+
+-- Screen will remain darkened until all nums are cleared
+-- 1: player 1. 2: player 2. 3: game-wide.
+function Game:darkenScreen(num)
+	num = num or 3
+	self.screen_dark[num] = true
+end
+
+function Game:brightenScreen(num)
+	num = num or 3
+	self.screen_dark[num] = false
+end
+
+-- whether screen is dark
+function Game:isScreenDark()
+	return self.screen_dark[1] or self.screen_dark[2] or self.screen_dark[3]
 end
 
 --[[ create a clickable object
@@ -167,6 +185,7 @@ end
 		start_x, start_y, easing, exit, pushed, pushed_sfx, released,
 		released_sfx, force_max_alpha
 --]]
+
 function Game:_createButton(gamestate, params)
 	params = params or {}
 	if params.name == nil then print("No object name received!") end
@@ -225,7 +244,7 @@ function Game:_openSettingsMenu(gamestate, params)
 	local clickable = gamestate.ui.popup_clickable
 	local static = gamestate.ui.popup_static
 	self.settings_menu_open = true
-	self.screen_darkened = true
+	self:darkenScreen()
 	static.settings_text:change{duration = 15, transparency = 255}
 	static.settingsframe:change{duration = 15, transparency = 255}
 	clickable.open_quit_menu:change{duration = 0, x = stage.settings_locations.quit_button.x}
@@ -240,7 +259,7 @@ function Game:_openQuitConfirmMenu(gamestate, params)
 	local clickable = gamestate.ui.popup_clickable
 	local static = gamestate.ui.popup_static
 	self.settings_menu_open = true
-	self.screen_darkened = true
+	self:darkenScreen()
 
 	clickable.confirm_quit:change{duration = 0, x = stage.settings_locations.confirm_quit_button.x}
 	clickable.confirm_quit:change{duration = 15, transparency = 255}
@@ -258,7 +277,7 @@ function Game:_closeQuitConfirmMenu(gamestate, params)
 	local clickable = gamestate.ui.popup_clickable
 	local static = gamestate.ui.popup_static
 	self.settings_menu_open = true
-	self.screen_darkened = true
+	self:darkenScreen()
 
 	clickable.confirm_quit:change{duration = 0, x = -stage.width, transparency = 0}
 	clickable.close_quit_menu:change{duration = 0, x = -stage.width, transparency = 0}
@@ -275,7 +294,7 @@ function Game:_closeSettingsMenu(gamestate, params)
 	local clickable = gamestate.ui.popup_clickable
 	local static = gamestate.ui.popup_static
 	self.settings_menu_open = false
-	self.screen_darkened = false
+	self:brightenScreen()
 
 	clickable.confirm_quit:change{duration = 0, x = -stage.width, transparency = 0}
 	clickable.close_quit_menu:change{duration = 0, x = -stage.width, transparency = 0}
@@ -388,7 +407,7 @@ function Game:_createSettingsMenu(gamestate, params)
 				if params.exitstate then
 					self:_closeQuitConfirmMenu(gamestate)
 					self.settings_menu_open = false
-					self.screen_darkened = false
+					self:brightenScreen()
 					self.statemanager:switch(require (params.exitstate))
 				else
 					love.event.quit()

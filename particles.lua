@@ -142,7 +142,7 @@ function DamageParticle:remove()
 end
 
 -- player.hand.damage is the damage before this round's match(es) is scored
-function DamageParticle.generate(game, gem, delay_frames)
+function DamageParticle.generate(game, gem, delay_frames, force_max_alpha)
 	local gem_creator = game:playerByIndex(gem.owner)
 	local player = gem_creator.enemy
 
@@ -162,6 +162,9 @@ function DamageParticle.generate(game, gem, delay_frames)
 
 		-- create damage particle
 		local p = common.instance(DamageParticle, game.particles, gem)
+
+		p.force_max_alpha = force_max_alpha
+
 		local duration = game.DAMAGE_PARTICLE_TO_PLATFORM_FRAMES + math.random() * 12
 		local rotation = math.random() * 5
 		p.final_loc_idx = math.min(5, math.floor(final_loc))
@@ -205,7 +208,7 @@ function DamageParticle.generate(game, gem, delay_frames)
 				trail.drop_duration, trail.drop_x, trail.drop_y = drop_duration, drop_x, drop_y
 			end
 
-			game.particles._damageTrail.generate(game, trail, delay_frames + i * 2)
+			game.particles._damageTrail.generate(game, trail, delay_frames + i * 2, force_max_alpha)
 		end
 
 		game.particles:incrementCount("created", "Damage", gem.owner)
@@ -227,9 +230,11 @@ function DamageTrailParticle:remove()
 	self.manager.allParticles.DamageTrail[self.ID] = nil
 end
 
-function DamageTrailParticle.generate(game, trail, delay_frames)
+function DamageTrailParticle.generate(game, trail, delay_frames, force_max_alpha)
 	local p = common.instance(DamageTrailParticle, game.particles, trail.gem)
 	p.particle_type = "DamageTrail"
+
+	p.force_max_alpha = force_max_alpha
 
 	if delay_frames then
 		p:change{transparency = 0}
@@ -265,7 +270,7 @@ function SuperParticle:remove()
 	self.manager.allParticles.SuperParticles[self.ID] = nil
 end
 
-function SuperParticle.generate(game, gem, num_particles, delay_frames)
+function SuperParticle.generate(game, gem, num_particles, delay_frames, force_max_alpha)
 	-- particles follow cubic Bezier curve from gem origin to super bar.
 	local player = game:playerByIndex(gem.owner)
 	for _ = 1, num_particles do
@@ -285,6 +290,8 @@ function SuperParticle.generate(game, gem, num_particles, delay_frames)
 		local p = common.instance(SuperParticle, game.particles, gem.x, gem.y,
 			img, gem.owner, gem.color)
 		game.particles:incrementCount("created", "MP", gem.owner)
+
+		p.force_max_alpha = force_max_alpha
 
 		if delay_frames then
 			p:change{transparency = 0}
@@ -508,6 +515,8 @@ function PopParticles.generate(params)
 
 	local p = common.instance(PopParticles, {manager = manager, x = x, y = y, image = img})
 
+	p.force_max_alpha = params.force_max_alpha
+	
 	if params.delay_frames then
 		p:change{transparency = 0}
 	 	p:wait(params.delay_frames)
@@ -579,6 +588,9 @@ function ExplodingGem.generate(params)
 
 	local p = common.instance(ExplodingGem, {manager = game.particles, gem = gem})
 	p.transparency = 0
+
+	p.force_max_alpha = params.force_max_alpha
+
 	if params.delay_frames then p:wait(params.delay_frames) end
 
 	if params.shake then
@@ -837,6 +849,8 @@ function Dust.generateBigFountain(params)
  		local y_func = function() return y + p.t * y_vel + p.t^2 * acc end
  		local y_func2 = function() return y + y_vel * (1 + p.t * 0.5) + acc * (1 + p.t * 0.5)^2 end
 
+ 		p.force_max_alpha = params.force_max_alpha
+
 		if params.delay_frames then
 			p:change{transparency = 0}
 		 	p:wait(params.delay_frames)
@@ -1070,6 +1084,9 @@ function GemImage.generate(params)
 	if params.gem then x, y, image = params.gem.x, params.gem.y, params.gem.image end
 
 	local p = common.instance(GemImage, game.particles, x, y, image)
+
+	p.force_max_alpha = params.force_max_alpha
+
 	if params.delay_frames then
 		p:change{transparency = 0}
 	 	p:wait(params.delay_frames)

@@ -352,7 +352,7 @@ function lobby:update(dt)
 end
 
 function lobby:draw()
-	local darkened = self.screen_darkened
+	local darkened = self:isScreenDark()
 	lobby.current_background:draw{darkened = darkened}
 	for _, v in pairs(lobby.ui.static) do v:draw{darkened = darkened} end
 	for _, v in pairs(lobby.ui.clickable) do v:draw{darkened = darkened} end

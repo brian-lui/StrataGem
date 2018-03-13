@@ -181,4 +181,10 @@ function Gem:getAnimFrames()
 	return f
 end
 
+-- If true, always shown brightened
+function Gem:setMaxAlpha(bool)
+	if bool ~= false then bool = true end
+	self.force_max_alpha = bool
+end
+
 return common.class("Gem", Gem, Pic)

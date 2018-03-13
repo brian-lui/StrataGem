@@ -701,6 +701,7 @@ end
 	credit_to: optional player_num (to deal damage to player_num's opponent)
 	glow_delay: optional extra frames to stay in full-glow phase
 	propagate_flags_up: optionally credit above gems to owner. Default true
+	force_max_alpha: optional force gem image to be bright
 --]]
 function Grid:destroyGem(params)
 	local game = self.game
@@ -732,22 +733,23 @@ function Grid:destroyGem(params)
 		game.queue:add(delay_until_explode, game.sound.newSFX, game.sound, soundfile_name)
 
 		local num_super_particles = player.supering and 0 or player.meter_gain[gem.color]
-		particles.superParticles.generate(game, gem, num_super_particles, delay_until_explode)
-		particles.damage.generate(game, gem, delay_until_explode)
-		particles.dust.generateBigFountain{game = game, gem = gem, delay_frames = delay_until_explode}
-		for i = 1, extra_damage do particles.damage.generate(game, gem, delay_until_explode) end
+		particles.superParticles.generate(game, gem, num_super_particles, delay_until_explode, params.force_max_alpha)
+		particles.damage.generate(game, gem, delay_until_explode, params.force_max_alpha)
+		particles.dust.generateBigFountain{game = game, gem = gem, delay_frames = delay_until_explode, force_max_alpha = params.force_max_alpha}
+		for i = 1, extra_damage do particles.damage.generate(game, gem, delay_until_explode, params.force_max_alpha) end
 
 		particles.popParticles.generate{
 			game = game,
 			gem = gem,
 			delay_frames = game.GEM_EXPLODE_FRAMES,
 			glow_duration = glow_delay,
+			force_max_alpha = params.force_max_alpha,
 		}
 	end
 
 	-- animations
-	particles.explodingGem.generate{game = game, gem = gem, glow_duration = glow_delay}
-	particles.gemImage.generate{game = game, gem = gem, duration = delay_until_explode}
+	particles.explodingGem.generate{game = game, gem = gem, glow_duration = glow_delay, force_max_alpha = params.force_max_alpha}
+	particles.gemImage.generate{game = game, gem = gem, duration = delay_until_explode, force_max_alpha = params.force_max_alpha}
 
 	-- flag above gems
 	if params.propagate_flags_up ~= false then

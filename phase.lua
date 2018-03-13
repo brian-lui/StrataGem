@@ -21,6 +21,7 @@ function Phase:reset()
 	self.garbage_this_round = false
 	self.force_minimum_1_piece = true -- get at least 1 piece per turn
 	self.should_call_char_ability_this_phase = true
+	self.update_gravity_during_pause = false
 end
 
 -- helper function to set duration of the pause until next phase
@@ -29,16 +30,20 @@ function Phase:setPause(frames)
 end
 
 -- pause for the amount set in setPause
-function Phase:activatePause(next_phase)
+-- if update_gravity true, also updates the grid gems
+function Phase:activatePause(next_phase, update_gravity)
 	self.next_phase = next_phase
+	self.update_gravity_during_pause = update_gravity
 	self.game.current_phase = "Pause"
 end
 
 function Phase:_pause(dt)
 	if self.frames_until_next_phase > 0 then
 		self.frames_until_next_phase = self.frames_until_next_phase - 1
+		if self.update_gravity_during_pause then self.game.grid:updateGravity(dt) end
 	else
 		self.game.current_phase = self.next_phase
+		self.update_gravity_during_pause = nil
 		self.next_phase = nil
 	end
 end
@@ -116,11 +121,11 @@ function Phase:superFreeze(dt)
 	local game = self.game
 	local p1delay, p2delay = 0, 0
 	if game.p1.supering then
-		game.screen_darkened = true
+		game:darkenScreen(1)
 		p1delay = game.p1:superSlideInAnim()
 	end
 	if game.p2.supering then
-		game.screen_darkened = true
+		game:darkenScreen(2)
 		p2delay = game.p2:superSlideInAnim(p1delay)
 	end
 	self:setPause(p1delay + p2delay)
@@ -129,7 +134,7 @@ end
 
 function Phase:beforeGravity(dt)
 	local game = self.game
-	if not game.settings_menu_open then game.screen_darkened = false end
+	--if not game.settings_menu_open then game:brightenScreen() end
 	if game.p1.supering then game.p1:emptyMP() end
 	if game.p2.supering then game.p2:emptyMP() end
 
@@ -145,12 +150,24 @@ end
 function Phase:applyGemTween(dt)
 	local game = self.game
 	local grid = game.grid
-	grid:updateGravity(dt) -- animation
-	local animation_done = grid:isSettled() --  tween-from-top is done
-	if animation_done then
-		grid:dropColumns() -- state
-		game.current_phase = "Gravity"
+
+	local max_delay = 0
+	for gem in grid:gems() do
+		local gem_delay = gem:getAnimFrames()
+		max_delay = math.max(max_delay, gem_delay)
 	end
+
+	for player in game:players() do
+		local player_delay = player:beforeTween()
+		max_delay = math.max(max_delay, player_delay or 0)
+	end
+
+	self:setPause(max_delay)
+	self:activatePause("Gravity", true)
+
+
+	-- TEMP
+	game.queue:add(max_delay, grid.dropColumns, grid)
 end
 
 function Phase:applyGravity(dt)

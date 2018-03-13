@@ -389,7 +389,7 @@ function gs_main:drawUI(params)
 end
 
 function gs_main:draw()
-	local darkened = self.screen_darkened
+	local darkened = self:isScreenDark()
 	gs_main.current_background:draw{darkened = darkened}
 	self.camera:set(1, 1)
 		if self.screenshake_frames > 0 then
