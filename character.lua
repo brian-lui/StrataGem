@@ -120,6 +120,7 @@ function Character:beforeCleanup() end
 
 function Character:cleanup()
 	self.supering = false
+	self.game:brightenScreen(self.player_num)
 end
 
 

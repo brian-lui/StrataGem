@@ -63,6 +63,9 @@ Walter.sounds = {
 function Walter:init(...)
 	Character.init(self, ...)
 
+	self.FOAM_APPEAR_DURATION = 30 -- how long it takes for foam to appear
+	self.SPOUT_SPEED = 8 -- how many frames it takes for the spout to move one gem_height
+	self.SPOUT_BOB_SPEED = 20 -- how many frames for one spout bob
 	self.CLOUD_SLIDE_DURATION = 36 -- how long for the cloud incoming tween
 	self.CLOUD_ROW = 11 -- which row for clouds to appear on
 	self.CLOUD_EXIST_TURNS = 3 -- how many turns a cloud exists for
@@ -115,6 +118,85 @@ FoamSpout class:
 	spout reaches top at duration ___.
 	every ___ frames, destroyGem in row grid.BOTTOM_ROW to grid.BOTTOM_ROW - 7 
 --]]
+
+-------------------------------------------------------------------------------
+local Foam = {}
+function Foam:init(manager, tbl)
+	Pic.init(self, manager.game, tbl)
+	manager.allParticles.CharEffects[ID.particle] = self
+	self.manager = manager
+end
+
+function Foam:remove()
+	self.manager.allParticles.CharEffects[self.ID] = nil
+end
+
+function Foam.generate(game, owner, col)
+	local grid = game.grid
+	local params = {
+		x = grid.x[col],
+		y = grid.y[grid.BASIN_END_ROW] + image.GEM_HEIGHT * 0.5,
+		image = owner.special_images.foam,
+		col = col,
+		owner = owner,
+		draw_order = 5,
+		player_num = owner.player_num,
+		name = "WalterFoam",
+	}
+
+	local p = common.instance(Foam, game.particles, params)
+	p:change{duration = owner.FOAM_APPEAR_DURATION * (1/3), scaling = 1.05}
+	p:change{duration = owner.FOAM_APPEAR_DURATION * (2/3), scaling = 0.95}
+	p:wait(owner.SPOUT_SPEED * 8 + owner.SPOUT_BOB_SPEED * 3 )
+	p:change{duration = 20, transparency = 0, remove = true}
+end
+Foam = common.class("Foam", Foam, Pic)
+
+-------------------------------------------------------------------------------
+local Spout = {}
+function Spout:init(manager, tbl)
+	Pic.init(self, manager.game, tbl)
+	manager.allParticles.CharEffects[ID.particle] = self
+	self.manager = manager
+end
+
+function Spout:remove()
+	self.manager.allParticles.CharEffects[self.ID] = nil
+end
+
+function Spout.generate(game, owner, col)
+	local grid = game.grid
+	local stage = game.stage
+	local spout_height = owner.special_images.spout[1]:getHeight()
+	local params = {
+		x = grid.x[col],
+		y = grid.y[grid.BASIN_END_ROW] + image.GEM_HEIGHT * 0.5 + spout_height * 0.5,
+		image = owner.special_images.spout[1],
+		col = col,
+		owner = owner,
+		draw_order = 4,
+		player_num = owner.player_num,
+		name = "WalterSpout",
+	}
+
+	local p = common.instance(Spout, game.particles, params)
+	p:change{duration = 0, transparency = 0}
+	p:wait(owner.FOAM_APPEAR_DURATION)
+	p:change{duration = 0, transparency = 255}
+
+	local dest_y = grid.y[grid.BASIN_START_ROW] - image.GEM_HEIGHT * 0.5 + spout_height * 0.5
+	p:change{duration = owner.SPOUT_SPEED * 8, y = dest_y}
+
+	-- bobs
+	for _ = 1, 3 do
+		p:change{duration = owner.SPOUT_BOB_SPEED * 0.25, y = dest_y + stage.height * 0.04}
+		p:change{duration = owner.SPOUT_BOB_SPEED * 0.5, y = dest_y - stage.height * 0.04}
+		p:change{duration = owner.SPOUT_BOB_SPEED * 0.25, y = dest_y}
+	end
+
+	p:change{duration = 20, transparency = 0, remove = true}
+end
+Spout = common.class("Spout", Spout, Pic)
 
 -------------------------------------------------------------------------------
 local Splatter = {}
@@ -349,6 +431,8 @@ HealingColumnAura = common.class("HealingColumnAura", HealingColumnAura, Pic)
 
 
 Walter.particle_fx = {
+	foam = Foam,
+	spout = Spout,
 	healingCloud = HealingCloud,
 	healingColumnAura = HealingColumnAura,
 }
@@ -374,7 +458,7 @@ function Walter:beforeGravity()
 
 		if col ~= -1 then
 			for row = grid.BOTTOM_ROW, start_row, -1 do
-				delay = (grid.BOTTOM_ROW - row) * 8 + 10
+				delay = (grid.BOTTOM_ROW - row) * self.SPOUT_SPEED + self.FOAM_APPEAR_DURATION - game.GEM_EXPLODE_FRAMES
 				local gem = grid[row][col].gem
 				gem:setOwner(self.player_num)
 				grid:destroyGem{
@@ -384,6 +468,9 @@ function Walter:beforeGravity()
 					force_max_alpha = true,
 				}
 			end
+
+			self.particle_fx.foam.generate(self.game, self, col)
+			self.particle_fx.spout.generate(self.game, self, col)
 		end
 	end
 
