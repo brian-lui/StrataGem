@@ -64,8 +64,9 @@ function Walter:init(...)
 	Character.init(self, ...)
 
 	self.FOAM_APPEAR_DURATION = 30 -- how long it takes for foam to appear
+	self.FOAM_FRAMES_BETWEEN_DROPLETS = 1 -- how many frames before making new foam-droplet
 	self.SPOUT_SPEED = 8 -- how many frames it takes for the spout to move one gem_height
-	self.SPOUT_BOB_SPEED = 20 -- how many frames for one spout bob
+	self.SPOUT_BOB_SPEED = 32 -- how many frames for one spout bob
 	self.CLOUD_SLIDE_DURATION = 36 -- how long for the cloud incoming tween
 	self.CLOUD_ROW = 11 -- which row for clouds to appear on
 	self.CLOUD_EXIST_TURNS = 3 -- how many turns a cloud exists for
@@ -120,6 +121,64 @@ FoamSpout class:
 --]]
 
 -------------------------------------------------------------------------------
+local FoamDroplet = {}
+function FoamDroplet:init(manager, tbl)
+	Pic.init(self, manager.game, tbl)
+	manager.allParticles.CharEffects[ID.particle] = self
+	self.manager = manager
+end
+
+function FoamDroplet:remove()
+	self.manager.allParticles.CharEffects[self.ID] = nil
+end
+
+function FoamDroplet.generate(game, owner, col)
+	local grid = game.grid
+	local image_table = {1, 1, 1, 1, 1, 1, 1, 2, 2, 3}
+	local image_index = image_table[math.random(#image_table)]
+	local droplet_image = owner.special_images.drop[image_index]
+
+	local x = grid.x[col]
+	local y = grid.y[grid.BASIN_END_ROW] + image.GEM_HEIGHT * 0.5
+	local params = {
+		x = x,
+		y = y,
+		image = droplet_image,
+		col = col,
+		owner = owner,
+		draw_order = 4,
+		player_num = owner.player_num,
+		name = "WalterFoamDroplet",
+	}
+
+	local p = common.instance(FoamDroplet, game.particles, params)
+
+	local x_vel = image.GEM_WIDTH * (math.random() - 0.5) * 4
+	local y_vel = -image.GEM_HEIGHT * 20
+	local gravity = image.GEM_HEIGHT * 12
+	local x_dest1 = x + 1 * x_vel
+	local x_dest2 = x + 1.5 * x_vel
+	local y_func1 = function() return y + p.t * y_vel + p.t^2 * gravity end
+	local y_func2 = function() return y + (p.t + 1) * y_vel + (p.t + 1)^2 * gravity end
+	local rotation_func1 = function()
+		return math.atan2(y_vel + p.t * 2 * gravity, x_vel) - (math.pi * 0.5)
+	end
+	local rotation_func2 = function()
+		return math.atan2(y_vel + (p.t + 1) * 2 * gravity, x_vel) - (math.pi * 0.5)
+	end
+
+	if delay_frames then
+		p.transparency = 0
+		p:wait(delay_frames)
+		p:change{duration = 0, transparency = 255}
+	end
+
+	p:change{duration = 45, x = x_dest1, y = y_func1, rotation = rotation_func1}
+	p:change{duration = 15, x = x_dest2, y = y_func2, rotation = rotation_func2, remove = true}
+end
+FoamDroplet = common.class("FoamDroplet", FoamDroplet, Pic)
+
+-------------------------------------------------------------------------------
 local Foam = {}
 function Foam:init(manager, tbl)
 	Pic.init(self, manager.game, tbl)
@@ -133,6 +192,16 @@ end
 
 function Foam.generate(game, owner, col)
 	local grid = game.grid
+
+	local function update_func(_self, dt)
+		Pic.update(_self, dt)
+		_self.elapsed_frames = _self.elapsed_frames + 1
+		if _self.elapsed_frames >= _self.owner.FOAM_FRAMES_BETWEEN_DROPLETS then
+			FoamDroplet.generate(game, owner, col)
+			_self.elapsed_frames = 0
+		end
+	end
+
 	local params = {
 		x = grid.x[col],
 		y = grid.y[grid.BASIN_END_ROW] + image.GEM_HEIGHT * 0.5,
@@ -141,13 +210,15 @@ function Foam.generate(game, owner, col)
 		owner = owner,
 		draw_order = 5,
 		player_num = owner.player_num,
+		elapsed_frames = -owner.FOAM_APPEAR_DURATION,
+		update = update_func,
 		name = "WalterFoam",
 	}
 
 	local p = common.instance(Foam, game.particles, params)
 	p:change{duration = owner.FOAM_APPEAR_DURATION * (1/3), scaling = 1.05}
 	p:change{duration = owner.FOAM_APPEAR_DURATION * (2/3), scaling = 0.95}
-	p:wait(owner.SPOUT_SPEED * 8 + owner.SPOUT_BOB_SPEED * 3 )
+	p:wait(owner.SPOUT_SPEED * 8 + owner.SPOUT_BOB_SPEED * 3 + 60)
 	p:change{duration = 20, transparency = 0, remove = true}
 end
 Foam = common.class("Foam", Foam, Pic)
@@ -174,7 +245,7 @@ function Spout.generate(game, owner, col)
 		image = owner.special_images.spout[1],
 		col = col,
 		owner = owner,
-		draw_order = 4,
+		draw_order = 3,
 		player_num = owner.player_num,
 		name = "WalterSpout",
 	}
@@ -185,15 +256,16 @@ function Spout.generate(game, owner, col)
 	p:change{duration = 0, transparency = 255}
 
 	local dest_y = grid.y[grid.BASIN_START_ROW] - image.GEM_HEIGHT * 0.5 + spout_height * 0.5
-	p:change{duration = owner.SPOUT_SPEED * 8, y = dest_y}
+	local quad_change = {y = true, y_percentage = 1, y_anchor = 0}
+	p:change{duration = owner.SPOUT_SPEED * 8, y = dest_y, quad = quad_change}
 
 	-- bobs
 	for _ = 1, 3 do
-		p:change{duration = owner.SPOUT_BOB_SPEED * 0.25, y = dest_y + stage.height * 0.04}
-		p:change{duration = owner.SPOUT_BOB_SPEED * 0.5, y = dest_y - stage.height * 0.04}
+		p:change{duration = owner.SPOUT_BOB_SPEED * 0.25, y = dest_y + stage.height * 0.02}
+		p:change{duration = owner.SPOUT_BOB_SPEED * 0.5, y = dest_y - stage.height * 0.02}
 		p:change{duration = owner.SPOUT_BOB_SPEED * 0.25, y = dest_y}
 	end
-
+	p:wait(60)
 	p:change{duration = 20, transparency = 0, remove = true}
 end
 Spout = common.class("Spout", Spout, Pic)
