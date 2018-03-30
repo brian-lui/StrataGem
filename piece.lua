@@ -153,6 +153,9 @@ function Piece:draw(params)
 		v_shake = math.floor(self.shake * (frame % 5 * 2/3 + frame % 11 / 4 + frame % 17 / 6 - 5))
 	end
 
+	local gem_darkened = params.darkened
+	if not self.owner:canPlacePiece() then gem_darkened = 0.5 end
+
 	love.graphics.push("all")
 		love.graphics.translate(h_shake, v_shake)
 		for i = 1, self.size do
@@ -162,8 +165,14 @@ function Piece:draw(params)
 			else
 				displace_y = stage.gem_height * (i - (1 + self.size) * 0.5)
 			end
-			local gem_params = {pivot_x = self.x, pivot_y = self.y, rotation = self.rotation,
-				displace_x = displace_x, displace_y = displace_y}
+			local gem_params = {
+				pivot_x = self.x,
+				pivot_y = self.y,
+				rotation = self.rotation,
+				displace_x = displace_x,
+				displace_y = displace_y,
+				darkened = gem_darkened,
+			}
 			for k, v in pairs(params) do gem_params[k] = v end
 			self.gems[i]:draw(gem_params)
 		end

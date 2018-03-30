@@ -48,6 +48,7 @@ Game.GEM_FADE_FRAMES = 10
 Game.PLATFORM_FALL_EXPLODE_FRAMES = 30
 Game.PLATFORM_FALL_FADE_FRAMES = 8
 Game.EXPLODING_PLATFORM_FRAMES = 60
+Game.TWEEN_TO_LANDING_ZONE_DURATION = 24
 Game.VERSION = "65.0"
 
 function Game:init()
@@ -56,8 +57,15 @@ function Game:init()
 	self.debug_drawGamestate = true
 	self.debug_drawDamage = true
 	self.debug_drawGrid = true
-	self.debug_overlay = function() return self.current_phase end
+	self.debug_overlay = function()
+		if self.current_phase == "Pause" then
+			return "Pause " .. self.phase.frames_until_next_phase .. " (" .. self.phase.next_phase .. ")"
+		else
+			return self.current_phase
+		end
+	end 
 	self.debug_screencaps = true
+	self.debug_pause_mode = false
 	
 	self.rng = love.math.newRandomGenerator()
 	self.unittests = common.instance(require "unittests", self) -- debug testing
@@ -116,6 +124,7 @@ end
 function Game:update(dt)
 	self.client:update(dt)
 	self.sound:update()
+	self:updateDarkenedScreenTracker(dt) -- haha
 end
 
 function Game:playerByIndex(i)
@@ -174,9 +183,25 @@ function Game:brightenScreen(num)
 	self.screen_dark[num] = false
 end
 
+local darkened_screen_tracker = {1, 1, 1}
+function Game:updateDarkenedScreenTracker(dt)
+	local MAX_DARK = 0.5
+	for i = 1, #self.screen_dark do
+		if self.screen_dark[i] then
+			darkened_screen_tracker[i] = math.max(MAX_DARK, darkened_screen_tracker[i] - 0.04)
+		else
+			darkened_screen_tracker[i] = math.min(1, darkened_screen_tracker[i] + 0.04)
+		end
+	end
+end
+
 -- whether screen is dark
 function Game:isScreenDark()
-	return self.screen_dark[1] or self.screen_dark[2] or self.screen_dark[3]
+	local darkness_level = 1
+	for i = 1, #self.screen_dark do
+		darkness_level = math.min(darkened_screen_tracker[i], darkness_level)
+	end
+	if darkness_level ~= 1 then return darkness_level end
 end
 
 --[[ create a clickable object
@@ -357,6 +382,7 @@ function Game:_createSettingsMenu(gamestate, params)
 		image_pushed = image.button.backpush,
 		end_x = stage.settings_locations.close_menu_button.x,
 		end_y = stage.settings_locations.close_menu_button.y,
+		pushed_sfx = "buttonback",
 		action = function()
 			if self.settings_menu_open then gamestate.closeSettingsMenu(self) end
 		end,
@@ -388,6 +414,7 @@ function Game:_createSettingsMenu(gamestate, params)
 		end_x = stage.settings_locations.cancel_quit_button.x,
 		end_y = stage.settings_locations.cancel_quit_button.y,
 		end_transparency = 0,
+		pushed_sfx = "buttonback",
 		action = function()
 			if self.settings_menu_open then self:_closeQuitConfirmMenu(gamestate) end
 		end,

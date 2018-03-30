@@ -89,7 +89,18 @@ function gs_main:enter()
 		-- super meter objects
 		local super_function = function() print("opposite guy button pushed!") end
 		if self.me_player.ID == ID then
-			super_function = function() player:toggleSuper() end
+			super_function = function()
+				if player:canUseSuper() then
+					local supering = player:toggleSuper()
+					local superword = gs_main.ui.static[ID .. "superword"]
+					if supering then
+						superword:change{duration = 0, transparency = 128, scaling = 2}
+						superword:change{duration = 15, transparency = 255, scaling = 1, easing = "inCubic"}
+					else
+						superword:change{duration = 0, transparency = 0, scaling = 1}
+					end
+				end
+			end
  		end
 
 		gs_main.createButton(self, {
@@ -101,12 +112,14 @@ function gs_main:enter()
 			pushed_sfx = "dummy",
 			action = super_function,
 		})
-		gs_main.createImage(self, {
+		local superword = gs_main.createImage(self, {
 			name = ID .. "superword",
 			image = player.super_images.word,
 			end_x = stage.super[ID].x,
 			end_y = stage.super[ID].word_y,
 		})
+		superword:change{duration = 0, transparency = 0}
+
 		gs_main.createImage(self, {
 			name = ID .. "supermeter",
 			image = player.super_images.full,
@@ -230,7 +243,7 @@ function gs_main:drawGems(params)
 		for i = 1, player.hand_size do
 			if player.hand[i].piece and player.hand[i].piece ~= self.active_piece then
 				for _ = 1, player.hand[i].piece.size do
-						player.hand[i].piece:draw(params)
+					player.hand[i].piece:draw(params)
 				end
 			end
 		end
@@ -378,9 +391,9 @@ function gs_main:drawUI(params)
 	local draws = {"tub", "P1burstframe", "P2burstframe", "P1burstblock1",
 		"P1burstblock2", "P2burstblock1", "P2burstblock2", "P1burstpartial1",
 		"P1burstpartial2", "P2burstpartial1", "P2burstpartial2", "P1burstglow1",
-		"P1burstglow2", "P2burstglow1", "P2burstglow2", "P1superword", "P2superword",
+		"P1burstglow2", "P2burstglow1", "P2burstglow2", 
 		"P1supermeter", "P2supermeter", "P1superglow", "P2superglow", 
-		"P1superoverlay", "P2superoverlay",}
+		"P1superoverlay", "P2superoverlay", "P1superword", "P2superword",}
 
 	gs_main.ui.clickable.P1super:draw(params)
 	gs_main.ui.clickable.P2super:draw(params)
@@ -412,7 +425,7 @@ function gs_main:mousepressed(x, y)
 	self.lastClickedX, self.lastClickedY = x, y
 
 	local player = self.me_player
-	if not self.paused then
+	if not self.paused and player:canPlacePiece() then
 		for i = 1, player.hand_size do
 			if player.hand[i].piece and pointIsInRect(x, y, player.hand[i].piece:getRect()) then
 				if self.current_phase == "Action" then
@@ -424,6 +437,27 @@ function gs_main:mousepressed(x, y)
 		end
 	end
 
+	if self.debug_pause_mode then
+		local grid = self.grid
+		for col in grid:cols() do
+			for row = grid.BASIN_START_ROW, grid.BASIN_END_ROW do
+				local gem = grid[row][col].gem
+				if gem then
+					if pointIsInRect(x, y, gem:getRect()) then
+						if gem.color == "red" then
+							gem:setColor("blue")
+						elseif gem.color == "blue" then
+							gem:setColor("green")
+						elseif gem.color == "green" then
+							gem:setColor("yellow")
+						else
+							gem:setColor("red")
+						end
+					end
+				end
+			end
+		end
+	end
 	self:_mousepressed(x, y, gs_main)
 end
 

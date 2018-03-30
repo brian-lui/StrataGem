@@ -44,12 +44,12 @@ function stage:init(game)
 		P1 = {
 			x = self.x_mid - 9.5 * self.gem_width,
 			y = self.y_mid - self.gem_height,
-			word_y = self.y_mid + 0.5 * self.gem_height
+			word_y = self.y_mid - self.gem_height
 		},
 		P2 = {
 			x = self.x_mid + 9.5 * self.gem_width,
 			y = self.y_mid - self.gem_height,
-			word_y = self.y_mid + 0.5 * self.gem_height
+			word_y = self.y_mid - self.gem_height
 		}
 	}
 	self.super.P1.rect = {

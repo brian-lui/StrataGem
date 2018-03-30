@@ -92,14 +92,13 @@ function ui:updateSupers(gamestate)
 		meter:setQuad(0, meter.height * (1 - fill_percent), meter.width, meter.height * fill_percent)
 
 		local superglow = gamestate.ui.static[player.ID .. "superglow"]
-		local superword = gamestate.ui.static[player.ID .. "superword"]
 		if player.supering then
-			superglow.transparency, superword.transparency = 255, 255
-		elseif displayed_mp >= player.SUPER_COST then
+			superglow.transparency = 255
+		elseif player:canUseSuper() then
 			superglow.transparency = math.sin(game.frame / 30) * 127.5 + 127.5
-			superword.transparency = 0
 		else
-			superglow.transparency, superword.transparency = 0, 0
+			superglow.transparency = 0
+			gamestate.ui.static[player.ID .. "superword"].transparency = 0
 		end
 	end
 end
@@ -271,19 +270,20 @@ end
 
 -- animation: places pieces at top of basin, and tweens them down.
 -- also calls the cloud effects and the words/star fountains.
-function ui:putPendingAtTop()
+function ui:putPendingAtTop(delay)
 	local game = self.game
 	local pending = {
 		p1 = game.grid:getPendingGems(game.p1),
 		p2 = game.grid:getPendingGems(game.p2),
 	}
+	
 	for _, player_gems in pairs(pending) do
 		local doubles, rushes = {}, {}
 		for i = 1, #player_gems do
 			local gem = player_gems[i]
 			local target_y = gem.y
 			gem.y = game.stage.height * -0.1
-			gem:change{y = target_y, duration = 24, easing = "outQuart", remove = true}
+			gem:change{y = target_y, duration = game.TWEEN_TO_LANDING_ZONE_DURATION, easing = "outQuart", remove = true}
 			
 			if gem.place_type == "double" then
 				doubles[#doubles+1] = gem
@@ -294,12 +294,12 @@ function ui:putPendingAtTop()
 		if #doubles == 2 then
 			local is_horizontal = doubles[1].row == doubles[2].row
 			game.particles.wordEffects.generateDoublecastCloud(game, doubles[1], doubles[2], is_horizontal)
-			game.queue:add(24, pieceLandedInStagingArea, game, doubles, "double")
+			game.queue:add(game.TWEEN_TO_LANDING_ZONE_DURATION + delay, pieceLandedInStagingArea, game, doubles, "double")
 		end
 		if #rushes == 2 then
 			local is_horizontal = rushes[1].row == rushes[2].row
 			game.particles.wordEffects.generateRushCloud(game, rushes[1], rushes[2], is_horizontal)
-			game.queue:add(24, pieceLandedInStagingArea, game, rushes, "rush")
+			game.queue:add(game.TWEEN_TO_LANDING_ZONE_DURATION + delay, pieceLandedInStagingArea, game, rushes, "rush")
 		end
 	end
 end

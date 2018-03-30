@@ -68,7 +68,7 @@ function Pic:draw(params)
 		rgbt[4] = self.transparency or 255
 
 		if params.darkened and not self.force_max_alpha then
-			love.graphics.setColor(127, 127, 127)
+			love.graphics.setColor(params.darkened * 255, params.darkened * 255, params.darkened * 255)
 		elseif params.RGBTable then
 			love.graphics.setColor(params.RGBTable)
 		elseif self.transparency then
@@ -87,6 +87,27 @@ function Pic:draw(params)
 			self.width / 2, -- origin x
 			self.height / 2 -- origin y
 		)
+
+		if self.new_image then
+			local r, g, b, t
+			if params.RGBTable then
+				r, g, b = params.RGBTable[1], params.RGBTable[2], params.RGBTable[3]
+			else
+				r, g, b = rgbt[1], rgbt[2], rgbt[3]
+			end
+			love.graphics.setColor(r, g, b, self.new_image.transparency)
+			love.graphics.draw(
+			self.new_image.image,
+			self.quad,
+			(params.x or self.x) + (self.quad_data.x_offset or 0),
+			(params.y or self.y) + (self.quad_data.y_offset or 0),
+			params.rotation or self.rotation,
+			x_scale or 1,
+			y_scale or 1,
+			self.width / 2, -- origin x
+			self.height / 2 -- origin y
+		)
+		end
 	love.graphics.pop()
 end
 
@@ -123,6 +144,15 @@ function Pic:newImage(img, instant)
 			quad = love.graphics.newQuad(0, 0, new_width, new_height, new_width, new_height)
 		}
 	end
+end
+
+-- fades in a new image over the previous one.
+function Pic:newImageFadeIn(img, frames)
+	self.new_image = {
+		image = img,
+		transparency = 0,
+		opaque_speed = 255 / frames,
+	}
 end
 
 -- clear the junk from all the tweens and stuff. runs exit function too.
@@ -362,22 +392,24 @@ function Pic:update(dt)
 		if finished then
 			clearMove(self)
 			if #self.queued_moves > 0 then
-				local is_image_swap = true
-				while is_image_swap do
-					local new_target = table.remove(self.queued_moves, 1)
-					is_image_swap = new_target.image_swap
-					if is_image_swap then
-						self.image = new_target.image
-						self.width = new_target.width
-						self.height = new_target.height
-						self.quad = new_target.quad
-						self.move_func = function() return true end
-						if #self.queued_moves == 0 then break end
-					else
-						self.move_func = createMoveFunc(self, new_target)
-					end
+				local new_target = table.remove(self.queued_moves, 1)
+				if new_target.image_swap then
+					self.image = new_target.image
+					self.width = new_target.width
+					self.height = new_target.height
+					self.quad = new_target.quad
+					self.move_func = function() return true end
+				else
+					self.move_func = createMoveFunc(self, new_target)
 				end
 			end
+		end
+	end
+	if self.new_image then
+		self.new_image.transparency = self.new_image.transparency + self.new_image.opaque_speed
+		if self.new_image.transparency >= 255 then
+			self.image = self.new_image.image
+			self.new_image = nil
 		end
 	end
 end

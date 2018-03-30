@@ -462,19 +462,20 @@ function Grid:moveGemAnim(gem, row, column)
 		exit_func = target_y > gem.y and {gem.landedInGrid, gem} or nil
 		-- only call landing function if it was moving downwards
 	}
+	return duration
 end
 
 function Grid:moveAllUp(player, rows_to_add)
 -- Moves all gems in the player's half up by rows_to_add.
 	local last_row = self.ROWS - rows_to_add
-	--local start_col, end_col = 1, 4
-	--if player.ID == "P2" then start_col, end_col = 5, 8 end
+	local max_anim_duration = 0
 	for r = 1, last_row do
 		for c in self:cols(player.player_num) do
 		--for c = start_col, end_col do
 			self[r][c].gem = self[r+rows_to_add][c].gem
 			if self[r][c].gem then
-				self:moveGemAnim(self[r][c].gem, r, c)
+				local duration = self:moveGemAnim(self[r][c].gem, r, c)
+				max_anim_duration = math.max(max_anim_duration, duration)
 				self[r][c].gem.row = r
 				self[r][c].gem.column = c
 			end
@@ -486,6 +487,7 @@ function Grid:moveAllUp(player, rows_to_add)
 			self[i][j].gem = false
 		end
 	end
+	return max_anim_duration
 end
 
 --[[ Returns a list of gem colors generated. List is in the order for
@@ -570,7 +572,6 @@ end
 function Grid:dropColumns(params)
 	params = params or {}
 	for c in self:cols() do
-	--for c = 1, self.COLUMNS do
 		local sorted_column = self:columnSort(c)
 		for r = 1, self.ROWS do
 			self[r][c].gem = sorted_column[r]
@@ -579,13 +580,16 @@ function Grid:dropColumns(params)
 		end
 	end
 
+	local max_anim_duration = 0
 	if not params.skip_animation then
 		for gem, r, c in self:gems() do
 			if gem and (gem.y ~= self.y[r] or gem.x ~= self.x[c]) then
-				self:moveGemAnim(gem, r, c)
+				local duration = self:moveGemAnim(gem, r, c)
+				max_anim_duration = math.max(max_anim_duration, duration)
 			end
 		end
 	end
+	return max_anim_duration
 end
 
 function Grid:getPendingGems(player)
@@ -769,6 +773,8 @@ function Grid:destroyGem(params)
 	-- state
 	gem.is_destroyed = true -- in case we try to destroy it again
 	self[gem.row][gem.column].gem = false
+
+	return delay_until_explode
 end
 
 function Grid:setGarbageMatchFlags(diff)

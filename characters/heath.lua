@@ -117,16 +117,16 @@ end
 function SmallFire.generateSmallFire(game, owner, col)
 	local grid = game.grid
 
-	local function update_func(_self, dt)
-		Pic.update(_self, dt)
-		_self.elapsed_frames = _self.elapsed_frames + 1
-		if _self.elapsed_frames >= 6 then -- loop through images
-			_self.current_image_idx = _self.current_image_idx % 3 + 1
-			_self:newImage(Heath.special_images.fire[_self.current_image_idx])	
-			_self.elapsed_frames = 0
+	local function update_func(self, dt)
+		Pic.update(self, dt)
+		self.elapsed_frames = self.elapsed_frames + 1
+		if self.elapsed_frames >= 6 then -- loop through images
+			self.current_image_idx = self.current_image_idx % 3 + 1
+			self:newImage(Heath.special_images.fire[self.current_image_idx])	
+			self.elapsed_frames = 0
 		end
-		if _self.turns_remaining < 0 and _self:isStationary() then
-			_self:change{duration = 32, transparency = 0, remove = true}
+		if self.turns_remaining < 0 and self:isStationary() then
+			self:change{duration = 32, transparency = 0, remove = true}
 		end
 	end
 
@@ -139,11 +139,12 @@ function SmallFire.generateSmallFire(game, owner, col)
 		y = start_y,
 		col = col,
 		scaling = 0,
-		image = Heath.special_images.fire[1],
 		turns_remaining = 1,
-		current_image_idx = 1,
-		elapsed_frames = 0,
-		update = update_func,
+		image = Heath.special_images.fire[1],
+		image_index = 1,
+		SWAP_FRAMES = 6,
+		current_frame = 6,
+		--update = update_func,
 		owner = owner,
 		player_num = owner.player_num,
 		name = "HeathFire",
@@ -155,47 +156,19 @@ function SmallFire.generateSmallFire(game, owner, col)
 	return 30
 end
 
-function SmallFire.generateSmallFireFadeTest(game, owner, col)
-	local grid = game.grid
-	local function update_func(_self, dt)
-		Pic.update(_self, dt)
-		_self.elapsed_frames = _self.elapsed_frames + 1
-		if _self.elapsed_frames >= 6 then -- loop through images
-			print("new image")
-			_self.current_image_idx = _self.current_image_idx % 3 + 1
-			_self:change{duration = 5, transparency = 0}
-			_self:newImage(Heath.special_images.fire[_self.current_image_idx])	
-			_self:change{duration = 0, transparency = 255}
-			_self.elapsed_frames = 0
-		end
-		if _self.turns_remaining < 0 and _self:isStationary() then
-			_self:change{duration = 32, transparency = 0, remove = true}
-		end
+function SmallFire:update(dt)
+	Pic.update(self, dt)
+	self.current_frame = self.current_frame - 1
+	if self.current_frame <= 0 then
+		self.current_frame = self.SWAP_FRAMES
+		local fires = #self.owner.special_images.fire
+		self.image_index = self.image_index % fires + 1
+		local new_image = self.owner.special_images.fire[self.image_index]
+		self:newImageFadeIn(new_image, self.SWAP_FRAMES)
 	end
-
-	local start_row = grid:getFirstEmptyRow(col)
-	local start_y = grid.y[start_row]
-	local bounce_top_y = grid.y[start_row - 1]
-
-	local params = {
-		x = grid.x[col],
-		y = start_y,
-		col = col,
-		scaling = 0,
-		image = Heath.special_images.fire[1],
-		turns_remaining = 1,
-		current_image_idx = 1,
-		elapsed_frames = 0,
-		update = update_func,
-		owner = owner,
-		player_num = owner.player_num,
-		name = "HeathFire",
-	}
-
-	local p = common.instance(SmallFire, game.particles, params)
-	p:change{duration = 15, y = bounce_top_y, scaling = 0.5}
-	p:change{duration = 15, y = start_y, scaling = 1}
-	return 30	
+	if self.turns_remaining < 0 and self:isStationary() then
+		self:change{duration = 32, transparency = 0, remove = true}
+	end
 end
 
 SmallFire = common.class("SmallFire", SmallFire, Pic)
@@ -251,17 +224,16 @@ function Boom.generateBoom(game, owner, row, col)
 	local particles = game.particles
 	local grid = game.grid
 
-	local function update_func(_self, dt)
-		Pic.update(_self, dt)
-		_self.elapsed_frames = _self.elapsed_frames + 1
-		if _self.elapsed_frames >= 6 then -- loop through images
-			if _self.current_image_idx < 5 then
-				_self.current_image_idx = _self.current_image_idx + 1
-				_self:change{duration = 30, y = _self.y - 100}	
-				_self:newImage(Heath.special_images.boom[_self.current_image_idx])
-				_self.elapsed_frames = 0
+	local function update_func(self, dt)
+		Pic.update(self, dt)
+		self.elapsed_frames = self.elapsed_frames + 1
+		if self.elapsed_frames >= 6 then -- loop through images
+			if self.current_image_idx < 5 then
+				self.current_image_idx = self.current_image_idx + 1
+				self:newImage(Heath.special_images.boom[self.current_image_idx])
+				self.elapsed_frames = 0
 			else
-				_self:remove()
+				self:remove()
 			end
 		end
 	end
@@ -300,14 +272,42 @@ Heath.particle_fx = {
 -- we can add more timing phases if needed
 
 -- get the list of pending gem columns for extinguishing in afterGravity
+-- also the super
 function Heath:beforeGravity()
-	local pending_gems = self.game.grid:getPendingGemsByNum()
+	local game = self.game
+	local grid = game.grid
+	local delay = 0
+
+	local pending_gems = grid:getPendingGemsByNum()
 	self.pending_gem_cols = {}
 	for _, gem in ipairs(pending_gems) do
 		self.pending_gem_cols[gem.column] = true
 	end
+
+	if self.supering then
+		for col in grid:cols(self.player_num) do
+			local top_row = grid:getFirstEmptyRow(col, true) + 1
+			if top_row <= grid.BOTTOM_ROW then
+				local gem = grid[top_row][col].gem
+				gem:setOwner(self.player_num)
+				delay = grid:destroyGem{
+					gem = gem,
+					super_meter = false,
+					glow_delay = 20,
+					force_max_alpha = true,
+				}
+				self.particle_fx.boom.generateBoom(game, self, top_row, col)
+			end
+		end
+	end
+
+	return delay
 end
 
+function Heath:beforeTween()
+	self.supering = false
+	self.game:brightenScreen(self.player_num)
+end
 -- extinguish ready_fires where a gem landed on them
 function Heath:afterGravity()
 	for i in self.game.grid:cols() do
@@ -333,7 +333,6 @@ function Heath:beforeMatch()
 	for _, gem in pairs(gem_table) do
 		local h = "vertical"
 		if gem.is_in_a_horizontal_match then h = "horizontal" end
-		print("Turn " .. self.game.turn .. ", gem in column " .. gem.column .. ", row " .. gem.row .. ", color " .. gem.color .. ", " .. h)
 
 		local top_gem = gem.row-1 == grid:getFirstEmptyRow(gem.column)
 		if self.player_num == gem.owner and gem.is_in_a_horizontal_match and top_gem then

@@ -288,15 +288,6 @@ function Hand:update(dt)
 	end
 end
 
--- meh. Just in case damage goes over 20
-function Hand:addDamage(damage)
-	self.damage = math.min(self.damage + damage, 20)
-end
-
--- can go negative because who cares
-function Hand:healDamage(damage)
-	self.damage = self.damage - damage
-end
 
 -- Update function only called after action phase
 function Hand:afterActionPhaseUpdate()
@@ -322,6 +313,23 @@ end
 function Hand:updatePieceGems()
 	for piece in self:pieces() do piece:updateGems() end
 end
+
+-- gets whether the player can still place a piece this turn
+function Hand:canPlacePiece()
+	local player = self.owner
+	local place_type = player.dropped_piece
+
+	if player.supering and not player.CAN_SUPER_AND_PLAY_PIECE then
+		return false
+	elseif place_type == "rushed" or place_type == "doubled" then
+		return false
+	elseif place_type == "normal" and player.cur_burst < player.current_double_cost then
+		return false
+	else
+		return true
+	end
+end
+
 
 function Hand:pieces()
 	local pieces, index = {}, 0

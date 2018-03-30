@@ -13,6 +13,7 @@ local Character = require "character"
 
 local Walter = {}
 Walter.character_id = "Walter"
+Walter.CAN_SUPER_AND_PLAY_PIECE = false
 Walter.meter_gain = {red = 4, blue = 8, green = 4, yellow = 4}
 
 Walter.full_size_image = love.graphics.newImage('images/portraits/walter.png')
@@ -77,48 +78,12 @@ function Walter:init(...)
 		[3] = 5,
 	} 
 
-	self.pending_clouds = {} -- boolean, clouds for vertical matches generates at t0
+	self.pending_clouds = {} -- booleans, clouds for vertical matches generates at t0
 	self.cloud_turns_remaining = {0, 0, 0, 0, 0, 0, 0, 0} -- keep track of the state
-	self.this_turn_column_healed = {false, false, false, false, false, false, false, false}
+	self.this_turn_column_healed = {} -- booleans
+	self.this_turn_already_created_cloud = {} -- booleans
 end
 
--------------------------------------------------------------------------------
---[[
-Super description:
-On the turn you activate super, the gems should light up BUT not explode immediately.
-Instead, foam.png should appear on the bottom of the column(s) where the match(es)
-were made, and it should expand and shrink to about 105% and 95%. Then, spout.png
-should quickly shoot out from the bottom of the column until the top of spout.png
-reaches the top of the column. As the spout hits gems, they should explode.
-ONLY THE PORTION OF SPOUT ABOVE THE FOAM SHOULD BE VISIBLE. Once it reaches the top,
-it should bob up and down by about 40 pixels above and below the top of the basin.
-After three bobs everything should fade. (Instead of a single spout image, there are
-three. It should constantly be fading between spout 1.2.3 while it's on screen. thanks.)
-
-While this is all going on, drop1 2 and 3 should be shooting out from the foam in 
-tight parabolic arcs. (they shouldn't go more than an 2 columns horizontally, but
-should reach all the way to the top of the column vertically.) they should again be
-in the ratio of 70% 20% 10% and also they need to rotate such that the bottom of the
-image is facing the current trajectory. (think about how an arrow flies)
-
-Super pseudocode:
-	STATE:
-	beforeGravity:
-		local super_column = highest_col()
-		for each gem in super_column:
-			destroyGem with glow delay
-
-	ANIM:
-	beforeGravity:
-		foamspout instance appears at grid.y[grid.BOTTOM_ROW + 1]
-
-FoamSpout class:
-	foam appear at grid.y[grid.BOTTOM_ROW + 1]
-	foam change with exit: make spout
-	foam has during property with drop 1/2/3 in parabolas
-	spout reaches top at duration ___.
-	every ___ frames, destroyGem in row grid.BOTTOM_ROW to grid.BOTTOM_ROW - 7 
---]]
 
 -------------------------------------------------------------------------------
 local FoamDroplet = {}
@@ -139,7 +104,7 @@ function FoamDroplet.generate(game, owner, col)
 	local droplet_image = owner.special_images.drop[image_index]
 
 	local x = grid.x[col]
-	local y = grid.y[grid.BASIN_END_ROW] + image.GEM_HEIGHT * 0.5
+	local y = grid.y[grid.BASIN_END_ROW] + image.GEM_HEIGHT * (2 * math.random() - 0.5)
 	local params = {
 		x = x,
 		y = y,
@@ -193,12 +158,12 @@ end
 function Foam.generate(game, owner, col)
 	local grid = game.grid
 
-	local function update_func(_self, dt)
-		Pic.update(_self, dt)
-		_self.elapsed_frames = _self.elapsed_frames + 1
-		if _self.elapsed_frames >= _self.owner.FOAM_FRAMES_BETWEEN_DROPLETS then
+	local function update_func(self, dt)
+		Pic.update(self, dt)
+		self.elapsed_frames = self.elapsed_frames + 1
+		if self.elapsed_frames >= self.owner.FOAM_FRAMES_BETWEEN_DROPLETS then
 			FoamDroplet.generate(game, owner, col)
-			_self.elapsed_frames = 0
+			self.elapsed_frames = 0
 		end
 	end
 
@@ -243,6 +208,10 @@ function Spout.generate(game, owner, col)
 		x = grid.x[col],
 		y = grid.y[grid.BASIN_END_ROW] + image.GEM_HEIGHT * 0.5 + spout_height * 0.5,
 		image = owner.special_images.spout[1],
+		image_index = 1,
+		SWAP_FRAMES = 6,
+		current_frame = 6,
+
 		col = col,
 		owner = owner,
 		draw_order = 3,
@@ -268,6 +237,20 @@ function Spout.generate(game, owner, col)
 	p:wait(60)
 	p:change{duration = 20, transparency = 0, remove = true}
 end
+
+function Spout:update(dt)
+	Pic.update(self, dt)
+	self.current_frame = self.current_frame - 1
+	if self.current_frame <= 0 then
+		self.current_frame = self.SWAP_FRAMES
+		local spouts = #self.owner.special_images.spout
+		self.image_index = self.image_index % spouts + 1
+		local new_image = self.owner.special_images.spout[self.image_index]
+		self:newImageFadeIn(new_image, self.SWAP_FRAMES)
+	end
+end
+
+
 Spout = common.class("Spout", Spout, Pic)
 
 -------------------------------------------------------------------------------
@@ -386,7 +369,6 @@ function HealingCloud:renewCloud()
 	self.frames_between_droplets = self.owner.CLOUD_INIT_DROPLET_FRAMES[self.owner.CLOUD_EXIST_TURNS]
 end
 
-
 function HealingCloud.generate(game, owner, col)
 	local grid = game.grid
 	local stage = game.stage
@@ -399,19 +381,6 @@ function HealingCloud.generate(game, owner, col)
 	local img_width = img:getWidth()
 	local img_height = img:getHeight()
 	local draw_order = col % 2 == 0 and 2 or 3
-
-	local function update_func(_self, dt)
-		Pic.update(_self, dt)
-		_self.elapsed_frames = _self.elapsed_frames + 1
-		if _self.elapsed_frames >= _self.frames_between_droplets then
-			local destination_y = grid.y[grid:getFirstEmptyRow(col, true)] + 0.5 * image.GEM_WIDTH
-			local droplet_loc = table.remove(_self.droplet_x, math.random(#_self.droplet_x))
-			if #_self.droplet_x == 0 then _self.droplet_x = {-1.5, -0.5, 0.5, 1.5} end
-			local x = _self.x + img_width * 0.75 * ((droplet_loc + (math.random() - 0.5)) * 0.25)
-			Droplet.generate(game, owner, x, y, destination_y)
-			_self.elapsed_frames = 0
-		end
-	end
 	
 	local params = {
 		x = x,
@@ -423,7 +392,6 @@ function HealingCloud.generate(game, owner, col)
 		elapsed_frames = -duration, -- only create droplets after finished move
 		droplet_x = {-1.5, -0.5, 0.5, 1.5}, -- possible columns for droplets to appear in
 		col = col,
-		update = update_func,
 		owner = owner,
 		draw_order = draw_order,
 		player_num = owner.player_num,
@@ -466,6 +434,21 @@ function HealingCloud.generate(game, owner, col)
  		}
 	end
 end
+
+function HealingCloud:update(dt)
+	Pic.update(self, dt)
+	local grid = self.game.grid
+	self.elapsed_frames = self.elapsed_frames + 1
+	if self.elapsed_frames >= self.frames_between_droplets then
+		local destination_y = grid.y[grid:getFirstEmptyRow(self.col, true)] + 0.5 * image.GEM_WIDTH
+		local droplet_loc = table.remove(self.droplet_x, math.random(#self.droplet_x))
+		if #self.droplet_x == 0 then self.droplet_x = {-1.5, -0.5, 0.5, 1.5} end
+		local x = self.x + self.width * 0.75 * ((droplet_loc + (math.random() - 0.5)) * 0.25)
+		Droplet.generate(self.game, self.owner, x, self.y, destination_y)
+		self.elapsed_frames = 0
+	end
+end
+
 HealingCloud = common.class("HealingCloud", HealingCloud, Pic)
 
 -------------------------------------------------------------------------------
@@ -501,12 +484,57 @@ function HealingColumnAura.generate(game, owner, col)
 end
 HealingColumnAura = common.class("HealingColumnAura", HealingColumnAura, Pic)
 
+-------------------------------------------------------------------------------
+local MatchDust = {}
+function MatchDust:init(manager, tbl)
+	Pic.init(self, manager.game, tbl)
+	manager.allParticles.CharEffects[ID.particle] = self
+	self.manager = manager
+end
 
+function MatchDust:remove()
+	self.manager.allParticles.CharEffects[self.ID] = nil
+end
+
+function MatchDust.generate(game, owner, match_list)
+	local grid = game.grid
+	local dust_color = match_list[1].color
+	local img = image.lookup.dust.small(dust_color, false)
+	assert(img, "Invalid color specified for dust")
+
+	for i = 1, #match_list do
+		for _ = 1, 20 do
+			local row, col = match_list[i].row, match_list[i].column
+			local x_start = grid.x[col] + image.GEM_WIDTH * (math.random() - 0.5)
+			local y_start = grid.y[row] + image.GEM_HEIGHT * (math.random() - 0.5)
+			local x_dest = grid.x[col]
+			local y_dest = grid.y[owner.CLOUD_ROW]
+
+			local params = {
+				x = x_start,
+				y = y_start,
+				image = img,
+				col = col,
+				owner = owner,
+				draw_order = 1,
+				player_num = owner.player_num,
+				name = "WalterMatchDust",
+			}
+
+			local p = common.instance(MatchDust, game.particles, params)
+			p:change{duration = 120, x = x_dest, y = y_dest, easing = "inCubic", remove = true}
+		end
+	end
+end
+MatchDust = common.class("MatchDust", MatchDust, Pic)
+
+-------------------------------------------------------------------------------
 Walter.particle_fx = {
 	foam = Foam,
 	spout = Spout,
 	healingCloud = HealingCloud,
 	healingColumnAura = HealingColumnAura,
+	matchDust = MatchDust,
 }
 -------------------------------------------------------------------------------
 
@@ -544,9 +572,10 @@ function Walter:beforeGravity()
 			self.particle_fx.foam.generate(self.game, self, col)
 			self.particle_fx.spout.generate(self.game, self, col)
 		end
+		delay = delay + 30
 	end
 
-	return delay + 30
+	return delay
 end
 
 function Walter:beforeTween()
@@ -576,7 +605,7 @@ function Walter:beforeMatch()
 				owner = self,
 			}
 
-			self.hand:healDamage(1)
+			self:healDamage(1)
 			self.this_turn_column_healed[col] = true
 			game.sound:newSFX("healing")
 			self.particle_fx.healingColumnAura.generate(self.game, self, col)
@@ -595,14 +624,32 @@ function Walter:beforeMatch()
 	local gem_list = grid:getMatchedGemLists()
 	for _, list in pairs(gem_list) do
 		if self.player_num == list[1].owner and list[1].is_in_a_vertical_match then
-			local d = particles.wordEffects.generateEmphasisBars(game, list, "blue")
-			delay = math.max(delay, d)
+			--local d = particles.wordEffects.generateEmphasisBars(game, list, "blue")
+			--delay = math.max(delay, d)
+			self.particle_fx.matchDust.generate(game, self, list)
+			delay = math.max(delay, 20)
 		end
 	end
 
 	return delay
 end
 
+function Walter:afterMatch()
+	-- updating existing cloud animations
+	local cloud_in_col = {}
+	for cloud in self.game.particles:getInstances("CharEffects", self.player_num, "WalterCloud") do
+		cloud_in_col[cloud.col] = true
+	end
+
+	-- make new cloud animations
+	for col in self.game.grid:cols() do
+		if self.pending_clouds[col] and not cloud_in_col[col] and
+			not self.this_turn_already_created_cloud[col] then
+			self:_makeCloud(col, self.CLOUD_EXIST_TURNS)
+			self.this_turn_already_created_cloud[col] = true
+		end
+	end
+end
 
 function Walter:beforeCleanup()
 	local delay = 0
@@ -623,21 +670,14 @@ function Walter:beforeCleanup()
 		cloud:updateDropletFrequency()
 	end
 
-	-- make new cloud animations
-	for col in self.game.grid:cols() do
-		if self.pending_clouds[col] and not cloud_in_col[col] then
-			delay = self.CLOUD_SLIDE_DURATION
-			self:_makeCloud(col, self.CLOUD_EXIST_TURNS)
-		end
-	end
-
 	self.pending_clouds = {}
 
 	return delay	
 end
 
 function Walter:cleanup()
-	self.this_turn_column_healed = {false, false, false, false, false, false, false, false}
+	self.this_turn_column_healed = {}
+	self.this_turn_already_created_cloud = {}
 	Character.cleanup(self)
 end
 

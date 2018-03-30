@@ -113,6 +113,7 @@ function charselect:_createUIButtons()
 		duration = 15,
 		end_x = stage.width * 0.05,
 		end_y = stage.height * 0.09,
+		pushed_sfx = "buttonback",
 		action = function()
 			self.statemanager:switch(require "gs_title")
 		end,

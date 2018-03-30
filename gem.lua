@@ -51,7 +51,7 @@ end
 -- default colors are "red", "blue", "green", "yellow"
 function Gem:setColor(color)
 	self.color = color
-	self:newImage(gemImages[color:lower()]) -- this is a pic.lua method
+	self:newImage(gemImages[color:lower()], true)
 end
 
 function Gem:isStationary()
@@ -93,8 +93,11 @@ function Gem:draw(params)
 	params = params or {}
 	local rgbt = params.RGBTable or {255, 255, 255, self.transparency or 255}
 	if params.darkened and not self.force_max_alpha then
-		rgbt[1], rgbt[2], rgbt[3] = rgbt[1] * 0.5, rgbt[2] * 0.5, rgbt[3] * 0.5
+		rgbt[1] = rgbt[1] * params.darkened
+		rgbt[2] = rgbt[2] * params.darkened
+		rgbt[3] = rgbt[3] * params.darkened
 	end
+
 
 	love.graphics.push("all")
 		--if params.RGBTable then love.graphics.setColor(params.RGBTable) end

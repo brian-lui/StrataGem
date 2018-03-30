@@ -42,10 +42,11 @@ Character.DOUBLE_COST = 3
 Character.cur_burst = 3
 Character.hand_size = 5
 Character.garbage_rows_created = 0
-Character.dropped_piece = false
+Character.dropped_piece = nil
 Character.supering = false
 Character.super_params = {}
 Character.place_type = "normal"
+Character.CAN_SUPER_AND_PLAY_PIECE = true
 
 function Character:init(player_num, game)
 	self.game = game
@@ -70,6 +71,10 @@ end
 
 function Character:addDamage(damage)
 	self.hand.damage = math.min(self.hand.damage + damage, self.MAX_DAMAGE)
+end
+
+function Character:healDamage(damage)
+	self.hand.damage = self.hand.damage - damage
 end
 
 -- do those things to set up the character. Called at start of match
@@ -141,6 +146,7 @@ function Character:toggleSuper(received_from_opponent)
 		end
 		self.game.sound:newSFX("buttonsuper")
 	end
+	return self.supering
 end
 
 function Character:pieceDroppedOK(piece, shift)
@@ -154,11 +160,26 @@ function Character:pieceDroppedOK(piece, shift)
 	end
 end
 
-
 function Character:superSlideInAnim(delay_frames)
 	local delay = self.game.particles.superFreezeEffects.generate(self.game, self,
 		self.shadow_image, self.action_image, self.super_fuzz_image, delay_frames)
 	return delay
+end
+
+-- gets whether the player can still place a piece this turn
+function Character:canPlacePiece()
+	return not (
+		(self.supering and not self.CAN_SUPER_AND_PLAY_PIECE) or
+		(self.dropped_piece == "rushed" or self.dropped_piece == "doubled") or
+		(self.dropped_piece == "normal" and self.cur_burst < self.current_double_cost)
+	)
+end
+
+function Character:canUseSuper()
+	return not (
+		(self.dropped_piece and not self.CAN_SUPER_AND_PLAY_PIECE) or
+		(self.mp < self.SUPER_COST)
+	)
 end
 
 return common.class("Character", Character)

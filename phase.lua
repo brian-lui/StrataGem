@@ -26,6 +26,7 @@ end
 
 -- helper function to set duration of the pause until next phase
 function Phase:setPause(frames)
+	assert(frames >= 0, "Non-positive frames " .. frames .. " provided for phase " .. self.game.current_phase)
 	self.frames_until_next_phase = frames
 end
 
@@ -84,7 +85,6 @@ function Phase:action(dt)
 			end
 		end
 		ai:performQueuedAction()	-- TODO: Expand this to netplay and have the ai read from the net
-		game.ui:putPendingAtTop(dt) -- ready the gems for falling
 		game.particles.upGem.removeAll(game.particles)
 		game.particles.placedGem.removeAll(game.particles)
 	end
@@ -134,7 +134,6 @@ end
 
 function Phase:beforeGravity(dt)
 	local game = self.game
-	--if not game.settings_menu_open then game:brightenScreen() end
 	if game.p1.supering then game.p1:emptyMP() end
 	if game.p2.supering then game.p2:emptyMP() end
 
@@ -143,8 +142,9 @@ function Phase:beforeGravity(dt)
 		local player_delay = player:beforeGravity()
 		delay = math.max(delay, player_delay or 0)
 	end
+	game.ui:putPendingAtTop(delay)
 	self:setPause(delay)
-	self:activatePause("GemTween")
+	self:activatePause("GemTween", true)
 end
 
 function Phase:applyGemTween(dt)
@@ -163,45 +163,44 @@ function Phase:applyGemTween(dt)
 	end
 
 	self:setPause(max_delay)
-	self:activatePause("Gravity", true)
-
-
-	-- TEMP
-	game.queue:add(max_delay, grid.dropColumns, grid)
+	self:activatePause("DuringGravity", true)
 end
 
-function Phase:applyGravity(dt)
+function Phase:duringGravity(dt)
+	local duration = self.game.grid:dropColumns()
+	self:setPause(duration or 0)
+	self:activatePause("AfterGravity", true)
+end
+
+function Phase:afterGravity(dt)
 	local game = self.game
 	local grid = game.grid
-	grid:updateGravity(dt) -- animation
-	if grid:isSettled() then
-		game.particles.wordEffects.clear(game.particles)
+	game.particles.wordEffects.clear(game.particles)
 
-		local delay = 0
-		for player in self.game:players() do
-			local player_delay = player:afterGravity()
-			delay = math.max(delay, player_delay or 0)
-		end
-		self:setPause(delay)
+	local delay = 0
+	for player in self.game:players() do
+		local player_delay = player:afterGravity()
+		delay = math.max(delay, player_delay or 0)
+	end
+	self:setPause(delay)
 
-		for i = 1, grid.COLUMNS do --checks if no_rush should be possible again
-			if not self.no_rush[i] then
-				if not grid[8][i].gem  then
-					self.no_rush[i] = true
-				end
+	for i = 1, grid.COLUMNS do --checks if no_rush should be possible again
+		if not self.no_rush[i] then
+			if not grid[8][i].gem  then
+				self.no_rush[i] = true
 			end
 		end
-		self:activatePause("GetMatchedGems")
+	end
+	self:activatePause("GetMatchedGems")
 
-		-- screencap
-		if game.debug_screencaps then
-			game.debug_screencap_number = game.debug_screencap_number or 0
-			game.debug_screencap_number = game.debug_screencap_number + 1
-			local screenshot = love.graphics.newScreenshot()
-			local filename = "turn" .. game.turn .. "cap" .. game.debug_screencap_number .. ".png"
-			screenshot:encode("png", filename)
-			print("Saved file: " .. filename)
-		end
+	-- screencap
+	if game.debug_screencaps then
+		game.debug_screencap_number = game.debug_screencap_number or 0
+		game.debug_screencap_number = game.debug_screencap_number + 1
+		local screenshot = love.graphics.newScreenshot()
+		local filename = "turn" .. game.turn .. "cap" .. game.debug_screencap_number .. ".png"
+		screenshot:encode("png", filename)
+		print("Saved file: " .. filename)
 	end
 end
 
@@ -272,7 +271,7 @@ function Phase:resolvingMatches(dt)
 	if not self.matched_this_round[2] then grid:removeAllGemOwners(2) end
 	grid:dropColumns()
 	grid:updateGrid()
-	self:activatePause("Gravity")
+	self:activatePause("DuringGravity")
 end
 
 function Phase:resolvedMatches(dt)
@@ -369,7 +368,7 @@ function Phase:platformsMoving(dt)
 
 	if handsettled then	
 		if self.garbage_this_round then
-			game.current_phase = "Gravity"
+			game.current_phase = "DuringGravity"
 		else
 			local delay = 0
 			for player in game:players() do
@@ -409,7 +408,7 @@ function Phase:cleanup(dt)
 	game.ai:newTurn()
 	self.garbage_this_round = false
 	self.force_minimum_1_piece = true
-	p1.dropped_piece, p2.dropped_piece = false, false
+	p1.dropped_piece, p2.dropped_piece = nil, nil
 	p1.played_pieces, p2.played_pieces = {}, {}
 	game.finished_getting_pieces = false
 	grid:setAllGemOwners(0)
@@ -465,7 +464,8 @@ Phase.lookup = {
 	SuperFreeze = Phase.superFreeze,
 	BeforeGravity = Phase.beforeGravity,
 	GemTween = Phase.applyGemTween,
-	Gravity = Phase.applyGravity,
+	DuringGravity = Phase.duringGravity,
+	AfterGravity = Phase.afterGravity,
 	GetMatchedGems = Phase.getMatchedGems,
 	DestroyMatchedGems = Phase.destroyMatchedGems,
 	ResolvingMatches = Phase.resolvingMatches,

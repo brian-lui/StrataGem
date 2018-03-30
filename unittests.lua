@@ -246,10 +246,13 @@ end
 local function toggleSlowdown(game)
 	if game.timeStep == 1/60 then
 		game.timeStep = 1/5
+		game.debug_pause_mode = true
 	elseif game.timeStep == 1/5 then
 		game.timeStep = 2
+		game.debug_pause_mode = true
 	else
 		game.timeStep = 1/60
+		game.debug_pause_mode = false
 	end
 end
 
@@ -328,12 +331,12 @@ local function superToggle(game)
 	end
 end
 
-local function heathFireFadeTest(game)
-	game.p2.particle_fx.smallFire.generateSmallFireFadeTest(game, game.p2, 8)
-end
-
 local function gailPetalTest(game)
 	game.p1.particle_fx.testPetal.generate(game, game.p1)
+end
+
+local function canPlacePiece(game)
+	game.p1.hand:canPlacePiece()
 end
 
 local function toggleScreencaps(game)
@@ -346,7 +349,7 @@ local function toggleScreencaps(game)
 	end
 end
 local Unittests = {
-	q = garbageMatch,
+	q = canPlacePiece,
 	w = multiCombo,
 	e = charselectScreenCPUCharToggle,
 	r = flagVerticalHorizontal,
