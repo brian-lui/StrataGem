@@ -75,6 +75,7 @@ end
 -- The templating is the same as particles.lua, but the init and remove refers
 -- to manager.allParticels.CharEffects
 -------------------------------------------------------------------------------
+-- This little guy is the fire from a horizontal match
 local SmallFire = {}
 function SmallFire:init(manager, tbl)
 	Pic.init(self, manager.game, tbl)
@@ -161,10 +162,71 @@ function SmallFire:update(dt)
 end
 
 SmallFire = common.class("SmallFire", SmallFire, Pic)
--------------------------------------------------------------------------------
 
+-------------------------------------------------------------------------------
+local Boom = {}
+function Boom:init(manager, tbl)
+	Pic.init(self, manager.game, tbl)
+	manager.allParticles.CharEffects[ID.particle] = self
+	self.manager = manager
+end
+
+function Boom:remove()
+	self.manager.allParticles.CharEffects[self.ID] = nil
+end
+
+function Boom._generateBoom(game, owner, x, y, delay_frames)
+	delay_frames = delay_frames or 0
+	local grid = game.grid
+	local stage = game.stage
+
+	local p1 = common.instance(Boom, game.particles, 
+		{x = x, y = y, image = owner.special_images.boom[1], owner = owner}
+	)
+	local p2 = common.instance(Boom, game.particles, 
+		{x = x, y = y, image = owner.special_images.boom[2], owner = owner}
+	)
+	local p3 = common.instance(Boom, game.particles, 
+		{x = x, y = y, image = owner.special_images.boom[3], owner = owner}
+	)
+
+	local x_vel = stage.gem_width * (math.random() - 0.5) * 4
+	local y_vel = stage.gem_height * - (math.random() * 0.5 + 0.5) * 4
+	local gravity = stage.gem_height * 2.5
+	local x_dest1 = x + 1 * x_vel
+	local x_dest2 = x + 1.5 * x_vel
+
+	for i, p in ipairs{p1, p2, p3} do
+		local y_func1 = function() return y + p.t * y_vel + p.t^2 * gravity end
+		local y_func2 = function() return y + (p.t + 1) * y_vel + (p.t + 1)^2 * gravity end
+		local rotation_func1 = function()
+			return math.atan2(y_vel + p.t * 2 * gravity, x_vel) - (math.pi * 0.5)
+		end
+		local rotation_func2 = function()
+			return math.atan2(y_vel + (p.t + 1) * 2 * gravity, x_vel) - (math.pi * 0.5)
+		end
+
+		p.transparency = 0
+		p:wait(delay_frames + (i - 1)  * 15)
+		p:change{duration = 0, transparency = 255}
+		p:change{duration = 60, x = x_dest1, y = y_func1, rotation = rotation_func1}
+		p:change{duration = 30, x = x_dest2, y = y_func2, rotation = rotation_func2,
+			transparency = 0, remove = true}
+	end
+end
+
+function Boom.generate(game, owner, row, col, delay, n)
+	n = n or 4
+	local x, y = game.grid.x[col], game.grid.y[row]
+	for _ = 1, n do owner.particle_fx.boom._generateBoom(game, owner, x, y, delay) end
+end
+
+Boom = common.class("Boom", Boom, Pic)
+
+-------------------------------------------------------------------------------
 Heath.particle_fx = {
 	smallFire = SmallFire,
+	boom = Boom,
 }
 -------------------------------------------------------------------------------
 
@@ -197,6 +259,7 @@ function Heath:beforeGravity()
 					glow_delay = 20,
 					force_max_alpha = true,
 				}
+				self.particle_fx.boom.generate(game, self, top_row, col, delay, 12)
 			end
 		end
 	end
@@ -208,6 +271,7 @@ function Heath:beforeTween()
 	self.supering = false
 	self.game:brightenScreen(self.player_num)
 end
+
 -- extinguish ready_fires where a gem landed on them
 function Heath:afterGravity()
 	for i in self.game.grid:cols() do
@@ -234,9 +298,10 @@ function Heath:beforeMatch()
 		local h = "vertical"
 		if gem.is_in_a_horizontal_match then h = "horizontal" end
 
-		local top_gem = gem.row-1 == grid:getFirstEmptyRow(gem.column)
+		local top_gem = gem.row == grid:getFirstEmptyRow(gem.column, true) + 1
 		if self.player_num == gem.owner and gem.is_in_a_horizontal_match and top_gem then
 			self.pending_fires[gem.column] = true
+			self.particle_fx.boom.generate(game, self, gem.row, gem.column, game.GEM_EXPLODE_FRAMES)
 		end
 	end
 
@@ -245,19 +310,22 @@ end
 
 -- create fire particle for passive
 function Heath:afterMatch()
+	local game = self.game
+	local grid = game.grid
+
 	local delay_to_return = 0
 	local fire_sound = false
-	for i in self.game.grid:cols() do
+	for i in grid:cols() do
 		if not self.generated_fire_images[i] and self.pending_fires[i] then
 			delay_to_return = self.particle_fx.smallFire.generateSmallFire(self.game, self, i)
 			self.generated_fire_images[i] = true
 			fire_sound = true
 		end
 	end
-	if fire_sound then self.game.sound:newSFX(self.sounds.passive) end
+	if fire_sound then game.sound:newSFX(self.sounds.passive) end
 
 	-- fire passive update, in case of chain combo for a gem below the fire
-	for _, particle in pairs(self.game.particles.allParticles.CharEffects) do
+	for _, particle in pairs(game.particles.allParticles.CharEffects) do
 		if particle.player_num == self.player_num and particle.name == "HeathFire" then
 			particle:updateYPos()
 		end
