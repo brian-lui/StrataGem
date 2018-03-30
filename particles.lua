@@ -1184,136 +1184,6 @@ function WordEffects.generateGoStar(game, x, y, x_vel, y_vel)
 	p:change{duration = 120, x = x + x_vel, y = y_func, remove = true}
 end
 
--- The "impact" type emphasis bars to indicate a passive ability was triggered
--- takes a table of matched gems, and the color of the emphasis bar
-function WordEffects.generateEmphasisBars(game, gem_table, color)
-	local grid = game.grid
-	local stage = game.stage
-	local img = image.lookup.colorline[color]
-	assert(img, "Invalid color specified for emphasis bar")
-
-	local horizontal, vertical = true, true
-	for i = 1, #gem_table do
-		if not gem_table[i].is_in_a_horizontal_match then horizontal = false end
-		if not gem_table[i].is_in_a_vertical_match then vertical = false end
-	end
-
-	local DURATION_1, DURATION_2, DURATION_3 = 5, 40, 45
-
-	if horizontal then
-		local row = gem_table[1].row
-		local center_y = grid.y[row]
-		local center_dist = image.GEM_HEIGHT * 0.5 + img:getHeight() * 0.5
-
-		for i = 1, #gem_table do -- top and bottom bars
-			local column = gem_table[i].column
-			local x = grid.x[column]
-			local top_start = center_y - center_dist - image.GEM_HEIGHT * 6
-			local top_mid = center_y - center_dist - image.GEM_HEIGHT * 5
-			local top_dest = center_y - center_dist
-			local bottom_start = center_y + center_dist + image.GEM_HEIGHT * 6
-			local bottom_mid = center_y + center_dist + image.GEM_HEIGHT * 5
-			local bottom_dest = center_y + center_dist
-		
-			local top = common.instance(WordEffects, game.particles, x, top_start, img)
-			local top_sparkle = {Dust.generateFountain, game, x, top_dest, color, 8}
-			top:change{transparency = 0}
-			top:change{duration = DURATION_1, transparency = 255, y = top_mid}
-			top:change{duration = DURATION_2, y = top_dest, easing = "inOutCubic", exit_func = top_sparkle}
-			top:change{duration = DURATION_3, transparency = 0, easing = "inBounce", remove = true}
-
-			local bottom = common.instance(WordEffects, game.particles, x, bottom_start, img)
-			local bottom_sparkle = {Dust.generateFountain, game, x, bottom_dest, color, 8}
-			bottom:change{transparency = 0}
-			bottom:change{duration = DURATION_1, transparency = 255, y = bottom_mid}
-			bottom:change{duration = DURATION_2, y = bottom_dest, easing = "inOutCubic", exit_func = bottom_sparkle}
-			bottom:change{duration = DURATION_3, transparency = 0, easing = "inBounce", remove = true}
-		end
-
-		-- left and right bars
-		center_dist = image.GEM_WIDTH * 0.5 + img:getHeight() * 0.5
-		local left_x = grid.x[gem_table[1].column] - center_dist
-		local left_start = left_x - image.GEM_WIDTH * 6
-		local left_mid =  left_x - image.GEM_WIDTH * 5
-		local left_dest = left_x
-		local right_x = grid.x[gem_table[#gem_table].column] + center_dist
-		local right_start = right_x + image.GEM_WIDTH * 6
-		local right_mid = right_x + image.GEM_WIDTH * 5
-		local right_dest = right_x
-
-		local left = common.instance(WordEffects, game.particles, left_start, center_y, img)
-		local left_sparkle = {Dust.generateFountain, game, left_dest, center_y, color, 8}
-		left:change{rotation = math.pi * 0.5, transparency = 0}
-		left:change{duration = DURATION_1, transparency = 255, x = left_mid}
-		left:change{duration = DURATION_2, x = left_dest, easing = "inOutCubic", exit_func = left_sparkle}
-		left:change{duration = DURATION_3, transparency = 0, easing = "inBounce", remove = true}
-
-		local right = common.instance(WordEffects, game.particles, right_start, center_y, img)
-		local right_sparkle = {Dust.generateFountain, game, right_dest, center_y, color, 8}
-		right:change{rotation = math.pi * 0.5, transparency = 0}
-		right:change{duration = DURATION_1, transparency = 255, x = right_mid}
-		right:change{duration = DURATION_2, x = right_dest, easing = "inOutCubic", exit_func = right_sparkle}
-		right:change{duration = DURATION_3, transparency = 0, easing = "inBounce", remove = true}
-	end
-
-	if vertical then
-		local column = gem_table[1].column
-		local center_x = grid.x[column]
-		local center_dist = image.GEM_WIDTH * 0.5 + img:getHeight() * 0.5
-
-		for i = 1, #gem_table do -- left and right bars
-			local row = gem_table[i].row
-			local y = grid.y[row]
-			local left_start = center_x - center_dist - image.GEM_WIDTH * 6
-			local left_mid = center_x - center_dist - image.GEM_WIDTH * 5
-			local left_dest = center_x - center_dist
-			local right_start = center_x + center_dist + image.GEM_WIDTH * 6
-			local right_mid = center_x + center_dist + image.GEM_WIDTH * 5
-			local right_dest = center_x + center_dist
-
-			local left = common.instance(WordEffects, game.particles, left_start, y, img)
-			local left_sparkle = {Dust.generateFountain, game, left_dest, y, color, 8}
-			left:change{rotation = math.pi * 0.5, transparency = 0}
-			left:change{duration = DURATION_1, transparency = 255, x = left_mid}
-			left:change{duration = DURATION_2, x = left_dest, easing = "inOutCubic", exit_func = left_sparkle}
-			left:change{duration = DURATION_3, transparency = 0, easing = "inBounce", remove = true}
-
-			local right = common.instance(WordEffects, game.particles, right_start, y, img)
-			local right_sparkle = {Dust.generateFountain, game, right_dest, y, color, 8}
-			right:change{rotation = math.pi * 0.5, transparency = 0}
-			right:change{duration = DURATION_1, transparency = 255, x = right_mid}
-			right:change{duration = DURATION_2, x = right_dest, easing = "inOutCubic", exit_func = right_sparkle}
-			right:change{duration = DURATION_3, transparency = 0, easing = "inBounce", remove = true}
-		end
-
-		-- top and bottom bars
-		center_dist = image.GEM_HEIGHT * 0.5 + img:getHeight() * 0.5
-		local top_y = grid.y[gem_table[1].row] - center_dist
-		local top_start = top_y - image.GEM_HEIGHT * 6
-		local top_mid =  top_y - image.GEM_HEIGHT * 5
-		local top_dest = top_y
-		local bottom_y = grid.y[gem_table[#gem_table].row] + center_dist
-		local bottom_start = bottom_y + image.GEM_HEIGHT * 6
-		local bottom_mid = bottom_y + image.GEM_HEIGHT * 5
-		local bottom_dest = bottom_y
-
-		local top = common.instance(WordEffects, game.particles, center_x, top_start, img)
-		local top_sparkle = {Dust.generateFountain, game, center_x, top_dest, color, 8}
-		top:change{transparency = 0}
-		top:change{duration = DURATION_1, transparency = 255, y = top_mid}
-		top:change{duration = DURATION_2, y = top_dest, easing = "inOutCubic", exit_func = top_sparkle}
-		top:change{duration = DURATION_3, transparency = 0, easing = "inBounce", remove = true}
-
-		local bottom = common.instance(WordEffects, game.particles, center_x, bottom_start, img)
-		local bottom_sparkle = {Dust.generateFountain, game, center_x, bottom_dest, color, 8}
-		bottom:change{transparency = 0}
-		bottom:change{duration = DURATION_1, transparency = 255, y = bottom_mid}
-		bottom:change{duration = DURATION_2, y = bottom_dest, easing = "inOutCubic", exit_func = bottom_sparkle}
-		bottom:change{duration = DURATION_3, transparency = 0, easing = "inBounce", remove = true}
-	end
-	return DURATION_1 + DURATION_2
-end
-
 function WordEffects:cloudExists()
 	for _, effect in pairs(self.allParticles.WordEffects) do
 		if effect.cloud then return true end
@@ -1328,9 +1198,6 @@ function WordEffects.clear(manager)
 end
 
 WordEffects = common.class("WordEffects", WordEffects, Pic)
--------------------------------------------------------------------------------
-
-
 
 -------------------------------------------------------------------------------
 -- words! Doublecast, rush, go, and ready so far.
@@ -1577,7 +1444,6 @@ Particles.garbageParticles = GarbageParticles
 Particles.garbageTrail = GarbageTrail
 Particles.platformStar = PlatformStar
 Particles.dust = Dust
---Particles.overDust = OverDust
 Particles.upGem = UpGem
 Particles.placedGem = PlacedGem
 Particles.gemImage = GemImage

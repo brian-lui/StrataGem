@@ -49,18 +49,10 @@ Heath.special_images = {
 		love.graphics.newImage('images/characters/heath/fire2.png'),
 		love.graphics.newImage('images/characters/heath/fire3.png'),
 	},
-	fire_particle = love.graphics.newImage('images/characters/heath/fireparticle.png'),
 	boom = {
-		love.graphics.newImage('images/characters/heath/explode1.png'),
-		love.graphics.newImage('images/characters/heath/explode2.png'),
-		love.graphics.newImage('images/characters/heath/explode3.png'),
-		love.graphics.newImage('images/characters/heath/explode4.png'),
-		love.graphics.newImage('images/characters/heath/explode5.png'),
-	},
-	boom_particle = {
-		love.graphics.newImage('images/characters/heath/boomparticle1.png'),
-		love.graphics.newImage('images/characters/heath/boomparticle2.png'),
-		love.graphics.newImage('images/characters/heath/boomparticle3.png'),
+		love.graphics.newImage('images/characters/heath/boom1.png'),
+		love.graphics.newImage('images/characters/heath/boom2.png'),
+		love.graphics.newImage('images/characters/heath/boom3.png'),
 	},
 }
 
@@ -77,8 +69,6 @@ function Heath:init(...)
 	self.ready_fires = {} -- fires at t1, ready to burn
 	self.pending_gem_cols = {} -- pending gems, for extinguishing of ready_fires
 	self.generated_fire_images = {} -- whether fire particles were generated yet. one for each col
-	--self.super_gems = {} -- gems to be reflagged and destroyed by super effect
-	--self.super_boom_effects = {} -- {row/col} of boom effects to be created
 end
 
 -- *This part creates the animations for the character's specials and supers
@@ -144,7 +134,6 @@ function SmallFire.generateSmallFire(game, owner, col)
 		image_index = 1,
 		SWAP_FRAMES = 6,
 		current_frame = 6,
-		--update = update_func,
 		owner = owner,
 		player_num = owner.player_num,
 		name = "HeathFire",
@@ -173,97 +162,9 @@ end
 
 SmallFire = common.class("SmallFire", SmallFire, Pic)
 -------------------------------------------------------------------------------
-local Boom = {}
-function Boom:init(manager, tbl)
-	Pic.init(self, manager.game, tbl)
-	manager.allParticles.CharEffects[ID.particle] = self
-	self.manager = manager
-end
-
-function Boom:remove()
-	self.manager.allParticles.CharEffects[self.ID] = nil
-end
-
-function Boom._generateBoomParticle(game, boom, delay_frames)
-	local stage = game.stage
-	local particle_idx = math.random(1, 3)
-	local params = {
-		x = boom.x,
-		y = boom.y,
-		image = Heath.special_images.boom_particle[particle_idx],
-		owner = boom.owner,
-		player_num = boom.player_num,
-		name = "HeathBoomParticle",
-	}
-
-	local p = common.instance(Boom, game.particles, params)
-
-	local x_vel = stage.gem_width * (math.random() - 0.5) * 4
-	local y_vel = stage.gem_height * - (math.random() * 0.5 + 0.5) * 4
-	local gravity = stage.gem_height * 3
-	local x_dest1 = boom.x + 1 * x_vel
-	local x_dest2 = boom.x + 1.5 * x_vel
-	local y_func1 = function() return boom.y + p.t * y_vel + p.t^2 * gravity end
-	local y_func2 = function() return boom.y + (p.t + 1) * y_vel + (p.t + 1)^2 * gravity end
-	local rotation_func = function()
-		return math.atan2(y_vel + gravity * 1, x_vel) - (math.pi * 0.5)
-	end
-
-	if delay_frames then
-		p.transparency = 0
-		p:wait(delay_frames)
-		p:change{duration = 0, transparency = 255}
-	end
-
-	p:change{duration = 60, x = x_dest1, y = y_func1, rotation = rotation_func}
-	p:change{duration = 30, x = x_dest2, y = y_func2, rotation = rotation_func,
-		transparency = 0, remove = true}
-end
-
-function Boom.generateBoom(game, owner, row, col)
-	local particles = game.particles
-	local grid = game.grid
-
-	local function update_func(self, dt)
-		Pic.update(self, dt)
-		self.elapsed_frames = self.elapsed_frames + 1
-		if self.elapsed_frames >= 6 then -- loop through images
-			if self.current_image_idx < 5 then
-				self.current_image_idx = self.current_image_idx + 1
-				self:newImage(Heath.special_images.boom[self.current_image_idx])
-				self.elapsed_frames = 0
-			else
-				self:remove()
-			end
-		end
-	end
-
-	local params = {
-		x = grid.x[col],
-		y = grid.y[row], 
-		image = Heath.special_images.boom[1],
-		current_image_idx = 1,
-		elapsed_frames = 0,
-		update = update_func,
-		owner = owner,
-		player_num = owner.player_num,
-		name = "HeathBoom",
-	}
-
-	local p = common.instance(Boom, game.particles, params)
-	for i = 1, 20 do
-		Heath.particle_fx.boom._generateBoomParticle(game, p)
-		Heath.particle_fx.boom._generateBoomParticle(game, p, 5)
-		Heath.particle_fx.boom._generateBoomParticle(game, p, 10)
-	end
-end
-
-Boom = common.class("Boom", Boom, Pic)
-
 
 Heath.particle_fx = {
 	smallFire = SmallFire,
-	boom = Boom,
 }
 -------------------------------------------------------------------------------
 
@@ -296,7 +197,6 @@ function Heath:beforeGravity()
 					glow_delay = 20,
 					force_max_alpha = true,
 				}
-				self.particle_fx.boom.generateBoom(game, self, top_row, col)
 			end
 		end
 	end

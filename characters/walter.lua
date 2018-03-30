@@ -624,8 +624,6 @@ function Walter:beforeMatch()
 	local gem_list = grid:getMatchedGemLists()
 	for _, list in pairs(gem_list) do
 		if self.player_num == list[1].owner and list[1].is_in_a_vertical_match then
-			--local d = particles.wordEffects.generateEmphasisBars(game, list, "blue")
-			--delay = math.max(delay, d)
 			self.particle_fx.matchDust.generate(game, self, list)
 			delay = math.max(delay, 20)
 		end
