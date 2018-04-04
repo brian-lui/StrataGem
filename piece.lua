@@ -144,8 +144,9 @@ end
 
 -- draw gems with displacement depending on piece is_horizontal
 function Piece:draw(params)
-	local frame = self.game.frame
-	local stage = self.game.stage
+	local game = self.game
+	local frame = game.frame
+	local stage = game.stage
 	--screen shake translation
 	local h_shake, v_shake = 0, 0
 	if self.shake then
@@ -154,7 +155,10 @@ function Piece:draw(params)
 	end
 
 	local gem_darkened = params.darkened
-	if not self.owner:canPlacePiece() then gem_darkened = 0.5 end
+	if (not self.owner:canPlacePiece() or game.current_phase ~= "Action") and
+	self.owner == game.me_player then
+		gem_darkened = 0.5
+	end
 
 	love.graphics.push("all")
 		love.graphics.translate(h_shake, v_shake)

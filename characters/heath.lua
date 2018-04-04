@@ -22,6 +22,7 @@ local Character = require "character"
 
 local Heath = {}
 Heath.character_id = "Heath"
+Heath.CAN_SUPER_AND_PLAY_PIECE = false
 Heath.meter_gain = {red = 8, blue = 4, green = 4, yellow = 4}
 
 Heath.full_size_image = love.graphics.newImage('images/portraits/heath.png')
@@ -73,7 +74,7 @@ end
 
 -- *This part creates the animations for the character's specials and supers
 -- The templating is the same as particles.lua, but the init and remove refers
--- to manager.allParticels.CharEffects
+-- to manager.allParticles.CharEffects
 -------------------------------------------------------------------------------
 -- This little guy is the fire from a horizontal match
 local SmallFire = {}
@@ -105,21 +106,8 @@ function SmallFire:countdown()
 	self.turns_remaining = self.turns_remaining - 1
 end
 
-function SmallFire.generateSmallFire(game, owner, col)
+function SmallFire.generateSmallFire(game, owner, col, delay)
 	local grid = game.grid
-
-	local function update_func(self, dt)
-		Pic.update(self, dt)
-		self.elapsed_frames = self.elapsed_frames + 1
-		if self.elapsed_frames >= 6 then -- loop through images
-			self.current_image_idx = self.current_image_idx % 3 + 1
-			self:newImage(Heath.special_images.fire[self.current_image_idx])	
-			self.elapsed_frames = 0
-		end
-		if self.turns_remaining < 0 and self:isStationary() then
-			self:change{duration = 32, transparency = 0, remove = true}
-		end
-	end
 
 	local start_row = grid:getFirstEmptyRow(col)
 	local start_y = grid.y[start_row]
@@ -133,14 +121,20 @@ function SmallFire.generateSmallFire(game, owner, col)
 		turns_remaining = 1,
 		image = Heath.special_images.fire[1],
 		image_index = 1,
-		SWAP_FRAMES = 6,
-		current_frame = 6,
+		SWAP_FRAMES = 8,
+		current_frame = 8,
 		owner = owner,
 		player_num = owner.player_num,
 		name = "HeathFire",
 	}
 
 	local p = common.instance(SmallFire, game.particles, params)
+	if delay then
+		p:change{duration = 0, transparency = 0}
+		p:wait(delay)
+		p:change{duration = 0, transparency = 255}
+	end
+
 	p:change{duration = 15, y = bounce_top_y, scaling = 0.5}
 	p:change{duration = 15, y = start_y, scaling = 1}
 	return 30
@@ -190,9 +184,9 @@ function Boom._generateBoom(game, owner, x, y, delay_frames)
 		{x = x, y = y, image = owner.special_images.boom[3], owner = owner}
 	)
 
-	local x_vel = stage.gem_width * (math.random() - 0.5) * 4
-	local y_vel = stage.gem_height * - (math.random() * 0.5 + 0.5) * 4
-	local gravity = stage.gem_height * 2.5
+	local x_vel = stage.gem_width * (math.random() - 0.5) * 16
+	local y_vel = stage.gem_height * - (math.random() * 0.5 + 0.5) * 16
+	local gravity = stage.gem_height * 10
 	local x_dest1 = x + 1 * x_vel
 	local x_dest2 = x + 1.5 * x_vel
 
@@ -262,6 +256,16 @@ function Heath:beforeGravity()
 				self.particle_fx.boom.generate(game, self, top_row, col, delay, 12)
 			end
 		end
+
+		-- generate fires
+		for i in grid:cols(self.player_num) do
+			if not self.pending_gem_cols[i] then
+				self.pending_fires[i] = true
+				self.particle_fx.smallFire.generateSmallFire(self.game, self, i, delay)
+			end
+		end
+
+		game.sound:newSFX(self.sounds.passive)
 	end
 
 	return delay

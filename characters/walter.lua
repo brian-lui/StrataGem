@@ -65,7 +65,7 @@ function Walter:init(...)
 	Character.init(self, ...)
 
 	self.FOAM_APPEAR_DURATION = 30 -- how long it takes for foam to appear
-	self.FOAM_FRAMES_BETWEEN_DROPLETS = 1 -- how many frames before making new foam-droplet
+	self.FOAM_FRAMES_BETWEEN_DROPLETS = 2 -- how many frames before making new foam-droplet
 	self.SPOUT_SPEED = 8 -- how many frames it takes for the spout to move one gem_height
 	self.SPOUT_BOB_SPEED = 32 -- how many frames for one spout bob
 	self.CLOUD_SLIDE_DURATION = 36 -- how long for the cloud incoming tween
@@ -209,7 +209,7 @@ function Spout.generate(game, owner, col)
 		y = grid.y[grid.BASIN_END_ROW] + image.GEM_HEIGHT * 0.5 + spout_height * 0.5,
 		image = owner.special_images.spout[1],
 		image_index = 1,
-		SWAP_FRAMES = 6,
+		SWAP_FRAMES = 8,
 		current_frame = 6,
 
 		col = col,
@@ -478,9 +478,11 @@ function HealingColumnAura.generate(game, owner, col)
 	}
 
 	local p = common.instance(HealingColumnAura, game.particles, params)
-	p:change{duration = 10, transparency = 255}
+	p:change{duration = 8, transparency = 255}
 	p:wait(30)
-	p:change{duration = 20, transparency = 0, remove = true}
+	p:change{duration = 8, transparency = 0, remove = true}
+
+	return 48
 end
 HealingColumnAura = common.class("HealingColumnAura", HealingColumnAura, Pic)
 
@@ -525,6 +527,8 @@ function MatchDust.generate(game, owner, match_list)
 			p:change{duration = 120, x = x_dest, y = y_dest, easing = "inCubic", remove = true}
 		end
 	end
+
+	return 120 -- time until dust disappears
 end
 MatchDust = common.class("MatchDust", MatchDust, Pic)
 
@@ -538,8 +542,9 @@ Walter.particle_fx = {
 }
 -------------------------------------------------------------------------------
 
-function Walter:_makeCloud(column)
-	self.particle_fx.healingCloud.generate(self.game, self, column)
+function Walter:_makeCloud(column, delay)
+	self.game.queue:add(delay, self.particle_fx.healingCloud.generate, self.game, self, column)
+	--self.particle_fx.healingCloud.generate(self.game, self, column)
 end
 
 function Walter:beforeGravity()
@@ -579,17 +584,13 @@ function Walter:beforeGravity()
 end
 
 function Walter:beforeTween()
-	self.supering = false
-	self.game:brightenScreen(self.player_num)
-end
-
-function Walter:beforeMatch()
 	local game = self.game
 	local grid = game.grid
-	local particles = game.particles
+
+	self.supering = false
+	game:brightenScreen(self.player_num)
 
 	local delay = 0
-
 	-- Healing damage from rainclouds
 	for col in grid:cols() do
 		if self.cloud_turns_remaining[col] > 0 and not self.this_turn_column_healed[col] then
@@ -597,7 +598,7 @@ function Walter:beforeMatch()
 			local y = (grid.y[grid.BASIN_START_ROW] + grid.y[grid.BASIN_END_ROW]) * 0.5
 			local y_range = image.GEM_HEIGHT * 4
 
-			delay = particles.healing.generate{
+			delay = game.particles.healing.generate{
 				game = game,
 				x = x,
 				y = y,
@@ -612,6 +613,16 @@ function Walter:beforeMatch()
 		end
 	end
 
+	return delay
+end
+
+function Walter:beforeMatch()
+	local game = self.game
+	local grid = game.grid
+
+	local delay = 0
+	local frames_until_cloud_forms = 0
+
 	-- Which columns to get rainclouds next turn
 	local gem_table = grid:getMatchedGems()
 	for _, gem in pairs(gem_table) do
@@ -624,16 +635,12 @@ function Walter:beforeMatch()
 	local gem_list = grid:getMatchedGemLists()
 	for _, list in pairs(gem_list) do
 		if self.player_num == list[1].owner and list[1].is_in_a_vertical_match then
-			self.particle_fx.matchDust.generate(game, self, list)
 			delay = math.max(delay, 20)
+			frames_until_cloud_forms = self.particle_fx.matchDust.generate(game, self, list)
 		end
 	end
 
-	return delay
-end
-
-function Walter:afterMatch()
-	-- updating existing cloud animations
+	-- get which columns already have clouds
 	local cloud_in_col = {}
 	for cloud in self.game.particles:getInstances("CharEffects", self.player_num, "WalterCloud") do
 		cloud_in_col[cloud.col] = true
@@ -643,10 +650,15 @@ function Walter:afterMatch()
 	for col in self.game.grid:cols() do
 		if self.pending_clouds[col] and not cloud_in_col[col] and
 			not self.this_turn_already_created_cloud[col] then
-			self:_makeCloud(col, self.CLOUD_EXIST_TURNS)
+			self:_makeCloud(col, frames_until_cloud_forms)
 			self.this_turn_already_created_cloud[col] = true
 		end
 	end
+
+	return delay
+end
+
+function Walter:afterMatch()
 end
 
 function Walter:beforeCleanup()
