@@ -104,6 +104,7 @@ end
 function Phase:resolve(dt)
 	local game = self.game
 	if game.me_player.place_type == nil then print("PLACE TYPE BUG") end
+	game.grid:updateRushPriority()
 
 	local delay = 0
 	for player in game:players() do
@@ -113,7 +114,6 @@ function Phase:resolve(dt)
 	self:setPause(delay)
 	self:activatePause("SuperFreeze")
 
-	game.grid:updateRushPriority()
 	game.inputs_frozen = true
 end
 
@@ -288,7 +288,7 @@ function Phase:resolvedMatches(dt)
 	end
 	if game.particles:getCount("onscreen", "Damage", 1) + game.particles:getCount("onscreen", "Damage", 2) == 0 then
 	-- all damage particles finished
-		for player in game:players() do player.place_type = "normal" end
+		for player in game:players() do player.place_type = "none" end
 		game.scoring_combo = 0
 		game.grid:setAllGemOwners(0)
 		for i = 1, grid.COLUMNS do --checks if should generate no rush

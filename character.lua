@@ -45,7 +45,7 @@ Character.garbage_rows_created = 0
 Character.dropped_piece = nil
 Character.supering = false
 Character.super_params = {}
-Character.place_type = "normal"
+Character.place_type = "none"
 Character.CAN_SUPER_AND_PLAY_PIECE = true
 
 function Character:init(player_num, game)
@@ -65,16 +65,19 @@ function Character:init(player_num, game)
 end
 
 function Character:addSuper(amt)
-	--self.mp = math.min(self.mp + amt, self.MAX_MP)
 	self.mp = self.mp + amt
 end
 
-function Character:addDamage(damage)
-	self.hand.damage = math.min(self.hand.damage + damage, self.MAX_DAMAGE)
+function Character:addDamage(damage, delay)
+	delay = delay or 0
+	self.game.queue:add(delay, function()
+		self.hand.damage = math.min(self.hand.damage + damage, self.MAX_DAMAGE)
+	end)
 end
 
-function Character:healDamage(damage)
-	self.hand.damage = self.hand.damage - damage
+function Character:healDamage(damage, delay)
+	delay = delay or 0
+	self.game.queue:add(delay, function() self.hand.damage = self.hand.damage - damage end)
 end
 
 -- do those things to set up the character. Called at start of match

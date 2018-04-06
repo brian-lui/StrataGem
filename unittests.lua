@@ -69,8 +69,8 @@ local function testWalterPassive(game)
 	nrow(game, 4, " GYR    ")
 	nrow(game, 5, "YRGB    ")
 	nrow(game, 6, "YRGB    ")
-	nrow(game, 7, "RGBY    ")
-	nrow(game, 8, "RGBYY   ")
+	nrow(game, 7, "RGBYYBGR")
+	nrow(game, 8, "RGBYYBGR")
 	game.grid:updateGrid()
 end
 
@@ -171,7 +171,7 @@ local function shuffleHands(game)
 end
 
 local function resetGame(game)
-	game:start("1P", "walter", "heath", "checkmate", nil, 1)
+	game:start("1P", "heath", "walter", "checkmate", nil, 1)
 end
 
 local function displayNoRush(game)

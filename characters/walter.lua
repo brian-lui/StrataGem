@@ -463,7 +463,7 @@ function HealingColumnAura:remove()
 	self.manager.allParticles.CharEffects[self.ID] = nil
 end
 
-function HealingColumnAura.generate(game, owner, col)
+function HealingColumnAura.generate(game, owner, col, delay)
 	local grid = game.grid
 	local params = {
 		x = grid.x[col],
@@ -478,6 +478,12 @@ function HealingColumnAura.generate(game, owner, col)
 	}
 
 	local p = common.instance(HealingColumnAura, game.particles, params)
+	if delay then
+		p.transparency = 0
+		p:wait(delay)
+		p:change{duration = 0, transparency = 255}
+	end
+
 	p:change{duration = 8, transparency = 255}
 	p:wait(30)
 	p:change{duration = 8, transparency = 0, remove = true}
@@ -544,43 +550,80 @@ Walter.particle_fx = {
 
 function Walter:_makeCloud(column, delay)
 	self.game.queue:add(delay, self.particle_fx.healingCloud.generate, self.game, self, column)
-	--self.particle_fx.healingCloud.generate(self.game, self, column)
+end
+
+function Walter:_activateSuper()
+	local game = self.game
+	local grid = game.grid
+
+	local delay = 0
+
+	-- find highest column
+	local col, start_row = -1, grid.BOTTOM_ROW
+	for i in grid:cols(self.player_num) do
+		local rows =  grid:getFirstEmptyRow(i, true) + 1
+		if rows < start_row then col, start_row = i, rows end
+	end
+
+	if col ~= -1 then
+		for row = grid.BOTTOM_ROW, start_row, -1 do
+			delay = (grid.BOTTOM_ROW - row) * self.SPOUT_SPEED + self.FOAM_APPEAR_DURATION - game.GEM_EXPLODE_FRAMES
+			local gem = grid[row][col].gem
+			gem:setOwner(self.player_num)
+			grid:destroyGem{
+				gem = gem,
+				super_meter = false,
+				glow_delay = delay,
+				force_max_alpha = true,
+			}
+		end
+
+		self.particle_fx.foam.generate(self.game, self, col)
+		self.particle_fx.spout.generate(self.game, self, col)
+	end
+	return delay + game.GEM_EXPLODE_FRAMES + 30
+end
+
+-- Healing damage from rainclouds
+function Walter:_cloudHealingDamage(delay)
+	local game = self.game
+	local grid = game.grid
+
+	delay = delay or 0
+	local additional_delay = 0
+
+	for col in grid:cols() do
+		if self.cloud_turns_remaining[col] > 0 and not self.this_turn_column_healed[col] then
+			local x = grid.x[col]
+			local y = (grid.y[grid.BASIN_START_ROW] + grid.y[grid.BASIN_END_ROW]) * 0.5
+			local y_range = image.GEM_HEIGHT * 4
+
+			additional_delay = game.particles.healing.generate{
+				game = game,
+				x = x,
+				y = y,
+				y_range = y_range,
+				owner = self,
+				delay = delay,
+			}
+
+			self:healDamage(1, delay)
+			self.this_turn_column_healed[col] = true
+			game.queue:add(delay, game.sound.newSFX, game.sound, "healing")
+			self.particle_fx.healingColumnAura.generate(self.game, self, col, delay)
+		end
+	end
+
+	return additional_delay
 end
 
 function Walter:beforeGravity()
 	local delay = 0
 
-	if self.supering then
-		local game = self.game
-		local grid = game.grid
-	
-		-- find highest column
-		local col, start_row = -1, grid.BOTTOM_ROW
-		for i in grid:cols(self.player_num) do
-			local rows =  grid:getFirstEmptyRow(i, true) + 1
-			if rows < start_row then col, start_row = i, rows end
-		end
+	if self.supering then delay = self:_activateSuper()	end
+	local additional_delay = self:_cloudHealingDamage(delay)
 
-		if col ~= -1 then
-			for row = grid.BOTTOM_ROW, start_row, -1 do
-				delay = (grid.BOTTOM_ROW - row) * self.SPOUT_SPEED + self.FOAM_APPEAR_DURATION - game.GEM_EXPLODE_FRAMES
-				local gem = grid[row][col].gem
-				gem:setOwner(self.player_num)
-				grid:destroyGem{
-					gem = gem,
-					super_meter = false,
-					glow_delay = delay,
-					force_max_alpha = true,
-				}
-			end
-
-			self.particle_fx.foam.generate(self.game, self, col)
-			self.particle_fx.spout.generate(self.game, self, col)
-		end
-		delay = delay + 30
-	end
-
-	return delay
+	return delay + additional_delay
 end
 
 function Walter:beforeTween()
@@ -589,31 +632,6 @@ function Walter:beforeTween()
 
 	self.supering = false
 	game:brightenScreen(self.player_num)
-
-	local delay = 0
-	-- Healing damage from rainclouds
-	for col in grid:cols() do
-		if self.cloud_turns_remaining[col] > 0 and not self.this_turn_column_healed[col] then
-			local x = grid.x[col]
-			local y = (grid.y[grid.BASIN_START_ROW] + grid.y[grid.BASIN_END_ROW]) * 0.5
-			local y_range = image.GEM_HEIGHT * 4
-
-			delay = game.particles.healing.generate{
-				game = game,
-				x = x,
-				y = y,
-				y_range = y_range,
-				owner = self,
-			}
-
-			self:healDamage(1)
-			self.this_turn_column_healed[col] = true
-			game.sound:newSFX("healing")
-			self.particle_fx.healingColumnAura.generate(self.game, self, col)
-		end
-	end
-
-	return delay
 end
 
 function Walter:beforeMatch()

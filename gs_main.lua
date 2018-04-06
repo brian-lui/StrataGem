@@ -425,10 +425,10 @@ function gs_main:mousepressed(x, y)
 	self.lastClickedX, self.lastClickedY = x, y
 
 	local player = self.me_player
-	if not self.paused and player:canPlacePiece() then
+	if not self.paused then
 		for i = 1, player.hand_size do
 			if player.hand[i].piece and pointIsInRect(x, y, player.hand[i].piece:getRect()) then
-				if self.current_phase == "Action" then
+				if self.current_phase == "Action" and player:canPlacePiece() then
 					player.hand[i].piece:select()
 				else
 					self.active_piece = player.hand[i].piece
@@ -470,8 +470,12 @@ function gs_main:mousereleased(x, y)
 		local quickclick = self.frame - self.lastClickedFrame < QUICKCLICK_FRAMES
 		local nomove = math.abs(x - self.lastClickedX) < self.stage.width * QUICKCLICK_MAX_MOVE and
 			math.abs(y - self.lastClickedY) < self.stage.height * QUICKCLICK_MAX_MOVE
+
 		if quickclick and nomove then self.active_piece:rotate() end
-		if self.current_phase == "Action" then self.active_piece:deselect() end
+		if self.current_phase == "Action" and player:canPlacePiece() then
+			self.active_piece:deselect()
+		end
+
 		self.active_piece = false
 	end
 
@@ -479,7 +483,8 @@ function gs_main:mousereleased(x, y)
 end
 
 function gs_main:mousemoved(x, y)
-	if self.active_piece and self.current_phase == "Action" then
+	local player = self.me_player
+	if self.active_piece and self.current_phase == "Action" and player:canPlacePiece() then
 		self.active_piece:change{x = x, y = y}
 	end
 

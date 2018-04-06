@@ -24,7 +24,7 @@ function Grid:init(game)
 	self.COLUMNS = 8
 	self.ROWS = 20
 	self.LOSE_ROW = 12 -- game over if a gem ends the turn in this row or above
-	self.RUSH_ROW = 15 -- can only rush if this row is empty
+	self.RUSH_ROW = 16 -- can only rush if this row is empty
 	self.BOTTOM_ROW = 20 -- used for garbage appearance
 	self.PENDING_START_ROW = 1
 	self.PENDING_END_ROW = 12
@@ -659,8 +659,39 @@ end
 
 -- If the only pieces placed are a rush and a normal, reverse their falling order
 function Grid:updateRushPriority()
-	print("Update rush priority!")
-	--check p1 place type, p2 place type
+	local normal_pieces, rush_pieces = 0, 0
+	for player in self.game:players() do
+		if player.place_type == "normal" then
+			normal_pieces = normal_pieces + 1
+		elseif player.place_type == "rush" then
+			rush_pieces = rush_pieces + 1
+		end
+	end
+
+	-- it's tricky to move them because of overlap
+	if normal_pieces == 1 and rush_pieces == 1 then
+		local normal_gems, rush_gems = {}, {}
+
+		-- store the gems and delete from grid first
+		for gem in self:pendingGems() do
+			if gem.row == 3 or gem.row == 4 then
+				rush_gems[#rush_gems+1] = gem
+				self[gem.row][gem.column].gem = false
+				gem.row = gem.row + 2
+				gem.y = self.y[gem.row]
+			elseif gem.row == 5 or gem.row == 6 then
+				normal_gems[#normal_gems+1] = gem
+				self[gem.row][gem.column].gem = false
+				gem.row = gem.row - 2
+				gem.y = self.y[gem.row]
+			end
+		end
+
+		-- place them back in grid
+		for _, gem in ipairs(normal_gems) do self[gem.row][gem.column].gem = gem end
+		for _, gem in ipairs(rush_gems) do self[gem.row][gem.column].gem = gem end
+	end
+
 end
 
 -- Which players made a match this turn

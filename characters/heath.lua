@@ -174,15 +174,16 @@ function Boom._generateBoom(game, owner, x, y, delay_frames)
 	local grid = game.grid
 	local stage = game.stage
 
-	local p1 = common.instance(Boom, game.particles, 
-		{x = x, y = y, image = owner.special_images.boom[1], owner = owner}
-	)
-	local p2 = common.instance(Boom, game.particles, 
-		{x = x, y = y, image = owner.special_images.boom[2], owner = owner}
-	)
-	local p3 = common.instance(Boom, game.particles, 
-		{x = x, y = y, image = owner.special_images.boom[3], owner = owner}
-	)
+	local booms = {}
+	for i = 1, 3 do
+		booms[i] = common.instance(Boom, game.particles, {
+			x = x,
+			y = y,
+			image = owner.special_images.boom[i],
+			draw_order = 4 - i,
+			owner = owner,
+		})
+	end
 
 	local x_vel = stage.gem_width * (math.random() - 0.5) * 16
 	local y_vel = stage.gem_height * - (math.random() * 0.5 + 0.5) * 16
@@ -190,7 +191,7 @@ function Boom._generateBoom(game, owner, x, y, delay_frames)
 	local x_dest1 = x + 1 * x_vel
 	local x_dest2 = x + 1.5 * x_vel
 
-	for i, p in ipairs{p1, p2, p3} do
+	for i, p in ipairs(booms) do
 		local y_func1 = function() return y + p.t * y_vel + p.t^2 * gravity end
 		local y_func2 = function() return y + (p.t + 1) * y_vel + (p.t + 1)^2 * gravity end
 		local rotation_func1 = function()
@@ -201,7 +202,7 @@ function Boom._generateBoom(game, owner, x, y, delay_frames)
 		end
 
 		p.transparency = 0
-		p:wait(delay_frames + (i - 1)  * 15)
+		p:wait(delay_frames + (i - 1)  * 4)
 		p:change{duration = 0, transparency = 255}
 		p:change{duration = 60, x = x_dest1, y = y_func1, rotation = rotation_func1}
 		p:change{duration = 30, x = x_dest2, y = y_func2, rotation = rotation_func2,

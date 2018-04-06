@@ -15,6 +15,7 @@ end
 
 function Queue:add(frames, func, ...)
 	assert(frames % 1 == 0 and frames >= 0, "non-integer or negative queue received")
+	assert(type(func) == "function", "non-function of type " .. type(func) .. " received")
 	local a = self.game.frame + frames
 	self[a] = self[a] or {}
 	table.insert(self[a], {func, {...}})
