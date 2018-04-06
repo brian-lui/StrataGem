@@ -455,11 +455,13 @@ function Grid:moveGemAnim(gem, row, column)
 	--local angle = math.atan2(target_y - gem.y, target_x - gem.x)
 	local speed = self.DROP_SPEED + self.DROP_MULTIPLE_SPEED * self.game.scoring_combo
 	local duration = math.abs(dist / speed)
+	local exit_func = target_y > gem.y and {gem.landedInGrid, gem} or nil
+
 	gem:change{
 		x = target_x,
 		y = target_y,
 		duration = duration,
-		exit_func = target_y > gem.y and {gem.landedInGrid, gem} or nil
+		exit_func = exit_func,
 		-- only call landing function if it was moving downwards
 	}
 	return duration
@@ -471,7 +473,6 @@ function Grid:moveAllUp(player, rows_to_add)
 	local max_anim_duration = 0
 	for r = 1, last_row do
 		for c in self:cols(player.player_num) do
-		--for c = start_col, end_col do
 			self[r][c].gem = self[r+rows_to_add][c].gem
 			if self[r][c].gem then
 				local duration = self:moveGemAnim(self[r][c].gem, r, c)
@@ -483,7 +484,6 @@ function Grid:moveAllUp(player, rows_to_add)
 	end
 	for i = last_row + 1, self.ROWS do
 		for j in self:cols(player.player_num) do
-		--for j = start_col, end_col do
 			self[i][j].gem = false
 		end
 	end

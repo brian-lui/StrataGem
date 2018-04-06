@@ -269,7 +269,6 @@ function Phase:resolvingMatches(dt)
 	game.scoring_combo = game.scoring_combo + 1
 	if not self.matched_this_round[1] then grid:removeAllGemOwners(1) end
 	if not self.matched_this_round[2] then grid:removeAllGemOwners(2) end
-	grid:dropColumns()
 	grid:updateGrid()
 	self:activatePause("DuringGravity")
 end

@@ -65,12 +65,12 @@ end
 
 -- test Walter passive
 local function testWalterPassive(game)
-	nrow(game, 3, " GYR    ")
-	nrow(game, 4, " GYR    ")
-	nrow(game, 5, "YRGB    ")
-	nrow(game, 6, "YRGB    ")
-	nrow(game, 7, "RGBYYBGR")
-	nrow(game, 8, "RGBYYBGR")
+	nrow(game, 3, "    R   ")
+	nrow(game, 4, "    B   ")
+	nrow(game, 5, "    R   ")
+	nrow(game, 6, "    BGYY")
+	nrow(game, 7, "RG YYBGR")
+	nrow(game, 8, "RG YYBGR")
 	game.grid:updateGrid()
 end
 
