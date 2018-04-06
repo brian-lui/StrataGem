@@ -755,7 +755,7 @@ function Grid:destroyGem(params)
 	else
 		-- state
 		if params.damage ~= false then
-			game.queue:add(delay_until_explode, player.enemy.addDamage, player.enemy, 1 + extra_damage)
+			player.enemy:addDamage(1 + extra_damage, delay_until_explode)
 		end
 		if params.super_meter ~= false then
 			assert(player.meter_gain[gem.color], "Nil value found when looking up super meter gain!")
