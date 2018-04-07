@@ -74,6 +74,14 @@ function Phase:action(dt)
 
 	self.time_to_next = self.time_to_next - 1
 	if not ai.finished then ai:evaluateActions(game.them_player) end
+	--[[
+	if not ai.finished then ai:evaluateActions(game.them_player) end
+	This is probably the key part
+	Every frame, it checks whether we have received a their_delta. If we have, it performs the delta and
+	then sets ai.finished to true.
+	So we will get desync bugs for multiple deltas, since deltas are sent immediately.
+	Instead, we need to queue this and do it after the confirmdeltas phase.
+	--]]
 	if self.time_to_next <= 0 and ai.finished then
 		love.mousereleased(drawspace.tlfres.getMousePosition(drawspace.width, drawspace.height))
 		game.particles.wordEffects.clear(game.particles)
@@ -90,6 +98,18 @@ function Phase:action(dt)
 	end
 end
 
+function Phase:netplaySendDeltas(dt)
+	--[[
+	Currently, deltas are sent from Client:prepareDelta(). So each time you do a move, it sends.
+	Instead, prepareDelta should ONLY prepare the delta. All delta is sent at end of turn in this phase.
+	This phase only needs to send the delta, then it can go directly to netplayConfirmDeltas.
+	This phase should also handle blank delta. probably use
+
+	if not client.our_delta[game.turn] then	-- If local player hasn't acted, send empty turn
+		client:prepareDelta("blank")
+	end
+	--]]
+end
 function Phase:netplayConfirmDeltas(dt)
 	--[[
 	we should confirm that both players received a delta from the other guy.
@@ -98,6 +118,11 @@ function Phase:netplayConfirmDeltas(dt)
 	then go to resolve phase.
 
 	if self.NETPLAY_DELTA_WAIT frames pass, then go to "lost connection".
+	When confirmed deltas, go to game.current_phase = "Resolve".
+
+	Have lots of print statements to see what's going on.
+
+
 	--]]
 end
 
@@ -459,6 +484,8 @@ Phase.lookup = {
 	Pause = Phase._pause,
 	Intro = Phase.intro,
 	Action = Phase.action,
+	NetplaySendDeltas = Phase.netplaySendDeltas,
+	NetplayConfirmDeltas = Phase.netplayConfirmDeltas,
 	Resolve = Phase.resolve,
 	SuperFreeze = Phase.superFreeze,
 	BeforeGravity = Phase.beforeGravity,
