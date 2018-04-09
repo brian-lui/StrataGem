@@ -86,58 +86,8 @@ function gs_main:enter()
 			})
 		end
 
-		-- super meter objects
-		local super_function = function() print("opposite guy button pushed!") end
-		if self.me_player.ID == ID then
-			super_function = function()
-				if player:canUseSuper() then
-					local supering = player:toggleSuper()
-					local superword = gs_main.ui.static[ID .. "superword"]
-					if supering then
-						superword:change{duration = 0, transparency = 128, scaling = 2}
-						superword:change{duration = 15, transparency = 255, scaling = 1, easing = "inCubic"}
-					else
-						superword:change{duration = 0, transparency = 0, scaling = 1}
-					end
-				end
-			end
- 		end
-
-		gs_main.createButton(self, {
-			name = ID .. "super",
-			image = player.super_images.empty,
-			image_pushed = player.super_images.empty,
-			end_x = stage.super[ID].x,
-			end_y = stage.super[ID].y,
-			pushed_sfx = "dummy",
-			action = super_function,
-		})
-		local superword = gs_main.createImage(self, {
-			name = ID .. "superword",
-			image = player.super_images.word,
-			end_x = stage.super[ID].x,
-			end_y = stage.super[ID].word_y,
-		})
-		superword:change{duration = 0, transparency = 0}
-
-		gs_main.createImage(self, {
-			name = ID .. "supermeter",
-			image = player.super_images.full,
-			end_x = stage.super[ID].x,
-			end_y = stage.super[ID].y,
-		})
-		gs_main.createImage(self, {
-			name = ID .. "superglow",
-			image = player.super_images.glow,
-			end_x = stage.super[ID].x,
-			end_y = stage.super[ID].y,
-		})
-		gs_main.createImage(self, {
-			name = ID .. "superoverlay",
-			image = player.super_images.overlay,
-			end_x = stage.super[ID].x,
-			end_y = stage.super[ID].y,
-		})
+		-- super meter
+		player.super_button = self.ui.components.super.create(self, player, player.player_num)
 	end
 end
 
@@ -173,7 +123,7 @@ function gs_main:update(dt)
 		gs_main.current_background:update(dt) -- variable fps
 		self.ui.timer:update(dt)
 		self.ui:updateBursts(gs_main)
-		self.ui:updateSupers(gs_main)
+		for player in self:players() do player.super_button:update(dt) end
 		self.animations:updateAll(dt)
 		self.screenshake_frames = math.max(0, self.screenshake_frames - 1)
 		self.timeBucket = self.timeBucket + dt
@@ -391,12 +341,9 @@ function gs_main:drawUI(params)
 	local draws = {"tub", "P1burstframe", "P2burstframe", "P1burstblock1",
 		"P1burstblock2", "P2burstblock1", "P2burstblock2", "P1burstpartial1",
 		"P1burstpartial2", "P2burstpartial1", "P2burstpartial2", "P1burstglow1",
-		"P1burstglow2", "P2burstglow1", "P2burstglow2", 
-		"P1supermeter", "P2supermeter", "P1superglow", "P2superglow", 
-		"P1superoverlay", "P2superoverlay", "P1superword", "P2superword",}
+		"P1burstglow2", "P2burstglow1", "P2burstglow2",}
 
-	gs_main.ui.clickable.P1super:draw(params)
-	gs_main.ui.clickable.P2super:draw(params)
+	for player in self:players() do player.super_button:draw(params) end
 	for i = 1, #draws do gs_main.ui.static[ draws[i] ]:draw(params) end
 	gs_main.ui.clickable.settings:draw(params)
 end
@@ -458,7 +405,11 @@ function gs_main:mousepressed(x, y)
 			end
 		end
 	end
+
 	self:_mousepressed(x, y, gs_main)
+
+	local my_super = self.me_player.super_button
+	if pointIsInRect(x, y, my_super:getRect()) then gs_main.clicked = my_super end
 end
 
 local QUICKCLICK_FRAMES = 15
@@ -477,6 +428,11 @@ function gs_main:mousereleased(x, y)
 		end
 
 		self.active_piece = false
+	end
+
+	local my_super = self.me_player.super_button
+	if pointIsInRect(x, y, my_super:getRect()) and gs_main.clicked == my_super then
+		my_super:onClickRelease() 
 	end
 
 	self:_mousereleased(x, y, gs_main)

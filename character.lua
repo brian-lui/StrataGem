@@ -14,6 +14,7 @@ Character.super_fuzz_image = love.graphics.newImage('images/ui/superfuzzred.png'
 
 Character.character_id = "Lamer"
 Character.meter_gain = {red = 4, blue = 4, green = 4, yellow = 4}
+Character.primary_colors = {"red"}
 
 Character.super_images = {
 	word = image.UI.super.red_word,
@@ -87,22 +88,9 @@ function Character:setup()
 	self.hand = common.instance(Hand, self.game, self)
 	self.hand:makeInitialPieces()
 
-	-- super meter
-	self.super_frame = common.instance(Pic, self.game, {x = stage.super[self.ID].x,
-		y = stage.super[self.ID].y, image = self.super_images.empty})
-	self.super_word = common.instance(Pic, self.game, {x = stage.super[self.ID].x,
-		y = stage.super[self.ID].word_y, image = self.super_images.word})
-	self.super_meter_image = common.instance(Pic, self.game, {x = stage.super[self.ID].x,
-		y = stage.super[self.ID].y, image = self.super_images.full})
-	self.super_glow = common.instance(Pic, self.game, {x = stage.super[self.ID].x,
-		y = stage.super[self.ID].y, image = self.super_images.glow})
-	self.super_overlay = common.instance(Pic, self.game, {x = stage.super[self.ID].x,
-		y = stage.super[self.ID].y, image = self.super_images.overlay})
-
 	-- character animation placeholder, waiting for animations
-	self.animation = common.instance(Pic, self.game, {x = self.game.stage.character[self.ID].x,
-	y = self.game.stage.character[self.ID].y, image = self.small_image})
-
+	self.animation = common.instance(Pic, self.game, {x = stage.character[self.ID].x,
+	y = stage.character[self.ID].y, image = self.small_image})
 end
 
 function Character:emptyMP()
@@ -130,7 +118,7 @@ function Character:cleanup()
 	self.supering = false
 	self.game:brightenScreen(self.player_num)
 end
-
+-------------------------------------------------------------------------------
 
 function Character:toggleSuper(received_from_opponent)
 	local game = self.game

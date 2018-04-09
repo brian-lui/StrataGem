@@ -4,9 +4,9 @@ local image = require 'image'
 local common = require 'class.commons'
 local Pic = require 'pic'
 
---[==================[
-TIMER COMPONENT
---]==================]
+-------------------------------------------------------------------------------
+------------------------------- TIMER COMPONENT -------------------------------
+-------------------------------------------------------------------------------
 
 local Timer = {}
 
@@ -66,9 +66,251 @@ end
 
 Timer = common.class("Timer", Timer)
 
---[==================[
-END TIMER COMPONENT
---]==================]
+-------------------------------------------------------------------------------
+------------------------------- BURST COMPONENT -------------------------------
+-------------------------------------------------------------------------------
+local Burst = {}
+
+-- gs_main:enter()
+function Burst:init(game, character, player_num)
+	local stage = game.stage
+	self.game = game
+	self.character = character
+	self.player_num = player_num
+	self.SEGMENTS = 2
+
+	local ID
+	if player_num == 1 then
+		ID = "P1"
+	elseif player_num == 2 then
+		ID = "P2"
+	else
+		print("invalid player_num provided")
+	end
+
+	local frame_img = ID == "P1" and image.UI.gauge_gold or image.UI.gauge_silver
+	self.burst_frame = common.instance(Pic, self.game, {
+		x = stage.burst[ID].frame.x,
+		y = stage.burst[ID].frame.y, 
+		image = frame_img,
+	})
+	self.burst_block, self.burst_partial, self.burst_glow = {}, {}, {}
+
+	for i = 1, self.SEGMENTS do
+		self.burst_block[i] = common.instance(Pic, self.game, {
+			x = stage.burst[ID][i].x,
+			y = stage.burst[ID][i].y,
+			image = character.burst_images.full,
+		})
+		self.burst_partial[i] = common.instance(Pic, self.game, {
+			x = stage.burst[ID][i].x,
+			y = stage.burst[ID][i].y,
+			image = character.burst_images.partial,
+		})
+		self.burst_glow[i] = common.instance(Pic, self.game, {
+			x = stage.burst[ID][i].glow_x,
+			y = stage.burst[ID][i].glow_y,
+			image = character.burst_images.glow[i],
+		})
+	end
+end
+
+function Burst.create(game, character, player_num)
+	return common.instance(Burst, game, character, player_num)
+end
+
+--gs_main:update()
+-- remove updateBursts()
+function Burst:update(dt)
+	local character = self.character
+
+	self.t = self.t + dt
+
+	local full_segs = (character.cur_burst / character.MAX_BURST) * self.SEGMENTS -- percent multiplied by 2
+	local full_segs_int = math.floor(full_segs)
+	local part_fill_percent = full_segs % 1
+
+	-- partial fill block length
+	if part_fill_percent > 0 then
+		local part_fill_block = self.burst_partial[full_segs_int + 1]
+		local width = part_fill_block.width * part_fill_percent
+		local start = self.player_num == 2 and part_fill_block.width - width or 0
+		part_fill_block:setQuad(start, 0, width, part_fill_block.height)
+	end
+
+	-- full segments
+	for i = 1, self.SEGMENTS do
+		if full_segs >= i then
+			self.burst_block[i].transparency = 255
+		else
+			self.burst_block[i].transparency = 255
+		end
+		
+		if full_segs < i and full_segs + 1 > i then
+			self.burst_partial[i].transparency = 255
+		else
+			self.burst_partial[i].transparency = 255
+		end
+	end
+
+	-- glow
+	local glow_amount = math.sin(self.t * 2) * 127.5 + 127.5
+	for i = 1, self.SEGMENTS do
+		self.burst_glow[i].transparency = full_segs_int == i and glow_amount or 0
+	end
+end
+
+-- gs_main:drawUI()
+function Burst:draw(params)
+	self.burst_frame:draw(params)
+	for i = 1, self.SEGMENTS do
+		self.burst_block[i]:draw(params)
+		self.burst_partial[i]:draw(params)
+		self.burst_glow[i]:draw(params)
+	end
+end
+
+Burst = common.class("Burst", Burst)
+
+-------------------------------------------------------------------------------
+------------------------------- SUPER COMPONENT -------------------------------
+-------------------------------------------------------------------------------
+local Super = {}
+
+function Super:_generateSingleTwinkle()
+	local color_lookup = self.character.primary_colors
+	local idx = math.random(#color_lookup)
+	local image_color = color_lookup[idx]
+	local img = image.lookup.dust.star(image_color)
+
+	local super_frame = self.super_frame
+	local x = super_frame.x + super_frame.width * (math.random() - 0.5)
+	local y = super_frame.y + super_frame.height * (math.random() - 0.5)
+	local init_rotation = math.random() * math.pi * 2
+	local appear_rotation = init_rotation + math.pi * 0.7
+	local disappear_rotation = appear_rotation + math.pi * 0.7
+	if math.random() > 0.5 then
+		init_rotation = init_rotation * -1
+		appear_rotation = appear_rotation * -1
+		disappear_rotation = disappear_rotation * -1
+	end
+
+	local p = common.instance(Pic, self.game, {x = x, y = y, rotation = init_rotation, image = img})
+	p:change{duration = 0, scaling = 0}
+	p:change{duration = 30, scaling = 1, rotation = appear_rotation}
+	p:change{duration = 30, scaling = 0, rotation = disappear_rotation, remove = true}
+
+	self.twinkles[#self.twinkles+1] = p
+end
+
+function Super:init(game, character, player_num)
+	local stage = game.stage
+	self.game = game
+	self.character = character
+	self.player_num = player_num
+	self.t = 0
+	self.twinkle_t = 0
+	self.TWINKLE_FREQ = 0.15 -- this is in seconds, not frames
+	self.twinkles = {}
+
+	local ID
+	if player_num == 1 then
+		ID = "P1"
+	elseif player_num == 2 then
+		ID = "P2"
+	else
+		print("invalid player_num provided")
+	end
+
+	self.super_frame = common.instance(Pic, self.game, {x = stage.super[ID].x,
+		y = stage.super[ID].y, image = character.super_images.empty})
+	self.super_word = common.instance(Pic, self.game, {x = stage.super[ID].x,
+		y = stage.super[ID].word_y, image = character.super_images.word})
+	self.super_meter_image = common.instance(Pic, self.game, {x = stage.super[ID].x,
+		y = stage.super[ID].y, image = character.super_images.full})
+	self.super_glow = common.instance(Pic, self.game, {x = stage.super[ID].x,
+		y = stage.super[ID].y, image = character.super_images.glow})
+	self.super_overlay = common.instance(Pic, self.game, {x = stage.super[ID].x,
+		y = stage.super[ID].y, image = character.super_images.overlay})
+end
+
+function Super:getRect()
+	local img = self.super_frame
+	return img.x - (img.width / 2), img.y - (img.height / 2), img.width, img.height
+end
+
+function Super:onClickRelease()
+	local character = self.character
+	if character:canUseSuper() then
+		local word = self.super_word
+		local supering = character:toggleSuper() -- state
+		if supering then
+			word:change{duration = 0, transparency = 128, scaling = 2}
+			word:change{duration = 15, transparency = 255, scaling = 1, easing = "inCubic"}
+		else
+			word:change{duration = 0, transparency = 0, scaling = 1}
+		end
+	end
+end
+
+function Super.create(game, character, player_num)
+	return common.instance(Super, game, character, player_num)
+end
+
+function Super:update(dt)
+	local game = self.game
+	local character = self.character
+	local meter = self.super_meter_image
+	local glow = self.super_glow
+	local word = self.super_word
+
+	local onscreen_mp = game.particles:getCount("onscreen", "MP", self.player_num)
+	local displayed_mp = math.min(character.MAX_MP, character.mp - onscreen_mp)
+	local fill_percent = 0.12 + 0.76 * displayed_mp / character.MAX_MP
+
+	self.t = self.t + dt
+	meter:setQuad(0, meter.height * (1 - fill_percent), meter.width, meter.height * fill_percent)
+
+	if character.supering then
+		glow.transparency = 255
+	elseif character:canUseSuper() then
+		glow.transparency = math.sin(self.t * 2) * 127.5 + 127.5
+	else
+		glow.transparency = 0
+		word.transparency = 0
+	end
+
+	-- adding twinkles
+	if character:canUseSuper() and not character.supering then
+		self.twinkle_t = self.twinkle_t + dt
+		if self.twinkle_t >= self.TWINKLE_FREQ then
+			self.twinkle_t = self.twinkle_t - self.TWINKLE_FREQ
+			self:_generateSingleTwinkle()
+		end
+	end
+
+	word:update(dt)
+	for i = 1, #self.twinkles do self.twinkles[i]:update(dt) end
+end
+
+function Super:draw(params)
+	self.super_frame:draw(params)
+	self.super_meter_image:draw(params)
+	self.super_glow:draw(params)
+	self.super_overlay:draw(params)
+	self.super_word:draw(params)
+	for i = 1, #self.twinkles do self.twinkles[i]:draw(params) end
+end
+
+Super = common.class("Super", Super)
+
+-------------------------------------------------------------------------------
+local components = {
+	timer = Timer, -- TODO: this is not implemented yet, still in ui.timer
+	super = Super,
+	burst = Burst,
+}
+
 
 local ui = {}
 
@@ -77,6 +319,8 @@ function ui:init(game)
 	self.timer = common.instance(Timer, game)
 	-- Red X shown on gems in invalid placement spots
 	self.redX = common.instance(Pic, game, {x = 0, y = 0, image = image.UI.redX})
+
+	self.components = components
 end
 
 -- updates the super drawables for player based on player MP

@@ -24,6 +24,7 @@ local Heath = {}
 Heath.character_id = "Heath"
 Heath.CAN_SUPER_AND_PLAY_PIECE = false
 Heath.meter_gain = {red = 8, blue = 4, green = 4, yellow = 4}
+Heath.primary_colors = {"red"}
 
 Heath.full_size_image = love.graphics.newImage('images/portraits/heath.png')
 Heath.small_image = love.graphics.newImage('images/portraits/heathsmall.png')
