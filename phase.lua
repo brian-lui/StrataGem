@@ -373,8 +373,9 @@ function Phase:garbageMoving(dt)
 	if grid:isSettled() and game.particles:getNumber("GarbageParticles") == 0 then
 		for player in game:players() do
 			player.hand:getNewTurnPieces(self.force_minimum_1_piece)
-			self.force_minimum_1_piece = false
 		end
+		self.force_minimum_1_piece = false
+
 		game.current_phase = "PlatformsMoving"
 	end
 end

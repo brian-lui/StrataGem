@@ -492,7 +492,7 @@ end
 
 --[[ Returns a list of gem colors generated. List is in the order for
 	{col 1, 2, 3, 4} for player 1, {col 8, 7, 6, 5} for player 2
-	Not used now, but could be useful later maybe --]]
+--]]
 function Grid:addBottomRow(player, skip_animation)
 	local game = self.game
 	local grid = game.grid
@@ -500,11 +500,9 @@ function Grid:addBottomRow(player, skip_animation)
 	local generated_gems = {}
 
 	self:moveAllUp(player, 1)
-	local start, finish, step = game.p1.start_col, game.p1.end_col, 1
-	if player.ID == "P2" then
-		start, finish, step = game.p2.end_col, game.p2.start_col, -1
-	end
-	for col = start, finish, step do
+	local step = player.player_num == 1 and 1 or -1
+
+	for col in grid:cols(player.player_num) do
 		local ban1, ban2 = false, false
 		if col > game.p1.start_col and col < game.p2.end_col then
 			local prev_col = (col - step)
@@ -861,24 +859,13 @@ function Grid:animateGameOver(loser_num)
 	local particles = game.particles
 	local EACH_ROW_DELAY = 5
 
-	local start_col, end_col
-	if loser_num == 1 then
-		start_col, end_col = 1, 4
-	elseif loser_num == 2 then
-		start_col, end_col = 5, 8
-	elseif loser_num == 3 then
-		start_col, end_col = 1, 8
-	else
-		print("craps")
-	end
-
 	particles.words.generateGameOverThanks(game)
 
 	for row = 20, 5, -1 do
 		local delay = (20 - row) * EACH_ROW_DELAY + 1
 		local duration = game.phase.GAMEOVER_DELAY
 
-		for col = start_col, end_col do
+		for col in game.grid:cols(loser_num) do
 			if self[row][col].gem then
 				local gem = self[row][col].gem
 				local img = image.lookup.grey_gem_crumble[gem.color]

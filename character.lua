@@ -110,7 +110,8 @@ function Character:duringMatchAnimation() end -- while matches are exploding
 function Character:afterMatch() end -- after each match
 function Character:whenCreatingGarbageRow() end -- at garbage row creation
 function Character:afterAllMatches()
--- after all chain combos finished. Can be called multiple times in a turn if garbage is created
+-- after all chain combos finished.
+-- Can be called multiple times in a turn if garbage is created
 end 
 function Character:beforeCleanup() end
 
@@ -167,10 +168,7 @@ function Character:canPlacePiece()
 end
 
 function Character:canUseSuper()
-	return not (
-		(self.dropped_piece and not self.CAN_SUPER_AND_PLAY_PIECE) or
-		(self.mp < self.SUPER_COST)
-	)
+	return (self.mp >= self.SUPER_COST) and (self.CAN_SUPER_AND_PLAY_PIECE or not self.dropped_piece)
 end
 
 return common.class("Character", Character)

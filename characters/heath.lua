@@ -264,6 +264,7 @@ function Heath:beforeGravity()
 			if not self.pending_gem_cols[i] then
 				self.pending_fires[i] = true
 				self.particle_fx.smallFire.generateSmallFire(self.game, self, i, delay)
+				self.generated_fire_images[i] = true
 			end
 		end
 

@@ -281,7 +281,7 @@ function Super:update(dt)
 	end
 
 	-- adding twinkles
-	if character:canUseSuper() and not character.supering then
+	if character.mp >= character.SUPER_COST and not character.supering then
 		self.twinkle_t = self.twinkle_t + dt
 		if self.twinkle_t >= self.TWINKLE_FREQ then
 			self.twinkle_t = self.twinkle_t - self.TWINKLE_FREQ

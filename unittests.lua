@@ -245,9 +245,9 @@ end
 
 local function toggleSlowdown(game)
 	if game.timeStep == 1/60 then
-		game.timeStep = 1/5
+		game.timeStep = 1/6
 		game.debug_pause_mode = true
-	elseif game.timeStep == 1/5 then
+	elseif game.timeStep == 1/6 then
 		game.timeStep = 2
 		game.debug_pause_mode = true
 	else

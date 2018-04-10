@@ -441,12 +441,10 @@ end
 function GarbageParticles.generate(game, gem, delay_frames)
 	local grid = game.grid
 	local player = game:playerByIndex(gem.owner)
-	local start_col, end_col = 1, 4
-	if player.ID == "P2" then start_col = 5 end_col = 8 end
 
 	local duration = 54 + game.particles:getNumber("GarbageParticles")
 	-- calculate bezier curve
-	for i = start_col, end_col do
+	for i in grid:cols(player.player_num) do
 		local x1, y1 = gem.x, gem.y -- start
 		local x4, y4 = grid.x[i], grid.y[grid.BOTTOM_ROW] -- end
 		local dist = ((x4 - x1) ^ 2 + (y4 - y1) ^ 2) ^ 0.5
