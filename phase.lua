@@ -24,7 +24,8 @@ function Phase:reset()
 	self.update_gravity_during_pause = false
 end
 
--- helper function to set duration of the pause until next phase
+-------------------------------------------------------------------------------
+-- helper functions to set duration of the pause until next phase
 function Phase:setPause(frames)
 	assert(frames >= 0, "Non-positive frames " .. frames .. " provided for phase " .. self.game.current_phase)
 	self.frames_until_next_phase = frames
@@ -48,6 +49,8 @@ function Phase:_pause(dt)
 		self.next_phase = nil
 	end
 end
+
+-------------------------------------------------------------------------------
 
 function Phase:intro(dt)
 	local game = self.game

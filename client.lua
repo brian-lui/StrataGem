@@ -285,6 +285,7 @@ end
 function Client:prepareDelta(...)
 	local game = self.game
 	local args = {...}
+	--[[
 	if self.our_delta[game.turn] == nil then
 		self.our_delta[game.turn] = {
 			type = "delta",
@@ -294,7 +295,7 @@ function Client:prepareDelta(...)
 			super = false,
 			super_params = {},
 		}
-	end
+	end--]]
 
 	self.our_delta[game.turn].send_frame = game.frame
 	if args[1] == "blank" then
@@ -333,12 +334,9 @@ function Client:prepareDelta(...)
 end
 
 function Client:sendDelta()
-	if self.our_delta[self.game.turn] then
-		print("Frame: " .. self.game.frame, "Time: " .. love.timer.getTime() - self.match_start_time, "Sent delta")
-		self:send(self.our_delta[self.game.turn])
-	else
-		print("Delta already sent, or not available")
-	end
+	assert(self.our_delta[self.game.turn], "Current turn's our_delta wasn't initialized, wtf")
+	self:send(self.our_delta[self.game.turn])
+	print("Frame: " .. self.game.frame, "Time: " .. love.timer.getTime() - self.match_start_time, "Sent delta")
 end
 
 -- called at start of a new turn. packages the state, and sends it with a delay

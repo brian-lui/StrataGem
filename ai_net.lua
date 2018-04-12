@@ -23,6 +23,7 @@ end
 local function playPiece(self, recv_piece)
 	local player = self.player
 	local piece = getPieceFromID(recv_piece.piece_ID, player)
+	assert(piece, "piece ID not found omg. Please bugrep the screenshot for BOTH players! piece ID: " .. recv_piece.piece_ID)
 	for _ = 1, recv_piece.rotation do
 		piece:rotate()
 	end

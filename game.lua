@@ -147,6 +147,17 @@ function Game:newTurn()
 	self.current_phase = "Action"
 	self.inputs_frozen = false
 	self.phase.time_to_next = self.phase.INIT_TIME_TO_NEXT
+
+	if self.type == "Netplay" then
+		self.client.our_delta[game.turn] = {
+			type = "delta",
+			turn = game.turn,
+			piece1 = {},
+			piece2 = {},
+			super = false,
+			super_params = {},
+		}
+	end
 end
 
 function Game:reset()
