@@ -133,6 +133,7 @@ function Phase:resolve(dt)
 	local game = self.game
 	if game.me_player.place_type == nil then print("PLACE TYPE BUG") end
 	game.grid:updateRushPriority()
+	game.grid:assignGemOriginators()
 
 	local delay = 0
 	for player in game:players() do
@@ -425,6 +426,7 @@ function Phase:cleanup(dt)
 	end
 
 	grid:updateGrid()
+	grid:removeGemOriginators()
 
 	local delay = 0
 	for player in self.game:players() do
@@ -436,6 +438,7 @@ function Phase:cleanup(dt)
 	game.ai:newTurn()
 	self.garbage_this_round = false
 	self.force_minimum_1_piece = true
+	self.matched_this_round = {false, false}
 	p1.dropped_piece, p2.dropped_piece = nil, nil
 	p1.played_pieces, p2.played_pieces = {}, {}
 	game.finished_getting_pieces = false

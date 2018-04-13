@@ -264,7 +264,7 @@ function gs_main:drawText(params)
 		love.graphics.pop()
 	end
 
-	-- debug: top right HUD
+	-- debug: top middle HUD
 	if self.debug_overlay then
 		love.graphics.push("all")
 			love.graphics.setFont(FONT.SLIGHTLY_BIGGER)

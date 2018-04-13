@@ -305,12 +305,34 @@ function Grid:flagMatchedGems()
 				local row = match.row + i - 1
 				local column = match.column
 				local gem = self[row][column].gem
-				if gem.owner == 1 then
-					this_match_p1 = true
-				elseif gem.owner == 2 then
-					this_match_p2 = true
-				elseif gem.owner == 3 then
-					this_match_p1, this_match_p2 = true, true
+
+				-- special case: chain combos ignore flags from non-original gems, if opponent made a match last turn
+				if self.game.scoring_combo == 0 then
+					if gem.owner == 1 then
+						this_match_p1 = true
+					elseif gem.owner == 2 then
+						this_match_p2 = true
+					elseif gem.owner == 3 then
+						this_match_p1, this_match_p2 = true, true
+					end
+				else
+					if gem.flag_match_originator then
+						if gem.flag_match_originator == 1 then
+							this_match_p1 = true
+						elseif gem.flag_match_originator == 2 then
+							this_match_p2 = true
+						elseif gem.flag_match_originator == 3 then
+							this_match_p1, this_match_p2 = true, true
+						end
+					else
+						local ignore_p1 = not self.game.phase.matched_this_round[1]
+						local ignore_p2 = not self.game.phase.matched_this_round[2]
+						if ignore_p1 and not ignore_p2 then
+							if gem.owner == 2 or gem.owner == 3 then this_match_p2 = true end
+						elseif ignore_p2 and not ignore_p1 then
+							if gem.owner == 1 or gem.owner == 3 then this_match_p1 = true end
+						end
+					end
 				end
 				gem.is_in_a_vertical_match = true
 				gems[#gems+1] = gem
@@ -321,8 +343,14 @@ function Grid:flagMatchedGems()
 
 		-- calculate new flags
 		local owner_num = 0
-		if this_match_p1 then owner_num = owner_num + 1 end
-		if this_match_p2 then owner_num = owner_num + 2 end
+		if this_match_p1 then
+			owner_num = owner_num + 1
+			made_a_match_this_round_p1 = true
+		end
+		if this_match_p2 then
+			owner_num = owner_num + 2
+			made_a_match_this_round_p2 = true
+		end
 
 		-- store flags
 		for _, gem in pairs(gems) do
@@ -346,6 +374,21 @@ function Grid:flagMatchedGems()
 
 	-- apply the flags
 	for gem, owner_num in pairs(gem_flags) do gem:setOwner(owner_num, true) end
+end
+
+--[[ Any gems placed in the action phase will be considered an "original" gem.
+	The purpose is for correct attribution of flags for follow-on vertical
+	matches: Followup vertical matches ignore ownership flags for gems without 
+	this flag.
+	This flag is cleared for any player who didn't make a match in the previous
+	round.
+--]]
+function Grid:assignGemOriginators()
+	for gem in self:pendingGems() do gem.flag_match_originator = gem.owner end
+end
+
+function Grid:removeGemOriginators()
+	for gem in self:gems() do gem.flag_match_originator = nil end
 end
 
 -- get score of simulated piece placements

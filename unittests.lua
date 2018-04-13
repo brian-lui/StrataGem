@@ -74,6 +74,17 @@ local function testWalterPassive(game)
 	game.grid:updateGrid()
 end
 
+-- test vertical chain combo
+local function testVerticalCombo(game)
+	nrow(game, 3, "   R    ")
+	nrow(game, 4, "   R    ")
+	nrow(game, 5, "   G    ")
+	nrow(game, 6, "   GB   ")
+	nrow(game, 7, "   RR   ")
+	nrow(game, 8, "   YY   ")
+	game.grid:updateGrid()
+end
+
 -- test garbage matches
 local function garbageMatch(game)
 	nrow(game, 7, " YRRBBY ")
@@ -352,7 +363,7 @@ local Unittests = {
 	q = canPlacePiece,
 	w = multiCombo,
 	e = charselectScreenCPUCharToggle,
-	r = flagVerticalHorizontal,
+	r = testVerticalCombo,
 	t = allRedGems,
 	y = shuffleHands,
 	u = resetGame,
