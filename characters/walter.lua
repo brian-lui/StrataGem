@@ -21,6 +21,7 @@ Walter.full_size_image = love.graphics.newImage('images/portraits/walter.png')
 Walter.small_image = love.graphics.newImage('images/portraits/waltersmall.png')
 Walter.action_image = love.graphics.newImage('images/portraits/walteraction.png')
 Walter.shadow_image = love.graphics.newImage('images/portraits/waltershadow.png')
+Walter.super_fuzz_image = love.graphics.newImage('images/ui/superfuzzblue.png')
 
 Walter.super_images = {
 	word = image.UI.super.blue_word,

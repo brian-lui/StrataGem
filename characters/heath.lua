@@ -30,6 +30,7 @@ Heath.full_size_image = love.graphics.newImage('images/portraits/heath.png')
 Heath.small_image = love.graphics.newImage('images/portraits/heathsmall.png')
 Heath.action_image = love.graphics.newImage('images/portraits/heathaction.png')
 Heath.shadow_image = love.graphics.newImage('images/portraits/heathshadow.png')
+Heath.super_fuzz_image = love.graphics.newImage('images/ui/superfuzzred.png')
 
 Heath.super_images = {
 	word = image.UI.super.red_word,
