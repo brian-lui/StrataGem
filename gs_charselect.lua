@@ -60,6 +60,14 @@ function charselect:_createCharacterButtons()
 			end,
 		})
 	end
+
+	-- Temporary thing for demo version
+	for name, data in pairs(charselect.ui.clickable) do
+		if name ~= "heath" and name ~= "walter" then
+			data.action = function() end
+			data.RGB = {96, 96, 96}
+		end
+	end
 end
 
 -- creates the clickable UI objects
@@ -161,38 +169,32 @@ function charselect:_createUIImages()
 	local stage = self.stage
 
 	-- large portrait with dummy pic
-	charselect.displayed_character = charselect._createImage(self, {
+	charselect.displayed_character = common.instance(Pic, self, {
 		name = "maincharacter",
 		image = image.dummy,
-		duration = 6,
-		start_x = stage.width * 0.25,
-		end_x = stage.width * 0.3,
-		end_y = stage.height * 0.45,
+		x = stage.width * 0.25,
+		y = stage.height * 0.45,
 		transparency = 60,
-		easing = "outQuart",
 	})
 	charselect.displayed_character.reset = function(c)
-		c.x = stage.width * 0.25
-		c.transparency = 60
+		c:change{duration = 0, x = stage.width * 0.25, transparency = 60}
 		c:change{duration = 6, x = stage.width * 0.3, transparency = 255, easing = "outQuart"}
 	end
+	charselect.displayed_character:reset()
 
-	-- large portrait text with dummy pic
-	charselect.displayed_character_text = charselect._createImage(self, {
+	-- large text of character name
+	charselect.displayed_character_text = common.instance(Pic, self, {
 		name = "maincharactertext",
 		image = image.dummy,
-		duration = 6,
-		end_x = stage.width * 0.272,
-		start_y = stage.height * 0.7,
-		end_y = stage.height * 0.65,
+		x = stage.width * 0.272,
+		y = stage.height * 0.7,
 		transparency = 60,
-		easing = "outQuart",
 	})
 	charselect.displayed_character_text.reset = function(c)
-		c.y = stage.height * 0.7
-		c.transparency = 60
+		c:change{duration = 0, y = stage.height * 0.7, transparency = 60}
 		c:change{duration = 6, y = stage.height * 0.65, transparency = 255, easing = "outQuart"}
 	end
+	charselect.displayed_character_text:reset()
 
 	-- background_image_frame
 	charselect._createImage(self, {
@@ -248,6 +250,8 @@ function charselect:update(dt)
 	for _, tbl in pairs(charselect.ui) do
 		for _, v in pairs(tbl) do v:update(dt) end
 	end
+	charselect.displayed_character:update(dt)
+	charselect.displayed_character_text:update(dt)
 end
 
 function charselect:draw()
@@ -255,6 +259,8 @@ function charselect:draw()
 	charselect.current_background:draw{darkened = darkened}
 	for _, v in spairs(charselect.ui.static) do v:draw{darkened = darkened} end
 	for _, v in pairs(charselect.ui.clickable) do v:draw{darkened = darkened} end
+	charselect.displayed_character:draw{darkened = darkened}
+	charselect.displayed_character_text:draw{darkened = darkened}
 	self:_drawSettingsMenu(charselect)
 end
 
