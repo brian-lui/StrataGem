@@ -1362,7 +1362,7 @@ function SuperFreezeEffects.generate(game, player, shadow_image, action_image, f
 		draw_order = 2,
 		x = stage.width * (0.5 - sign * 0.7),
 		y = stage.height * 0.5,
-		flip = sign == -1,
+		h_flip = sign == -1,
 		force_max_alpha = true,
 	})
 	if delay_frames then
@@ -1379,7 +1379,7 @@ function SuperFreezeEffects.generate(game, player, shadow_image, action_image, f
 		draw_order = 3,
 		x = stage.width * (0.5 - sign * 0.7),
 		y = stage.height * 0.5,
-		flip = sign == -1,
+		h_flip = sign == -1,
 		force_max_alpha = true,
 	})
 	if delay_frames then
