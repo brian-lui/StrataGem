@@ -74,7 +74,7 @@ function Pic:draw(params)
 		elseif self.transparency then
 			love.graphics.setColor(rgbt)
 		end
-		if params.h_flip then x_scale = x_scale * -1 end
+		if (self.h_flip or params.h_flip) then x_scale = x_scale * -1 end
 
 		love.graphics.draw(
 			params.image or self.image,
