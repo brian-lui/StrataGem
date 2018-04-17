@@ -564,7 +564,7 @@ function Walter:_activateSuper()
 	local col, start_row = -1, grid.BOTTOM_ROW
 	for i in grid:cols(self.player_num) do
 		local rows =  grid:getFirstEmptyRow(i, true) + 1
-		if rows < start_row then col, start_row = i, rows end
+		if rows <= start_row then col, start_row = i, rows end
 	end
 
 	if col ~= -1 then
