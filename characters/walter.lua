@@ -67,7 +67,7 @@ function Walter:init(...)
 	Character.init(self, ...)
 
 	self.FOAM_APPEAR_DURATION = 30 -- how long it takes for foam to appear
-	self.FOAM_FRAMES_BETWEEN_DROPLETS = 2 -- how many frames before making new foam-droplet
+	self.FOAM_FRAMES_BETWEEN_DROPLETS = 3 -- how many frames before making new foam-droplet
 	self.SPOUT_SPEED = 8 -- how many frames it takes for the spout to move one gem_height
 	self.SPOUT_BOB_SPEED = 32 -- how many frames for one spout bob
 	self.CLOUD_SLIDE_DURATION = 36 -- how long for the cloud incoming tween
@@ -103,7 +103,8 @@ function FoamDroplet.generate(game, owner, col)
 	local grid = game.grid
 	local image_table = {1, 1, 1, 1, 1, 1, 1, 2, 2, 3}
 	local image_index = image_table[math.random(#image_table)]
-	local droplet_image = owner.special_images.drop[image_index]
+	local droplet_or_splatter = math.random() < 0.5 and "drop" or "splatter"
+	local droplet_image = owner.special_images[droplet_or_splatter][image_index]
 
 	local x = grid.x[col]
 	local y = grid.y[grid.BASIN_END_ROW] + image.GEM_HEIGHT * (2 * math.random() - 0.5)
