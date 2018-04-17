@@ -60,7 +60,7 @@ function Game:init()
 	self.debug_drawGrid = true
 	self.debug_overlay = function()
 		if self.current_phase == "Pause" then
-			return "Pause " .. self.phase.frames_until_next_phase .. " (" .. self.phase.next_phase .. ")"
+			return "Pausing at " .. self.phase.current_phase_for_debug_purposes_only .. ", " .. self.phase.frames_until_next_phase .. "\nGarbage this round: " .. self.phase.garbage_this_round
 		else
 			return self.current_phase
 		end
