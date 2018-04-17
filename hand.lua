@@ -241,6 +241,10 @@ function Hand:destroyDamagedPlatforms(force_minimum_1_piece)
 	return garbage_arrival_frames
 end
 
+function Hand:damagedPlatformsExist(force_minimum_1_piece)
+	return force_minimum_1_piece or self.damage >= 4
+end
+
 -- Checks whether a player's pieces have stopped moving.
 -- No need to check gem platforms, because hand[6] will always have a piece.
 -- Takes optional start_loc for which position to start checking from.

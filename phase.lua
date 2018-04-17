@@ -18,7 +18,7 @@ function Phase:reset()
 	self.no_rush = {} --whether no_rush is eligible for animation
 	for i = 1, self.game.grid.COLUMNS do self.no_rush[i] = true end
 	self.matched_this_round = {false, false} -- p1 made a match, p2 made a match
-	self.garbage_this_round = false
+	self.garbage_this_round = 0
 	self.force_minimum_1_piece = true -- get at least 1 piece per turn
 	self.should_call_char_ability_this_phase = true
 	self.update_gravity_during_pause = false
@@ -34,6 +34,7 @@ end
 -- pause for the amount set in setPause
 -- if update_gravity true, also updates the grid gems
 function Phase:activatePause(next_phase, update_gravity)
+	self.current_phase_for_debug_purposes_only = self.game.current_phase
 	self.next_phase = next_phase
 	self.update_gravity_during_pause = update_gravity
 	self.game.current_phase = "Pause"
@@ -241,10 +242,10 @@ function Phase:getMatchedGems(dt)
 
 	local delay = 0
 
-	if self.garbage_this_round then
+	if self.garbage_this_round > 0 then
 		local diff = game.p1.garbage_rows_created - game.p2.garbage_rows_created
 		grid:setGarbageMatchFlags(diff)
-		self.garbage_this_round = false
+		self.garbage_this_round = 0
 		game.p1.garbage_rows_created, game.p2.garbage_rows_created = 0		
 	end
 
@@ -311,7 +312,17 @@ function Phase:resolvedMatches(dt)
 			local player_delay = player:afterAllMatches()
 			delay = math.max(delay, player_delay or 0)
 		end
-		self:setPause(self.PLATFORM_SPIN_DELAY + delay)
+
+		local platforms_get_destroyed = false
+		for player in game:players() do
+			if not platforms_get_destroyed then
+				platforms_get_destroyed = player.hand:damagedPlatformsExist()
+			end
+		end
+
+		if platforms_get_destroyed then delay = delay + self.PLATFORM_SPIN_DELAY end
+
+		self:setPause(delay)
 		self.should_call_char_ability_this_phase = false
 	end
 	if game.particles:getCount("onscreen", "Damage", 1) + game.particles:getCount("onscreen", "Damage", 2) == 0 then
@@ -335,14 +346,14 @@ end
 function Phase:destroyDamagedPlatforms(dt)
 	local game = self.game
 	local grid = game.grid
-	local max_delay = game.EXPLODING_PLATFORM_FRAMES
+	local max_delay = 0
 	for player in game:players() do
 		local garbage_arrival_frames = player.hand:destroyDamagedPlatforms(self.force_minimum_1_piece)
 
 		for _, delay in pairs(garbage_arrival_frames) do
 			game.queue:add(delay, grid.addBottomRow, grid, player)
-			max_delay = math.max(max_delay, delay)
-			self.garbage_this_round = true
+			max_delay = math.max(max_delay, game.EXPLODING_PLATFORM_FRAMES, delay)
+			self.garbage_this_round = self.garbage_this_round + 1
 		end
 	end
 
@@ -396,7 +407,7 @@ function Phase:platformsMoving(dt)
 	grid:updateGravity(dt)
 
 	if handsettled then	
-		if self.garbage_this_round then
+		if self.garbage_this_round > 0 then
 			game.current_phase = "DuringGravity"
 		else
 			local delay = 0
@@ -436,7 +447,7 @@ function Phase:cleanup(dt)
 	self:setPause(delay)
 
 	game.ai:newTurn()
-	self.garbage_this_round = false
+	self.garbage_this_round = 0
 	self.force_minimum_1_piece = true
 	self.matched_this_round = {false, false}
 	p1.dropped_piece, p2.dropped_piece = nil, nil
