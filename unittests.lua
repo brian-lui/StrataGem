@@ -49,13 +49,19 @@ local function n(self, row, column, color, owner)
 	end
 end
 
+local function ndel(game, row, column)
+	game.grid[row + 12][column].gem = false
+end
+
 local function nrow(game, row, colors)
 	if type(colors) ~= "string" or #colors ~= 8 then
 		love.errhand("nrow() received invalid string: \"" .. tostring(colors) .. "\"")
 	end
 	for i = 1, 8 do
 		local c = colors:sub(i, i)
-		if c ~= " " then
+		if c == " " then
+			ndel(game, row, i)
+		else
 			n(game, row, i, c)
 		end
 	end
@@ -65,6 +71,8 @@ end
 
 -- test Walter passive
 local function testWalterPassive(game)
+	nrow(game, 1, "        ")
+	nrow(game, 2, "        ")
 	nrow(game, 3, "    R   ")
 	nrow(game, 4, "    B   ")
 	nrow(game, 5, "    R   ")
@@ -76,6 +84,8 @@ end
 
 -- test vertical chain combo
 local function testVerticalCombo(game)
+	nrow(game, 1, "        ")
+	nrow(game, 2, "        ")
 	nrow(game, 3, "   R    ")
 	nrow(game, 4, "   R    ")
 	nrow(game, 5, "   G    ")
@@ -87,6 +97,12 @@ end
 
 -- test garbage matches
 local function garbageMatch(game)
+	nrow(game, 1, "        ")
+	nrow(game, 2, "        ")
+	nrow(game, 3, "        ")
+	nrow(game, 4, "        ")
+	nrow(game, 5, "        ")
+	nrow(game, 6, "        ")
 	nrow(game, 7, " YRRBBY ")
 	nrow(game, 8, " GBBRRG ")
 	game.grid:updateGrid()
@@ -94,6 +110,9 @@ end
 
 -- test big combos
 local function multiCombo(game)
+	nrow(game, 1, "        ")
+	nrow(game, 2, "        ")
+	nrow(game, 3, "        ")
 	nrow(game, 4, "     R G")
 	nrow(game, 5, "    RBBR")
 	nrow(game, 6, "  GRBYYR")
@@ -116,6 +135,13 @@ local function overflow(game)
 end
 
 local function p2VerticalMatch(game)
+	nrow(game, 1, "        ")
+	nrow(game, 2, "        ")
+	nrow(game, 3, "        ")
+	nrow(game, 4, "        ")
+	nrow(game, 5, "        ")
+	nrow(game, 6, "        ")	
+	nrow(game, 7, "        ")	
 	nrow(game, 8, "    BRBB")
 	for i = 1, 5 do
 		if game.p2.hand[i].piece then
@@ -126,7 +152,12 @@ local function p2VerticalMatch(game)
 	end
 end
 
-local function flagPropogateProblem(game)
+local function flagPropagateProblem(game)
+	nrow(game, 1, "        ")
+	nrow(game, 2, "        ")
+	nrow(game, 3, "        ")
+	nrow(game, 4, "        ")
+	nrow(game, 5, "        ")
 	nrow(game, 6, "     R  ")
 	nrow(game, 7, "    BRGR")
 	nrow(game, 8, "    GGRY")
@@ -134,12 +165,38 @@ local function flagPropogateProblem(game)
 end
 
 local function flagVerticalHorizontal(game)
+	nrow(game, 1, "        ")
+	nrow(game, 2, "        ")
+	nrow(game, 3, "        ")
+	nrow(game, 4, "        ")
+	nrow(game, 5, "        ")
 	nrow(game, 6, "        ")
 	nrow(game, 7, "  Y RY  ")
 	nrow(game, 8, "  R RRG ")
 	game.grid:updateGrid()
 end
 
+local layouts_to_test = {
+	testWalterPassive,
+	testVerticalCombo,
+	garbageMatch,
+	multiCombo,
+	overflow,
+	p2VerticalMatch,
+	flagPropagateProblem,
+	flagVerticalHorizontal,
+}
+local current_layout = 1
+local TOTAL_LAYOUTS = #layouts_to_test
+
+local function changeLayout(game)
+	layouts_to_test[current_layout](game)
+	current_layout = current_layout % TOTAL_LAYOUTS + 1
+	print("next layout", current_layout)
+end
+-------------------------------------------------------------------------------
+------------------------------ TEST OTHER THINGS ------------------------------
+-------------------------------------------------------------------------------
 local function charselectScreenCPUCharToggle(game)
 	if game.opponent_character == "walter" then
 		game.opponent_character = "heath"
@@ -147,10 +204,6 @@ local function charselectScreenCPUCharToggle(game)
 		game.opponent_character = "walter"
 	end
 end
-
--------------------------------------------------------------------------------
------------------------------- TEST OTHER THINGS ------------------------------
--------------------------------------------------------------------------------
 
 local function allRedGems(game)
 	local hands = {game.p1.hand, game.p2.hand}
@@ -346,10 +399,6 @@ local function gailPetalTest(game)
 	game.p1.particle_fx.testPetal.generate(game, game.p1)
 end
 
-local function canPlacePiece(game)
-	game.p1.hand:canPlacePiece()
-end
-
 local function toggleScreencaps(game)
 	if game.debug_screencaps then
 		print("Screencaps off")
@@ -359,12 +408,13 @@ local function toggleScreencaps(game)
 		game.debug_screencaps = true
 	end
 end
+
 local Unittests = {
-	q = canPlacePiece,
-	w = multiCombo,
+	--q = ,
+	--w = ,
 	e = charselectScreenCPUCharToggle,
-	r = testVerticalCombo,
-	t = garbageMatch,
+	--r = ,
+	--t = ,
 	y = shuffleHands,
 	u = resetGame,
 	i = displayNoRush,
@@ -382,9 +432,9 @@ local Unittests = {
 	z = heathFireFadeTest, -- heath fire
 	x = toggleSlowdown,
 	c = testGemImage,
-	v = flagPropogateProblem,
+	--v = ,
 	b = makeAGarbage,
-	n = testWalterPassive,
+	n = changeLayout,
 	m = glowDestroyTest,
 }
 
