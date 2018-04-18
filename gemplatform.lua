@@ -66,6 +66,10 @@ function GemPlatform:setFastSpin(bool)
 	self.fastspin = bool
 end
 
+function GemPlatform:destroy(delay)
+	self.frames_until_destruction = delay or 0
+end
+
 function GemPlatform:update(dt)
 	self.pic:update(dt)
 	local player = self.owner
@@ -107,6 +111,15 @@ function GemPlatform:update(dt)
 	if self.shake then
 		self.shake = self.shake - 1
 		if self.shake == 0 then self.shake = nil end
+	end
+
+	-- queue for self destruction
+	if self.frames_until_destruction then
+		if self.frames_until_destruction <= 0 then
+			self.owner.hand[self.hand_idx].platform = nil
+		else
+			self.frames_until_destruction = self.frames_until_destruction - 1
+		end
 	end
 end
 

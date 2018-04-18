@@ -319,12 +319,12 @@ function Phase:resolvedMatches(dt)
 				platforms_get_destroyed = player.hand:damagedPlatformsExist()
 			end
 		end
-
 		if platforms_get_destroyed then delay = delay + self.PLATFORM_SPIN_DELAY end
 
 		self:setPause(delay)
 		self.should_call_char_ability_this_phase = false
 	end
+
 	if game.particles:getCount("onscreen", "Damage", 1) + game.particles:getCount("onscreen", "Damage", 2) == 0 then
 	-- all damage particles finished
 		for player in game:players() do player.place_type = "none" end
@@ -348,8 +348,13 @@ function Phase:destroyDamagedPlatforms(dt)
 	local grid = game.grid
 	local max_delay = 0
 	for player in game:players() do
-		local garbage_arrival_frames = player.hand:destroyDamagedPlatforms(self.force_minimum_1_piece)
+		local garbage_arrival_frames, platforms_destroyed = player.hand:destroyDamagedPlatforms(self.force_minimum_1_piece)
 
+		-- additional delay waiting for consecutive platform explosions
+		local last_platform_time = (platforms_destroyed - 1) * player.hand.CONSECUTIVE_PLATFORM_DESTROY_DELAY
+		max_delay = math.max(max_delay, last_platform_time)
+		
+		-- additional delay waiting for garbage arrival
 		for _, delay in pairs(garbage_arrival_frames) do
 			game.queue:add(delay, grid.addBottomRow, grid, player)
 			max_delay = math.max(max_delay, game.EXPLODING_PLATFORM_FRAMES, delay)

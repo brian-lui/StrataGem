@@ -27,6 +27,7 @@ function Hand:init(game, player)
 	self.garbage = {} -- pending-garbage gems
 	self.damage = 4 -- each 4 damage is one more platform movement
 	self.turn_start_damage = 4	-- damage at the start of the turn, used in particles calcs
+	self.CONSECUTIVE_PLATFORM_DESTROY_DELAY = 10 -- how many frames to wait before destroying additional plats
 end
 
 -- make pieces at start of round. They are all then moved up 5 spaces
@@ -111,7 +112,7 @@ function Hand:movePlatform(start_pos, end_pos)
 	self[end_pos].platform.hand_idx = end_pos
 	self[start_pos].platform = nil
 
-	if self[0].platform then self:destroyPlatform(0, true) end
+	if self[0].platform then self:destroyPlatform(0, true) print("WARNING: There should never be a platform in position 0!!!") end
 end
 
 -- moves a piece from the hand to the grid.
@@ -211,6 +212,7 @@ function Hand:destroyPlatform(pos, skip_animations, delay_frames)
 	local garbage_delay = delay_frames + 15
 	local game = self.game
 	local garbage_arrival_frame
+
 	if not skip_animations then
 		if self[pos].platform then
 			game.queue:add(delay_frames, game.sound.newSFX, game.sound, "starbreak")
@@ -224,21 +226,22 @@ function Hand:destroyPlatform(pos, skip_animations, delay_frames)
 			print("tried to destroy a non-existent platform with animation!")
 		end
 	end
-	game.queue:add(delay_frames, function() self[pos].platform = nil end)
+
+	self[pos].platform:destroy(delay_frames)
+
 	return garbage_arrival_frame
 end
 
 function Hand:destroyDamagedPlatforms(force_minimum_1_piece)
-	local platform_delay = 10
 	local to_destroy = math.min(5, math.floor(self.damage * 0.25))
 	if force_minimum_1_piece then to_destroy = math.max(to_destroy, 1) end
 
 	local garbage_arrival_frames = {}
 	for i = 1, to_destroy do
-		local frame = self:destroyPlatform(i, false, (i - 1) * platform_delay)
+		local frame = self:destroyPlatform(i, false, (i - 1) * self.CONSECUTIVE_PLATFORM_DESTROY_DELAY)
 		if frame then garbage_arrival_frames[#garbage_arrival_frames+1] = frame end
 	end
-	return garbage_arrival_frames
+	return garbage_arrival_frames, to_destroy
 end
 
 function Hand:damagedPlatformsExist(force_minimum_1_piece)
@@ -306,7 +309,7 @@ end
 -- Update function only called at end of turn
 function Hand:endOfTurnUpdate()
 	for i = 1, 5 do
-		assert(self[i].platform, "No platform in hand position " .. i .. "!! PLEASE SEND SCREENSHOT TO CODER.")
+		assert(self[i].platform, "No platform in position " .. i .. " for player " .. self.owner.player_num .. "! PLEASE SEND SCREENSHOT TO CODER. Turn: " .. self.game.turn)
 		self[i].platform:setFastSpin(false)
 	end
 	self.damage = self.damage + 4
