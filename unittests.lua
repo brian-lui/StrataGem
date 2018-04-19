@@ -82,6 +82,18 @@ local function testWalterPassive(game)
 	game.grid:updateGrid()
 end
 
+local function testHeathFireMovement(game)
+	nrow(game, 1, "        ")
+	nrow(game, 2, "        ")
+	nrow(game, 3, "GG      ")
+	nrow(game, 4, "YY      ")
+	nrow(game, 5, "RR      ")
+	nrow(game, 6, "BB      ")
+	nrow(game, 7, "RR      ")
+	nrow(game, 8, "GG      ")
+	game.grid:updateGrid()
+end
+
 -- test vertical chain combo
 local function testVerticalCombo(game)
 	nrow(game, 1, "        ")
@@ -178,6 +190,7 @@ end
 
 local layouts_to_test = {
 	testWalterPassive,
+	testHeathFireMovement,
 	testVerticalCombo,
 	garbageMatch,
 	multiCombo,
