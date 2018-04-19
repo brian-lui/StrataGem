@@ -232,11 +232,15 @@ function Spout.generate(game, owner, col)
 	p:change{duration = owner.SPOUT_SPEED * 8, y = dest_y, quad = quad_change}
 
 	-- bobs
+	-- actually no bobs now
+	--[[
 	for _ = 1, 3 do
 		p:change{duration = owner.SPOUT_BOB_SPEED * 0.25, y = dest_y + stage.height * 0.02}
 		p:change{duration = owner.SPOUT_BOB_SPEED * 0.5, y = dest_y - stage.height * 0.02}
 		p:change{duration = owner.SPOUT_BOB_SPEED * 0.25, y = dest_y}
 	end
+	--]]
+	p:wait(owner.SPOUT_BOB_SPEED * 3)
 	p:wait(60)
 	p:change{duration = 20, transparency = 0, remove = true}
 end
