@@ -253,12 +253,11 @@ function Game:_createButton(gamestate, params)
 		easing = params.easing or "linear", exit_func = params.exit_func}
 	button.pushed = params.pushed or function(_self)
 		_self.game.sound:newSFX(params.pushed_sfx or "button")
-		print("image pushed", params.image_pushed)
-		_self:newImage(params.image_pushed)
+		_self:newImage(params.image_pushed, true)
 	end
 	button.released = params.released or function(_self)
 		if params.released_sfx then _self.game.sound:newSFX(params.released_sfx) end
-		_self:newImage(params.image)
+		_self:newImage(params.image, true)
 	end
 	button.action = params.action
 	return button
