@@ -240,6 +240,9 @@ function Super:getRect()
 end
 
 function Super:released()
+end
+
+function Super:action()
 	local character = self.character
 	if character:canUseSuper() then
 		local word = self.super_word
