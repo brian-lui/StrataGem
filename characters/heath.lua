@@ -1,5 +1,3 @@
--- TODO: need to update the fire y-position after each chain combo, too. Currently, it only updates at the end of the turn. So if there is a chain combo underneath the fire, it won't update.
-
 --[[ Color: red
 Passive: Horizontal matches create a fire tile if the matched gem was the top
 most gem in that column. Fire tiles last for one turn. At the end of the turn,
@@ -7,10 +5,6 @@ they destroy the gem below them UNLESS a gem is placed on top of them (the gem
 can come from either player). Heath owns the damage from the fire burn.
 
 Super: Clear the top gem in each friendly column.
-
-Super pseudocode:
-	BeforeGravity:
-		destroyGem in top row of each column
  --]]
 
 -- *This part is the setup part where we initialize the working variables and images
@@ -90,12 +84,13 @@ function SmallFire:remove()
 	self.manager.allParticles.CharEffects[self.ID] = nil
 end
 
-function SmallFire:updateYPos()
+function SmallFire:updateYPos(delay)
 	local grid = self.game.grid
 	local row = grid:getFirstEmptyRow(self.col)
 	local new_y = grid.y[row]
 	if self.y ~= new_y and self:isStationary() then
 		local duration = math.abs(self.y - new_y) / grid.DROP_SPEED
+		if delay then self:wait(delay) end
 		self:change{duration = duration, y = new_y}
 	end
 end
@@ -335,7 +330,7 @@ function Heath:afterMatch()
 	-- fire passive update, in case of chain combo for a gem below the fire
 	for _, particle in pairs(game.particles.allParticles.CharEffects) do
 		if particle.player_num == self.player_num and particle.name == "HeathFire" then
-			particle:updateYPos()
+			particle:updateYPos(delay_to_return)
 		end
 	end
 
