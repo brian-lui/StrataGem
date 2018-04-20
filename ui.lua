@@ -239,7 +239,7 @@ function Super:getRect()
 	return img.x - (img.width / 2), img.y - (img.height / 2), img.width, img.height
 end
 
-function Super:onClickRelease()
+function Super:released()
 	local character = self.character
 	if character:canUseSuper() then
 		local word = self.super_word

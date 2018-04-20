@@ -13,7 +13,7 @@ function love.load()
 	local desktopWidth, desktopHeight = love.window.getDesktopDimensions()
 	love.window.setMode(desktopWidth / 2, desktopHeight / 2, {resizable=true})
 
-	local DEMO_MODE_ON = false
+	local DEMO_MODE_ON = true
 	if DEMO_MODE_ON then
 		game.debug_drawGemOwners = false
 		game.debug_drawParticleDestinations = false

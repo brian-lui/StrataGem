@@ -432,7 +432,7 @@ function gs_main:mousereleased(x, y)
 
 	local my_super = self.me_player.super_button
 	if pointIsInRect(x, y, my_super:getRect()) and gs_main.clicked == my_super then
-		my_super:onClickRelease() 
+		my_super:released() 
 	end
 
 	self:_mousereleased(x, y, gs_main)
