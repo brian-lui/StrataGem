@@ -13,7 +13,6 @@ local Character = require "character"
 
 local Walter = {}
 Walter.character_id = "Walter"
-Walter.CAN_SUPER_AND_PLAY_PIECE = false
 Walter.meter_gain = {red = 4, blue = 8, green = 4, yellow = 4}
 Walter.primary_colors = {"blue"}
 

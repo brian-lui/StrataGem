@@ -47,7 +47,7 @@ Character.dropped_piece = nil
 Character.supering = false
 Character.super_params = {}
 Character.place_type = "none"
-Character.CAN_SUPER_AND_PLAY_PIECE = true
+Character.CAN_SUPER_AND_PLAY_PIECE = false -- this is always false now
 
 function Character:init(player_num, game)
 	self.game = game
