@@ -339,6 +339,54 @@ function Client:sendDelta()
 	print("Frame: " .. self.game.frame, "Time: " .. love.timer.getTime() - self.match_start_time, "Sent delta")
 end
 
+--[[ Returns a string describing the current gamestate.
+First 64 characters are the gems in the basin, going across, from top row to bottom row.
+Next 10 characters are the pieces in player 1 hand, from top to bottom.
+Next 10 characters are the pieces in player 2 hand, from top to bottom.
+Next characters are the modifiers for p1 and p2, like Heath flames or Walter clouds. I didn't think about this part yet.
+--]]
+function Client:getGamestateString()
+	local game = self.game
+	local grid = game.grid
+	local ret = {}
+	local pos = 1
+	-- grid
+	for row = grid.BASIN_START_ROW, grid.BASIN_END_ROW do
+		for col = 1, grid.COLUMNS do
+			if grid[row][col].gem then
+				ret[pos] = string.sub(grid[row][col].gem.color:lower(), 1, 1)
+			else
+				ret[pos] = " "
+			end
+			pos = pos + 1
+		end
+	end
+
+	-- hands
+	for player in game:players() do
+		for i = 1, 5 do
+			if player.hand[i].piece then
+				local gems = player.hand[i].piece.gems
+				if gems[1] then
+					ret[pos] = string.sub(gems[1].color:lower(), 1, 1)
+				else
+					ret[pos] = " "
+				end
+				if gems[2] then
+					ret[pos+1] = string.sub(gems[2].color:lower(), 1, 1)
+				else
+					ret[pos+1] = " "
+				end
+			else
+				ret[pos] = " "
+				ret[pos+1] = " "
+			end
+			pos = pos + 2
+		end
+	end
+	return table.concat(ret)
+end
+
 -- called at start of a new turn. packages the state, and sends it with a delay
 function Client:sendState(delay)
 	local game = self.game

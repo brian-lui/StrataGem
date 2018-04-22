@@ -422,8 +422,13 @@ local function toggleScreencaps(game)
 	end
 end
 
+local function printGamestate(game)
+	local gamestate = game.client:getGamestateString()
+	print(gamestate)
+end
+
 local Unittests = {
-	--q = ,
+	q = printGamestate,
 	--w = ,
 	e = charselectScreenCPUCharToggle,
 	--r = ,
