@@ -24,7 +24,7 @@ function GemPlatform:init(game, owner, location)
 	self.height = self.pic.height
 end
 
-function GemPlatform:draw(params) 
+function GemPlatform:draw(params)
 	local p = {} -- need to create a copy of params or else it will modify params
 	for k, v in pairs(params) do p[k] = v end
 
@@ -38,7 +38,7 @@ function GemPlatform:draw(params)
 	if self.redness > 0 then
 		p.RGBTable = {255, 255, 255, self.redness}
 		p.image = image.UI.platform_red
-		self.pic:draw(p)		
+		self.pic:draw(p)
 	end
 end
 

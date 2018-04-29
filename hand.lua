@@ -2,8 +2,6 @@ require 'utilities' -- helper functions
 local common = require "class.commons" -- class support
 local Piece = require 'piece'
 local GemPlatform = require 'gemplatform'
-local Pic = require 'pic'
-local image = require 'image'
 
 local Hand = {}
 Hand.PLATFORM_SPEED = drawspace.height / 192 -- pixels per second for pieces to shuffle
@@ -41,7 +39,7 @@ function Hand:makeInitialPieces(gem_table)
 			owner_num = self.owner_num,
 			x = self[i].x,
 			y = self[i].y,
-			--gem_table = gem_table,
+			gem_table = gem_table,
 		})
 		self:movePiece(i, i-5)
 	end
@@ -64,7 +62,6 @@ end
 
 -- moves a piece from location to location, as integers
 function Hand:movePiece(start_pos, end_pos)
-	local game = self.game
 	if start_pos == end_pos then return end
 
 	-- anims
@@ -112,7 +109,10 @@ function Hand:movePlatform(start_pos, end_pos)
 	self[end_pos].platform.hand_idx = end_pos
 	self[start_pos].platform = nil
 
-	if self[0].platform then self:destroyPlatform(0, true) print("WARNING: There should never be a platform in position 0!!!") end
+	if self[0].platform then
+		self:destroyPlatform(0, true)
+		print("WARNING: There should never be a platform in position 0!!!")
+	end
 end
 
 -- moves a piece from the hand to the grid.
@@ -137,7 +137,7 @@ function Hand:movePieceToGrid(grid, piece, locations)
 		self.game.particles.upGem.generate(self.game, gem) -- call upGem from current position
 		gem.y = grid.y[r]
 		self.game.particles.placedGem.generate(self.game, gem) -- put a placedGem image
-	end	
+	end
 	self[piece.hand_idx].piece = nil
 	piece.hand_idx = nil
 end
@@ -180,7 +180,6 @@ end
 function Hand:createGarbageAnimation(pos, delay_frames)
 	delay_frames = delay_frames or 0
 	local game = self.game
-	local grid = game.grid
 	local particles = game.particles
 
 	local explode_frames = game.PLATFORM_FALL_EXPLODE_FRAMES + delay_frames
@@ -309,7 +308,7 @@ end
 -- Update function only called at end of turn
 function Hand:endOfTurnUpdate()
 	for i = 1, 5 do
-		assert(self[i].platform, "No platform in position " .. i .. " for player " .. self.owner.player_num .. "! PLEASE SEND SCREENSHOT TO CODER. Turn: " .. self.game.turn)
+		assert(self[i].platform, "No platform in position ".. i .." for player ".. self.owner.player_num .."! Turn: ".. self.game.turn)
 		self[i].platform:setFastSpin(false)
 	end
 	self.damage = self.damage + 4
@@ -340,7 +339,7 @@ end
 
 function Hand:pieces()
 	local pieces, index = {}, 0
-	for i = 1, 10 do 
+	for i = 1, 10 do
 		if self[i].piece then
 			pieces[#pieces+1] = self[i].piece
 		end

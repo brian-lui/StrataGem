@@ -22,6 +22,7 @@ function Client:clear()
 	self.queuing = false
 	self.received_state = true
 	self.opponent_received_state = true
+	self.giving_frameback = 0
 end
 
 function Client:init(game)
@@ -58,117 +59,18 @@ function Client:update()
 			self.partial_recv = ""
 			local recv = json.decode(recv_str)
 			self:processData(recv)
-		elseif partial_data and partial_data ~= "" then -- still incomplete packet.
+		elseif partial_data and partial_data ~= "" then -- still incomplete packet. how come we have to test for null string
 			self.partial_recv = self.partial_recv .. partial_data
 			print("received partial data:" .. partial_data .. ".")
 		end
+
+		-- lag adjustment during game
+		if self.giving_frameback > 0 then
+			self.game.timeBucket = self.game.timeBucket + (0.5 * self.game.timeStep)
+			self.giving_frameback = math.max(self.giving_frameback - 0.5, 0)
+		end
 	end
 end
-
---[[
-OK HERE'S WHAT WE NEED THE METHODS AND PROPERITES TO DO/BE
-
-our_delta: This is the current turn's delta.
-----------------------------------------
-Actions can be:
-	1) Play first piece
-	2) Play second piece (doublecast)
-	3) Play super + super parameters. Mutually exclusive with 1/2
-Encoding:
-	0) Default string is "N_", for no action.
-	1) P1_ID[piece ID]_R[piece rotation]_C[piece column of left-most gem]_
-		e.g. P1_59_3_2_
-	2) Same as above, e.g. P2_60_4_3_
-	3) S_[parameters]_
-		e.g. S__, S_58390496405_
-	Concatenate to get final string, e.g.:
-		P1_59_3_2_P2_60_4_3_
-		P1_59_3_2_
-		S__
-		N_ (no action)
-
-prepareDelta: Called from two places:
-----------------------------------------
-	During action phase:
-		Piece placement will call this immediately and write to [our_delta].
-	At end of action phase:
-		If [our_delta] is "N_" (implying no piece was played):
-			If player.supering:
-				String for Super will be generated.
-			Else:
-				String "N_" (no action) will be generated.
-
-sendDelta
----------
-	Called at the end of the turn, right after the prepareDelta call end of action phase call.
-	Sends the [our_delta] to opponent. Nothing to see here
-
-[Opponent] receiveDelta
------------------------
-	Receive the delta and store it as [self.their_delta].
-	Then, call sendDeltaConfirmation.
-
-[Opponent] sendDeltaConfirmation
---------------------------------
-	Send a message of type "deltaconfirmation" with contents [self.their_delta].
-
-receiveDeltaConfirmation
-------------------------
-	Receive confirmation from the opponent with string [received_delta].
-	Compare [received_delta] with [our_delta].
-	If they are different:
-		Throw an exception.
-		Better error handling later - we can re-send the delta.
-	Else:
-		Go to resolution phase.
-
-
-
-our_state: This is the current turn's state.
-----------------------------------------
-State information:
-	1) P1 burst, P1 super
-	2) P2 burst, P2 super
-	3) Grid gems
-	4) Player 1 pieces
-	5) Player 2 pieces
-	6) P1 other special info
-	7) P2 other special info
-	Note: special items must belong to a player, even if they are "neutral".
-Encoding:
-	1) P1B[burst meter]S[super]_
-		e.g. P1B4S35_
-	2) P2B[burst meter]S[super]_
-		e.g. P2B5S23_
-	3) 64 byte string, 8 rows, from top left across to bottom right. [color] or 0_
-		e.g. 000000000000000000000000000000000000000000000000RRYBG000RYRBGGYB_
-	4) P1H1[color][color][ID]_ .. P1H5_
-		e.g. P1H1RY29_P1H2YY30_P1H3_P1H4_P1H5_
-	5) P2H1[color][color][ID]_ .. P2H5_
-		e.g. P2H1RY31_P2H2YY32_P2H3GG33_P2H4_P2H5_
-	6) P1SPEC_[tbc]_
-		e.g. SPEC__ to denote location of Heath fires
-	7) P2SPEC_[tbc]_
-		e.g. SPEC__ to denote column/remaining turns of Walter clouds
-Concatenate to get final string
-
-
-prepareState: Called from two places:
-----------------------------------------
-	Called at the end of resolution phase.
-
-sendState
----------
-	Called right after the prepareState. Sends the [our_state] to opponent.
-
-[Opponent] receiveState
------------------------
-	Receive the state and compare it with prepareState.
-	If they are different:
-		Throw an exception. This is probably unrecoverable - we should focus on syncing deltas.
---]]
-
-
 
 -- On a new turn, clear the flags for having sent and received state information
 function Client:newTurn()

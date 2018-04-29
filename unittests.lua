@@ -1,7 +1,5 @@
 -- You can make some patterns to test bugs
-local NOP = function() end
 local common = require "class.commons"
-local image = require 'image'
 local Gem = require 'gem'
 local Piece = require 'piece'
 
@@ -152,8 +150,8 @@ local function p2VerticalMatch(game)
 	nrow(game, 3, "        ")
 	nrow(game, 4, "        ")
 	nrow(game, 5, "        ")
-	nrow(game, 6, "        ")	
-	nrow(game, 7, "        ")	
+	nrow(game, 6, "        ")
+	nrow(game, 7, "        ")
 	nrow(game, 8, "    BRBB")
 	for i = 1, 5 do
 		if game.p2.hand[i].piece then
@@ -270,15 +268,6 @@ local function tweenPlacedGemUp(game)
 	end
 end
 
-local function addBottomRowP1(game)
-	game.grid:addBottomRow(p1)
-	for g in grid:gems() do g.x, g.y = g.target_x, g.target_y end
-end
-
-local function addBottomRowP2(game)
-	game.grid:addBottomRow(p2)
-	for g in grid:gems() do g.x, g.y = g.target_x, g.target_y end
-end
 
 local function printSaveDirectory(game)
 	print(love.filesystem.getSaveDirectory())
@@ -312,7 +301,7 @@ local function showDebugInfo(game)
 	game.debug_drawParticleDestinations = not game.debug_drawParticleDestinations
 	game.debug_drawGamestate = not game.debug_drawGamestate
 	game.debug_drawDamage = not game.debug_drawDamage
-	game.debug_drawGrid = not game.debug_drawGrid	
+	game.debug_drawGrid = not game.debug_drawGrid
 	if game.debug_overlay then
 		game.debug_overlay = nil
 	else
@@ -334,8 +323,7 @@ local function toggleSlowdown(game)
 end
 
 local function testGemImage(game)
-	local stage = game.stage
-	game.grid:animateGameOver(2)	
+	game.grid:animateGameOver(2)
 end
 
 local function makeAGarbage(game)
@@ -370,6 +358,7 @@ end
 local function healingCloudGenerate(game)
 	game.p1:_makeCloud(3, 1)
 end
+
 local function healingTwinkleGenerate(game)
 	game.particles.healing.generateTwinkle(game, game.p1.hand[2].platform)
 end
@@ -439,7 +428,7 @@ local Unittests = {
 	o = tweenPlacedGemDown,
 	p = tweenPlacedGemUp,
 	a = gailPetalTest, -- gail petal
-	s = addBottomRowP2,
+	--s = addBottomRowP2,
 	d = toggleScreencaps,
 	f = skipToTurnEnd,
 	g = addDamageP1,
@@ -447,7 +436,7 @@ local Unittests = {
 	j = addSuperAndBurst,
 	k = superToggle,
 	l = showDebugInfo,
-	z = heathFireFadeTest, -- heath fire
+	--z = heathFireFadeTest, -- heath fire
 	x = toggleSlowdown,
 	c = testGemImage,
 	--v = ,

@@ -246,7 +246,7 @@ function Phase:getMatchedGems(dt)
 		local diff = game.p1.garbage_rows_created - game.p2.garbage_rows_created
 		grid:setGarbageMatchFlags(diff)
 		self.garbage_this_round = 0
-		game.p1.garbage_rows_created, game.p2.garbage_rows_created = 0		
+		game.p1.garbage_rows_created, game.p2.garbage_rows_created = 0
 	end
 
 	for player in game:players() do
@@ -306,7 +306,7 @@ end
 function Phase:resolvedMatches(dt)
 	local game = self.game
 	local grid = game.grid
-	if self.should_call_char_ability_this_phase then 
+	if self.should_call_char_ability_this_phase then
 		local delay = 0
 		for player in game:players() do
 			local player_delay = player:afterAllMatches()
@@ -334,7 +334,7 @@ function Phase:resolvedMatches(dt)
 			if self.no_rush[i] then
 				if grid[grid.RUSH_ROW][i].gem then
 					game.particles.words.generateNoRush(self.game, i)
-					self.no_rush[i] = false	
+					self.no_rush[i] = false
 				end
 			end
 		end
@@ -353,7 +353,7 @@ function Phase:destroyDamagedPlatforms(dt)
 		-- additional delay waiting for consecutive platform explosions
 		local last_platform_time = (platforms_destroyed - 1) * player.hand.CONSECUTIVE_PLATFORM_DESTROY_DELAY
 		max_delay = math.max(max_delay, last_platform_time)
-		
+
 		-- additional delay waiting for garbage arrival
 		for _, delay in pairs(garbage_arrival_frames) do
 			game.queue:add(delay, grid.addBottomRow, grid, player)
@@ -411,7 +411,7 @@ function Phase:platformsMoving(dt)
 
 	grid:updateGravity(dt)
 
-	if handsettled then	
+	if handsettled then
 		if self.garbage_this_round > 0 then
 			game.current_phase = "DuringGravity"
 		else
@@ -440,7 +440,7 @@ function Phase:cleanup(dt)
 		if self.no_rush[i] then
 			if grid[grid.RUSH_ROW][i].gem then
 				game.particles.words.generateNoRush(self.game, i)
-				self.no_rush[i] = false	
+				self.no_rush[i] = false
 			end
 		end
 	end

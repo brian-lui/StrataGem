@@ -1,8 +1,6 @@
 local love = _G.love
 local common = require "class.commons"
 local image = require "image"
-local Pic = require "pic"
-local pointIsInRect = require "utilities".pointIsInRect
 
 local lobby = {name = "lobby"}
 
@@ -81,13 +79,13 @@ function lobby:_createUIButtons()
 		start_y = stage.height + image.button.start:getHeight(),
 		end_y = stage.height * 0.8,
 		easing = "outQuad",
-		action = function() 
+		action = function()
 			if lobby.my_character and not self.client.queuing then
 				local queue_details = {
 					character = lobby.my_character,
 					background = self.background:idx_to_str(lobby.game_background),
 				}
-				lobby.joinRankedQueue(self, queue_details) 
+				lobby.joinRankedQueue(self, queue_details)
 			end
 		end,
 	})

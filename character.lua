@@ -112,7 +112,7 @@ function Character:whenCreatingGarbageRow() end -- at garbage row creation
 function Character:afterAllMatches()
 -- after all chain combos finished.
 -- Can be called multiple times in a turn if garbage is created
-end 
+end
 function Character:beforeCleanup() end
 
 function Character:cleanup()

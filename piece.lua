@@ -24,7 +24,7 @@ function Piece:init(game, tbl)
 	end
 	self.ID = ID.piece
 	self.size = self.size or 2
-	self.gem_table = self.gem_table or {
+	self.gem_table = tbl.gem_table or {
 		{color = "red", freq = 1},
 		{color = "blue", freq = 1},
 		{color = "green", freq = 1},
@@ -310,8 +310,8 @@ function Piece:isValidRush()
 	local row_ok = true
 	for i = 1, self.size do
 		local empty_row = grid:getFirstEmptyRow(cols[i])
-		if empty_row < grid.RUSH_ROW then 
-			row_ok = false 
+		if empty_row < grid.RUSH_ROW then
+			row_ok = false
 			if self.game.particles.no_rush_check[cols[i]] == 0 then
 				self.game.particles.words.generateNoRush(self.game, cols[i])
 			else

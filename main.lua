@@ -23,7 +23,7 @@ function love.load()
 		game.debug_overlay = false
 		game.debug_screencaps = false
 		game.unittests = {}
-	end	
+	end
 end
 -- local sandbox = require 'animationsandbox'
 

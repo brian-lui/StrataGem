@@ -101,7 +101,7 @@ function Checkmate:update(dt)
 	end
 
 	bk:update(dt)
-	if self.overlay then self.overlay:update(dt) end
+	if over then over:update(dt) end
 end
 
 function Checkmate:draw(params)
@@ -170,28 +170,28 @@ end
 
 function Clouds:_newCloud(size, starting_x)
 	local stage = self.game.stage
-	local image, y, container, duration
+	local img, y, container, duration
 	if size == "big" then
-		image = self.big_cloud_images[math.random(1, #self.big_cloud_images)]
+		img = self.big_cloud_images[math.random(1, #self.big_cloud_images)]
 		y = math.random(stage.height * 0.375, stage.height * 0.5)
 		container = self.big_clouds
 		duration = math.random(200, 280) * (starting_x and 1 - (starting_x / stage.width) or 1)
 	elseif size == "medium" then
-		image = self.medium_cloud_images[math.random(1, #self.medium_cloud_images)]
+		img = self.medium_cloud_images[math.random(1, #self.medium_cloud_images)]
 		y = math.random(stage.height * 0.25, stage.height * 0.375)
 		container = self.medium_clouds
 		duration = math.random(300, 420) * (starting_x and 1 - (starting_x / stage.width) or 1)
 	elseif size == "small" then
-		image = self.small_cloud_images[math.random(1, #self.small_cloud_images)]
+		img = self.small_cloud_images[math.random(1, #self.small_cloud_images)]
 		y = math.random(stage.height * 0.1, stage.height * 0.25)
 		container = self.small_clouds
 		duration = math.random(400, 560) * (starting_x and 1 - (starting_x / stage.width) or 1)
 	else
 		print("invalid cloud size specified")
 	end
-	x = starting_x or -image:getWidth()
+	local x = starting_x or -img:getWidth()
 
-	local cloud = common.instance(Pic, self.game, {x = x, y = y, image = image,
+	local cloud = common.instance(Pic, self.game, {x = x, y = y, image = img,
 		container = container, counter = "background_particle"})
 	cloud:change{duration = duration, x = stage.width + cloud.width, remove = true}
 end
@@ -287,7 +287,7 @@ end
 
 function Starfall:update(dt)
 	for _, v in pairs(self.stars) do v:update(dt) end
-	if self.star_timer <= 0 then 
+	if self.star_timer <= 0 then
 		self:_generateStar()
 		self.star_timer = self.star_timer_func()
 	else
@@ -309,7 +309,7 @@ local Colors = {ID_number = 4}
 function Colors:init(game)
 	self.game = game
 	self.t = 0
-	self.current_color = common.instance(Pic, self.game, 
+	self.current_color = common.instance(Pic, self.game,
 		{x = game.stage.x_mid, y = game.stage.y_mid, image = image.background.colors.white})
 	self.previous_color = nil
 	self.timing_full_cycle = 1800
@@ -323,13 +323,13 @@ function Colors:init(game)
 	ID.background_particle = 0
 end
 
-function Colors:_newColor(image)
+function Colors:_newColor(img)
 	local stage = self.game.stage
 	self.previous_color = self.current_color
 	self.previous_color:change{duration = 180, transparency = 0,
 		exit_func = function() self.previous_color = nil end}
-	self.current_color = common.instance(Pic, self.game, 
-		{x = stage.x_mid, y = stage.y_mid, image = image, transparency = 0})
+	self.current_color = common.instance(Pic, self.game,
+		{x = stage.x_mid, y = stage.y_mid, image = img, transparency = 0})
 	self.current_color:change{duration = 90, transparency = 255}
 end
 

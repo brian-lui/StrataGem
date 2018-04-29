@@ -137,7 +137,7 @@ local buttons = {"vscpu", "vscpupush", "netplay", "netplaypush", "back", "backpu
 image.button = {}
 for _, v in pairs(buttons) do
 	image.button[v] = love.graphics.newImage('images/buttons/' .. v .. '.png')
-end	
+end
 
 local unclickables = {"title_logo", "lobby_gamebackground", "lobby_searchingnone",
 	"lobby_searchingranked", "select_stageborder", "settingsframe", "suretoquit", "pausetext"}
@@ -149,7 +149,8 @@ end
 
 
 -- characters
-local selectable_chars = {"heath", "walter", "gail", "holly", "wolfgang", "hailey", "diggory", "buzz", "ivy", "joy", "mort", "damon"}
+local selectable_chars = {"heath", "walter", "gail", "holly", "wolfgang",
+	"hailey", "diggory", "buzz", "ivy", "joy", "mort", "damon"}
 image.charselect = {}
 for _, v in pairs(selectable_chars) do
 	image.charselect[v.."char"] = love.graphics.newImage('images/portraits/'..v.."action.png")

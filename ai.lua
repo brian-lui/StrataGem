@@ -1,4 +1,3 @@
-local love = _G.love
 --[[
 Each AI is assigned to a player on creation, replacing user input.
 
@@ -75,7 +74,7 @@ local function getCoords(piece, column)
 	if piece.is_horizontal then
 		for i = 1, #piece.gems do ret[#ret+1] = column + i - 1 end
 	else
-		for i = 1, #piece.gems do ret[#ret+1] = column end
+		for _ = 1, #piece.gems do ret[#ret+1] = column end
 	end
 	return ret
 end

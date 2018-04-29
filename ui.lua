@@ -91,7 +91,7 @@ function Burst:init(game, character, player_num)
 	local frame_img = ID == "P1" and image.UI.gauge_gold or image.UI.gauge_silver
 	self.burst_frame = common.instance(Pic, self.game, {
 		x = stage.burst[ID].frame.x,
-		y = stage.burst[ID].frame.y, 
+		y = stage.burst[ID].frame.y,
 		image = frame_img,
 	})
 	self.burst_block, self.burst_partial, self.burst_glow = {}, {}, {}
@@ -145,7 +145,7 @@ function Burst:update(dt)
 		else
 			self.burst_block[i].transparency = 255
 		end
-		
+
 		if full_segs < i and full_segs + 1 > i then
 			self.burst_partial[i].transparency = 255
 		else
@@ -373,7 +373,7 @@ function ui:updateBursts(gamestate)
 			else
 				gamestate.ui.static[ID .. "burstblock" .. i].transparency = 0
 			end
-			
+
 			if full_segs < i and full_segs + 1 > i then
 				gamestate.ui.static[ID .. "burstpartial" .. i].transparency = 255
 			else
@@ -523,7 +523,7 @@ function ui:putPendingAtTop(delay)
 		p1 = game.grid:getPendingGems(game.p1),
 		p2 = game.grid:getPendingGems(game.p2),
 	}
-	
+
 	for _, player_gems in pairs(pending) do
 		local doubles, rushes = {}, {}
 		for i = 1, #player_gems do
@@ -531,7 +531,7 @@ function ui:putPendingAtTop(delay)
 			local target_y = gem.y
 			gem.y = game.stage.height * -0.1
 			gem:change{y = target_y, duration = game.TWEEN_TO_LANDING_ZONE_DURATION, easing = "outQuart", remove = true}
-			
+
 			if gem.place_type == "double" then
 				doubles[#doubles+1] = gem
 			elseif gem.place_type == "rush" then

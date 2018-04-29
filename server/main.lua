@@ -10,24 +10,24 @@ local dudes = {}
 local server_socket = socket.bind("*", 49929)
 server_socket:settimeout(0)
 
+local function disconnect(_, conn)
+	print("Disconnected", conn)
+	if conn then conn:send(json.encode({type = "disconnected"})) end
+	if dudes[conn] then dudes[conn] = nil end
+	pcall(function() conn:close() end) -- like try/except in python
+end
+
 function server.send(data, conn)
 	local blob = json.encode(data) .. "\n" -- we are using *l receive mode
 	if conn then
 		local success = conn:send(blob)
 		if not success then
 			print("Oh noes, blob send unsuccessful")
-			disconnect(_, conn)
+			disconnect(nil, conn)
 		end
 	else
 		print("Oh noes, no connection found")
 	end
-end
-
-local function disconnect(_, conn)
-	print("Disconnected", conn)
-	if conn then conn:send(json.encode({type = "disconnected"})) end
-	if dudes[conn] then dudes[conn] = nil end
-	pcall(function() conn:close() end) -- like try/except in python
 end
 
 local function getDudes()
@@ -37,6 +37,7 @@ local function getDudes()
 	end
 	return all_dudes
 end
+
 local function getIdlers()
 	local idlers = {}
 	for _, dude in pairs(dudes) do
@@ -145,7 +146,7 @@ local function attemptedConnection(data, conn)
 		print("New connection added from", conn)
 		sendDudes()
 	end
-	server.send(blob, conn)    
+	server.send(blob, conn)
 end
 
 local function getConnFromID(id)
@@ -224,7 +225,7 @@ server.lookup = {
 
 function server:processData(data_str, conn)
 	local data = json.decode(data_str)
-	if self.lookup[data.type] then 
+	if self.lookup[data.type] then
 		self.lookup[data.type](data, conn)
 	else
 		print("Invalid data type received from client")

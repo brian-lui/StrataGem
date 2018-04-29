@@ -48,7 +48,7 @@ function Pic:init(game, tbl)
 	self.quad_data = {}
 end
 
---[[ Takes the following optional table arguments: 
+--[[ Takes the following optional table arguments:
 		h_flip: whether to draw the image flipped around the horizontal axis
 		x, y: x or y position to draw the image at
 		rotation: rotation number to draw
@@ -89,7 +89,7 @@ function Pic:draw(params)
 		)
 
 		if self.new_image then
-			local r, g, b, t
+			local r, g, b
 			if params.RGBTable then
 				r, g, b = params.RGBTable[1], params.RGBTable[2], params.RGBTable[3]
 			else
@@ -174,7 +174,7 @@ local function clearMove(self)
 			print("maybe passed in something wrong for the exit_func property")
 		end
 	end
-	if self.remove_on_exit then self:remove() end	
+	if self.remove_on_exit then self:remove() end
 	self.t, self.tweening, self.curve, self.move_func = nil, nil, nil, nil
 	self.during, self.during_frame = nil, nil
 	self.exit, self.exit_func = nil, nil

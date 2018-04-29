@@ -60,14 +60,15 @@ function Game:init()
 	self.debug_drawGrid = true
 	self.debug_overlay = function()
 		if self.current_phase == "Pause" then
-			return "Pausing at " .. self.phase.current_phase_for_debug_purposes_only .. ", " .. self.phase.frames_until_next_phase .. "\nGarbage this round: " .. self.phase.garbage_this_round
+			return "Pausing at " .. self.phase.current_phase_for_debug_purposes_only .. ", " ..
+				self.phase.frames_until_next_phase .. "\nGarbage this round: " .. self.phase.garbage_this_round
 		else
 			return self.current_phase
 		end
-	end 
+	end
 	self.debug_screencaps = true
 	self.debug_pause_mode = false
-	
+
 	self.rng = love.math.newRandomGenerator()
 	self.unittests = common.instance(require "unittests", self) -- debug testing
 	self.phase = common.instance(require "phase", self)
@@ -238,7 +239,6 @@ function Game:_createButton(gamestate, params)
 	params = params or {}
 	if params.name == nil then print("No object name received!") end
 	if params.image_pushed == nil then print("No push image received for " .. params.name .. "!") end
-	local stage = self.stage
 	local button = common.instance(Pic, self, {
 		name = params.name,
 		x = params.start_x or params.end_x,
@@ -271,7 +271,6 @@ end
 function Game:_createImage(gamestate, params)
 	params = params or {}
 	if params.name == nil then print("No object name received!") end
-	local stage = self.stage
 	local button = common.instance(Pic, self, {
 		name = params.name,
 		x = params.start_x or params.end_x,
@@ -286,8 +285,8 @@ function Game:_createImage(gamestate, params)
 	return button
 end
 
--- creates the pop-up settings menu overlays with default parameters
-function Game:_openSettingsMenu(gamestate, params)
+-- creates the pop-up settings menu overlays
+function Game:_openSettingsMenu(gamestate)
 	local stage = self.stage
 	local clickable = gamestate.ui.popup_clickable
 	local static = gamestate.ui.popup_static
@@ -302,7 +301,7 @@ function Game:_openSettingsMenu(gamestate, params)
 end
 
 -- change to the quitconfirm menu
-function Game:_openQuitConfirmMenu(gamestate, params)
+function Game:_openQuitConfirmMenu(gamestate)
 	local stage = self.stage
 	local clickable = gamestate.ui.popup_clickable
 	local static = gamestate.ui.popup_static
@@ -320,7 +319,7 @@ function Game:_openQuitConfirmMenu(gamestate, params)
 end
 
 -- change back to the settings menu
-function Game:_closeQuitConfirmMenu(gamestate, params)
+function Game:_closeQuitConfirmMenu(gamestate)
 	local stage = self.stage
 	local clickable = gamestate.ui.popup_clickable
 	local static = gamestate.ui.popup_static
@@ -337,7 +336,7 @@ function Game:_closeQuitConfirmMenu(gamestate, params)
 	clickable.close_settings_menu:change{duration = 15, transparency = 255}
 end
 
-function Game:_closeSettingsMenu(gamestate, params)
+function Game:_closeSettingsMenu(gamestate)
 	local stage = self.stage
 	local clickable = gamestate.ui.popup_clickable
 	local static = gamestate.ui.popup_static
@@ -348,7 +347,7 @@ function Game:_closeSettingsMenu(gamestate, params)
 	clickable.close_quit_menu:change{duration = 0, x = -stage.width, transparency = 0}
 	static.settings_text:change{duration = 10, transparency = 0}
 	static.sure_to_quit:change{duration = 10, transparency = 0}
-	static.settingsframe:change{duration = 10, transparency = 0}	
+	static.settingsframe:change{duration = 10, transparency = 0}
 	clickable.open_quit_menu:change{duration = 0, x = -stage.width, transparency = 0}
 	clickable.close_settings_menu:change{duration = 0, x = -stage.width, transparency = 0}
 end
@@ -468,9 +467,8 @@ function Game:_createSettingsMenu(gamestate, params)
 	})
 end
 
-function Game:_drawSettingsMenu(gamestate, params)
+function Game:_drawSettingsMenu(gamestate)
 	if self.settings_menu_open then
-		params = params or {}
 		gamestate.ui.popup_static.settingsframe:draw()
 		gamestate.ui.popup_static.settings_text:draw()
 		gamestate.ui.popup_static.sure_to_quit:draw()
@@ -482,7 +480,7 @@ local pointIsInRect = require "utilities".pointIsInRect
 
 --default mousepressed function if not specified by a sub-state
 function Game:_mousepressed(x, y, gamestate)
-	if self.settings_menu_open then	
+	if self.settings_menu_open then
 		for _, button in pairs(gamestate.ui.popup_clickable) do
 			if pointIsInRect(x, y, button:getRect()) then
 				gamestate.clicked = button
@@ -504,7 +502,7 @@ end
 
 -- default mousereleased function if not specified by a sub-state
 function Game:_mousereleased(x, y, gamestate)
-	if self.settings_menu_open then	
+	if self.settings_menu_open then
 		for _, button in pairs(gamestate.ui.popup_clickable) do
 			if gamestate.clicked == button then button:released() end
 			if pointIsInRect(x, y, button:getRect()) and gamestate.clicked == button then

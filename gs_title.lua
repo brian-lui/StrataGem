@@ -9,8 +9,6 @@
 
 local common = require "class.commons"
 local image = require 'image'
-local Pic = require 'pic'
-local tween = require 'tween'
 
 local title = {name = "title"}
 
@@ -26,7 +24,7 @@ end
 -- After the initial tween, we keep the icons here if returning to title screen
 -- So we put it in init(), not enter() like in the other states
 function title:init()
-	local stage = self.stage	
+	local stage = self.stage
 	self.timeStep, self.timeBucket = 1/60, 0
 	title.ui = {clickable = {}, static = {}, popup_clickable = {}, popup_static = {}}
 	self:_createSettingsMenu(title)
@@ -41,7 +39,7 @@ function title:init()
 		end_y = stage.height * 0.8,
 		start_transparency = 0,
 		easing = "inQuart",
-		action = function() 
+		action = function()
 			self.statemanager:switch(require "gs_charselect")
 		end,
 	})
@@ -53,7 +51,7 @@ function title:init()
 		end_x = stage.width * 0.65,
 		start_y = stage.height * 1.2,
 		end_y = stage.height * 0.8,
-		start_transparency = 0, 
+		start_transparency = 0,
 		easing = "inQuart",
 		action = function()
 			self.statemanager:switch(require "gs_lobby")
@@ -69,8 +67,8 @@ function title:init()
 		end_y = stage.height * 0.35,
 		start_transparency = 0,
 		easing = "linear",
-		exit_func = function() 
-			if self.sound:getCurrentBGM() ~= "bgm_menu" then 
+		exit_func = function()
+			if self.sound:getCurrentBGM() ~= "bgm_menu" then
 				self.sound:newBGM("bgm_menu", true)
 			end
 		end,
@@ -84,7 +82,7 @@ function title:enter()
 		self.sound:stopBGM()
 		title.ui.static.logo:change{duration = 45, exit_func = function()
 				if self.sound:getCurrentBGM() ~= "bgm_menu" then
-			 		self.sound:newBGM("bgm_menu", true)
+					self.sound:newBGM("bgm_menu", true)
 				end
 			end}
 	end

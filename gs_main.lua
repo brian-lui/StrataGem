@@ -2,7 +2,6 @@ local love = _G.love
 local FONT = _G.FONT
 local common = require "class.commons"
 local image = require 'image'
-local Pic = require 'pic'
 local pointIsInRect = require "utilities".pointIsInRect
 local spairs = require "utilities".spairs
 
@@ -324,7 +323,7 @@ function gs_main:drawText(params)
 
 			local p1print = "Actual damage " .. p1hand.damage .. "\nShown damage " .. p1_displayed_damage
 			local p2print = "Actual damage " .. p2hand.damage .. "\nShown damage " .. p2_displayed_damage
-			
+
 			love.graphics.setFont(FONT.SLIGHTLY_BIGGER)
 			love.graphics.print(p1print, p1hand[2].x - 120, 150)
 			love.graphics.print(p2print, p2hand[2].x - 180, 150)
@@ -332,9 +331,9 @@ function gs_main:drawText(params)
 	love.graphics.pop()
 end
 
-function gs_main:drawButtons(params)
-	gs_main.ui.clickable.settings:draw(params)
-	self:_drawSettingsMenu(gs_main, params)
+function gs_main:drawButtons()
+	gs_main.ui.clickable.settings:draw()
+	self:_drawSettingsMenu(gs_main)
 end
 
 function gs_main:drawUI(params)
@@ -432,7 +431,7 @@ function gs_main:mousereleased(x, y)
 
 	local my_super = self.me_player.super_button
 	if pointIsInRect(x, y, my_super:getRect()) and gs_main.clicked == my_super then
-		my_super:action() 
+		my_super:action()
 	end
 
 	self:_mousereleased(x, y, gs_main)

@@ -6,7 +6,6 @@ local deepcpy = require "utilities".deepcpy
 
 local Grid = {}
 
-local window = _G.window -- TODO: Remove global
 Grid.DROP_SPEED = drawspace.height / 50 -- pixels per frame for loose gems to drop
 Grid.DROP_MULTIPLE_SPEED = drawspace.height / 180 -- multiplier for scoring_combo
 
@@ -273,14 +272,14 @@ end
 	will be flagged incorrectly.
 	the addOwner method adds a matched_this_turn flag to the gem, too, for use
 	in propagating the flags upwards, in the destroyGem method.
-	
+
 	Also sets .is_in_a_horizontal_match and/or .is_in_a_vertical_match attributes of gems
 --]]
 
 function Grid:flagMatchedGems()
 	local matches = self:_getRawMatches()
 	local gem_flags = {} -- a set
-	
+
 	-- get gem owners
 	for _, match in ipairs(matches) do
 		local this_match_p1, this_match_p2 = false, false
@@ -345,11 +344,9 @@ function Grid:flagMatchedGems()
 		local owner_num = 0
 		if this_match_p1 then
 			owner_num = owner_num + 1
-			made_a_match_this_round_p1 = true
 		end
 		if this_match_p2 then
 			owner_num = owner_num + 2
-			made_a_match_this_round_p2 = true
 		end
 
 		-- store flags
@@ -361,8 +358,6 @@ function Grid:flagMatchedGems()
 					if owner_num == 2 or owner_num == 3 then gem_flags[gem] = 3 end
 				elseif gem_flags[gem] == 2 then
 					if owner_num == 1 or owner_num == 3 then gem_flags[gem] = 3 end
-				elseif gem_flags[gem] == 3 then
-					-- nothing to add
 				else
 					print("This shouldn't happen either")
 				end
@@ -378,7 +373,7 @@ end
 
 --[[ Any gems placed in the action phase will be considered an "original" gem.
 	The purpose is for correct attribution of flags for follow-on vertical
-	matches: Followup vertical matches ignore ownership flags for gems without 
+	matches: Followup vertical matches ignore ownership flags for gems without
 	this flag.
 	This flag is cleared for any player who didn't make a match in the previous
 	round.
@@ -572,7 +567,7 @@ function Grid:addBottomRow(player, skip_animation)
 				game = game, x = x, y = y, image = explode_image, shake = true}
 			particles.dust.generateBigFountain{game = game, x = x, y = y,
 				color = gem_color, delay_frames = explode_time}
-		end		
+		end
 	end
 
 	if player.garbage_rows_created > player.enemy.garbage_rows_created then
@@ -811,8 +806,13 @@ function Grid:destroyGem(params)
 		local num_super_particles = player.supering and 0 or player.meter_gain[gem.color]
 		particles.superParticles.generate(game, gem, num_super_particles, delay_until_explode, params.force_max_alpha)
 		particles.damage.generate(game, gem, delay_until_explode, params.force_max_alpha)
-		particles.dust.generateBigFountain{game = game, gem = gem, delay_frames = delay_until_explode, force_max_alpha = params.force_max_alpha}
-		for i = 1, extra_damage do particles.damage.generate(game, gem, delay_until_explode, params.force_max_alpha) end
+		particles.dust.generateBigFountain{
+			game = game,
+			gem = gem,
+			delay_frames = delay_until_explode,
+			force_max_alpha = params.force_max_alpha
+		}
+		for _ = 1, extra_damage do particles.damage.generate(game, gem, delay_until_explode, params.force_max_alpha) end
 
 		particles.popParticles.generate{
 			game = game,
@@ -824,12 +824,21 @@ function Grid:destroyGem(params)
 	end
 
 	-- animations
-	particles.explodingGem.generate{game = game, gem = gem, glow_duration = glow_delay, force_max_alpha = params.force_max_alpha}
-	particles.gemImage.generate{game = game, gem = gem, duration = delay_until_explode, force_max_alpha = params.force_max_alpha}
+	particles.explodingGem.generate{
+		game = game,
+		gem = gem,
+		glow_duration = glow_delay,
+		force_max_alpha = params.force_max_alpha
+	}
+	particles.gemImage.generate{
+		game = game,
+		gem = gem,
+		duration = delay_until_explode,
+		force_max_alpha = params.force_max_alpha
+	}
 
 	-- flag above gems
 	if params.propagate_flags_up ~= false then
-		local above_gems = {}
 		assert(gem.row, "Gem doesn't have .row property!")
 		for i = gem.row - 1, 1, -1 do
 			local current_gem = self[i][gem.column].gem

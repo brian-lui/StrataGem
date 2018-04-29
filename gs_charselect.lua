@@ -1,7 +1,6 @@
 local common = require "class.commons"
 local image = require 'image'
 local Pic = require 'pic'
-local pointIsInRect = require "utilities".pointIsInRect
 local spairs = require "utilities".spairs
 
 local charselect = {name = "charselect"}
@@ -49,7 +48,7 @@ function charselect:_createCharacterButtons()
 			start_transparency = 195,
 			easing = "inOutSine",
 			pushed_sfx = "buttoncharacter",
-			action = function() 
+			action = function()
 				if charselect.my_character ~= char then
 					charselect.my_character = char
 					charselect.displayed_character:newImage(image.charselect[char.."char"])
@@ -84,7 +83,7 @@ function charselect:_createUIButtons()
 		start_y = stage.height + image.button.start:getHeight(),
 		end_y = stage.height * 0.9,
 		easing = "outQuad",
-		action = function() 
+		action = function()
 			if charselect.my_character then
 				local gametype = charselect.gametype
 				local char1 = charselect.my_character
@@ -106,7 +105,7 @@ function charselect:_createUIButtons()
 		start_y = stage.height + image.button.start:getHeight(),
 		end_y = stage.height * 0.9,
 		easing = "outQuad",
-		action = function() 
+		action = function()
 			if charselect.my_character then
 				print("Some details!")
 			end
