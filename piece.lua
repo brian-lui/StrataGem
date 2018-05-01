@@ -105,7 +105,6 @@ function Piece:rotate()
 	if self._rotateTween then self._rotateTween:set(math.huge) end
 
 	self.rotation_index = (self.rotation_index + 1) % 4
-	--self.is_horizontal = not self.is_horizontal
 	self.is_horizontal = self.rotation_index % 2 == 0
 	if self.is_horizontal then
 		self.gems = reverseTable(self.gems)
@@ -376,7 +375,9 @@ function Piece:dropIntoBasin(coords, received_from_opponent)
 	-- not received_from_opponent means it's our piece placing, so we need to send it to them
 	if game.type == "Netplay" and not received_from_opponent then
 		game.client.prepareDelta(game.client, self, coords, player.place_type)
+
 	end
+	game.client:_writeDeltaPiece(self, coords) -- testing
 
 	-- TODO: player.dropped_piece, player.place_type seems too complicated
 	-- place the gem into the holding area

@@ -99,10 +99,22 @@ function Phase:action(dt)
 		ai:performQueuedAction()	-- TODO: Expand this to netplay and have the ai read from the net
 		game.particles.upGem.removeAll(game.particles)
 		game.particles.placedGem.removeAll(game.particles)
+
+
+
+
+		--[[ TEMPORARY
+		for player in game:players() do
+			if player.supering then client:_writeDeltaSuper() end
+		end
+		--]]
+
+
+
 	end
 end
 
-function Phase:netplaySendDeltas(dt)
+function Phase:netplaySendDelta(dt)
 	--[[
 	Currently, deltas are sent from Client:prepareDelta(). So each time you do a move, it sends.
 	Instead, prepareDelta should ONLY prepare the delta. All delta is sent at end of turn in this phase.
@@ -114,16 +126,23 @@ function Phase:netplaySendDeltas(dt)
 	end
 	--]]
 end
-function Phase:netplayConfirmDeltas(dt)
+
+function Phase:netplayWaitForDelta(dt)
+end
+
+function Phase:netplayWaitForConfirmation(dt)
 	--[[
+
+
 	we should confirm that both players received a delta from the other guy.
-	stay in this phase for self.NETPLAY_DELTA_WAIT frames until deltas received.
+	stay in this phase for self.NETPLAY_DELTA_WAIT frames until client.delta_confirmed == true.
 	once it's confirmed that deltas are received, play the deltas from ai_net playPiece.
 	then go to resolve phase.
 
 	if self.NETPLAY_DELTA_WAIT frames pass, then go to "lost connection".
 	When confirmed deltas, go to game.current_phase = "Resolve".
 
+	(Where to check for rush piece swap?)
 	Have lots of print statements to see what's going on.
 
 
@@ -511,8 +530,9 @@ Phase.lookup = {
 	Pause = Phase._pause,
 	Intro = Phase.intro,
 	Action = Phase.action,
-	NetplaySendDeltas = Phase.netplaySendDeltas,
-	NetplayConfirmDeltas = Phase.netplayConfirmDeltas,
+	NetplaySendDelta = Phase.netplaySendDelta,
+	NetplayWaitForDelta = Phase.netplayWaitForDelta,
+	NetplayWaitForConfirmation = Phase.netplayWaitForConfirmation,
 	Resolve = Phase.resolve,
 	SuperFreeze = Phase.superFreeze,
 	BeforeGravity = Phase.beforeGravity,

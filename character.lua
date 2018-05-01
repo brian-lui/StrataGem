@@ -97,6 +97,16 @@ function Character:emptyMP()
 	self.mp = 0
 end
 
+-- For netplay: how to serialize the Super parameters
+function Character:serializeSuperDeltaParams()
+	return ""
+end
+
+-- For netplay: how to serialize the character specials, for gamestate
+function Character:serializeSpecials()
+	return ""
+end
+
 -------------------------------------------------------------------------------
 -- All these abilities can optionally return the number of frames
 -- to pause for the animation.

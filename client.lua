@@ -10,13 +10,13 @@ local Client = {}
 function Client:clear()
 	self.match_start_time = love.timer.getTime()
 	self.partial_recv = ""
-	self.our_delta = {}
+	--self.our_delta = {}
+	self.our_delta = "N_"
 	self.their_delta = {}
+	self.delta_confirmed = false
 	self.our_state = {}
 	self.their_state = {}
 	self.synced = true
-	self.received_delta = {} -- we received delta from opponent
-	self.opponent_received_delta = {} -- they received our delta
 	self.sent_state = true
 	self.playing = false
 	self.queuing = false
@@ -66,64 +66,97 @@ function Client:update()
 end
 
 --[[
-OK HERE'S WHAT WE NEED THE METHODS AND PROPERITES TO DO/BE
+our_delta: Current turn's delta. Caleld from ai_net:performDeltas as their_delta.
 
-our_delta: This is the current turn's delta.
-----------------------------------------
 Actions can be:
 	1) Play first piece
 	2) Play second piece (doublecast)
 	3) Play super + super parameters. Mutually exclusive with 1/2
 Encoding:
 	0) Default string is "N_", for no action.
-	1) P1_ID[piece ID]_R[piece rotation]_C[piece column of left-most gem]_
-		e.g. P1_59_3_2_
-	2) Same as above, e.g. P2_60_4_3_
+	1) Pc1_ID[piece ID]_[piece rotation index]_[first gem column]_
+		e.g. Pc1_60_3_3_
+	2) Same as above, e.g. Pc2_60_2_3_
 	3) S_[parameters]_
 		e.g. S__, S_58390496405_
 	Concatenate to get final string, e.g.:
-		P1_59_3_2_P2_60_4_3_
-		P1_59_3_2_
+		Pc1_59_3_2_Pc2_60_1_3_
+		Pc1_59_3_2_
 		S__
 		N_ (no action)
+--]]
 
-prepareDelta: Called from two places:
-----------------------------------------
-	During action phase:
-		Piece placement will call this immediately and write to [our_delta].
-	At end of action phase:
-		If [our_delta] is "N_" (implying no piece was played):
-			If player.supering:
-				String for Super will be generated.
-			Else:
-				String "N_" (no action) will be generated.
+-- Write the delta when player plays a piece.
+-- Called immediately upon playing a piece, from Piece:dropIntoBasin.
+function Client:_writeDeltaPiece(piece, coords)
+	local delta = self.our_delta
+	local id = piece.ID
+	local rotation = piece.rotation_index
+	local column = coords[1]
+	local pc
+	if delta == "N_" then -- no piece played yet
+		pc = "Pc1"
+	elseif delta:sub(1, 3) == "Pc1" then
+		pc = "Pc2"
+	else
+		error("Unexpected delta found: ", delta)
+	end
 
-sendDelta
----------
-	Called at the end of the turn, right after the prepareDelta call end of action phase call.
-	Sends the [our_delta] to opponent. Nothing to see here
+	local serial = pc .. "_" .. id .. "_" .. rotation .. "_" .. column .. "_"
 
-[Opponent] receiveDelta
------------------------
-	Receive the delta and store it as [self.their_delta].
-	Then, call sendDeltaConfirmation.
+	if delta == "N_" then
+		self.our_delta = serial
+	elseif delta:sub(1, 3) == "Pc1" then
+		self.our_delta = delta .. serial
+	else
+		error("Unexpected delta found: ", delta)
+	end
+end
 
-[Opponent] sendDeltaConfirmation
---------------------------------
-	Send a message of type "deltaconfirmation" with contents [self.their_delta].
+-- Writes the super when player activates super.
+-- Called at end of turn, from Phase:action.
+function Client:_writeDeltaSuper()
+	local player = self.game.me_player
+	assert(player.supering, "Received super instruction, but player not supering")
+	assert(self.our_delta == "N_", "Received super instruction, but player has action")
+	local serial = player:serializeSuperDeltaParams()
 
-receiveDeltaConfirmation
-------------------------
-	Receive confirmation from the opponent with string [received_delta].
-	Compare [received_delta] with [our_delta].
-	If they are different:
-		Throw an exception.
-		Better error handling later - we can re-send the delta.
-	Else:
-		Go to resolution phase.
+	self.our_delta = "S_" .. serial .. "_"
+end
+
+-- Called after turn ends, from Phase:netplaySendDelta.
+function Client:_newSendDelta()
+	assert(self.connected, "Not connected to opponent")
+	assert(type(self.our_delta) == "string", "Tried to send non-string delta")
+
+	self:send{type = "delta", serial = self.our_delta}
+end
+
+-- Called when we receive a delta from opponent.
+-- Should be activated from Phase:netplayWaitForDelta.
+function Client:_newReceiveDelta(recv)
+	assert(self.game.current_phase == "NetplayWaitForDelta",
+		"Received delta in wrong phase " .. self.game.current_phase .. "!")
+	local serial = recv.serial
+	print("received serial: " .. serial)
+
+	self.their_delta = serial
+	self:send{type = "confirmed_delta", delta = serial} -- send confirmation
+end
+
+-- Called when we confirm that they received our delta
+-- Should be activated from Phase:netplayWaitForConfirmation.
+-- TODO: Better error handling - can request another delta instead of throwing exception
+function Client:_newReceiveDeltaConfirmation(recv)
+	assert(self.game.current_phase == "NetplayWaitForConfirmation",
+		"Received delta in wrong phase " .. self.game.current_phase .. "!")
+	assert(self.our_delta == recv.serial, "Received delta confirmation doesn't match!")
+
+	self.delta_confirmed = true
+end
 
 
-
+--[[
 our_state: This is the current turn's state.
 ----------------------------------------
 State information:
@@ -176,6 +209,7 @@ function Client:newTurn()
 	self.received_state = false
 	self.opponent_received_state = false
 	self.synced = false
+	self.our_delta = "N_"
 	print("Starting next turn on frame: " .. self.game.frame, "Time: " .. love.timer.getTime() - self.match_start_time)
 	print("Expecting resolution on frame: " .. self.game.frame + self.game.phase.INIT_TIME_TO_NEXT)
 end
