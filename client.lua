@@ -233,26 +233,11 @@ function Client:send(data)
 	end
 end
 
--- confirm to the other guy that we received his delta
-local function sendDeltaConfirmation(self, fail)
-	self:send({type = "confirmed_delta", turn = self.game.turn, success = not fail})
-end
-
 -- confirm to the other guy that we received his state
 local function sendStateConfirmation(self, fail)
 	self:send({type = "confirmed_state", turn = self.game.turn, success = not fail})
 end
 
--- the other guy confirmed that he received our delta
-local function receiveDeltaConfirmation(self, recv)
-	if recv.success then
-		--print("Frame: " .. frame, "Time: " .. love.timer.getTime() - client.match_start_time, "Received successful delta confirmation")
-		self.opponent_received_delta[recv.turn] = true
-	--else
-		--print("Frame: " .. frame, "Time: " .. love.timer.getTime() - client.match_start_time, "Received failed delta confirmation")
-		-- HACK: better handling
-	end
-end
 
 -- the other guy confirmed that he received our state
 local function receiveStateConfirmation(self, recv)
@@ -263,76 +248,6 @@ local function receiveStateConfirmation(self, recv)
 		--print("Frame: " .. frame, "Time: " .. love.timer.getTime() - client.match_start_time, "Received failed state confirmation")
 		-- HACK: better handling
 		self.opponent_received_state = true
-	end
-end
-
--- looks up the piece locally so we don't need to netsend the entire piece info
-local function getPieceFromID(ID, player)
-	for i = 1, player.hand_size do
-		if player.hand[i].piece then
-			if player.hand[i].piece.ID == ID then
-				return player.hand[i].piece
-			end
-		end
-	end
-end
-
--- play the delta-piece when it's time
-local function playPiece(self, recv_piece)
-	local opp_piece = getPieceFromID(recv_piece.piece_ID, self.game.them_player)
-	for _ = 1, recv_piece.rotation do
-		opp_piece:rotate()
-	end
-	self.game.them_player.place_type = recv_piece.place_type
-	if self.game.them_player.place_type == nil then
-		print("place_type is nil, exiting")
-		self.game.current_phase = "GameOver"
-	end
-	print("current place type for playing their piece:", self.game.them_player.place_type)
-	opp_piece:dropIntoBasin(recv_piece.coords, true)
-end
-
--- called at end of turn, plays all deltas received from opponent
--- this is now in ai_net haha
-function Client:playTurn(delta, turn_to_play)
-	local play = delta[turn_to_play]
-	if next(play.super) then
-		print("play super")
-		-- blah blah
-	end
-	if next(play.piece1) then
-		playPiece(self, play.piece1)
-	end
-	if next(play.piece2) then
-		playPiece(self, play.piece2)
-	end
-	-- place_type will be set to double if piece2 exists, since it takes the last place_type
-end
-
--- we got a delta from them, let's handle it!
-local function receiveDelta(self, recv)
-	local fail = false
-	print("Frame: " .. self.game.frame, "Time: " .. love.timer.getTime() - self.match_start_time, "Receiving delta")
-	self.their_delta[recv.turn] = recv
-	self.received_delta[recv.turn] = true
-	sendDeltaConfirmation(self, fail)
-
-	if recv.blank then -- received their blank delta
-		print("Opponent sent blank delta")
-	elseif recv.turn ~= self.game.turn then
-		print("Opponent sent delta from another turn, woah!") -- TODO: still save it?
-		print("Expected turn: " .. self.game.turn .. ", received turn: " .. recv.turn)
-	else -- received their delta sending
-		print("Frame: " .. self.game.frame, "Time: " .. love.timer.getTime() - self.match_start_time, "Correct delta received:")
-		for k, v in pairs(recv) do
-			if type(v) == "table" then
-				for key, val in pairs(v) do
-					print("", key, val)
-				end
-			else
-				print(k, v)
-			end
-		end
 	end
 end
 
@@ -410,67 +325,6 @@ local function receiveQueue(self, recv)
 	end
 end
 
--- delta for pieces is called from Piece:dropIntoBasin
--- delta for supers is called from ___
--- if blank, then phase.lua Action phase will send a blank delta
--- This packages our delta so we don't have to send so much stuff
-function Client:prepareDelta(...)
-	local game = self.game
-	local args = {...}
-	--[[
-	if self.our_delta[game.turn] == nil then
-		self.our_delta[game.turn] = {
-			type = "delta",
-			turn = game.turn,
-			piece1 = {},
-			piece2 = {},
-			super = false,
-			super_params = {},
-		}
-	end--]]
-
-	self.our_delta[game.turn].send_frame = game.frame
-	if args[1] == "blank" then
-		self.our_delta[game.turn].blank = true
-	elseif args[3] == "normal" or args[3] == "rush" then
-		self.our_delta[game.turn].place_type = args[3]
-		self.our_delta[game.turn].piece1 = {
-			piece_ID = args[1].ID,
-			rotation = args[1].rotation_index,
-			coords = args[2],
-			place_type = args[3]
-		}
-	elseif args[3] == "double" then
-		self.our_delta[game.turn].place_type = args[3]
-		self.our_delta[game.turn].piece2 = {
-			piece_ID = args[1].ID,
-			rotation = args[1].rotation_index,
-			coords = args[2],
-			place_type = args[3]
-		}
-	elseif args[2] == "super" then
-		self.our_delta[game.turn].super = true
-		self.our_delta[game.turn].super_params = args[3]
-	elseif args[2] == "cancelsuper" then
-		self.our_delta[game.turn].super = false
-		self.our_delta[game.turn].super_params = nil
-	else
-		print("Error: invalid delta arguments provided")
-		print("***")
-		for k, v in pairs(args) do print("", k, v) end
-		print("***")
-
-	end
-	--print("Frame: " .. frame, "Time: " .. love.timer.getTime() - client.match_start_time, "Prepared delta")
-	self:sendDelta()
-end
-
-function Client:sendDelta()
-	assert(self.our_delta[self.game.turn], "Current turn's our_delta wasn't initialized, wtf")
-	self:send(self.our_delta[self.game.turn])
-	print("Frame: " .. self.game.frame, "Time: " .. love.timer.getTime() - self.match_start_time, "Sent delta")
-end
-
 --[[ Returns a string describing the current gamestate.
 First 64 characters are the gems in the basin, going across, from top row to bottom row.
 Next 10 characters are the pieces in player 1 hand, from top to bottom.
@@ -516,6 +370,9 @@ function Client:getGamestateString()
 			pos = pos + 2
 		end
 	end
+
+	-- specials/passives
+
 	return table.concat(ret)
 end
 
