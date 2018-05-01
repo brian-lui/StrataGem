@@ -90,6 +90,7 @@ Encoding:
 -- Called immediately upon playing a piece, from Piece:dropIntoBasin.
 function Client:_writeDeltaPiece(piece, coords)
 	local delta = self.our_delta
+	assert(delta:sub(1, 2) ~= "S_", "Received delta, but player is supering")
 	local id = piece.ID
 	local rotation = piece.rotation_index
 	local column = coords[1]
@@ -125,7 +126,7 @@ function Client:_writeDeltaSuper()
 end
 
 -- Called after turn ends, from Phase:netplaySendDelta.
-function Client:_newSendDelta()
+function Client:_sendDelta()
 	assert(self.connected, "Not connected to opponent")
 	assert(type(self.our_delta) == "string", "Tried to send non-string delta")
 
@@ -134,7 +135,7 @@ end
 
 -- Called when we receive a delta from opponent.
 -- Should be activated from Phase:netplayWaitForDelta.
-function Client:_newReceiveDelta(recv)
+function Client:_receiveDelta(recv)
 	assert(self.game.current_phase == "NetplayWaitForDelta",
 		"Received delta in wrong phase " .. self.game.current_phase .. "!")
 	local serial = recv.serial
@@ -147,7 +148,7 @@ end
 -- Called when we confirm that they received our delta
 -- Should be activated from Phase:netplayWaitForConfirmation.
 -- TODO: Better error handling - can request another delta instead of throwing exception
-function Client:_newReceiveDeltaConfirmation(recv)
+function Client:_receiveDeltaConfirmation(recv)
 	assert(self.game.current_phase == "NetplayWaitForConfirmation",
 		"Received delta in wrong phase " .. self.game.current_phase .. "!")
 	assert(self.our_delta == recv.serial, "Received delta confirmation doesn't match!")
@@ -458,8 +459,8 @@ Client.lookup = {
 	rejected = connectionRejected,
 	disconnected = receiveDisconnect,
 	start = startMatch,
-	delta = receiveDelta,
-	confirmed_delta = receiveDeltaConfirmation,
+	delta = Client._receiveDelta,
+	confirmed_delta = Client._receiveDeltaConfirmation,
 	state = receiveState,
 	confirmed_state = receiveStateConfirmation,
 	ping = receivePing,
