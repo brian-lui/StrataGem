@@ -137,15 +137,9 @@ function Character:toggleSuper(received_from_opponent)
 
 	if self.supering then
 		self.supering = false
-		if game.type == "Netplay" and not received_from_opponent then
-			game.client.prepareDelta(game.client, self, "cancelsuper", self.super_params)
-		end
 		self.game.sound:newSFX("buttonbacksuper")
 	elseif self.mp >= self.SUPER_COST and self.game.current_phase == "Action" then
 		self.supering = true
-		if game.type == "Netplay" and not received_from_opponent then
-			game.client.prepareDelta(game.client, self, "super", self.super_params)
-		end
 		self.game.sound:newSFX("buttonsuper")
 	end
 	return self.supering

@@ -119,16 +119,6 @@ function Game:start(gametype, char1, char2, bkground, seed, side)
 	for player in self:players() do player:cleanup() end
 
 	self.type = gametype
-	if self.type == "Netplay" then
-		self.client.our_delta[self.turn] = {
-			type = "delta",
-			turn = self.turn,
-			piece1 = {},
-			piece2 = {},
-			super = false,
-			super_params = {},
-		}
-	end
 
 	self.current_background_name = bkground
 	self.statemanager:switch(require "gs_main")
@@ -156,20 +146,8 @@ end
 
 function Game:newTurn()
 	self.turn = self.turn + 1
-	self.current_phase = "Action"
 	self.inputs_frozen = false
 	self.phase.time_to_next = self.phase.INIT_TIME_TO_NEXT
-
-	if self.type == "Netplay" then
-		self.client.our_delta[self.turn] = {
-			type = "delta",
-			turn = self.turn,
-			piece1 = {},
-			piece2 = {},
-			super = false,
-			super_params = {},
-		}
-	end
 end
 
 function Game:reset()
