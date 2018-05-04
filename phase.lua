@@ -77,63 +77,58 @@ function Phase:action(dt)
 	self.game.ui:update()
 
 	self.time_to_next = self.time_to_next - 1
-	if not ai.finished then ai:evaluateActions(game.them_player) end
-	--[[
-	if not ai.finished then ai:evaluateActions(game.them_player) end
-	This is probably the key part
-	Every frame, it checks whether we have received a their_delta. If we have, it performs the delta and
-	then sets ai.finished to true.
-	So we will get desync bugs for multiple deltas, since deltas are sent immediately.
-	Instead, we need to queue this and do it after the confirmdeltas phase.
-	--]]
-	if self.time_to_next <= 0 and ai.finished then
+	if game.type ~= "Netplay" then
+		if not ai.finished then ai:evaluateActions(game.them_player) end
+	end
+
+	if self.time_to_next <= 0 then
+		if game.type == "Netplay" then
+			game.current_phase = "NetplaySendDelta"
+		else
+			ai:performQueuedAction()
+			game.current_phase = "Resolve"
+		end
+
 		love.mousereleased(drawspace.tlfres.getMousePosition(drawspace.width, drawspace.height))
 		game.particles.wordEffects.clear(game.particles)
-		game.current_phase = "Resolve"
-
-		if game.type == "Netplay" then
-			if not client.our_delta[game.turn] then	-- If local player hasn't acted, send empty turn
-				client:prepareDelta("blank")
-			end
-		end
-		ai:performQueuedAction()	-- TODO: Expand this to netplay and have the ai read from the net
 		game.particles.upGem.removeAll(game.particles)
 		game.particles.placedGem.removeAll(game.particles)
-
-
-
-
-		--[[ TEMPORARY
-		for player in game:players() do
-			if player.supering then client:_writeDeltaSuper() end
-		end
-		--]]
-
-
-
 	end
 end
 
 function Phase:netplaySendDelta(dt)
-	--[[
-	Currently, deltas are sent from Client:prepareDelta(). So each time you do a move, it sends.
-	Instead, prepareDelta should ONLY prepare the delta. All delta is sent at end of turn in this phase.
-	This phase only needs to send the delta, then it can go directly to netplayConfirmDeltas.
-	This phase should also handle blank delta. probably use
+	local game = self.game
+	local client = game.client
 
-	if not client.our_delta[game.turn] then	-- If local player hasn't acted, send empty turn
-		client:prepareDelta("blank")
-	end
-	--]]
+	-- check for super at end of turn
+	if game.me_player.supering then client:writeDeltaSuper() end
+
+	client:sendDelta()
+	game.current_phase = "NetplayWaitForDelta"
 end
 
+-- Wait for client:receiveDelta here. Once received, push it to game
 function Phase:netplayWaitForDelta(dt)
+	local game = self.game
+	local client = game.client
+
+	if client.their_delta then
+		game.ai:evaluateActions(game.them_player)
+		game.ai:performQueuedAction()
+
+		game.particles.wordEffects.clear(game.particles)
+		game.particles.upGem.removeAll(game.particles)
+		game.particles.placedGem.removeAll(game.particles)
+
+		client:sendDeltaConfirmation()
+		game.current_phase = "NetplayWaitForConfirmation"
+	end
 end
 
 function Phase:netplayWaitForConfirmation(dt)
+	local game = self.game
+	game.current_phase = "Resolve"
 	--[[
-
-
 	we should confirm that both players received a delta from the other guy.
 	stay in this phase for self.NETPLAY_DELTA_WAIT frames until client.delta_confirmed == true.
 	once it's confirmed that deltas are received, play the deltas from ai_net playPiece.
@@ -144,8 +139,6 @@ function Phase:netplayWaitForConfirmation(dt)
 
 	(Where to check for rush piece swap?)
 	Have lots of print statements to see what's going on.
-
-
 	--]]
 end
 
@@ -496,14 +489,21 @@ function Phase:cleanup(dt)
 end
 
 function Phase:newTurn(dt)
-	self.game:newTurn()
+	local game = self.game
+	
+	game:newTurn()
+	game.current_phase = "Action"
 end
 
 function Phase:sync(dt)
-	self.game.client:newTurn()
-	self.game:newTurn()
-	-- If disconnected by server, change to vs AI
-	if not self.game.client.connected then
+	local game = self.game
+	local client = game.client
+
+	client:newTurn()
+	game:newTurn()
+	game.current_phase = "Action"
+
+	if not client.connected then
 		self.game.type = "1P"
 		print("Disconnected from server :( changing to 1P mode")
 	end

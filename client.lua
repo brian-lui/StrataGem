@@ -12,10 +12,10 @@ function Client:clear()
 	self.partial_recv = ""
 	--self.our_delta = {}
 	self.our_delta = "N_"
-	self.their_delta = {}
+	self.their_delta = nil
 	self.delta_confirmed = false
-	self.our_state = {}
-	self.their_state = {}
+	self.our_state = nil
+	self.their_state = nil
 	self.synced = true
 	self.sent_state = true
 	self.playing = false
@@ -86,9 +86,9 @@ Encoding:
 		N_ (no action)
 --]]
 
--- Write the delta when player plays a piece.
+-- Write the delta when player plays a piece, by modifying self.our_delta.
 -- Called immediately upon playing a piece, from Piece:dropIntoBasin.
-function Client:_writeDeltaPiece(piece, coords)
+function Client:writeDeltaPiece(piece, coords)
 	local delta = self.our_delta
 	assert(delta:sub(1, 2) ~= "S_", "Received delta, but player is supering")
 	local id = piece.ID
@@ -112,11 +112,12 @@ function Client:_writeDeltaPiece(piece, coords)
 	else
 		error("Unexpected delta found: ", delta)
 	end
+	print("delta serial is now " .. self.our_delta)
 end
 
--- Writes the super when player activates super.
+-- Writes the super when player activates super, by modifying self.our_delta.
 -- Called at end of turn, from Phase:action.
-function Client:_writeDeltaSuper()
+function Client:writeDeltaSuper()
 	local player = self.game.me_player
 	assert(player.supering, "Received super instruction, but player not supering")
 	assert(self.our_delta == "N_", "Received super instruction, but player has action")
@@ -126,7 +127,7 @@ function Client:_writeDeltaSuper()
 end
 
 -- Called after turn ends, from Phase:netplaySendDelta.
-function Client:_sendDelta()
+function Client:sendDelta()
 	assert(self.connected, "Not connected to opponent")
 	assert(type(self.our_delta) == "string", "Tried to send non-string delta")
 
@@ -135,23 +136,29 @@ end
 
 -- Called when we receive a delta from opponent.
 -- Should be activated from Phase:netplayWaitForDelta.
-function Client:_receiveDelta(recv)
-	assert(self.game.current_phase == "NetplayWaitForDelta",
-		"Received delta in wrong phase " .. self.game.current_phase .. "!")
-	local serial = recv.serial
-	print("received serial: " .. serial)
-
-	self.their_delta = serial
-	self:send{type = "confirmed_delta", delta = serial} -- send confirmation
+function Client:receiveDelta(recv)
+	local current_phase = self.game.current_phase
+	assert(current_phase == "NetplayWaitForDelta" or current_phase == "Action",
+		"Received delta in wrong phase " .. current_phase .. "!")
+	print("received serial: " .. recv.serial)
+	self.their_delta = recv.serial
 end
 
+-- Only send the delta confirm during the WaitForDelta phase, to get lockstep
+function Client:sendDeltaConfirmation()
+	assert(self.game.current_phase == "NetplayWaitForDelta",
+		"Sending delta in wrong phase " .. self.game.current_phase .. "!")
+	self:send{type = "confirmed_delta", delta = self.their_delta}
+end
 -- Called when we confirm that they received our delta
 -- Should be activated from Phase:netplayWaitForConfirmation.
 -- TODO: Better error handling - can request another delta instead of throwing exception
-function Client:_receiveDeltaConfirmation(recv)
+function Client:receiveDeltaConfirmation(recv)
+	--[[
 	assert(self.game.current_phase == "NetplayWaitForConfirmation",
-		"Received delta in wrong phase " .. self.game.current_phase .. "!")
-	assert(self.our_delta == recv.serial, "Received delta confirmation doesn't match!")
+		"Received delta confirmation in wrong phase " .. self.game.current_phase .. "!")
+	--]]
+	assert(self.our_delta == recv.delta, "Received delta confirmation doesn't match!")
 
 	self.delta_confirmed = true
 end
@@ -206,11 +213,16 @@ sendState
 
 -- On a new turn, clear the flags for having sent and received state information
 function Client:newTurn()
+	self.our_delta = "N_"
+	self.their_delta = nil
+	self.delta_confirmed = false
+	self.our_state = nil
+	self.their_state = nil	
+
 	self.sent_state = false
 	self.received_state = false
 	self.opponent_received_state = false
 	self.synced = false
-	self.our_delta = "N_"
 	print("Starting next turn on frame: " .. self.game.frame, "Time: " .. love.timer.getTime() - self.match_start_time)
 	print("Expecting resolution on frame: " .. self.game.frame + self.game.phase.INIT_TIME_TO_NEXT)
 end
@@ -459,8 +471,8 @@ Client.lookup = {
 	rejected = connectionRejected,
 	disconnected = receiveDisconnect,
 	start = startMatch,
-	delta = Client._receiveDelta,
-	confirmed_delta = Client._receiveDeltaConfirmation,
+	delta = Client.receiveDelta,
+	confirmed_delta = Client.receiveDeltaConfirmation,
 	state = receiveState,
 	confirmed_state = receiveStateConfirmation,
 	ping = receivePing,
