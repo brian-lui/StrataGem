@@ -13,6 +13,7 @@ local ai_net = {
 local function getPieceFromID(ID, player)
 	for i = 1, player.hand_size do
 		if player.hand[i].piece then
+			print("ID, hand ID", ID, player.hand[i].piece.ID)
 			if player.hand[i].piece.ID == ID then
 				return player.hand[i].piece
 			end
@@ -39,18 +40,17 @@ end
 		S__
 		N_ (no action)
 --]]
-local function performDeltas(self)
-	local player = self.player
+local function performDeltas(self, player)
+	print("performing delta " .. self.game.client.their_delta)
 	local delta = split(self.game.client.their_delta)
-
-	for i, v in delta do
+	for i, v in ipairs(delta) do
 		if (v == "Pc1") or (v == "Pc2") then
-			local id = delta[i+1]
+			local id = tonumber(delta[i+1])
 			local piece = getPieceFromID(id, player)
-			local rotation = delta[i+2]
-			local column = delta[i+3]
+			local rotation = tonumber(delta[i+2])
+			local column = tonumber(delta[i+3])
 
-			assert(piece, "piece ID not found: " .. piece.piece_ID)
+			assert(piece, "piece ID not found: " .. id)
 			assert(rotation, "rotation not provided")
 			assert(column, "placement column not provided")
 
@@ -78,6 +78,7 @@ local function performDeltas(self)
 			else
 				coords = {column}
 			end
+
 			piece:dropIntoBasin(coords, true)
 
 		elseif v == "S" then
@@ -88,11 +89,8 @@ local function performDeltas(self)
 end
 
 -- Easy peasy, no thinking to do here.
-function ai_net:evaluateActions()
-	if self.game.client.their_delta[self.game.turn] then
-		self.finished = true
-		self:queueAction(performDeltas, {self})
-	end
+function ai_net:evaluateActions(them_player)
+	self:queueAction(performDeltas, {self, them_player})
 end
 
 return common.class("AI_Net", ai_net, require "ai")
