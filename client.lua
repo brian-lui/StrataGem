@@ -260,7 +260,8 @@ end
 -- Should be activated from Phase:netplayWaitForDelta.
 function Client:receiveDelta(recv)
 	local current_phase = self.game.current_phase
-	assert(current_phase == "NetplayWaitForDelta" or current_phase == "Action",
+	assert(current_phase == "NetplayWaitForDelta" or current_phase == "Action" or
+		current_phase == "NetplaySendDelta",
 		"Received delta in wrong phase " .. current_phase .. "!")
 	print("received serial: " .. recv.serial)
 	self.their_delta = recv.serial
