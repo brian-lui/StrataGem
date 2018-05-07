@@ -65,7 +65,7 @@ end
 -----------------------------------HELPERS-------------------------------------
 -------------------------------------------------------------------------------
 
-local function startMatch(self, recv)
+function Client:startMatch(recv)
 	assert(recv.side == 1 or recv.side == 2, "oh craps")
 	self.match_start_time = love.timer.getTime()
 
@@ -79,11 +79,11 @@ local function startMatch(self, recv)
 	self.game:start("Netplay", p1_char, p2_char, p2_background, recv.seed, recv.side)
 end
 
-local function connectionAccepted(recv)
+function Client:connectionAccepted(recv)
 	print("User data accepted")
 end
 
-local function connectionRejected(self, recv)
+function Client:connectionRejected(recv)
 	if recv.message == "Version" then
 		print("Incorrect version, please update. Server " .. recv.version .. ", client " .. self.game.version)
 	elseif recv.message == "Nope" then
@@ -93,23 +93,23 @@ local function connectionRejected(self, recv)
 	end
 end
 
-local function receiveDisconnect(self)
+function Client:receiveDisconnect()
 	print("Disconnected by server")
 	self:disconnect()
 end
 
-local function receivePing(self)
+function Client:receivePing()
 	self:send({type = "ping"})
 end
 
-local function receiveDudes(self, recv)
+function Client:receiveDudes(recv)
 	local updateUsers = self.game.statemanager:current().updateUsers
 	if updateUsers then
 		updateUsers(self.game, recv.all_dudes)
 	end
 end
 
-local function receiveQueue(self, recv)
+function Client:receiveQueue(recv)
 	if recv.action == "already_queued" then
 		print("Already queued, didn't join again")
 	elseif recv.action == "not_queued" then
@@ -414,17 +414,17 @@ end
 
 -------------------------------------------------------------------------------
 Client.lookup = {
-	connected = connectionAccepted,
-	rejected = connectionRejected,
-	disconnected = receiveDisconnect,
-	start = startMatch,
+	connected = Client.connectionAccepted,
+	rejected = Client.connectionRejected,
+	disconnected = Client.receiveDisconnect,
+	start = Client.startMatch,
 	delta = Client.receiveDelta,
 	confirmed_delta = Client.receiveDeltaConfirmation,
-	state = receiveState,
-	confirmed_state = receiveStateConfirmation,
-	ping = receivePing,
-	current_dudes = receiveDudes,
-	queue = receiveQueue,
+	state = Client.receiveState,
+	confirmed_state = Client.receiveStateConfirmation,
+	ping = Client.receivePing,
+	current_dudes = Client.receiveDudes,
+	queue = Client.receiveQueue,
 }
 
 -- select/case function
