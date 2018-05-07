@@ -82,6 +82,8 @@ function Phase:action(dt)
 	end
 
 	if self.time_to_next <= 0 then
+		love.mousereleased(drawspace.tlfres.getMousePosition(drawspace.width, drawspace.height))
+
 		if game.type == "Netplay" then
 			game.current_phase = "NetplaySendDelta"
 		else
@@ -89,7 +91,6 @@ function Phase:action(dt)
 			game.current_phase = "Resolve"
 		end
 
-		love.mousereleased(drawspace.tlfres.getMousePosition(drawspace.width, drawspace.height))
 		game.particles.wordEffects.clear(game.particles)
 		game.particles.upGem.removeAll(game.particles)
 		game.particles.placedGem.removeAll(game.particles)
