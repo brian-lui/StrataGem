@@ -58,6 +58,7 @@ function Game:init()
 	self.debug_drawGamestate = true
 	self.debug_drawDamage = true
 	self.debug_drawGrid = true
+	self.debug_drawTurnNumber = true
 	self.debug_overlay = function()
 		if self.current_phase == "Pause" then
 			return "Pausing at " .. self.phase.current_phase_for_debug_purposes_only .. ", " ..

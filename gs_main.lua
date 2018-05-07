@@ -267,7 +267,7 @@ function gs_main:drawText(params)
 	if self.debug_overlay then
 		love.graphics.push("all")
 			love.graphics.setFont(FONT.SLIGHTLY_BIGGER)
-			love.graphics.setColor(255, 255, 255)
+			love.graphics.setColor(0, 0, 0)
 			love.graphics.printf(self.debug_overlay(), 0, 40, self.stage.width, "center")
 		love.graphics.pop()
 	end
@@ -327,6 +327,14 @@ function gs_main:drawText(params)
 			love.graphics.setFont(FONT.SLIGHTLY_BIGGER)
 			love.graphics.print(p1print, p1hand[2].x - 120, 150)
 			love.graphics.print(p2print, p2hand[2].x - 180, 150)
+		end
+		if self.debug_drawTurnNumber then
+			local toprint = "Turn: " .. self.turn
+			love.graphics.push("all")
+				love.graphics.setFont(FONT.SLIGHTLY_BIGGER)
+				love.graphics.setColor(0, 0, 0)
+				love.graphics.printf(toprint, 0, 120, self.stage.width, "center")
+			love.graphics.pop()
 		end
 	love.graphics.pop()
 end
