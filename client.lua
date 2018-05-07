@@ -143,6 +143,8 @@ end
 
 -- On a new turn, clear the flags for having sent and received state information
 function Client:newTurn()
+	assert(self.delta_confirmed, "Opponent didn't confirm delta by end of turn!")
+
 	self.our_delta = "N_"
 	self.their_delta = nil
 	self.delta_confirmed = false
@@ -275,7 +277,6 @@ function Client:receiveDeltaConfirmation(recv)
 		"Received delta confirmation in wrong phase " .. self.game.current_phase .. "!")
 	--]]
 	assert(self.our_delta == recv.delta, "Received delta confirmation doesn't match!")
-
 	self.delta_confirmed = true
 end
 

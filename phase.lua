@@ -122,7 +122,7 @@ function Phase:netplayWaitForDelta(dt)
 		game.particles.placedGem.removeAll(game.particles)
 
 		client:sendDeltaConfirmation()
-		game.current_phase = "NetplayWaitForConfirmation"
+		game.current_phase = "Resolve"
 	end
 end
 
@@ -489,13 +489,7 @@ function Phase:cleanup(dt)
 	end
 end
 
-function Phase:newTurn(dt)
-	local game = self.game
-	
-	game:newTurn()
-	game.current_phase = "Action"
-end
-
+-- Netplay newTurn
 function Phase:sync(dt)
 	local game = self.game
 	local client = game.client
@@ -508,6 +502,14 @@ function Phase:sync(dt)
 		self.game.type = "1P"
 		print("Disconnected from server :( changing to 1P mode")
 	end
+end
+
+-- 1P newTurn
+function Phase:newTurn(dt)
+	local game = self.game
+	
+	game:newTurn()
+	game.current_phase = "Action"
 end
 
 function Phase:gameOver(dt)
@@ -533,7 +535,6 @@ Phase.lookup = {
 	Action = Phase.action,
 	NetplaySendDelta = Phase.netplaySendDelta,
 	NetplayWaitForDelta = Phase.netplayWaitForDelta,
-	NetplayWaitForConfirmation = Phase.netplayWaitForConfirmation,
 	Resolve = Phase.resolve,
 	SuperFreeze = Phase.superFreeze,
 	BeforeGravity = Phase.beforeGravity,
