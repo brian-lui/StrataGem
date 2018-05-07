@@ -324,7 +324,13 @@ function Client:writeState()
 		if pc.size == 1 then
 			s = pc.gems[1].color:sub(1, 1) .. pc.ID
 		elseif pc.size == 2 then
-			s = pc.gems[1].color:sub(1, 1) .. pc.gems[2].color:sub(1, 1) .. pc.ID
+			-- If it is in rotation_index 2 or 3, the gem table was reversed
+			-- This is because of bad coding from before. Haha
+			if pc.rotation_index == 2 or pc.rotation_index == 3 then
+				s = pc.gems[2].color:sub(1, 1) .. pc.gems[1].color:sub(1, 1) .. pc.ID
+			else
+				s = pc.gems[1].color:sub(1, 1) .. pc.gems[2].color:sub(1, 1) .. pc.ID
+			end
 		else
 			error("Piece size is not 1 or 2")
 		end
