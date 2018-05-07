@@ -110,6 +110,10 @@ end
 
 -- Wait for client:receiveDelta here. Once received, push it to game
 function Phase:netplayWaitForDelta(dt)
+	--[[
+	TODO: if self.NETPLAY_DELTA_WAIT frames pass, then go to "lost connection".
+	Future error handling should re-request a delta instead of lost connection.
+	--]]
 	local game = self.game
 	local client = game.client
 
@@ -124,23 +128,6 @@ function Phase:netplayWaitForDelta(dt)
 		client:sendDeltaConfirmation()
 		game.current_phase = "Resolve"
 	end
-end
-
-function Phase:netplayWaitForConfirmation(dt)
-	local game = self.game
-	game.current_phase = "Resolve"
-	--[[
-	we should confirm that both players received a delta from the other guy.
-	stay in this phase for self.NETPLAY_DELTA_WAIT frames until client.delta_confirmed == true.
-	once it's confirmed that deltas are received, play the deltas from ai_net playPiece.
-	then go to resolve phase.
-
-	if self.NETPLAY_DELTA_WAIT frames pass, then go to "lost connection".
-	When confirmed deltas, go to game.current_phase = "Resolve".
-
-	(Where to check for rush piece swap?)
-	Have lots of print statements to see what's going on.
-	--]]
 end
 
 function Phase:resolve(dt)
@@ -483,10 +470,18 @@ function Phase:cleanup(dt)
 	if grid:getLoser() then
 		self:activatePause("GameOver")
 	elseif game.type == "Netplay" then
-		self:activatePause("NetplayNewTurn")
+		self:activatePause("NetplaySendState")
 	else
 		self:activatePause("SinglePlayerNewTurn")
 	end
+end
+
+function Phase:netplaySendState(dt)
+	self.game.current_phase = "NetplayWaitForState"
+end
+
+function Phase:netplayWaitForState(dt)
+	self.game.current_phase = "NetplayNewTurn"
 end
 
 function Phase:netplayNewTurn(dt)
@@ -503,10 +498,8 @@ function Phase:netplayNewTurn(dt)
 	end
 end
 
--- 1P newTurn
 function Phase:singlePlayerNewTurn(dt)
 	local game = self.game
-
 	game:newTurn()
 	game.current_phase = "Action"
 end
@@ -551,6 +544,8 @@ Phase.lookup = {
 	PlatformsMoving = Phase.platformsMoving,
 	BeforeCleanup = Phase.beforeCleanup,
 	Cleanup = Phase.cleanup,
+	NetplaySendState = Phase.netplaySendState,
+	NetplayWaitForState = Phase.netplayWaitForState,
 	NetplayNewTurn = Phase.netplayNewTurn,
 	SinglePlayerNewTurn = Phase.singlePlayerNewTurn,
 	GameOver = Phase.gameOver,
