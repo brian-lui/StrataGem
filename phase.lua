@@ -483,14 +483,13 @@ function Phase:cleanup(dt)
 	if grid:getLoser() then
 		self:activatePause("GameOver")
 	elseif game.type == "Netplay" then
-		self:activatePause("Sync")
+		self:activatePause("NetplayNewTurn")
 	else
-		self:activatePause("NewTurn")
+		self:activatePause("SinglePlayerNewTurn")
 	end
 end
 
--- Netplay newTurn
-function Phase:sync(dt)
+function Phase:netplayNewTurn(dt)
 	local game = self.game
 	local client = game.client
 
@@ -505,9 +504,9 @@ function Phase:sync(dt)
 end
 
 -- 1P newTurn
-function Phase:newTurn(dt)
+function Phase:singlePlayerNewTurn(dt)
 	local game = self.game
-	
+
 	game:newTurn()
 	game.current_phase = "Action"
 end
@@ -552,8 +551,8 @@ Phase.lookup = {
 	PlatformsMoving = Phase.platformsMoving,
 	BeforeCleanup = Phase.beforeCleanup,
 	Cleanup = Phase.cleanup,
-	Sync = Phase.sync,
-	NewTurn = Phase.newTurn,
+	NetplayNewTurn = Phase.netplayNewTurn,
+	SinglePlayerNewTurn = Phase.singlePlayerNewTurn,
 	GameOver = Phase.gameOver,
 	Leave = Phase.leave,
 }
