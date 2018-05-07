@@ -349,8 +349,8 @@ function Client:writeState()
 	-- grid gems
 	local grid = game.grid
 	local grid_str, idx = {}, 1
-	for row = grid.BASIN_START_ROW to grid.BASIN_END_ROW do
-		for col = 1 to grid.COLUMNS do
+	for row = grid.BASIN_START_ROW, grid.BASIN_END_ROW do
+		for col = 1, grid.COLUMNS do
 			grid_str[idx] = getGridString(grid[row][col])
 			idx = idx + 1
 		end
@@ -373,8 +373,8 @@ function Client:writeState()
 	local p1special, p2special = p1:serializeSpecials(), p2:serializeSpecials()
 
 	self.our_state =
-		"P1B" .. p1burst .. "S" .. p1super .. "D" .. p1damage .. "_" .. 
-		"P2B" .. p2burst .. "S" .. p2super .. "D" .. p2damage .. "_" .. 
+		"P1B" .. p1burst .. "S" .. p1super .. "D" .. p1damage .. "_" ..
+		"P2B" .. p2burst .. "S" .. p2super .. "D" .. p2damage .. "_" ..
 		grid_str .. "_" ..
 		p1hand ..
 		p2hand ..
