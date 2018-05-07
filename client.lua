@@ -125,23 +125,20 @@ function Client:receiveQueue(recv)
 	end
 end
 
--- call this when starting a new match
+-- call this when initializing client.lua, ending a match, or disconnecting
 function Client:clear()
 	self.match_start_time = love.timer.getTime()
 	self.partial_recv = ""
-	--self.our_delta = {}
+	self.playing = false -- this is overwritten in startMatch
+	self.queuing = false
+
 	self.our_delta = "N_"
 	self.their_delta = nil
 	self.delta_confirmed = false
-	self.state_confirmed = false	
+	self.state_confirmed = false
 	self.our_state = nil
 	self.their_state = nil
 	self.synced = true
-	self.sent_state = true
-	self.playing = false
-	self.queuing = false
-	self.received_state = true
-	self.opponent_received_state = true
 end
 
 -- On a new turn, clear the flags for having sent and received state information
@@ -149,15 +146,10 @@ function Client:newTurn()
 	self.our_delta = "N_"
 	self.their_delta = nil
 	self.delta_confirmed = false
+	self.state_confirmed = false
 	self.our_state = nil
-	self.their_state = nil	
-
-	self.sent_state = false
-	self.received_state = false
-	self.opponent_received_state = false
+	self.their_state = nil
 	self.synced = false
-	print("Starting next turn on frame: " .. self.game.frame, "Time: " .. love.timer.getTime() - self.match_start_time)
-	print("Expecting resolution on frame: " .. self.game.frame + self.game.phase.INIT_TIME_TO_NEXT)
 end
 
 function Client:endMatch()
@@ -274,8 +266,8 @@ function Client:sendDeltaConfirmation()
 	self:send{type = "confirmed_delta", delta = self.their_delta}
 end
 
--- Called when we confirm that they received our delta
--- Should be activated from Phase:netplayWaitForConfirmation.
+-- Called when we confirm that they received our delta.
+-- Can be activated anytime after sending delta.
 -- TODO: Better error handling - can request another delta instead of throwing exception
 function Client:receiveDeltaConfirmation(recv)
 	--[[
