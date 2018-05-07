@@ -1,25 +1,12 @@
 local love = _G.love
+local common = require "class.commons"
+
 --[[
 Subclass of normal AI that doesn't do any thinking of its own, just relays
 player inputs from over the net.
 --]]
 
-local common = require "class.commons"
-
-local ai_net = {
-}
-
--- looks up the piece locally so we don't need to netsend the entire piece info
-local function getPieceFromID(ID, player)
-	for i = 1, player.hand_size do
-		if player.hand[i].piece then
-			print("ID, hand ID", ID, player.hand[i].piece.ID)
-			if player.hand[i].piece.ID == ID then
-				return player.hand[i].piece
-			end
-		end
-	end
-end
+local ai_net = {}
 
 local function split(s)
     local result = {}
@@ -29,7 +16,7 @@ end
 
 --[[ Delta decoding:
 	0) Default string is "N_", for no action.
-	1) Pc1_ID[piece ID]_[piece rotation index]_[first gem column]_
+	1) Pc1_ID[piece hand position]_[piece rotation index]_[first gem column]_
 		e.g. Pc1_60_3_3_
 	2) Same as above, e.g. Pc2_60_2_3_
 	3) S_[parameters]_
@@ -45,12 +32,12 @@ local function performDeltas(self, player)
 	local delta = split(self.game.client.their_delta)
 	for i, v in ipairs(delta) do
 		if (v == "Pc1") or (v == "Pc2") then
-			local id = tonumber(delta[i+1])
-			local piece = getPieceFromID(id, player)
+			local pos = tonumber(delta[i+1])
+			local piece = player.hand[pos].piece
 			local rotation = tonumber(delta[i+2])
 			local column = tonumber(delta[i+3])
 
-			assert(piece, "piece ID not found: " .. id)
+			assert(piece, "piece in position " .. pos .. " not found")
 			assert(rotation, "rotation not provided")
 			assert(column, "placement column not provided")
 
