@@ -488,6 +488,7 @@ function Phase:netplayWaitForState(dt)
 	local client = game.client
 
 	if client.their_state then
+		print("does states match?", client.our_state == client.their_state)
 		-- compare states
 		game.current_phase = "NetplayNewTurn"
 	end
