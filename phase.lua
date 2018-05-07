@@ -477,11 +477,20 @@ function Phase:cleanup(dt)
 end
 
 function Phase:netplaySendState(dt)
-	self.game.current_phase = "NetplayWaitForState"
+	local game = self.game
+	game.client:writeState()
+	game.client:sendState()
+	game.current_phase = "NetplayWaitForState"
 end
 
 function Phase:netplayWaitForState(dt)
-	self.game.current_phase = "NetplayNewTurn"
+	local game = self.game
+	local client = game.client
+
+	if client.their_state then
+		-- compare states
+		game.current_phase = "NetplayNewTurn"
+	end
 end
 
 function Phase:netplayNewTurn(dt)

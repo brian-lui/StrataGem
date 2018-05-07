@@ -386,6 +386,7 @@ end
 -- Called when we receive a state from opponent.
 function Client:receiveState(recv)
 	print("received serial: " .. recv.serial)
+	print("phase in which state was received: " .. self.game.current_phase)
 	self.their_state = recv.serial
 end
 
