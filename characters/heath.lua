@@ -389,4 +389,28 @@ function Heath:cleanup()
 	Character.cleanup(self)
 end
 
+-------------------------------------------------------------------------------
+
+-- We only need to store current column fires
+-- For each fire, stored as "F" followed by column
+function Heath:serializeSpecials()
+	local ret = ""
+	for i in self.game.grid:cols() do
+		if self.ready_fires[i] then ret = ret .. "F" .. i end
+	end
+
+	return ret
+end
+
+-- "F" is 70
+function Heath:deserializeSpecials(str)
+	for i = 1, #str do
+		if str:byte(i) == 70 then
+			local col = tonumber(str:sub(i+1, i+1))
+			self.ready_fires[col] = true
+			self.particle_fx.smallFire.generateSmallFire(self.game, self, col)
+		end
+	end 
+end
+
 return common.class("Heath", Heath, Character)
