@@ -24,7 +24,7 @@ bring the piece back.
 
 Super: The bottom most platform in your hand gains a double Dog (or becomes a
 double dog), and the next 4 clusters that come through your conveyor belt also
-contain dogs. Wolfgang still plays a gem this turn.
+contain dogs.
 --]]
 
 local love = _G.love
@@ -52,8 +52,98 @@ Wolfgang.burst_images = {
 	glow = {image.UI.burst.blue_glow1, image.UI.burst.blue_glow2}
 }
 
+Wolfgang.special_images = {
+	good_dog = {
+		love.graphics.newImage('images/characters/wolfgang/goodblacklab.png'),
+		love.graphics.newImage('images/characters/wolfgang/goodgoldenlab.png'),
+		love.graphics.newImage('images/characters/wolfgang/goodrussel.png'),
+	},
+	bad_dog = {
+		love.graphics.newImage('images/characters/wolfgang/badblacklab.png'),
+		love.graphics.newImage('images/characters/wolfgang/badgoldenlab.png'),
+		love.graphics.newImage('images/characters/wolfgang/badrussel.png'),
+	},
+	red = {
+		dark = love.graphics.newImage('images/characters/wolfgang/r.png'),
+		glow = love.graphics.newImage('images/characters/wolfgang/rglow.png'),
+		word = love.graphics.newImage('images/characters/wolfgang/red.png'),
+	},
+	blue = {
+		dark = love.graphics.newImage('images/characters/wolfgang/b.png'),
+		glow = love.graphics.newImage('images/characters/wolfgang/bglow.png'),
+		word = love.graphics.newImage('images/characters/wolfgang/blue.png'),
+	},
+	green = {
+		dark = love.graphics.newImage('images/characters/wolfgang/k.png'),
+		glow = love.graphics.newImage('images/characters/wolfgang/kglow.png'),
+		word = love.graphics.newImage('images/characters/wolfgang/kreen.png'),
+	},
+	yellow = {
+		dark = love.graphics.newImage('images/characters/wolfgang/a.png'),
+		glow = love.graphics.newImage('images/characters/wolfgang/aglow.png'),
+		word = love.graphics.newImage('images/characters/wolfgang/amarillo.png'),
+	},
+}
+
 Wolfgang.sounds = {
 	bgm = "bgm_wolfgang",
 }
+
+function Wolfgang:init(...)
+	Character.init(self, ...)
+
+	-- init BARK
+
+end
+-------------------------------------------------------------------------------
+-- These are the BARK letter classes
+local ColorLetter = {}
+function ColorLetter:init(manager, tbl)
+	Pic.init(self, manager.game, tbl)
+	manager.allParticles.CharEffects[ID.particle] = self
+	self.manager = manager
+end
+
+function ColorLetter:remove()
+	self.manager.allParticles.CharEffects[self.ID] = nil
+end
+
+-- BARK meter appears below the super meter. 
+function ColorLetter.generate(game, owner, x, y, color)
+	self.color = blahblah
+	self.lighted = false
+end
+
+function ColorLetter:lightUp()
+	-- fade in new image
+	-- effects
+	self.lighted = true
+end
+
+function ColorLetter:darken()
+	-- fade in original image
+	-- effects
+	self.lighted = false
+end
+
+ColorLetter = common.class("ColorLetter", ColorLetter, Pic)
+-------------------------------------------------------------------------------
+--[[ When a match happens, the appropriate words (BLUE! AMARILLO! etc)
+associated with the color appear at the location of the match, slightly rotated
+(from -20 to 20 degrees) and float up in the air like Final Fantasy damage
+numbers. (float up about 78 pixels, decelerating, linger for .5 second once
+they reach the final location, and then fade out).]]
+local ColorWord = {}
+
+
+-------------------------------------------------------------------------------
+
+function Wolfgang:serializeSpecials()
+	local ret = ""
+	return ret
+end
+
+function Wolfgang:deserializeSpecials(str)
+end
 
 return common.class("Wolfgang", Wolfgang, Character)

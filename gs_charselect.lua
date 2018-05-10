@@ -62,7 +62,7 @@ function charselect:_createCharacterButtons()
 
 	-- Temporary thing for demo version
 	for name, data in pairs(charselect.ui.clickable) do
-		if name ~= "heath" and name ~= "walter" then
+		if name ~= "heath" and name ~= "walter" and name ~= "wolfgang" then
 			data.action = function() end
 			data.RGB = {96, 96, 96}
 		end
