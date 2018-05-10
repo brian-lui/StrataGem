@@ -354,7 +354,7 @@ function Client:writeState()
 			idx = idx + 1
 		end
 	end
-	grid_str = table.concat(grid_str)
+	grid_str = "GRID" .. table.concat(grid_str)
 
 	-- player hand pieces
 	local p1hand, p2hand = {}, {}
@@ -366,7 +366,8 @@ function Client:writeState()
 	end
 	p1hand, p2hand = table.concat(p1hand), table.concat(p2hand)
 
-	--local rng_seed = game.rng.do_later_haha.
+	-- rng state
+	local rng_state = "RNG" .. game.rng:getState()
 
 	-- player passives
 	local p1special, p2special = p1:serializeSpecials(), p2:serializeSpecials()
@@ -377,6 +378,7 @@ function Client:writeState()
 		grid_str .. "_" ..
 		p1hand ..
 		p2hand ..
+		rng_state .. "_" ..
 		p1special .. "_" ..
 		p2special .. "_"
 end

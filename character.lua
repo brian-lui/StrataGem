@@ -107,6 +107,10 @@ function Character:serializeSpecials()
 	return ""
 end
 
+-- For replays: how to deserialize the character specials
+function Character:deserializeSpecials()
+end
+
 -------------------------------------------------------------------------------
 -- All these abilities can optionally return the number of frames
 -- to pause for the animation.
