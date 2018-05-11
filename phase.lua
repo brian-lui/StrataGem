@@ -273,7 +273,7 @@ function Phase:destroyMatchedGems(dt)
 	if self.should_call_char_ability_this_phase then
 		local delay = 0
 		for player in game:players() do
-			local player_delay = player:duringMatchAnimation()
+			local player_delay = player:duringMatch()
 			delay = math.max(delay, player_delay or 0)
 		end
 		self:setPause(game.GEM_EXPLODE_FRAMES + game.GEM_FADE_FRAMES + delay)
