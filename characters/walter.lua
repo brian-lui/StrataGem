@@ -545,7 +545,7 @@ end
 MatchDust = common.class("MatchDust", MatchDust, Pic)
 
 -------------------------------------------------------------------------------
-Walter.particle_fx = {
+Walter.fx = {
 	foam = Foam,
 	spout = Spout,
 	healingCloud = HealingCloud,
@@ -555,7 +555,7 @@ Walter.particle_fx = {
 -------------------------------------------------------------------------------
 
 function Walter:_makeCloud(column, delay)
-	self.game.queue:add(delay, self.particle_fx.healingCloud.generate, self.game, self, column)
+	self.game.queue:add(delay, self.fx.healingCloud.generate, self.game, self, column)
 end
 
 function Walter:_activateSuper()
@@ -584,8 +584,8 @@ function Walter:_activateSuper()
 			}
 		end
 
-		self.particle_fx.foam.generate(self.game, self, col)
-		self.particle_fx.spout.generate(self.game, self, col)
+		self.fx.foam.generate(self.game, self, col)
+		self.fx.spout.generate(self.game, self, col)
 	end
 	return delay + game.GEM_EXPLODE_FRAMES + 30
 end
@@ -616,7 +616,7 @@ function Walter:_cloudHealingDamage(delay)
 			self:healDamage(1, delay)
 			self.this_turn_column_healed[col] = true
 			game.queue:add(delay, game.sound.newSFX, game.sound, "healing")
-			self.particle_fx.healingColumnAura.generate(self.game, self, col, delay)
+			self.fx.healingColumnAura.generate(self.game, self, col, delay)
 		end
 	end
 
@@ -660,7 +660,7 @@ function Walter:beforeMatch()
 	for _, list in pairs(gem_list) do
 		if self.player_num == list[1].owner and list[1].is_in_a_vertical_match then
 			delay = math.max(delay, 20)
-			frames_until_cloud_forms = self.particle_fx.matchDust.generate(game, self, list)
+			frames_until_cloud_forms = self.fx.matchDust.generate(game, self, list)
 		end
 	end
 
@@ -729,7 +729,7 @@ function Walter:deserializeSpecials(str)
 		local col = i - 1
 
 		self.cloud_turns_remaining[col] = tonumber(str:sub(i, i))
-		self.particle_fx.healingCloud.generate(self.game, self, col)
+		self.fx.healingCloud.generate(self.game, self, col)
 	end
 
 	for cloud in self.game.particles:getInstances("CharEffects", self.player_num, "WalterCloud") do

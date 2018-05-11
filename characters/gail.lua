@@ -73,7 +73,7 @@ function TestPetal.generate(game, owner)
 end
 TestPetal = common.class("TestPetal", TestPetal, Pic)
 
-Gail.particle_fx = {
+Gail.fx = {
 	testPetal = TestPetal,
 }
 

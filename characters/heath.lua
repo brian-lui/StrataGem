@@ -209,13 +209,13 @@ end
 function Boom.generate(game, owner, row, col, delay, n)
 	n = n or 4
 	local x, y = game.grid.x[col], game.grid.y[row]
-	for _ = 1, n do owner.particle_fx.boom._generateBoom(game, owner, x, y, delay) end
+	for _ = 1, n do owner.fx.boom._generateBoom(game, owner, x, y, delay) end
 end
 
 Boom = common.class("Boom", Boom, Pic)
 
 -------------------------------------------------------------------------------
-Heath.particle_fx = {
+Heath.fx = {
 	smallFire = SmallFire,
 	boom = Boom,
 }
@@ -250,7 +250,7 @@ function Heath:beforeGravity()
 					glow_delay = 20,
 					force_max_alpha = true,
 				}
-				self.particle_fx.boom.generate(game, self, top_row, col, delay, 12)
+				self.fx.boom.generate(game, self, top_row, col, delay, 12)
 			end
 		end
 
@@ -258,7 +258,7 @@ function Heath:beforeGravity()
 		for i in grid:cols(self.player_num) do
 			if not self.pending_gem_cols[i] then
 				self.pending_fires[i] = true
-				self.particle_fx.smallFire.generateSmallFire(self.game, self, i, delay)
+				self.fx.smallFire.generateSmallFire(self.game, self, i, delay)
 				self.generated_fire_images[i] = true
 			end
 		end
@@ -303,7 +303,7 @@ function Heath:beforeMatch()
 		local top_gem = gem.row == grid:getFirstEmptyRow(gem.column, true) + 1
 		if self.player_num == gem.owner and gem.is_in_a_horizontal_match and top_gem then
 			self.pending_fires[gem.column] = true
-			self.particle_fx.boom.generate(game, self, gem.row, gem.column, game.GEM_EXPLODE_FRAMES)
+			self.fx.boom.generate(game, self, gem.row, gem.column, game.GEM_EXPLODE_FRAMES)
 		end
 	end
 
@@ -319,7 +319,7 @@ function Heath:afterMatch()
 	local fire_sound = false
 	for i in grid:cols() do
 		if not self.generated_fire_images[i] and self.pending_fires[i] then
-			delay_to_return = self.particle_fx.smallFire.generateSmallFire(self.game, self, i)
+			delay_to_return = self.fx.smallFire.generateSmallFire(self.game, self, i)
 			self.generated_fire_images[i] = true
 			fire_sound = true
 		end
@@ -408,7 +408,7 @@ function Heath:deserializeSpecials(str)
 		if str:byte(i) == 70 then
 			local col = tonumber(str:sub(i+1, i+1))
 			self.ready_fires[col] = true
-			self.particle_fx.smallFire.generateSmallFire(self.game, self, col)
+			self.fx.smallFire.generateSmallFire(self.game, self, col)
 		end
 	end 
 end
