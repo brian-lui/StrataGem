@@ -246,7 +246,7 @@ local function shuffleHands(game)
 end
 
 local function resetGame(game)
-	game:start("1P", "heath", "walter", "checkmate", nil, 1)
+	game:start("1P", "wolfgang", "wolfgang", "checkmate", nil, 1)
 end
 
 local function displayNoRush(game)
@@ -398,7 +398,7 @@ local function superToggle(game)
 end
 
 local function gailPetalTest(game)
-	game.p1.particle_fx.testPetal.generate(game, game.p1)
+	game.p1.fx.testPetal.generate(game, game.p1)
 end
 
 local function toggleScreencaps(game)
