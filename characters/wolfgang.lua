@@ -7,9 +7,7 @@ placed in the opponent's basin (rush) are bad dogs. Bad dogs do not listen and
 do nothing. They last for 3 turns and then go home.
 
 Passive animation:
-BARK meter (unlit) appears below the super meter. Whenever a match happens, the
-appropriate letter lights up with the usual sort of dust explosion. (similar to
-the dust explosion when you double cast.) Also, when the match happens, the
+Also, when the match happens, the
 appropriate words (BLUE! AMARILLO! etc) associated with the color appear at the
 location of the match, slightly rotated (from -20 to 20 degrees) and float up in
 the air like Final Fantasy damage numbers. (float up about 78 pixels, decelerating,
@@ -92,8 +90,26 @@ Wolfgang.sounds = {
 function Wolfgang:init(...)
 	Character.init(self, ...)
 
+	local game = self.game
+	local stage = game.stage
 	-- init BARK
+	local y = stage.height * 0.57
+	local add = self.player_num == 2 and stage.width * 0.77 or 0
+	local x = {
+		stage.width * 0.055 + add,
+		stage.width * 0.095 + add,
+		stage.width * 0.135 + add,
+		stage.width * 0.175 + add,
+	}
 
+	self.letters = {
+		blue = self.fx.colorLetter.generate(game, self, x[1], y, "blue"),
+		yellow = self.fx.colorLetter.generate(game, self, x[2], y, "yellow"),
+		red = self.fx.colorLetter.generate(game, self, x[3], y, "red"),
+		green = self.fx.colorLetter.generate(game, self, x[4], y, "green"),
+	}
+
+	self.this_turn_matched_colors = {}
 end
 -------------------------------------------------------------------------------
 -- These are the BARK letter classes
@@ -102,6 +118,7 @@ function ColorLetter:init(manager, tbl)
 	Pic.init(self, manager.game, tbl)
 	manager.allParticles.CharEffects[ID.particle] = self
 	self.manager = manager
+	self.game = manager.game
 end
 
 function ColorLetter:remove()
@@ -110,20 +127,38 @@ end
 
 -- BARK meter appears below the super meter. 
 function ColorLetter.generate(game, owner, x, y, color)
-	self.color = blahblah
-	self.lighted = false
+	local params = {
+		x = x,
+		y = y,
+		image = owner.special_images[color].dark,
+		owner = owner,
+		player_num = owner.player_num,
+		name = "WolfgangLetter",
+		color = color,
+		lighted = false,
+	}
+
+	return common.instance(ColorLetter, game.particles, params)
 end
 
 function ColorLetter:lightUp()
-	-- fade in new image
-	-- effects
-	self.lighted = true
+	if not self.lighted then
+		self.lighted = true
+		self:newImageFadeIn(self.owner.special_images[self.color].glow, 10)
+		self.manager.dust.generateStarFountain{
+			game = self.game,
+			x = self.x,
+			y = self.y,
+			color = self.color,
+		}
+	end
 end
 
 function ColorLetter:darken()
-	-- fade in original image
-	-- effects
-	self.lighted = false
+	if self.lighted then
+		self.lighted = false
+		self:newImageFadeIn(self.owner.special_images[self.color].dark, 10)
+	end
 end
 
 ColorLetter = common.class("ColorLetter", ColorLetter, Pic)
@@ -137,6 +172,41 @@ local ColorWord = {}
 
 
 -------------------------------------------------------------------------------
+Wolfgang.fx = {
+	colorLetter = ColorLetter,
+	colorWord = ColorWord,
+}
+
+-------------------------------------------------------------------------------
+
+function Wolfgang:beforeMatch()
+	local game = self.game
+	local grid = game.grid
+
+	local delay = 0
+
+	-- See which color matches we made, for BARK lighting up
+	local gem_table = grid:getMatchedGems()
+	for _, gem in pairs(gem_table) do
+		if self.player_num == gem.owner then
+			self.this_turn_matched_colors[gem.color] = true
+			print("added color", gem.color)
+		end
+	end
+end
+
+function Wolfgang:afterMatch()
+	for color in pairs(self.this_turn_matched_colors) do
+		print("lighting up color", color)
+		self.letters[color]:lightUp()
+	end
+	-- Also create the colorwords here
+end
+
+function Wolfgang:cleanup()
+	self.this_turn_matched_colors = {}
+	Character.cleanup(self)
+end
 
 function Wolfgang:serializeSpecials()
 	local ret = ""
