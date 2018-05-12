@@ -125,7 +125,7 @@ function ColorLetter:remove()
 	self.manager.allParticles.CharEffects[self.ID] = nil
 end
 
--- BARK meter appears below the super meter. 
+-- BARK meter appears below the super meter.
 function ColorLetter.generate(game, owner, x, y, color)
 	local params = {
 		x = x,
@@ -169,8 +169,39 @@ associated with the color appear at the location of the match, slightly rotated
 numbers. (float up about 78 pixels, decelerating, linger for .5 second once
 they reach the final location, and then fade out).]]
 local ColorWord = {}
+function ColorWord:init(manager, tbl)
+	Pic.init(self, manager.game, tbl)
+	manager.allParticles.CharEffects[ID.particle] = self
+	self.manager = manager
+end
 
+function ColorWord:remove()
+	self.manager.allParticles.CharEffects[self.ID] = nil
+end
 
+function ColorWord.generate(game, owner, gem, delay)
+	local params = {
+		x = gem.x,
+		y = gem.y,
+		image = owner.special_images[gem.color].word,
+		owner = owner,
+		player_num = owner.player_num,
+		name = "WolfgangColorWord",
+	}
+
+	local p = common.instance(ColorWord, game.particles, params)
+	p.rotation = (math.random() - 0.5) * 0.3
+	if delay then
+		p:change{transparency = 0}
+		p:wait(delay)
+		p:change{duration = 0, transparency = 255}
+	end
+	p:change{duration = 60, y = gem.y - game.stage.height * 0.072, easing = "outCubic"}
+	p:wait(30)
+	p:change{duration = 45, transparency = 0, remove = true}
+end
+
+ColorWord = common.class("ColorWord", ColorWord, Pic)
 -------------------------------------------------------------------------------
 Wolfgang.fx = {
 	colorLetter = ColorLetter,
@@ -182,17 +213,19 @@ Wolfgang.fx = {
 function Wolfgang:beforeMatch()
 	local game = self.game
 	local grid = game.grid
-
 	local delay = 0
 
 	-- See which color matches we made, for BARK lighting up
+	-- Also create the colorwords here
 	local gem_table = grid:getMatchedGems()
 	for _, gem in pairs(gem_table) do
-		if self.player_num == gem.owner then
+		if (self.player_num == gem.owner) and (not self.letters[gem.color].lighted) then
 			self.this_turn_matched_colors[gem.color] = true
-			print("added color", gem.color)
+			self.fx.colorWord.generate(self.game, self, gem, self.game.GEM_EXPLODE_FRAMES)
 		end
 	end
+
+	return delay
 end
 
 function Wolfgang:afterMatch()
@@ -200,7 +233,6 @@ function Wolfgang:afterMatch()
 		print("lighting up color", color)
 		self.letters[color]:lightUp()
 	end
-	-- Also create the colorwords here
 end
 
 function Wolfgang:cleanup()

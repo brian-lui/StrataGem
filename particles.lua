@@ -861,9 +861,9 @@ end
 
 --[[ A star fountain, like when a doublecast/rush landed in the holding area
 	game: game instance (mandatory)
-	gem: a gem instance
-	x, y: coordinates
-	color: color of particles generated
+	gem: a gem instance (either this or {x, y, color} is mandatory)
+	x, y: coordinates (either this or gem is mandatory)
+	color: color of particles generated (either this or gem is mandatory)
 	num: number of particles to generate. Default is 24
 	x, y, color override gem if they are provided
 	fast: if true, particles are faster. defaults to false
