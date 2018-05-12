@@ -7,12 +7,6 @@ placed in the opponent's basin (rush) are bad dogs. Bad dogs do not listen and
 do nothing. They last for 3 turns and then go home.
 
 Passive animation:
-Also, when the match happens, the
-appropriate words (BLUE! AMARILLO! etc) associated with the color appear at the
-location of the match, slightly rotated (from -20 to 20 degrees) and float up in
-the air like Final Fantasy damage numbers. (float up about 78 pixels, decelerating,
-linger for .5 second once they reach the final location, and then fade out).
-
 When the BARK meter is lit entirely, a good dog piece (Random) appears in the next
 set of gems on the stars when it moves again.
 
@@ -157,17 +151,19 @@ end
 function ColorLetter:darken()
 	if self.lighted then
 		self.lighted = false
-		self:newImageFadeIn(self.owner.special_images[self.color].dark, 10)
+		self:newImageFadeIn(self.owner.special_images[self.color].dark, 30)
+		self.manager.dust.generateStarFountain{
+			game = self.game,
+			x = self.x,
+			y = self.y,
+			color = self.color,
+		}
 	end
 end
 
 ColorLetter = common.class("ColorLetter", ColorLetter, Pic)
 -------------------------------------------------------------------------------
---[[ When a match happens, the appropriate words (BLUE! AMARILLO! etc)
-associated with the color appear at the location of the match, slightly rotated
-(from -20 to 20 degrees) and float up in the air like Final Fantasy damage
-numbers. (float up about 78 pixels, decelerating, linger for .5 second once
-they reach the final location, and then fade out).]]
+-- The appropriate words (BLUE! AMARILLO! etc) appear at the matched gem
 local ColorWord = {}
 function ColorWord:init(manager, tbl)
 	Pic.init(self, manager.game, tbl)
@@ -228,11 +224,34 @@ function Wolfgang:beforeMatch()
 	return delay
 end
 
+-- Light up the BARK meter for any matches
 function Wolfgang:afterMatch()
+	local delay = 0
 	for color in pairs(self.this_turn_matched_colors) do
 		print("lighting up color", color)
 		self.letters[color]:lightUp()
+		delay = 45
 	end
+	return delay
+end
+
+-- Queue the dog if all BARK was lit up
+function Wolfgang:afterAllMatches()
+	local delay = 0
+	local all_lit_up = true
+	for _, letter in pairs(self.letters) do
+		if not letter.lighted then all_lit_up = false end
+	end
+
+	if all_lit_up then
+		-- TODO: animation to show we're making a dog
+		print("Make a BARK DOG!") -- TODO: Actually make a barkdog
+
+		for _, letter in pairs(self.letters) do letter:darken() end
+		delay = 60
+	end
+
+	return delay
 end
 
 function Wolfgang:cleanup()
