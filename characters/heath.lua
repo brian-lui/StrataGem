@@ -60,8 +60,8 @@ Heath.sounds = {
 function Heath:init(...)
 	Character.init(self, ...)
 
-	self.FIRE_EXIST_TURNS = 2 -- how many turns the fire exists for
-	
+	self.FIRE_EXIST_TURNS = 3 -- how many turns the fire exists for
+
 	-- these columns are stores as booleans for columns 1-8
 	self.pending_fires = {0, 0, 0, 0, 0, 0, 0, 0} -- fires for horizontal matches generated at t0
 	self.ready_fires = {0, 0, 0, 0, 0, 0, 0, 0} -- fires at t1, ready to burn
