@@ -60,10 +60,11 @@ Heath.sounds = {
 function Heath:init(...)
 	Character.init(self, ...)
 
-	self.FIRE_EXIST_TURNS = 3 -- how many turns the fire exists for
+	self.FIRE_EXIST_TURNS = 2 -- how many turns the fire exists for
+	
 	-- these columns are stores as booleans for columns 1-8
-	self.pending_fires = {} -- fires for horizontal matches generated at t0
-	self.ready_fires = {} -- fires at t1, ready to burn
+	self.pending_fires = {0, 0, 0, 0, 0, 0, 0, 0} -- fires for horizontal matches generated at t0
+	self.ready_fires = {0, 0, 0, 0, 0, 0, 0, 0} -- fires at t1, ready to burn
 	self.pending_gem_cols = {} -- pending gems, for extinguishing of ready_fires
 	self.generated_fire_images = {} -- whether fire particles were generated yet. one for each col
 end
@@ -148,7 +149,8 @@ function SmallFire:update(dt)
 		self:newImageFadeIn(new_image, self.SWAP_FRAMES)
 	end
 	if self.turns_remaining < 0 and self:isStationary() then
-		self:change{duration = 32, transparency = 0, remove = true}
+		self:fadeOut()
+		--self:change{duration = 32, transparency = 0, remove = true}
 	end
 end
 
@@ -258,7 +260,7 @@ function Heath:beforeGravity()
 		-- generate fires
 		for i in grid:cols(self.player_num) do
 			if not self.pending_gem_cols[i] then
-				self.pending_fires[i] = true
+				self.pending_fires[i] = self.FIRE_EXIST_TURNS
 				self.fx.smallFire.generateSmallFire(self.game, self, i, delay)
 				self.generated_fire_images[i] = true
 			end
@@ -279,13 +281,7 @@ end
 function Heath:afterGravity()
 	for i in self.game.grid:cols() do
 		if self.pending_gem_cols[i] then
-			self.ready_fires[i] = false
-			for _, particle in pairs(self.game.particles.allParticles.CharEffects) do
-				if particle.player_num == self.player_num and particle.col == i and
-				particle.name == "HeathFire" and particle.turns_remaining == 0 then
-					particle:fadeOut()
-				end
-			end
+			self.ready_fires[i] = 0
 		end
 	end
 end
@@ -293,22 +289,16 @@ end
 function Heath:beforeMatch()
 	local game = self.game
 	local grid = game.grid
-
 	local gem_table = grid:getMatchedGems()
 
 	-- store horizontal fire locations, used in aftermatch phase
 	for _, gem in pairs(gem_table) do
-		local h = "vertical"
-		if gem.is_in_a_horizontal_match then h = "horizontal" end
-
 		local top_gem = gem.row == grid:getFirstEmptyRow(gem.column, true) + 1
 		if self.player_num == gem.owner and gem.is_in_a_horizontal_match and top_gem then
-			self.pending_fires[gem.column] = true
+			self.pending_fires[gem.column] = self.FIRE_EXIST_TURNS
 			self.fx.boom.generate(game, self, gem.row, gem.column, game.GEM_EXPLODE_FRAMES)
 		end
 	end
-
-
 end
 
 -- create fire particle for passive
@@ -319,7 +309,7 @@ function Heath:afterMatch()
 	local delay_to_return = 0
 	local fire_sound = false
 	for i in grid:cols() do
-		if not self.generated_fire_images[i] and self.pending_fires[i] then
+		if not self.generated_fire_images[i] and self.pending_fires[i] > 0 then
 			delay_to_return = self.fx.smallFire.generateSmallFire(self.game, self, i)
 			self.generated_fire_images[i] = true
 			fire_sound = true
@@ -348,20 +338,14 @@ function Heath:afterAllMatches()
 
 	-- activate horizontal match fires
 	for i in grid:cols() do
-		if self.ready_fires[i] then
+		if self.ready_fires[i] > 0 then
 			local row = grid:getFirstEmptyRow(i) + 1
 			if grid[row][i].gem then
 				grid:destroyGem{gem = grid[row][i].gem, credit_to = self.player_num}
-				for _, particle in pairs(self.game.particles.allParticles.CharEffects) do
-					if particle.player_num == self.player_num and particle.col == i and
-					particle.name == "HeathFire" and particle.turns_remaining == 0 then
-						particle:fadeOut()
-					end
-				end
 			end
 		end
+		self.ready_fires[i] = math.max(self.ready_fires[i] - 1, 0)
 	end
-	self.ready_fires = {}
 end
 
 function Heath:whenCreatingGarbageRow()
@@ -383,8 +367,10 @@ function Heath:cleanup()
 	end
 
 	-- prepare the active fire columns for next turn
-	self.ready_fires = self.pending_fires
-	self.pending_fires = {}
+	for i in  self.game.grid:cols() do
+		self.ready_fires[i] = math.max(self.ready_fires[i], self.pending_fires[i])
+	end
+	self.pending_fires = {0, 0, 0, 0, 0, 0, 0, 0}
 	self.generated_fire_images = {}
 
 	Character.cleanup(self)
