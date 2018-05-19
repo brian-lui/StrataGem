@@ -114,7 +114,7 @@ function SmallFire.generateSmallFire(game, owner, col, delay)
 		y = start_y,
 		col = col,
 		scaling = 0,
-		turns_remaining = 1,
+		turns_remaining = 3,
 		image = Heath.special_images.fire[1],
 		image_index = 1,
 		SWAP_FRAMES = 8,
