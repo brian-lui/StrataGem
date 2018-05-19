@@ -71,11 +71,11 @@ function Walter:init(...)
 	self.SPOUT_BOB_SPEED = 32 -- how many frames for one spout bob
 	self.CLOUD_SLIDE_DURATION = 36 -- how long for the cloud incoming tween
 	self.CLOUD_ROW = 11 -- which row for clouds to appear on
-	self.CLOUD_EXIST_TURNS = 3 -- how many turns a cloud exists for
+	self.CLOUD_EXIST_TURNS = 2 -- how many turns a cloud exists for
 	self.CLOUD_INIT_DROPLET_FRAMES = { -- frames between droplets, by turns remaining
 		[0] = math.huge,
 		[1] = 20,
-		[2] = 10,
+		[2] = 5,
 		[3] = 5,
 	} 
 
