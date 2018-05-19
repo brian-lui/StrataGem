@@ -60,6 +60,7 @@ Heath.sounds = {
 function Heath:init(...)
 	Character.init(self, ...)
 
+	self.FIRE_EXIST_TURNS = 3 -- how many turns the fire exists for
 	-- these columns are stores as booleans for columns 1-8
 	self.pending_fires = {} -- fires for horizontal matches generated at t0
 	self.ready_fires = {} -- fires at t1, ready to burn
@@ -114,7 +115,7 @@ function SmallFire.generateSmallFire(game, owner, col, delay)
 		y = start_y,
 		col = col,
 		scaling = 0,
-		turns_remaining = 3,
+		turns_remaining = owner.FIRE_EXIST_TURNS,
 		image = Heath.special_images.fire[1],
 		image_index = 1,
 		SWAP_FRAMES = 8,
