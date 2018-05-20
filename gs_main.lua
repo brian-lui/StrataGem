@@ -278,15 +278,29 @@ function gs_main:drawText(params)
 		love.graphics.setFont(FONT.REGULAR)
 		if self.debug_drawGemOwners then
 			for gem in grid:gems() do
-				love.graphics.print("OWN:" .. gem.owner, gem.x - gem.width * 0.4, gem.y - gem.height * 0.3)
-				love.graphics.print("ROW:" .. gem.row, gem.x - gem.width * 0.4, gem.y - gem.height * 0.1)
-				love.graphics.print("COL:" .. gem.column, gem.x - gem.width * 0.4, gem.y + gem.height * 0.1)
+				love.graphics.print("ROW:" .. gem.row, gem.x - gem.width * 0.4, gem.y - gem.height * 0.2)
+				love.graphics.print("COL:" .. gem.column, gem.x - gem.width * 0.4, gem.y)
 				if gem.is_in_a_horizontal_match then
-					love.graphics.print("H", gem.x - gem.width * 0.2, gem.y + gem.height * 0.3)
+					love.graphics.print("H", gem.x - gem.width * 0.2, gem.y + gem.height * 0.2)
 				end
 				if gem.is_in_a_vertical_match then
-					love.graphics.print("V", gem.x + gem.width * 0.2, gem.y + gem.height * 0.3)
+					love.graphics.print("V", gem.x + gem.width * 0.2, gem.y + gem.height * 0.2)
 				end
+
+				-- graphically show owners
+				love.graphics.push("all")
+					local y_start, height = gem.y - gem.height * 0.5, gem.height
+					if gem.owner == 1 then
+						love.graphics.setColor(100, 0, 200, 160)
+						love.graphics.rectangle("fill", gem.x - gem.width * 0.5, y_start, gem.width * 0.5, height)
+					elseif gem.owner == 2 then
+						love.graphics.setColor(255, 153, 51, 230)
+						love.graphics.rectangle("fill", gem.x, y_start, gem.width * 0.5, height)
+					elseif gem.owner == 3 then
+						love.graphics.setColor(160, 160, 160, 200)
+						love.graphics.rectangle("fill", gem.x - gem.width * 0.5, y_start, gem.width, height)
+					end
+				love.graphics.pop()
 			end
 
 		end
