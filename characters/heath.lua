@@ -96,18 +96,20 @@ function SmallFire:updateYPos(delay)
 	end
 end
 
-function SmallFire:fadeOut()
+function SmallFire:updateTurnsRemaining()
+	print("phase:", self.game.current_phase)
+	print("fire turns:", unpack(self.owner.ready_fires))
+	self.turns_remaining = self.owner.ready_fires[self.col]
+end
+
+function SmallFire:_fadeOut()
 	self:change{duration = 32, transparency = 0, remove = true}
 end
 
-function SmallFire:countdown()
-	self.turns_remaining = self.turns_remaining - 1
-end
-
-function SmallFire.generateSmallFire(game, owner, col, delay)
+function SmallFire.generateSmallFire(game, owner, col, delay, turns_remain)
 	local grid = game.grid
 
-	local start_row = grid:getFirstEmptyRow(col)
+	local start_row = grid:getFirstEmptyRow(col, true)
 	local start_y = grid.y[start_row]
 	local bounce_top_y = grid.y[start_row - 1]
 
@@ -116,7 +118,7 @@ function SmallFire.generateSmallFire(game, owner, col, delay)
 		y = start_y,
 		col = col,
 		scaling = 0,
-		turns_remaining = owner.FIRE_EXIST_TURNS,
+		turns_remaining = turns_remain or owner.FIRE_EXIST_TURNS,
 		image = Heath.special_images.fire[1],
 		image_index = 1,
 		SWAP_FRAMES = 8,
@@ -148,9 +150,8 @@ function SmallFire:update(dt)
 		local new_image = self.owner.special_images.fire[self.image_index]
 		self:newImageFadeIn(new_image, self.SWAP_FRAMES)
 	end
-	if self.turns_remaining < 0 and self:isStationary() then
-		self:fadeOut()
-		--self:change{duration = 32, transparency = 0, remove = true}
+	if self.turns_remaining <= 0 and self:isStationary() then
+		self:_fadeOut()
 	end
 end
 
@@ -230,13 +231,32 @@ Heath.fx = {
 
 -- get the list of pending gem columns for extinguishing in afterGravity
 -- also the super
+
+-- if column is provided, only updates the particle in that column
+function Heath:_updateParticleTimers(column)
+	for _, particle in pairs(self.game.particles.allParticles.CharEffects) do
+		if particle.player_num == self.player_num and particle.name == "HeathFire"
+		and (particle.col == column or not column) then
+			particle:updateTurnsRemaining()
+		end
+	end
+end
+
+function Heath:_updateParticlePositions(delay_to_return, column)
+	for _, particle in pairs(self.game.particles.allParticles.CharEffects) do
+		if particle.player_num == self.player_num and particle.name == "HeathFire"
+		and (particle.col == column or not column) then
+			particle:updateYPos(delay_to_return)
+		end
+	end
+end
+
 function Heath:beforeGravity()
 	local game = self.game
 	local grid = game.grid
 	local delay = 0
 
 	local pending_gems = grid:getPendingGemsByNum()
-	self.pending_gem_cols = {}
 	for _, gem in ipairs(pending_gems) do
 		self.pending_gem_cols[gem.column] = true
 	end
@@ -259,11 +279,9 @@ function Heath:beforeGravity()
 
 		-- generate fires
 		for i in grid:cols(self.player_num) do
-			if not self.pending_gem_cols[i] then
-				self.pending_fires[i] = self.FIRE_EXIST_TURNS
-				self.fx.smallFire.generateSmallFire(self.game, self, i, delay)
-				self.generated_fire_images[i] = true
-			end
+			self.pending_fires[i] = self.FIRE_EXIST_TURNS
+			self.fx.smallFire.generateSmallFire(self.game, self, i, delay)
+			self.generated_fire_images[i] = true
 		end
 
 		game.sound:newSFX(self.sounds.passive)
@@ -281,7 +299,11 @@ end
 function Heath:afterGravity()
 	for i in self.game.grid:cols() do
 		if self.pending_gem_cols[i] then
+			self.pending_gem_cols[i] = nil
 			self.ready_fires[i] = 0
+			self:_updateParticleTimers(i)
+		else
+			self:_updateParticlePositions(nil, i)
 		end
 	end
 end
@@ -318,11 +340,7 @@ function Heath:afterMatch()
 	if fire_sound then game.sound:newSFX(self.sounds.passive) end
 
 	-- fire passive update, in case of chain combo for a gem below the fire
-	for _, particle in pairs(game.particles.allParticles.CharEffects) do
-		if particle.player_num == self.player_num and particle.name == "HeathFire" then
-			particle:updateYPos(delay_to_return)
-		end
-	end
+	self:_updateParticlePositions(delay_to_return)
 
 	return delay_to_return
 end
@@ -344,60 +362,47 @@ function Heath:afterAllMatches()
 				grid:destroyGem{gem = grid[row][i].gem, credit_to = self.player_num}
 			end
 		end
-		self.ready_fires[i] = math.max(self.ready_fires[i] - 1, 0)
 	end
 end
 
 function Heath:whenCreatingGarbageRow()
-	-- fire passive update
-	for _, particle in pairs(self.game.particles.allParticles.CharEffects) do
-		if particle.player_num == self.player_num and particle.name == "HeathFire" then
-			particle:updateYPos()
-		end
-	end
+	self:_updateParticlePositions()
 end
 
 function Heath:cleanup()
-	-- fire passive update
-	for _, particle in pairs(self.game.particles.allParticles.CharEffects) do
-		if particle.player_num == self.player_num and particle.name == "HeathFire" then
-			particle:updateYPos()
-			particle:countdown()
-		end
-	end
-
 	-- prepare the active fire columns for next turn
-	for i in  self.game.grid:cols() do
-		self.ready_fires[i] = math.max(self.ready_fires[i], self.pending_fires[i])
+	for i in self.game.grid:cols() do
+		self.ready_fires[i] = math.max(self.ready_fires[i] - 1, self.pending_fires[i], 0)
 	end
 	self.pending_fires = {0, 0, 0, 0, 0, 0, 0, 0}
 	self.generated_fire_images = {}
+	self.pending_gem_cols = {}
+
+	self:_updateParticlePositions()
+	self:_updateParticleTimers()
 
 	Character.cleanup(self)
 end
 
 -------------------------------------------------------------------------------
 
--- We only need to store current column fires
+-- We only need to store current column fires and duration
 -- For each fire, stored as "F" followed by column
 function Heath:serializeSpecials()
-	local ret = ""
+	local ret = "F"
 	for i in self.game.grid:cols() do
-		if self.ready_fires[i] then ret = ret .. "F" .. i end
+		ret = ret .. self.ready_fires[i]
 	end
 
 	return ret
 end
 
--- "F" is 70
 function Heath:deserializeSpecials(str)
-	for i = 1, #str do
-		if str:byte(i) == 70 then
-			local col = tonumber(str:sub(i+1, i+1))
-			self.ready_fires[col] = true
-			self.fx.smallFire.generateSmallFire(self.game, self, col)
-		end
-	end 
+	for i = 2, #str do
+		local col = i - 1
+		self.ready_fires[col] = i
+		self.fx.smallFire.generateSmallFire(self.game, self, col, nil, i)
+	end
 end
 
 return common.class("Heath", Heath, Character)
