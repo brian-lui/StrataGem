@@ -62,11 +62,11 @@ function Heath:init(...)
 
 	self.FIRE_EXIST_TURNS = 3 -- how many turns the fire exists for
 
-	-- these columns are stores as booleans for columns 1-8
+	self.burned_this_turn = false -- whether fires have burned already
+
 	self.pending_fires = {0, 0, 0, 0, 0, 0, 0, 0} -- fires for horizontal matches generated at t0
 	self.ready_fires = {0, 0, 0, 0, 0, 0, 0, 0} -- fires at t1, ready to burn
 	self.pending_gem_cols = {} -- pending gems, for extinguishing of ready_fires
-	self.generated_fire_images = {} -- whether fire particles were generated yet. one for each col
 end
 
 -- *This part creates the animations for the character's specials and supers
@@ -251,6 +251,17 @@ function Heath:_updateParticlePositions(delay_to_return, column)
 	end
 end
 
+-- whether a column already has a fire particle
+function Heath:_columnHasParticle(column)
+	for _, particle in pairs(self.game.particles.allParticles.CharEffects) do
+		if particle.player_num == self.player_num and particle.name == "HeathFire"
+		and (particle.col == column) then
+			return true
+		end
+	end
+	return false
+end
+
 function Heath:beforeGravity()
 	local game = self.game
 	local grid = game.grid
@@ -279,9 +290,10 @@ function Heath:beforeGravity()
 
 		-- generate fires
 		for i in grid:cols(self.player_num) do
-			self.pending_fires[i] = self.FIRE_EXIST_TURNS
-			self.fx.smallFire.generateSmallFire(self.game, self, i, delay)
-			self.generated_fire_images[i] = true
+			if not self:_columnHasParticle(i) then
+				self.pending_fires[i] = self.FIRE_EXIST_TURNS
+				self.fx.smallFire.generateSmallFire(self.game, self, i, delay)
+			end
 		end
 
 		game.sound:newSFX(self.sounds.passive)
@@ -331,9 +343,8 @@ function Heath:afterMatch()
 	local delay_to_return = 0
 	local fire_sound = false
 	for i in grid:cols() do
-		if not self.generated_fire_images[i] and self.pending_fires[i] > 0 then
+		if self.pending_fires[i] > 0 and not self:_columnHasParticle(i) then
 			delay_to_return = self.fx.smallFire.generateSmallFire(self.game, self, i)
-			self.generated_fire_images[i] = true
 			fire_sound = true
 		end
 	end
@@ -358,11 +369,13 @@ function Heath:afterAllMatches()
 	for i in grid:cols() do
 		if self.ready_fires[i] > 0 then
 			local row = grid:getFirstEmptyRow(i) + 1
-			if grid[row][i].gem then
+			if grid[row][i].gem and not self.burned_this_turn then
 				grid:destroyGem{gem = grid[row][i].gem, credit_to = self.player_num}
 			end
 		end
 	end
+
+	self.burned_this_turn = true
 end
 
 function Heath:whenCreatingGarbageRow()
@@ -375,12 +388,12 @@ function Heath:cleanup()
 		self.ready_fires[i] = math.max(self.ready_fires[i] - 1, self.pending_fires[i], 0)
 	end
 	self.pending_fires = {0, 0, 0, 0, 0, 0, 0, 0}
-	self.generated_fire_images = {}
 	self.pending_gem_cols = {}
 
 	self:_updateParticlePositions()
 	self:_updateParticleTimers()
 
+	self.burned_this_turn = false
 	Character.cleanup(self)
 end
 
