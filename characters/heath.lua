@@ -366,15 +366,16 @@ function Heath:afterAllMatches()
 	end
 
 	-- activate horizontal match fires
-	for i in grid:cols() do
-		if self.ready_fires[i] > 0 then
-			local row = grid:getFirstEmptyRow(i) + 1
-			if grid[row][i].gem and not self.burned_this_turn then
-				grid:destroyGem{gem = grid[row][i].gem, credit_to = self.player_num}
+	if not self.burned_this_turn then
+		for i in grid:cols() do
+			if self.ready_fires[i] > 0 then
+				local row = grid:getFirstEmptyRow(i) + 1
+				if grid[row][i].gem then
+					grid:destroyGem{gem = grid[row][i].gem, credit_to = self.player_num}
+				end
 			end
 		end
 	end
-
 	self.burned_this_turn = true
 end
 
