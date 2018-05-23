@@ -7,21 +7,29 @@ local Pic = require 'pic'
 -- gem platforms are generated through the Hand class
 local GemPlatform = {}
 
-function GemPlatform:init(game, owner, location)
-	self.game = game
-	self.hand_idx = location
-	self.owner = owner
-	self.getx = owner.hand.getx
+function GemPlatform:init(params)
+	self.game = params.game
+	self.hand_idx = params.hand_idx
+	self.owner = params.owner
+	self.getx = self.owner.hand.getx
 	self.redness = 0
 	self.spin = 0	-- radians per frame
-
-	self.pic = common.instance(Pic, game, {
-		x = owner.hand[location].x,
-		y = owner.hand[location].y,
-		image = owner.ID == "P1" and image.UI.platform_gold or image.UI.platform_silver,
-	})
+	self.pic = Pic:create{
+		game = self.game,
+		x = self.owner.hand[self.hand_idx].x,
+		y = self.owner.hand[self.hand_idx].y,
+		image = self.owner.ID == "P1" and image.UI.platform_gold or image.UI.platform_silver,
+	}
 	self.width = self.pic.width
 	self.height = self.pic.height
+end
+
+function GemPlatform:create(params)
+	assert(params.game, "Game object not received!")
+	assert(params.owner, "Owner object not received!")
+	assert(params.hand_idx, "Hand index not received!")
+
+	return common.instance(self, params)
 end
 
 function GemPlatform:draw(params)
