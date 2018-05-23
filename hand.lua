@@ -6,13 +6,13 @@ local GemPlatform = require 'gemplatform'
 local Hand = {}
 Hand.PLATFORM_SPEED = drawspace.height / 192 -- pixels per second for pieces to shuffle
 
-function Hand:init(game, player)
-	self.game = game
-	local stage = game.stage
+function Hand:init(params)
+	self.game = params.game
+	local stage = self.game.stage
 
 	--assert((player == p1 or player == p2), "Invalid player given!")
-	self.owner = player
-	self.owner_num = player.player_num
+	self.owner = params.player
+	self.owner_num = self.owner.player_num
 
 	for i = 0, 10 do
 		self[i] = {}
@@ -28,23 +28,30 @@ function Hand:init(game, player)
 	self.CONSECUTIVE_PLATFORM_DESTROY_DELAY = 10 -- how many frames to wait before destroying additional plats
 end
 
+function Hand:create(params)
+	assert(params.game, "Game object not received!")
+	assert(params.player, "Player not received")
+
+	return common.instance(self, params)
+end
+
 -- make pieces at start of round. They are all then moved up 5 spaces
 -- gem_table is optional
 function Hand:makeInitialPieces(gem_table)
 	for i = 8, 10 do
-		self[i].piece = common.instance(Piece, self.game, {
-			location = self[i],
+		self[i].piece = Piece:create{
+			game = self.game,
 			hand_idx = i,
 			owner = self.owner,
 			owner_num = self.owner_num,
 			x = self[i].x,
 			y = self[i].y,
 			gem_table = gem_table,
-		})
+		}
 		self:movePiece(i, i-5)
 	end
 	for i = 6, 10 do
-		self[i].platform = common.instance(GemPlatform, self.game, self.owner, i)
+		self[i].platform = GemPlatform:create{game = self.game, owner = self.owner, hand_idx = i}
 		self:movePlatform(i, i-5)
 	end
 	self[1].platform:setSpin(0.02)
@@ -142,26 +149,29 @@ function Hand:movePieceToGrid(grid, piece, locations)
 	piece.hand_idx = nil
 end
 
--- creates the new pieces for the turn.
--- Takes optional gem_table for gem frequencies
--- Takes optional mandatory flag to force a piece (default none)
--- NOTE: this function can be called more than once per turn.
-function Hand:getNewTurnPieces(mandatory, gem_table)
+--[[
+	creates the new pieces for the turn.
+	Takes optional gem_mod for gem frequencies. This can be provided as a table,
+	or as a function that returns a gem_table.
+	Takes optional mandatory flag to force a piece (default off).
+	NOTE: this function can be called more than once per turn.
+--]]
+function Hand:getNewTurnPieces(mandatory, gem_mod)
 	if mandatory then self.damage = math.max(self.damage, 4) end
 	local pieces_to_get = math.floor(self.damage * 0.25)
 	if pieces_to_get < 1 then return end
 
 	for i = 6, pieces_to_get + 5 do
-		self[i].piece = common.instance(Piece, self.game, {
-			location = self[i],
+		self[i].piece = Piece:create{
+			game = self.game,
 			hand_idx = i,
 			owner = self.owner,
 			owner_num = self.owner_num,
 			x = self[i].x,
 			y = self[i].y,
 			gem_table = gem_table,
-		})
-		self[i].platform = common.instance(GemPlatform, self.game, self.owner, i)
+		}
+		self[i].platform = GemPlatform:create{game = self.game, owner = self.owner, hand_idx = i}
 	end
 	for i = 1, 10 do -- move up all the pieces
 		local end_pos = math.max(i - pieces_to_get, 0)
