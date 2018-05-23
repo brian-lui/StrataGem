@@ -10,8 +10,8 @@ local reverseTable = require "utilities".reverseTable
 local pointIsInRect = require "utilities".pointIsInRect
 
 local Piece = {}
-function Piece:init(game, tbl)
-	self.game = game
+function Piece:init(tbl)
+	self.game = tbl.game
 
 	ID.piece = ID.piece + 1
 	local tocopy = {"x", "y", "owner", "owner_num", "gem_table"}
@@ -37,6 +37,17 @@ function Piece:init(game, tbl)
 	self:addGems(self.gem_table)
 	self.getx = self.owner.hand.getx
 	self.hand_idx = tbl.hand_idx
+end
+
+function Piece:create(params)
+	assert(params.game, "Game object not received!")
+	assert(params.hand_idx, "Piece creation location hand index not received!")
+	assert(params.owner, "Owner not received!")
+	assert(params.owner_num, "Owner number not received!")
+	assert(params.x, "x-location not received!")
+	assert(params.y, "y-location not received!")
+
+	return common.instance(self, params)
 end
 
 function Piece:updateGems()
@@ -66,7 +77,12 @@ end
 function Piece:addGems(gem_table)
 	for i = 1, self.size do
 		local gem_color = Gem.random(self.game, gem_table)
-		self.gems[i] = common.instance(Gem, self.game, self.x, self.y, gem_color)
+		self.gems[i] = Gem:create{
+			game = self.game,
+			x = self.x,
+			y = self.y,
+			color = gem_color,
+		}
 	end
 	self:updateGems()
 end
