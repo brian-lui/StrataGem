@@ -391,13 +391,18 @@ function Phase:garbageMoving(dt)
 	grid:updateGravity(dt)
 
 	if grid:isSettled() and game.particles:getNumber("GarbageParticles") == 0 then
-		for player in game:players() do
-			player.hand:getNewTurnPieces(self.force_minimum_1_piece)
-		end
-		self.force_minimum_1_piece = false
-
-		game.current_phase = "PlatformsMoving"
+		game.current_phase = "GetHandPieces"
 	end
+end
+
+function Phase:getHandPieces(dt)
+	for player in self.game:players() do
+		local gem_mod = player:modifyGemTable()
+		player.hand:getNewTurnPieces(self.force_minimum_1_piece, gem_mod)
+	end
+	self.force_minimum_1_piece = false
+
+	self.game.current_phase = "PlatformsMoving"
 end
 
 function Phase:platformsMoving(dt)
@@ -551,6 +556,7 @@ Phase.lookup = {
 	DestroyDamagedPlatforms = Phase.destroyDamagedPlatforms,
 	GarbageRowCreation = Phase.garbageRowCreation,
 	GarbageMoving = Phase.garbageMoving,
+	GetHandPieces = Phase.getHandPieces,
 	PlatformsMoving = Phase.platformsMoving,
 	BeforeCleanup = Phase.beforeCleanup,
 	Cleanup = Phase.cleanup,
