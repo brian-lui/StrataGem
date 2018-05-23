@@ -12,9 +12,14 @@ local gemImages = {
 }
 
 local Gem = {}
-function Gem:init(game, x, y, color, garbage)
-	self.game = game
-	Pic.init(self, game, {x = x, y = y, image = gemImages[color:lower()]})
+--function Gem:init(game, x, y, color, garbage)
+function Gem:init(params)
+	self.game = params.game
+	Pic.init(self, self.game, {
+		x = params.x,
+		y = params.y,
+		image = gemImages[params.color:lower()],
+	})
 	ID.gem = ID.gem + 1
 	self.is_in_a_horizontal_match = false -- for gem matches
 	self.is_in_a_vertical_match = false -- for gem matches
@@ -23,13 +28,22 @@ function Gem:init(game, x, y, color, garbage)
 	self.target_rotation = 0
 	self.pivot_x = self.width * 0.5
 	self.pivot_y = self.height * 0.5
-	self.color = color
+	self.color = params.color
 	self.ID = ID.gem
 	self.row = -1
 	self.column = -1
 	self.owner = 0 -- 0 = none, 1 = p1, 2 = p2, 3 = both
-	self.garbage = garbage
+	self.garbage = params.is_garbage
 	self.pending = false -- piece that's been placed in basin but not activated
+end
+
+function Gem:create(params)
+	assert(params.game, "Game object not received!")
+	assert(params.x, "x-value not received!")
+	assert(params.y, "y-value not received!")
+	assert(params.color, "Color not received!")
+
+	return common.instance(self, params)
 end
 
 -- Returns a random color string result from a provided gem table
