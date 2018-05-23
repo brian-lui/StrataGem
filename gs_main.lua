@@ -297,8 +297,16 @@ function gs_main:drawText(params)
 						love.graphics.setColor(255, 153, 51, 230)
 						love.graphics.rectangle("fill", gem.x, y_start, gem.width * 0.5, height)
 					elseif gem.owner == 3 then
-						love.graphics.setColor(160, 160, 160, 200)
-						love.graphics.rectangle("fill", gem.x - gem.width * 0.5, y_start, gem.width, height)
+						love.graphics.setColor(160, 160, 160, 255)
+						love.graphics.rectangle("fill", gem.x - gem.width * 0.5, y_start, gem.width, height * 0.5)
+					end
+					if gem.flag_match_originator then
+						if gem.owner == 1 then
+							love.graphics.setColor(255, 0, 255, 255)
+						elseif gem.owner == 2 then
+							love.graphics.setColor(255, 255, 0, 255)
+						end
+						love.graphics.circle("fill", gem.x, gem.y, 10)
 					end
 				love.graphics.pop()
 			end
