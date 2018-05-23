@@ -104,6 +104,7 @@ function Wolfgang:init(...)
 	}
 
 	self.this_turn_matched_colors = {}
+	self.single_dogs_to_make, self.double_dogs_to_make = 0, 0
 end
 -------------------------------------------------------------------------------
 -- These are the BARK letter classes
@@ -175,11 +176,11 @@ function ColorWord:remove()
 	self.manager.allParticles.CharEffects[self.ID] = nil
 end
 
-function ColorWord.generate(game, owner, gem, delay)
+function ColorWord.generate(game, owner, x, y, color, delay)
 	local params = {
-		x = gem.x,
-		y = gem.y,
-		image = owner.special_images[gem.color].word,
+		x = x,
+		y = y,
+		image = owner.special_images[color].word,
 		owner = owner,
 		player_num = owner.player_num,
 		name = "WolfgangColorWord",
@@ -192,7 +193,7 @@ function ColorWord.generate(game, owner, gem, delay)
 		p:wait(delay)
 		p:change{duration = 0, transparency = 255}
 	end
-	p:change{duration = 60, y = gem.y - game.stage.height * 0.072, easing = "outCubic"}
+	p:change{duration = 60, y = y - game.stage.height * 0.072, easing = "outCubic"}
 	p:wait(30)
 	p:change{duration = 45, transparency = 0, remove = true}
 end
@@ -212,13 +213,59 @@ function Wolfgang:beforeMatch()
 	local delay = 0
 
 	-- See which color matches we made, for BARK lighting up
-	-- Also create the colorwords here
-	local gem_table = grid:getMatchedGems()
-	for _, gem in pairs(gem_table) do
-		if (self.player_num == gem.owner) and (not self.letters[gem.color].lighted) then
-			self.this_turn_matched_colors[gem.color] = true
-			self.fx.colorWord.generate(self.game, self, gem, self.game.GEM_EXPLODE_FRAMES)
+	-- Also find the position of the colorwords here
+	local create_words = {
+		red = nil,
+		blue = nil,
+		green = nil,
+		yellow = nil,
+	}
+
+	local match_lists = grid:getMatchedGemLists()
+
+	-- if both horizontal and vertical matches exist for a color, ignore verticals
+	-- otherwise, choose a display location arbitrarily
+	for _, list in ipairs(match_lists) do
+		-- check that this match is ours
+		local owned_by_me = false
+		for _, gem in ipairs(list) do
+			if gem.owner == self.player_num then owned_by_me = true end
 		end
+
+		if owned_by_me then
+			local is_vertical = true
+			local color
+			local row = list[1].row
+			local total_x, total_y = 0, 0 -- for calculating average
+			for _, gem in ipairs(list) do
+				if gem.column ~= column then is_vertical = false end
+				if gem.color == "red" or gem.color == "blue" or gem.color == "green" or gem.color == "yellow" then
+					color = gem.color
+				end
+				total_x = total_x + gem.x
+				total_y = total_y + gem.y
+			end
+			local mid_x = total_x / #list
+			local mid_y = total_y / #list
+
+			-- don't do anything if it's already lighted up
+			-- also handle rare case of no color if we have a 3 wild gems match
+			if (not self.letters[color].lighted) and color then
+				local overwrite = true
+				if is_vertical and create_words[color] and (not create_words[color].is_vertical) then
+					overwrite = false
+				end
+				if overwrite then
+					create_words[color] = {x = mid_x, y = mid_y, is_vertical = is_vertical}
+					self.this_turn_matched_colors[color] = true
+				end
+			end
+		end
+	end
+
+	-- create the colorwords
+	for color, pos in pairs(create_words) do
+		self.fx.colorWord.generate(self.game, self, pos.x, pos.y, color, self.game.GEM_EXPLODE_FRAMES)
 	end
 
 	return delay
@@ -228,7 +275,6 @@ end
 function Wolfgang:afterMatch()
 	local delay = 0
 	for color in pairs(self.this_turn_matched_colors) do
-		print("lighting up color", color)
 		self.letters[color]:lightUp()
 		delay = 45
 	end
@@ -245,13 +291,24 @@ function Wolfgang:afterAllMatches()
 
 	if all_lit_up then
 		-- TODO: animation to show we're making a dog
-		print("Make a BARK DOG!") -- TODO: Actually make a barkdog
-
+		self.single_dogs_to_make = self.single_dogs_to_make + 1
 		for _, letter in pairs(self.letters) do letter:darken() end
 		delay = 60
 	end
 
 	return delay
+end
+
+-- Make a bark dog sometimes
+function Wolfgang:modifyGemTable()
+	if self.double_dogs_to_make > 0 then
+		print("make a double bark dog")
+		self.double_dogs_to_make = self.double_dogs_to_make - 1
+
+	elseif self.single_dogs_to_make > 0 then
+		print("make a single bark dog")
+		self.single_dogs_to_make = self.single_dogs_to_make - 1
+	end
 end
 
 function Wolfgang:cleanup()
