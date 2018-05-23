@@ -161,6 +161,13 @@ function Hand:getNewTurnPieces(mandatory, gem_mod)
 	local pieces_to_get = math.floor(self.damage * 0.25)
 	if pieces_to_get < 1 then return end
 
+	local gem_table = nil
+	if type(gem_mod) == "function" then
+		gem_table = gem_mod()
+	elseif type(gem_mod) == "table" then
+		gem_table = gem_mod
+	end
+
 	for i = 6, pieces_to_get + 5 do
 		self[i].piece = Piece:create{
 			game = self.game,
