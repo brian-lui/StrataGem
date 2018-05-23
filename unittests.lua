@@ -41,10 +41,14 @@ local function n(self, row, column, color, owner)
 
 	row = row + 12
 	local x, y = self.grid.x[column], self.grid.y[row]
-	self.grid[row][column].gem = common.instance(Gem, self, x, y, color)
-	if owner > 0 then
-		self.grid[row][column].gem:addOwner(owner)
-	end
+	self.grid[row][column].gem = Gem:create{
+		game = self,
+		x = x,
+		y = y,
+		color = color,
+	}
+
+	if owner > 0 then self.grid[row][column].gem:addOwner(owner) end
 end
 
 local function ndel(game, row, column)
@@ -77,6 +81,18 @@ local function testWalterPassive(game)
 	nrow(game, 6, "    BGYY")
 	nrow(game, 7, "RG YYBGR")
 	nrow(game, 8, "RG YYBGR")
+	game.grid:updateGrid()
+end
+
+local function testComboPropagate(game)
+	nrow(game, 1, "        ")
+	nrow(game, 2, "        ")
+	nrow(game, 3, "        ")
+	nrow(game, 4, "        ")
+	nrow(game, 5, "  G    R")
+	nrow(game, 6, "Y Y   BB")
+	nrow(game, 7, "RRG  YGR")
+	nrow(game, 8, "RRG  GYR")
 	game.grid:updateGrid()
 end
 
@@ -233,14 +249,14 @@ local function shuffleHands(game)
 	local hands = {game.p1.hand, game.p2.hand}
 	for _, hand in pairs(hands) do
 		for i = 1, 5 do
-			hand[i].piece = common.instance(Piece, game, {
-				location = hand[i],
+			hand[i].piece = Piece:create{
+				game = game,
 				hand_idx = i,
 				owner = hand.owner,
 				owner_num = hand.owner.player_num,
 				x = hand[i].x,
 				y = hand[i].y,
-			})
+			}
 		end
 	end
 end
@@ -401,6 +417,19 @@ local function gailPetalTest(game)
 	game.p1.fx.testPetal.generate(game, game.p1)
 end
 
+local function wolfgangLightUp(game)
+	local wolf = game.p1.letters
+	if not wolf.red.lighted then
+		wolf.red:lightUp()
+	elseif not wolf.blue.lighted then
+		wolf.blue:lightUp()
+	elseif not wolf.green.lighted then
+		wolf.green:lightUp()
+	elseif not wolf.yellow.lighted then
+		wolf.yellow:lightUp()
+	end
+end
+
 local function toggleScreencaps(game)
 	if game.debug_screencaps then
 		print("Screencaps off")
@@ -418,10 +447,10 @@ end
 
 local Unittests = {
 	q = printGamestate,
-	--w = ,
+	w = wolfgangLightUp,
 	e = charselectScreenCPUCharToggle,
-	--r = ,
-	--t = ,
+	r = testComboPropagate,
+	t = testVerticalCombo,
 	y = shuffleHands,
 	u = resetGame,
 	i = displayNoRush,
