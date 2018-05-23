@@ -168,13 +168,15 @@ function charselect:_createUIImages()
 	local stage = self.stage
 
 	-- large portrait with dummy pic
-	charselect.displayed_character = common.instance(Pic, self, {
+	charselect.displayed_character = Pic:create{
+		game = self,
 		name = "maincharacter",
 		image = image.dummy,
 		x = stage.width * 0.25,
 		y = stage.height * 0.45,
 		transparency = 60,
-	})
+	}
+
 	charselect.displayed_character.reset = function(c)
 		c:change{duration = 0, x = stage.width * 0.25, transparency = 60}
 		c:change{duration = 6, x = stage.width * 0.3, transparency = 255, easing = "outQuart"}
@@ -182,13 +184,14 @@ function charselect:_createUIImages()
 	charselect.displayed_character:reset()
 
 	-- large text of character name
-	charselect.displayed_character_text = common.instance(Pic, self, {
+	charselect.displayed_character_text = Pic:create{
+		game = self,
 		name = "maincharactertext",
 		image = image.dummy,
 		x = stage.width * 0.272,
 		y = stage.height * 0.7,
 		transparency = 60,
-	})
+	}
 	charselect.displayed_character_text.reset = function(c)
 		c:change{duration = 0, y = stage.height * 0.7, transparency = 60}
 		c:change{duration = 6, y = stage.height * 0.65, transparency = 255, easing = "outQuart"}

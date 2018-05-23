@@ -324,12 +324,26 @@ function Grid:flagMatchedGems()
 							this_match_p1, this_match_p2 = true, true
 						end
 					else
+						--[[ TODO: This is too annoying so I'm ignoring this for now
+						Ideally we should have the testVerticalCombo unit test working correctly,
+						but without affecting the situation where both players do a 2 part combo
+						on the same turn
+						--]]
+						--[[
 						local ignore_p1 = not self.game.phase.matched_this_round[1]
 						local ignore_p2 = not self.game.phase.matched_this_round[2]
 						if ignore_p1 and not ignore_p2 then
 							if gem.owner == 2 or gem.owner == 3 then this_match_p2 = true end
 						elseif ignore_p2 and not ignore_p1 then
 							if gem.owner == 1 or gem.owner == 3 then this_match_p1 = true end
+						end
+						--]]
+						if gem.owner == 1 then
+							this_match_p1 = true
+						elseif gem.owner == 2 then
+							this_match_p2 = true
+						elseif gem.owner == 3 then
+							this_match_p1, this_match_p2 = true, true
 						end
 					end
 				end
@@ -467,7 +481,14 @@ function Grid:generate1by1(column, banned_color1, banned_color2)
 	end
 	local make_color = Gem.random(self.game, legal_gems)
 
-	local new_gem = common.instance(Gem, self.game, self.x[column], self.y[row], make_color, true)
+	local new_gem = Gem:create{
+		game = self.game,
+		x = self.x[column],
+		y = self.y[row],
+		color = make_color,
+		is_garbage = true,
+	}
+
 	new_gem.transparency = 0
 	new_gem:wait(self.game.GEM_EXPLODE_FRAMES)
 	new_gem:change{duration = 0, transparency = 255}

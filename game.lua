@@ -218,7 +218,9 @@ function Game:_createButton(gamestate, params)
 	params = params or {}
 	if params.name == nil then print("No object name received!") end
 	if params.image_pushed == nil then print("No push image received for " .. params.name .. "!") end
-	local button = common.instance(Pic, self, {
+
+	local button = Pic:create{
+		game = self,
 		name = params.name,
 		x = params.start_x or params.end_x,
 		y = params.start_y or params.end_y,
@@ -226,7 +228,8 @@ function Game:_createButton(gamestate, params)
 		image = params.image,
 		container = params.container or gamestate.ui.clickable,
 		force_max_alpha = params.force_max_alpha,
-	})
+	}
+
 	button:change{duration = params.duration, x = params.end_x, y = params.end_y,
 		transparency = params.end_transparency or 255,
 		easing = params.easing or "linear", exit_func = params.exit_func}
@@ -250,7 +253,9 @@ end
 function Game:_createImage(gamestate, params)
 	params = params or {}
 	if params.name == nil then print("No object name received!") end
-	local button = common.instance(Pic, self, {
+
+	local button = Pic:create{
+		game = self,
 		name = params.name,
 		x = params.start_x or params.end_x,
 		y = params.start_y or params.end_y,
@@ -258,7 +263,8 @@ function Game:_createImage(gamestate, params)
 		image = params.image,
 		container = params.container or gamestate.ui.static,
 		force_max_alpha = params.force_max_alpha,
-	})
+	}
+
 	button:change{duration = params.duration, x = params.end_x, y = params.end_y,
 		transparency = params.end_transparency or 255, easing = params.easing, exit_func = params.exit_func}
 	return button

@@ -19,11 +19,12 @@ local spairs = require "utilities".spairs
 local RabbitInASnowstorm = {ID_number = 5}
 function RabbitInASnowstorm:init(game)
 	self.game = game
-	self.background = common.instance(Pic, game, {
+	self.background = Pic:create{
+		game = game,
 		x = game.stage.x_mid,
 		y = game.stage.y_mid,
 		image = image.background.rabbitsnowstorm.background,
-	})
+	}
 	ID.background_particle = 0
 end
 
@@ -52,13 +53,14 @@ function Checkmate:init(game)
 	self.swap_time = self.NEXT_SWAP_TIME
 	self.images = {}
 	ID.background_particle = 0
-	self.background = common.instance(Pic, game, {
+	self.background = Pic:create{
+		game = game,
 		x = self.IMAGE_WIDTH * 0.5,
 		y = self.IMAGE_HEIGHT * 0.5,
 		image = image.background.checkmate[0],
 		container = self.images,
 		counter = "background_particle",
-	})
+	}
 	self.image_idx = 0
 end
 
@@ -82,14 +84,14 @@ function Checkmate:update(dt)
 		self.swap_time = self.NEXT_SWAP_TIME
 		self.image_idx = (self.image_idx + 1) % 10
 		local new_bk = image.background.checkmate[self.image_idx]
-		self.overlay = common.instance(Pic, self.game, {
+		self.overlay = Pic:create{
+			game = self.game,
 			x = bk.x,
 			y = bk.y,
 			image = new_bk,
 			container = self.images,
 			counter = "background_particle",
-
-		})
+		}
 		self.overlay:change{
 			duration = self.OVERLAY_DURATION,
 			quad = {y = true, y_percentage = 1, y_anchor = 0},
@@ -127,11 +129,12 @@ Checkmate = common.class("Checkmate", Checkmate)
 local Clouds = {ID_number = 2}
 function Clouds:init(game)
 	self.game = game
-	self.background = common.instance(Pic, game, {
+	self.background = Pic:create{
+		game = game,
 		x = game.stage.x_mid,
 		y = game.stage.y_mid,
 		image = image.background.cloud.background,
-	})
+	}
 	self.big_clouds, self.medium_clouds, self.small_clouds = {}, {}, {}
 	self.big_timer_func = function() return math.random(300, 400) end
 	self.medium_timer_func = function() return math.random(450, 550) end
@@ -191,8 +194,14 @@ function Clouds:_newCloud(size, starting_x)
 	end
 	local x = starting_x or -img:getWidth()
 
-	local cloud = common.instance(Pic, self.game, {x = x, y = y, image = img,
-		container = container, counter = "background_particle"})
+	local cloud = Pic:create{
+		game = self.game,
+		x = x,
+		y = y,
+		image = img,
+		container = container,
+		counter = "background_particle"
+	}
 	cloud:change{duration = duration, x = stage.width + cloud.width, remove = true}
 end
 
@@ -249,11 +258,12 @@ Clouds = common.class("Clouds", Clouds)
 local Starfall = {ID_number = 3}
 function Starfall:init(game)
 	self.game = game
-	self.background = common.instance(Pic, game, {
+	self.background = Pic:create{
+		game = game,
 		x = game.stage.x_mid,
 		y = game.stage.y_mid,
 		image = image.background.starfall.background
-	})
+	}
 	self.star_timer_func = function() return math.random(70, 100) end
 	self.star_timer = self.star_timer_func()
 	self.stars = {} -- container for stars
@@ -280,8 +290,14 @@ function Starfall:_generateStar()
 	local end_x = start_x + stage.width * math.random(0.15, 0.15)
 	local end_y = stage.height + height
 
-	local star = common.instance(Pic, self.game,
-		{x = start_x, y = start_y, image = img, container = self.stars, counter = "background_particle"})
+	local star = Pic:create{
+		game = self.game,
+		x = start_x,
+		y = start_y,
+		image = img,
+		container = self.stars,
+		counter = "background_particle",
+	}
 	star:change{duration = duration, x = end_x, y = end_y, rotation = rotation, remove = true}
 end
 
@@ -309,8 +325,12 @@ local Colors = {ID_number = 4}
 function Colors:init(game)
 	self.game = game
 	self.t = 0
-	self.current_color = common.instance(Pic, self.game,
-		{x = game.stage.x_mid, y = game.stage.y_mid, image = image.background.colors.white})
+	self.current_color = Pic:create{
+		game = self.game,
+		x = game.stage.x_mid,
+		y = game.stage.y_mid,
+		image = image.background.colors.white,
+	}
 	self.previous_color = nil
 	self.timing_full_cycle = 1800
 	self.timings = {
@@ -328,8 +348,13 @@ function Colors:_newColor(img)
 	self.previous_color = self.current_color
 	self.previous_color:change{duration = 180, transparency = 0,
 		exit_func = function() self.previous_color = nil end}
-	self.current_color = common.instance(Pic, self.game,
-		{x = stage.x_mid, y = stage.y_mid, image = img, transparency = 0})
+	self.current_color = Pic:create{
+		game = self.game,
+		x = stage.x_mid,
+		y = stage.y_mid,
+		image = img,
+		transparency = 0,
+	}
 	self.current_color:change{duration = 90, transparency = 255}
 end
 

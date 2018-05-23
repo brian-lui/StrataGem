@@ -85,12 +85,16 @@ end
 function Character:setup()
 	local stage = self.game.stage
 
-	self.hand = common.instance(Hand, self.game, self)
+	self.hand = Hand:create{game = self.game, player = self}
 	self.hand:makeInitialPieces()
 
 	-- character animation placeholder, waiting for animations
-	self.animation = common.instance(Pic, self.game, {x = stage.character[self.ID].x,
-	y = stage.character[self.ID].y, image = self.small_image})
+	self.animation = Pic:create{
+		game = self.game,
+		x = stage.character[self.ID].x,
+		y = stage.character[self.ID].y,
+		image = self.small_image,
+	}
 end
 
 function Character:emptyMP()
@@ -123,6 +127,7 @@ function Character:beforeMatch() end -- before gems are matched
 function Character:duringMatch() end -- while matches are exploding
 function Character:afterMatch() end -- after each match
 function Character:whenCreatingGarbageRow() end -- at garbage row creation
+function Character:modifyGemTable() end -- provide custom gem table
 function Character:afterAllMatches()
 -- after all chain combos finished.
 -- Can be called multiple times in a turn if garbage is created

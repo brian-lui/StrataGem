@@ -19,12 +19,24 @@ function Timer:init(game)
 	self.time_remaining_int = 0
 	self.text_multiplier = 2 -- how much to speed it up relative to an actual second
 	self.FADE_SPEED = 15 -- transparency/frame to fade out at timer end
-	self.timerbase = common.instance(Pic, game,
-		{x = stage.timer.x, y = stage.timer.y, image = image.UI.timer_gauge})
-	self.timerbar = common.instance(Pic, game,
-		{x = stage.timer.x, y = stage.timer.y, image = image.UI.timer_bar})
-	self.timertext = common.instance(Pic, game,
-		{x = stage.timertext.x, y = stage.timertext.y, image = image.dummy})
+	self.timerbase = Pic:create{
+		game = game,
+		x = stage.timer.x,
+		y = stage.timer.y,
+		image = image.UI.timer_gauge,
+	}
+	self.timerbar = Pic:create{
+		game = game,
+		x = stage.timer.x,
+		y = stage.timer.y,
+		image = image.UI.timer_bar,
+	}
+	self.timertext = Pic:create{
+		game = game,
+		x = stage.timertext.x,
+		y = stage.timertext.y,
+		image = image.dummy,
+	}
 end
 
 function Timer:update(dt)
@@ -50,7 +62,7 @@ function Timer:update(dt)
 		self.timertext.scaling = self.text_scaling(t)
 		self.timertext.transparency = self.text_transparency(t)
 		if self.time_remaining_int < previous_time_remaining_int then
-			self.timertext:newImage(image.UI.timer[self.time_remaining_int])
+			self.timertext:newImage(image.UI.timer[self.time_remaining_int], true)
 			self.game.sound:newSFX("countdown"..self.time_remaining_int)
 		end
 	else
@@ -89,29 +101,33 @@ function Burst:init(game, character, player_num)
 	end
 
 	local frame_img = ID == "P1" and image.UI.gauge_gold or image.UI.gauge_silver
-	self.burst_frame = common.instance(Pic, self.game, {
+	self.burst_frame = Pic:create{
+		game = self.game,
 		x = stage.burst[ID].frame.x,
 		y = stage.burst[ID].frame.y,
 		image = frame_img,
-	})
+	}
 	self.burst_block, self.burst_partial, self.burst_glow = {}, {}, {}
 
 	for i = 1, self.SEGMENTS do
-		self.burst_block[i] = common.instance(Pic, self.game, {
+		self.burst_block[i] = Pic:create{
+			game = self.game,
 			x = stage.burst[ID][i].x,
 			y = stage.burst[ID][i].y,
 			image = character.burst_images.full,
-		})
-		self.burst_partial[i] = common.instance(Pic, self.game, {
+		}
+		self.burst_partial[i] = Pic:create{
+			game = self.game,
 			x = stage.burst[ID][i].x,
 			y = stage.burst[ID][i].y,
 			image = character.burst_images.partial,
-		})
-		self.burst_glow[i] = common.instance(Pic, self.game, {
+		}
+		self.burst_glow[i] = Pic:create{
+			game = self.game,
 			x = stage.burst[ID][i].glow_x,
 			y = stage.burst[ID][i].glow_y,
 			image = character.burst_images.glow[i],
-		})
+		}
 	end
 end
 
@@ -195,7 +211,7 @@ function Super:_generateSingleTwinkle()
 		disappear_rotation = disappear_rotation * -1
 	end
 
-	local p = common.instance(Pic, self.game, {x = x, y = y, rotation = init_rotation, image = img})
+	local p = Pic:create{game = self.game, x = x, y = y, rotation = init_rotation, image = img}
 	p:change{duration = 0, scaling = 0}
 	p:change{duration = 30, scaling = 1, rotation = appear_rotation}
 	p:change{duration = 30, scaling = 0, rotation = disappear_rotation, remove = true}
@@ -219,19 +235,39 @@ function Super:init(game, character, player_num)
 	elseif player_num == 2 then
 		ID = "P2"
 	else
-		print("invalid player_num provided")
+		error("invalid player_num provided")
 	end
 
-	self.super_frame = common.instance(Pic, self.game, {x = stage.super[ID].x,
-		y = stage.super[ID].y, image = character.super_images.empty})
-	self.super_word = common.instance(Pic, self.game, {x = stage.super[ID].x,
-		y = stage.super[ID].word_y, image = character.super_images.word})
-	self.super_meter_image = common.instance(Pic, self.game, {x = stage.super[ID].x,
-		y = stage.super[ID].y, image = character.super_images.full})
-	self.super_glow = common.instance(Pic, self.game, {x = stage.super[ID].x,
-		y = stage.super[ID].y, image = character.super_images.glow})
-	self.super_overlay = common.instance(Pic, self.game, {x = stage.super[ID].x,
-		y = stage.super[ID].y, image = character.super_images.overlay})
+	self.super_frame = Pic:create{
+		game = self.game,
+		x = stage.super[ID].x,
+		y = stage.super[ID].y,
+		image = character.super_images.empty,
+	}
+	self.super_word = Pic:create{
+		game = self.game,
+		x = stage.super[ID].x,
+		y = stage.super[ID].word_y,
+		image = character.super_images.word,
+	}
+	self.super_meter_image = Pic:create{
+		game = self.game,
+		x = stage.super[ID].x,
+		y = stage.super[ID].y,
+		image = character.super_images.full,
+	}
+	self.super_glow = Pic:create{
+		game = self.game,
+		x = stage.super[ID].x,
+		y = stage.super[ID].y,
+		image = character.super_images.glow,
+	}
+	self.super_overlay = Pic:create{
+		game = self.game,
+		x = stage.super[ID].x,
+		y = stage.super[ID].y,
+		image = character.super_images.overlay,
+}
 end
 
 function Super:getRect()
@@ -321,8 +357,7 @@ function ui:init(game)
 	self.game = game
 	self.timer = common.instance(Timer, game)
 	-- Red X shown on gems in invalid placement spots
-	self.redX = common.instance(Pic, game, {x = 0, y = 0, image = image.UI.redX})
-
+	self.redX = Pic:create{game = game, x = 0, y = 0, image = image.UI.redX}
 	self.components = components
 end
 
