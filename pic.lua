@@ -48,6 +48,18 @@ function Pic:init(game, tbl)
 	self.quad_data = {}
 end
 
+function Pic:create(params)
+	assert(params.game, "Game object not received!")
+	assert(params.x, "x-value not received!")
+	assert(params.y, "y-value not received!")
+	assert(params.image, "Image not received!")
+	if params.container then
+		assert(params.name or params.counter, "Container specified without name or counter!")
+	end
+	
+	return common.instance(self, params.game, params)
+end
+
 --[[ Takes the following optional table arguments:
 		h_flip: whether to draw the image flipped around the horizontal axis
 		x, y: x or y position to draw the image at
