@@ -139,14 +139,10 @@ function Pic:getRect()
 	return self.x - (self.width / 2), self.y - (self.height / 2), self.width, self.height
 end
 
--- Set instant to true to immediately swap image, otherwise goes into queue
-function Pic:newImage(img, instant)
-	if instant then
-		self.image = img
-		self.width = img:getWidth()
-		self.height = img:getHeight()
-		self.quad = love.graphics.newQuad(0, 0, self.width, self.height, self.width, self.height)
-	else
+-- Set queue to true to put into queue, otherwise instantly swaps
+-- Queue actually doesn't work yet though lmao
+function Pic:newImage(img, queue)
+	if queue then
 		local new_width, new_height = img:getWidth(), img:getHeight()
 		self.queued_moves[#self.queued_moves+1] = {
 			image_swap = true,
@@ -155,6 +151,11 @@ function Pic:newImage(img, instant)
 			height = new_height,
 			quad = love.graphics.newQuad(0, 0, new_width, new_height, new_width, new_height)
 		}
+	else
+		self.image = img
+		self.width = img:getWidth()
+		self.height = img:getHeight()
+		self.quad = love.graphics.newQuad(0, 0, self.width, self.height, self.width, self.height)
 	end
 end
 

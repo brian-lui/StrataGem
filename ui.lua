@@ -62,7 +62,7 @@ function Timer:update(dt)
 		self.timertext.scaling = self.text_scaling(t)
 		self.timertext.transparency = self.text_transparency(t)
 		if self.time_remaining_int < previous_time_remaining_int then
-			self.timertext:newImage(image.UI.timer[self.time_remaining_int], true)
+			self.timertext:newImage(image.UI.timer[self.time_remaining_int])
 			self.game.sound:newSFX("countdown"..self.time_remaining_int)
 		end
 	else

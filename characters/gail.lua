@@ -61,7 +61,7 @@ function TestPetal.generate(game, owner)
 	local the_next_image = Gail.special_images.petal2
 	for i = 1, 5 do
 		p:change{duration = 30, y_scaling = 0.01}
-		p:newImage(the_next_image)
+		p:newImage(the_next_image, true)
 		if the_next_image == Gail.special_images.petal1 then
 			the_next_image = Gail.special_images.petal2
 		else

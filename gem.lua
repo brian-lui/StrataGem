@@ -71,7 +71,9 @@ function Gem.random(game, gem_table)
 end
 
 -- default colors are "red", "blue", "green", "yellow"
-function Gem:setColor(color)
+function Gem:setColor(color, optional_image)
+	if not color then print("No color provided") return end
+
 	self.color = color
 	if optional_image then
 		self:newImage(optional_image)
