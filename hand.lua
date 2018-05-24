@@ -37,7 +37,7 @@ end
 
 -- make pieces at start of round. They are all then moved up 5 spaces
 -- gem_table is optional
-function Hand:makeInitialPieces(gem_table)
+function Hand:makeInitialPieces(gem_freq_table, gem_replace_table)
 	for i = 8, 10 do
 		self[i].piece = Piece:create{
 			game = self.game,
@@ -46,7 +46,8 @@ function Hand:makeInitialPieces(gem_table)
 			owner_num = self.owner_num,
 			x = self[i].x,
 			y = self[i].y,
-			gem_table = gem_table,
+			gem_freq_table = gem_freq_table,
+			gem_replace_table = gem_replace_table,
 		}
 		self:movePiece(i, i-5)
 	end
@@ -156,16 +157,23 @@ end
 	Takes optional mandatory flag to force a piece (default off).
 	NOTE: this function can be called more than once per turn.
 --]]
-function Hand:getNewTurnPieces(mandatory, gem_mod)
+function Hand:getNewTurnPieces(mandatory, gem_freq, gem_replace)
 	if mandatory then self.damage = math.max(self.damage, 4) end
 	local pieces_to_get = math.floor(self.damage * 0.25)
 	if pieces_to_get < 1 then return end
 
-	local gem_table = nil
-	if type(gem_mod) == "function" then
-		gem_table = gem_mod()
+	local gem_freq_table = nil
+	if type(gem_freq) == "function" then
+		gem_freq_table = gem_freq()
 	elseif type(gem_mod) == "table" then
-		gem_table = gem_mod
+		gem_freq_table = gem_freq
+	end
+
+	local gem_replace_table = nil
+	if type(gem_replace) == "function" then
+		gem_replace_table = gem_replace()
+	elseif type(gem_mod) == "table" then
+		gem_replace_table = gem_replace
 	end
 
 	for i = 6, pieces_to_get + 5 do
@@ -176,7 +184,8 @@ function Hand:getNewTurnPieces(mandatory, gem_mod)
 			owner_num = self.owner_num,
 			x = self[i].x,
 			y = self[i].y,
-			gem_table = gem_table,
+			gem_freq_table = gem_freq_table,
+			gem_replace_table = gem_replace_table,
 		}
 		self[i].platform = GemPlatform:create{game = self.game, owner = self.owner, hand_idx = i}
 	end

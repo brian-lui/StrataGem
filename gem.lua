@@ -47,7 +47,15 @@ function Gem:create(params)
 end
 
 -- Returns a random color string result from a provided gem table
+-- Defaults to equal frequencies of each color if not provided
 function Gem.random(game, gem_table)
+	gem_table = gem_table or {
+		{color = "red", freq = 1},
+		{color = "blue", freq = 1},
+		{color = "green", freq = 1},
+		{color = "yellow", freq = 1}
+	}
+
 	local rand_table = {}
 	local num = 0
 
@@ -65,7 +73,11 @@ end
 -- default colors are "red", "blue", "green", "yellow"
 function Gem:setColor(color)
 	self.color = color
-	self:newImage(gemImages[color:lower()], true)
+	if optional_image then
+		self:newImage(optional_image)
+	else
+		self:newImage(gemImages[color:lower()])
+	end
 end
 
 function Gem:isStationary()
