@@ -1,22 +1,22 @@
 --[[ Color: blue
-Passive: Wolfgang has a BARK meter. Every time you make a match of a certain color,
-the BARK meter gains a letter. (Blue, Amarillo, Red, Kreen). When the Bark meter
-is filled, your next gem cluster you gain will contain a Dog piece. Dogs placed
-in your basin are good dogs. Good dogs are wild and last until matched. Basins
-placed in the opponent's basin (rush) are bad dogs. Bad dogs do not listen and
-do nothing. They last for 3 turns and then go home.
+Passive: Wolfgang has a BARK meter. Every time you make a match of a certain
+color, the BARK meter gains a letter. (Blue, Amarillo, Red, Kreen). When the
+Bark meter is filled, your next gem cluster you gain will contain a Dog piece.
+Dogs placed in your basin are good dogs. Good dogs are wild and last until
+matched. Basins placed in the opponent's basin (rush) are bad dogs. Bad dogs
+do not listen and do nothing. They last for 3 turns and then go home.
 
 Passive animation:
-When the BARK meter is lit entirely, a good dog piece (Random) appears in the next
-set of gems on the stars when it moves again.
+When the BARK meter is lit entirely, a good dog piece (Random) appears in the
+next set of gems on the stars when it moves again.
 
-When you drag a piece to the opponent's side (rush), the good dog should change to
-a bad dog as soon as you hover to the other side, and return to good dog if you
-bring the piece back.
+When you drag a piece to the opponent's side (rush), the good dog should change
+to a bad dog as soon as you hover to the other side, and return to good dog if
+you bring the piece back.
 
 Super: The bottom most platform in your hand gains a double Dog (or becomes a
-double dog), and the next 4 clusters that come through your conveyor belt also
-contain dogs.
+double dog), and the 4th platform gains a single dog + [gem] (or becomes a
+single dog + [gem].
 --]]
 
 local love = _G.love
