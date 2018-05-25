@@ -39,7 +39,7 @@ RabbitInASnowstorm = common.class("RabbitInASnowstorm", RabbitInASnowstorm)
 
 
 -------------------------------------------------------------------------------
----------------------------- RABBIT IN A SNOWSTORM ----------------------------
+---------------------------------- CHECKMATE ----------------------------------
 -------------------------------------------------------------------------------
 local Checkmate = {ID_number = 1}
 function Checkmate:init(game)
@@ -65,7 +65,7 @@ function Checkmate:init(game)
 end
 
 function Checkmate:update(dt)
-	local bk, over = self.background, self.overlay
+	local bk = self.background
 
 	-- scroll to the left
 	bk.x = bk.x - (dt * self.SCROLL_RATE)
@@ -81,6 +81,8 @@ function Checkmate:update(dt)
 	-- swap images
 	self.swap_time = self.swap_time - dt
 	if self.swap_time <= 0 then
+		self.background:newImage(image.background.checkmate[self.image_idx])
+
 		self.swap_time = self.NEXT_SWAP_TIME
 		self.image_idx = (self.image_idx + 1) % 10
 		local new_bk = image.background.checkmate[self.image_idx]
@@ -103,7 +105,7 @@ function Checkmate:update(dt)
 	end
 
 	bk:update(dt)
-	if over then over:update(dt) end
+	if self.overlay then self.overlay:update(dt) end
 end
 
 function Checkmate:draw(params)
