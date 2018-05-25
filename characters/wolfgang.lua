@@ -146,6 +146,8 @@ function ColorLetter:lightUp()
 			y = self.y,
 			color = self.color,
 		}
+		self:change{duration = 25, scaling = 1.5, easing = "inBack"}
+		self:change{duration = 25, scaling = 1, easing = "outBack"}
 	end
 end
 
