@@ -75,6 +75,7 @@ function Piece:screenshake(frames)
 	self.shake = frames or 6
 end
 
+
 function Piece:addGems(gem_freq_table, gem_replace_table)
 	self.gems = {}
 	for i = 1, self.size do
@@ -87,16 +88,26 @@ function Piece:addGems(gem_freq_table, gem_replace_table)
 		}
 	end
 
+	-- uses the real rng to decide which gem to replace, if single gem
 	if gem_replace_table then
 		if not gem_replace_table[1] then -- provided as single table
 			local color = gem_replace_table.color
 			local image = gem_replace_table.image
-			self.gems[1]:setColor(color, image)
+			local pos = self.game.rng:random(self.size)
+			self.gems[pos]:setColor(color, image)
 		else
-			for i = 1, #gem_replace_table do
-				local color = gem_replace_table[i].color
-				local image = gem_replace_table[i].image
-				self.gems[i]:setColor(color, image)
+			if #gem_replace_table == 1 then
+				local color = gem_replace_table[1].color
+				local image = gem_replace_table[1].image
+				local pos = self.game.rng:random(self.size)
+				print("pos", pos)
+				self.gems[pos]:setColor(color, image)
+			else
+				for i = 1, #gem_replace_table do
+					local color = gem_replace_table[i].color
+					local image = gem_replace_table[i].image
+					self.gems[i]:setColor(color, image)
+				end
 			end
 		end
 	end
