@@ -441,6 +441,13 @@ local function wolfgangLightUp(game)
 	end
 end
 
+local function wolfgangCreate3Dog(game)
+	game.p1:_turnToDog(3, false)
+end
+
+local function wolfgangCreate4Dog(game)
+	game.p1:_turnToDog(4, true)
+end
 local function toggleScreencaps(game)
 	if game.debug_screencaps then
 		print("Screencaps off")
@@ -467,8 +474,8 @@ local Unittests = {
 	i = displayNoRush,
 	o = tweenPlacedGemDown,
 	p = tweenPlacedGemUp,
-	a = gailPetalTest, -- gail petal
-	--s = addBottomRowP2,
+	a = wolfgangCreate3Dog,
+	s = wolfgangCreate4Dog,
 	d = toggleScreencaps,
 	f = skipToTurnEnd,
 	g = addDamageP1,

@@ -24,6 +24,7 @@ local common = require "class.commons"
 local Character = require "character"
 local image = require 'image'
 local Pic = require 'pic'
+local Piece = require 'piece'
 local Wolfgang = {}
 
 Wolfgang.full_size_image = love.graphics.newImage('images/portraits/wolfgang.png')
@@ -208,6 +209,58 @@ Wolfgang.fx = {
 }
 
 -------------------------------------------------------------------------------
+-- turns a piece in the hand into a dog. 'both' to true to turn both.
+-- creates a piece if no piece exists in the position
+function Wolfgang:_turnToDog(hand_idx, both)
+	assert(hand_idx >= 1 and hand_idx <= 5, "hand_idx not within range!")
+	local hand_loc = self.hand[hand_idx]
+
+	if hand_loc.piece then
+		if both then
+			for i = 1, hand_loc.piece.size do
+				local dog_images = self.special_images.good_dog
+				local dog = dog_images[math.random(#dog_images)]
+				hand_loc.piece.gems[i]:setColor("wild", dog)
+			end
+		else
+			local dog_images = self.special_images.good_dog
+			local dog = dog_images[math.random(#dog_images)]
+			local pos = self.game.rng:random(hand_loc.piece.size)
+			-- If it is in rotation_index 2 or 3, the gem table was reversed
+			-- This is because of bad coding from before. Haha
+			if hand_loc.piece.size == 2 and (hand_loc.piece.rotation_index == 2 or
+			hand_loc.piece.rotation_index == 3) then
+				if pos == 2 then pos = 1 elseif pos == 1 then pos = 2 end
+			end
+			hand_loc.piece.gems[pos]:setColor("wild", dog)
+		end
+	else
+		local gem_replace_table
+		if both then
+			local dog_images = self.special_images.good_dog
+			local dog1 = dog_images[math.random(#dog_images)]
+			local dog2 = dog_images[math.random(#dog_images)]
+			gem_replace_table = {
+				{color = "wild", image = dog1},
+				{color = "wild", image = dog2},
+			}
+		else
+			local dog_images = self.special_images.good_dog
+			local dog = dog_images[math.random(#dog_images)]
+			gem_replace_table = {color = "wild", image = dog}
+		end
+
+		hand_loc.piece = Piece:create{
+			game = self.game,
+			hand_idx = hand_idx,
+			owner = self,
+			owner_num = self.player_num,
+			x = hand_loc.x,
+			y = hand_loc.y,
+			gem_replace_table = gem_replace_table,
+		}
+	end
+end
 
 function Wolfgang:beforeMatch()
 	local game = self.game
