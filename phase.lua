@@ -68,12 +68,9 @@ end
 
 function Phase:action(dt)
 	local game = self.game
-	local client = game.client
 	local ai = game.ai
 
-	for player in game:players() do
-		if player.actionPhase then player:actionPhase(dt) end
-	end
+	for player in game:players() do player:actionPhase(dt) end
 	self.game.ui:update()
 
 	self.time_to_next = self.time_to_next - 1
@@ -246,7 +243,7 @@ function Phase:getMatchedGems(dt)
 		local diff = game.p1.garbage_rows_created - game.p2.garbage_rows_created
 		grid:setGarbageMatchFlags(diff)
 		self.garbage_this_round = 0
-		game.p1.garbage_rows_created, game.p2.garbage_rows_created = 0
+		game.p1.garbage_rows_created, game.p2.garbage_rows_created = 0, 0
 	end
 
 	for player in game:players() do
@@ -287,7 +284,6 @@ end
 function Phase:resolvingMatches(dt)
 	local game = self.game
 	local grid = game.grid
-	local gem_table = grid:getMatchedGems()
 
 	local delay = 0
 	for player in game:players() do
