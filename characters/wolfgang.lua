@@ -301,15 +301,28 @@ function Wolfgang:afterAllMatches()
 	return delay
 end
 
--- Make a bark dog sometimes
+-- Make a bark dog if there are any dogs queued
 function Wolfgang:modifyGemTable()
 	if self.double_dogs_to_make > 0 then
-		print("make a double bark dog")
-		self.double_dogs_to_make = self.double_dogs_to_make - 1
-
+		local dog_return = function()
+			self.double_dogs_to_make = self.double_dogs_to_make - 1
+			local dog_images = self.special_images.good_dog
+			local dog1 = dog_images[math.random(#dog_images)]
+			local dog2 = dog_images[math.random(#dog_images)]
+			return {
+				{color = "wild", image = dog1},
+				{color = "wild", image = dog2},
+			}
+		end
+		return nil, dog_return
 	elseif self.single_dogs_to_make > 0 then
-		print("make a single bark dog")
-		self.single_dogs_to_make = self.single_dogs_to_make - 1
+		local dog_return = function()
+			self.single_dogs_to_make = self.single_dogs_to_make - 1
+			local dog_images = self.special_images.good_dog
+			local dog = dog_images[math.random(#dog_images)]
+			return {color = "wild", image = dog}
+		end
+		return nil, dog_return
 	end
 end
 
