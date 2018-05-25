@@ -465,20 +465,8 @@ end
 function Grid:generate1by1(column, banned_color1, banned_color2)
 	local row = self.BOTTOM_ROW
 	local avail_colors = self:getPermittedColors(column, banned_color1, banned_color2)
-	local all_gems = {
-		{color = "red", freq = 1},
-		{color = "blue", freq = 1},
-		{color = "green", freq = 1},
-		{color = "yellow", freq = 1}
-	}
 	local legal_gems = {}
-	for i = 1, 4 do
-		for j = 1, #avail_colors do
-			if all_gems[i].color == avail_colors[j] then
-				legal_gems[#legal_gems+1] = all_gems[i]
-			end
-		end
-	end
+	for _, color in ipairs(avail_colors) do legal_gems[color] = 1 end
 	local make_color = Gem.random(self.game, legal_gems)
 
 	local new_gem = Gem:create{

@@ -49,20 +49,14 @@ end
 -- Returns a random color string result from a provided gem table
 -- Defaults to equal frequencies of each color if not provided
 function Gem.random(game, gem_table)
-	gem_table = gem_table or {
-		{color = "red", freq = 1},
-		{color = "blue", freq = 1},
-		{color = "green", freq = 1},
-		{color = "yellow", freq = 1}
-	}
-
+	gem_table = gem_table or {red = 1, blue = 1, green = 1, yellow = 1}
 	local rand_table = {}
 	local num = 0
 
-	for i = 1, #gem_table do
-		for _ = 1, gem_table[i].freq do
+	for color, freq in pairs(gem_table) do
+		for _ = 1, freq do
 			num = num + 1
-			rand_table[num] = gem_table[i].color
+			rand_table[num] = color
 		end
 	end
 
