@@ -71,7 +71,18 @@ end
 
 ---------------------------------- PATTERNS -----------------------------------
 
--- test Walter passive
+local function testGreyCombo(game)
+	nrow(game, 1, "        ")
+	nrow(game, 2, "        ")
+	nrow(game, 3, "        ")
+	nrow(game, 4, "        ")
+	nrow(game, 5, "    R   ")
+	nrow(game, 6, "    R   ")
+	nrow(game, 7, "   BB   ")
+	nrow(game, 8, "   YR   ")
+	game.grid:updateGrid()
+end
+
 local function testWalterPassive(game)
 	nrow(game, 1, "        ")
 	nrow(game, 2, "        ")
@@ -450,7 +461,7 @@ local Unittests = {
 	w = wolfgangLightUp,
 	e = charselectScreenCPUCharToggle,
 	r = testComboPropagate,
-	t = testVerticalCombo,
+	t = testGreyCombo,
 	y = shuffleHands,
 	u = resetGame,
 	i = displayNoRush,
