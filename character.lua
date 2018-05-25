@@ -127,7 +127,11 @@ function Character:beforeMatch() end -- before gems are matched
 function Character:duringMatch() end -- while matches are exploding
 function Character:afterMatch() end -- after each match
 function Character:whenCreatingGarbageRow() end -- at garbage row creation
-function Character:modifyGemTable() end -- provide custom gem table
+function Character:modifyGemTable()
+	-- provide custom gem freq/gem replacement.
+	-- first arg is gem table {red = 1, blue = 2, green = 3, ...} or function
+	-- second arg is {{color = "red", image = dog.png}, ...} or function
+end
 function Character:afterAllMatches()
 -- after all chain combos finished.
 -- Can be called multiple times in a turn if garbage is created

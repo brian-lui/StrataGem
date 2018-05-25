@@ -165,14 +165,14 @@ function Hand:getNewTurnPieces(mandatory, gem_freq, gem_replace)
 	local gem_freq_table = nil
 	if type(gem_freq) == "function" then
 		gem_freq_table = gem_freq()
-	elseif type(gem_mod) == "table" then
+	elseif type(gem_freq) == "table" then
 		gem_freq_table = gem_freq
 	end
 
 	local gem_replace_table = nil
 	if type(gem_replace) == "function" then
 		gem_replace_table = gem_replace()
-	elseif type(gem_mod) == "table" then
+	elseif type(gem_replace) == "table" then
 		gem_replace_table = gem_replace
 	end
 

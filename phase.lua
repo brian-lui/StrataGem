@@ -397,8 +397,8 @@ end
 
 function Phase:getHandPieces(dt)
 	for player in self.game:players() do
-		local gem_mod = player:modifyGemTable()
-		player.hand:getNewTurnPieces(self.force_minimum_1_piece, gem_mod)
+		local gem_freq, gem_replace = player:modifyGemTable()
+		player.hand:getNewTurnPieces(self.force_minimum_1_piece, gem_freq, gem_replace)
 	end
 	self.force_minimum_1_piece = false
 

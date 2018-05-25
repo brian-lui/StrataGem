@@ -24,27 +24,21 @@ function Piece:init(tbl)
 	end
 	self.ID = ID.piece
 	self.size = self.size or 2
-	gem_table = tbl.gem_table or {
-		{color = "red", freq = 1},
-		{color = "blue", freq = 1},
-		{color = "green", freq = 1},
-		{color = "yellow", freq = 1}
-	}
 	self.rotation = 0
 	self.rotation_index = 0
 	self.is_horizontal = true
-	self.gems = {}
 	self:addGems(tbl.gem_freq_table, tbl.gem_replace_table)
 	self.getx = self.owner.hand.getx
 	self.hand_idx = tbl.hand_idx
 end
 
 --[[
- 	Optional:
- 	gem_freq_table - a table of color probabilities in the form
- 		{{color = "red", freq = 1}, {color = "blue", freq = 1}, ...}
- 	gem_replace_table - a table of {color, image} e.g.
- 		{{color = "red"}, {color = "wild", image = dog.png}} 
+	Optional:
+	gem_freq_table - a table of color probabilities in the form
+		{red = 1, blue = 2, green = 3, ...}
+	gem_replace_table - a table of {color = image} e.g.
+		{{color = "red"}, {color = "wild", image = dog.png}}
+		It also accepts {color = "red", image = dog.png}
  --]]
 function Piece:create(params)
 	assert(params.game, "Game object not received!")
@@ -82,6 +76,7 @@ function Piece:screenshake(frames)
 end
 
 function Piece:addGems(gem_freq_table, gem_replace_table)
+	self.gems = {}
 	for i = 1, self.size do
 		local gem_color = Gem.random(self.game, gem_freq_table)
 		self.gems[i] = Gem:create{
@@ -93,10 +88,16 @@ function Piece:addGems(gem_freq_table, gem_replace_table)
 	end
 
 	if gem_replace_table then
-		for i = 1, #gem_replace_table do
-			local color = gem_replace_table[i].color
-			local image = gem_replace_table[i].image
-			self.gems[i]:setColor(color, image)
+		if not gem_replace_table[1] then -- provided as single table
+			local color = gem_replace_table.color
+			local image = gem_replace_table.image
+			self.gems[1]:setColor(color, image)
+		else
+			for i = 1, #gem_replace_table do
+				local color = gem_replace_table[i].color
+				local image = gem_replace_table[i].image
+				self.gems[i]:setColor(color, image)
+			end
 		end
 	end
 	self:updateGems()
