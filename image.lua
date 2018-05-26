@@ -275,23 +275,30 @@ image.lookup.platform_star = {
 image.lookup.dust = {
 	small = function(color, big_possible)
 		if big_possible ~= false then big_possible = true end
-		local rand = math.random(3)
 		local star_instead = big_possible and math.random() < 0.05
 		if star_instead then
 			return image.lookup.dust.star(color)
 		else
 			if color == "red" then
 				local tbl = {image.dust.red1, image.dust.red2, image.dust.red3}
-				return tbl[rand]
+				return tbl[math.random(#tbl)]
 			elseif color == "blue" then
 				local tbl = {image.dust.blue1, image.dust.blue2, image.dust.blue3}
-				return tbl[rand]
+				return tbl[math.random(#tbl)]
 			elseif color == "green" then
 				local tbl = {image.dust.green1, image.dust.green2, image.dust.green3}
-				return tbl[rand]
+				return tbl[math.random(#tbl)]
 			elseif color == "yellow" then
 				local tbl = {image.dust.yellow1, image.dust.yellow2, image.dust.yellow3}
-				return tbl[rand]
+				return tbl[math.random(#tbl)]
+			elseif color == "wild" then
+				local tbl = {
+					image.dust.red1, image.dust.red2, image.dust.red3,
+					image.dust.blue1, image.dust.blue2, image.dust.blue3,
+					image.dust.green1, image.dust.green2, image.dust.green3,
+					image.dust.yellow1, image.dust.yellow2, image.dust.yellow3,
+				}
+				return tbl[math.random(#tbl)]
 			else
 				print("image.lookup.dust Sucka MC")
 				return image.dust.red1
@@ -304,6 +311,14 @@ image.lookup.dust = {
 		elseif color == "blue" then return image.blue_particle1
 		elseif color == "green" then return image.green_particle1
 		elseif color == "yellow" then return image.yellow_particle1
+		elseif color == "wild" then
+			local tbl = {
+				image.red_particle1,
+				image.blue_particle1,
+				image.green_particle1,
+				image.yellow_particle1,
+			}
+			return tbl[math.random(#tbl)]
 		else print("image.lookup.dust Sucka MC") return image.red_particle1 end
 	end
 }
