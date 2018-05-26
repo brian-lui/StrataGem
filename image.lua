@@ -229,6 +229,12 @@ image.lookup.particle_freq = {
 	green = {[image.green_particle1] = 12, [image.green_particle2] = 7, [image.green_particle3] = 1},
 	yellow = {[image.yellow_particle1] = 12, [image.yellow_particle2] = 7, [image.yellow_particle3] = 1},
 	healing = {[image.healing_particle1] = 12, [image.healing_particle2] = 7, [image.healing_particle3] = 1},
+	wild = {
+		[image.red_particle1] = 12, [image.red_particle2] = 7, [image.red_particle3] = 1,
+		[image.blue_particle1] = 12, [image.blue_particle2] = 7, [image.blue_particle3] = 1,
+		[image.green_particle1] = 12, [image.green_particle2] = 7, [image.green_particle3] = 1,
+		[image.yellow_particle1] = 12, [image.yellow_particle2] = 7, [image.yellow_particle3] = 1,
+	}
 }
 image.lookup.particle_freq.random = function(color)
 	local rand_table = {}
