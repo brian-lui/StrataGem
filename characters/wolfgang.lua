@@ -262,6 +262,13 @@ function Wolfgang:_turnToDog(hand_idx, both)
 	end
 end
 
+function Wolfgang:beforeGravity()
+	if self.supering then
+		self:_turnToDog(4, false)
+		self:_turnToDog(5, true)
+	end
+end
+
 function Wolfgang:beforeMatch()
 	local game = self.game
 	local grid = game.grid
