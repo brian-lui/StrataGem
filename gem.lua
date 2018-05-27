@@ -12,7 +12,6 @@ local gemImages = {
 }
 
 local Gem = {}
---function Gem:init(game, x, y, color, garbage)
 function Gem:init(params)
 	self.game = params.game
 	Pic.init(self, self.game, {
@@ -42,6 +41,7 @@ end
 
 -- If a non-standard gem color is created, must also provide exploding gem and
 -- grey exploding gem images
+-- .indestructible true to not be destroyed by grid:destroyGem method
 function Gem:create(params)
 	assert(params.game, "Game object not received!")
 	assert(params.x, "x-value not received!")
