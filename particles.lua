@@ -855,11 +855,13 @@ function Dust.generateBigFountain(params)
 	local num = params.num or 24
 	local x = params.x or params.gem.x
 	local y = params.y or params.gem.y
-	local img = image.lookup.dust.small(params.color or params.gem.color)
+	local color = params.color or params.gem.color
+	local img = image.lookup.dust.small(color)
 	local duration = params.duration or 30
 	local rotation = duration / 60
 
 	for i = 1, num do
+		if color == "wild" then	img = image.lookup.dust.small(color) end
 		local p_type = (i % 2 == 1) and "Dust" or "OverDust"
 		local x_vel = (math.random() - 0.5) * 0.4 * game.stage.width
 		local y_vel = (math.random() - 0.75) * 0.52 * game.stage.height
@@ -903,6 +905,7 @@ function Dust.generateStarFountain(params)
 	local rotation = 0.5
 	local x_speed_mult = params.fast and 2 or 1
 	local y_speed_mult = params.fast and 1.5 or 1
+
 	for i = 1, num do
 		local todraw = image.lookup.particle_freq.random(color)
 		local p_type = (i % 2 == 1) and "Dust" or "OverDust"
@@ -918,7 +921,15 @@ function Dust.generateStarFountain(params)
 
 		-- create trails
 		for frames = 1, 3 do
-			local trail_image = image.lookup.trail_particle[color]
+			local trail_image
+			if color == "wild" then
+				local defaults = {"red", "blue", "green", "yellow"}
+				local default_color = defaults[math.random(#defaults)]
+				trail_image = image.lookup.trail_particle[default_color]
+			else
+				trail_image = image.lookup.trail_particle[color]
+			end
+
 			local trail = common.instance(Dust, game.particles, x, y, trail_image, p_type)
 			local trail_y = function() return y + trail.t * y_vel + trail.t^2 * acc end
 			trail.scaling = 1.25 - (frames * 0.25)
