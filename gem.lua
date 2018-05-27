@@ -35,14 +35,23 @@ function Gem:init(params)
 	self.owner = 0 -- 0 = none, 1 = p1, 2 = p2, 3 = both
 	self.garbage = params.is_garbage
 	self.pending = false -- piece that's been placed in basin but not activated
+	self.exploding_gem_image = params.exploding_gem_image
+	self.grey_exploding_gem_image = params.grey_exploding_gem_image
 end
 
+-- If a non-standard gem color is created, must also provide exploding gem and
+-- grey exploding gem images
 function Gem:create(params)
 	assert(params.game, "Game object not received!")
 	assert(params.x, "x-value not received!")
 	assert(params.y, "y-value not received!")
 	assert(params.color, "Color not received!")
 
+	if params.color ~= "red" and params.color ~= "blue" and
+	params.color ~= "green" and params.color ~= "yellow" then
+		assert(params.exploding_gem_image, "No exploding_gem_image for custom color")
+		assert(params.grey_exploding_gem_image, "No grey_exploding_gem_image for custom color")
+	end
 	return common.instance(self, params)
 end
 
@@ -65,14 +74,23 @@ function Gem.random(game, gem_table)
 end
 
 -- default colors are "red", "blue", "green", "yellow"
-function Gem:setColor(color, optional_image)
-	if not color then print("No color provided") return end
+-- If a non-standard gem color is specified, must also provide exploding gem
+-- and grey exploding gem images
+function Gem:setColor(color, gem_image, exploding_gem_image, grey_exploding_gem_image)
+	assert(color, "No color provided")
 
 	self.color = color
-	if optional_image then
-		self:newImage(optional_image)
+	if gem_image then
+		self:newImage(gem_image)
 	else
 		self:newImage(gemImages[color:lower()])
+	end
+
+	if color ~= "red" and color ~= "blue" and color ~= "green" and color ~= "yellow" then
+		assert(exploding_gem_image, "No exploding_gem_image for custom color")
+		assert(grey_exploding_gem_image, "No grey_exploding_gem_image for custom color")
+		self.exploding_gem_image = exploding_gem_image
+		self.grey_exploding_gem_image = grey_exploding_gem_image
 	end
 end
 

@@ -553,12 +553,14 @@ function ExplodingGem:init(params)
 		if gem.owner == 3 then
 			img = image.lookup.grey_gem_crumble[gem.color]
 			if not img then
-				-- look for custom image in gem, then throw error if not found
+				img = gem.grey_exploding_gem_image
+				if not img then error("No grey_exploding_gem_image for custom gem") end
 			end
 		else
 			img = image.lookup.gem_explode[gem.color]
 			if not img then
-				-- look for custom image in gem, then throw error if not found
+				img = gem.exploding_gem_image
+				if not img then error("No exploding_gem_image for custom gem") end
 			end
 		end
 		x, y, transparency = gem.x, gem.y, 0
