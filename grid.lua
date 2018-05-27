@@ -172,37 +172,43 @@ end
 
 -- Returns a list of matches, where each match is listed as the row and column
 -- of its topmost/leftmost gem, a length, and whether it's horizontal.
-function Grid:_getRawMatches(minimumLength)
+function Grid:_getRawMatches(min_length)
 	local function getColor(row, column)
-		return self[row][column].gem and self[row][column].gem.color
+		if self[row][column].gem then
+			return self[row][column].gem.color
+		end
 	end
 
-	minimumLength = minimumLength or 3
+	min_length = min_length or 3
 	local match_colors = {"red", "blue", "green", "yellow"}
 	local ret = {}
-	for _, c in pairs(match_colors) do
-		for _, row, column in self:gems() do
-			if tostring(getColor(row, column)):lower() == c then
+	for _, color in pairs(match_colors) do
+		for _, r, c in self:gems() do
+			if getColor(r, c) == color or getColor(r, c) == "wild" then
 				-- HORIZONTAL MATCHES
-				local matchLength = 0
-				if tostring(getColor(row, column - 1)):lower() ~= c then	-- Only start a match at the beginning of a run
+				local match_len = 0
+				-- Only start a match at the beginning of a run
+				if getColor(r, c-1) ~= color and getColor(r, c-1) ~= "wild" then
 					repeat
-						matchLength = matchLength + 1
-					until tostring(getColor(row, column + matchLength)):lower() ~= c
+						match_len = match_len + 1
+					until
+						getColor(r, c+match_len) ~= color and getColor(r, c+match_len) ~= "wild"
 				end
-				if matchLength >= minimumLength then
-					ret[#ret+1] = {length = matchLength, row = row, column = column, is_a_horizontal_match = true}
+				if match_len >= min_length then
+					ret[#ret+1] = {length = match_len, row = r, column = c, is_a_horizontal_match = true}
 				end
 
 				-- VERTICAL MATCHES
-				--[[local]] matchLength = 0
-				if tostring(getColor(row - 1, column, self)):lower() ~= c then -- Only start a match at the beginning of a run
+				--[[local]] match_len = 0
+				-- Only start a match at the beginning of a run
+				if getColor(r-1, c) ~= color and getColor(r-1, c) ~= "wild" then
 					repeat
-						matchLength = matchLength + 1
-					until tostring(getColor(row + matchLength, column, self)):lower() ~= c
+						match_len = match_len + 1
+					until
+						getColor(r+match_len, c) ~= color and getColor(r+match_len, c) ~= "wild"
 				end
-				if matchLength >= minimumLength then
-					ret[#ret+1] = {length = matchLength, row = row, column = column, is_a_vertical_match = true}
+				if match_len >= min_length then
+					ret[#ret+1] = {length = match_len, row = r, column = c, is_a_vertical_match = true}
 				end
 			end
 		end
