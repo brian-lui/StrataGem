@@ -220,7 +220,13 @@ DamageParticle = common.class("DamageParticle", DamageParticle, Pic)
 
 local DamageTrailParticle = {}
 function DamageTrailParticle:init(manager, gem)
-	Pic.init(self, manager.game, {x = gem.x, y = gem.y, image = image.lookup.trail_particle[gem.color]})
+	local img = image.lookup.trail_particle[gem.color]
+	if not img then
+		local colors = {"red", "blue", "green", "yellow"}
+		local color = colors[math.random(#colors)]
+		img = image.lookup.trail_particle[color]
+	end
+	Pic.init(self, manager.game, {x = gem.x, y = gem.y, image = img})
 	manager.allParticles.DamageTrail[ID.particle] = self
 	self.manager = manager
 end

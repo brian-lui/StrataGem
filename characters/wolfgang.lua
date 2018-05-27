@@ -56,6 +56,21 @@ Wolfgang.special_images = {
 		love.graphics.newImage('images/characters/wolfgang/badgoldenlab.png'),
 		love.graphics.newImage('images/characters/wolfgang/badrussel.png'),
 	},
+	dog_explode = {
+ 		image.lookup.gem_explode.red,
+ 		image.lookup.gem_explode.red,
+ 		image.lookup.gem_explode.red,
+	},
+	dog_grey = {
+		image.lookup.grey_gem_crumble.red,
+		image.lookup.grey_gem_crumble.red,
+		image.lookup.grey_gem_crumble.red,
+	},
+	dog_pop = {
+		image.lookup.pop_particle.red,
+		image.lookup.pop_particle.red,
+		image.lookup.pop_particle.red,
+	},
 	red = {
 		dark = love.graphics.newImage('images/characters/wolfgang/r.png'),
 		glow = love.graphics.newImage('images/characters/wolfgang/rglow.png'),
@@ -211,6 +226,17 @@ Wolfgang.fx = {
 -------------------------------------------------------------------------------
 -- turns a piece in the hand into a dog. 'both' to true to turn both.
 -- creates a piece if no piece exists in the position
+
+-- returns a dog image package in the form {dog, explode, grey, pop}
+function Wolfgang:_getRandomDog()
+	local i = math.random(#self.special_images.good_dog)
+	local dog = self.special_images.good_dog[i]
+	local explode = self.special_images.dog_explode[i]
+	local grey = self.special_images.dog_grey[i]
+	local pop = self.special_images.dog_pop[i]
+	return {dog = dog, explode = explode, grey = grey, pop = pop}
+end
+
 function Wolfgang:_turnToDog(hand_idx, both)
 	assert(hand_idx >= 1 and hand_idx <= 5, "hand_idx not within range!")
 	local hand_loc = self.hand[hand_idx]
@@ -218,13 +244,13 @@ function Wolfgang:_turnToDog(hand_idx, both)
 	if hand_loc.piece then
 		if both then
 			for i = 1, hand_loc.piece.size do
-				local dog_images = self.special_images.good_dog
-				local dog = dog_images[math.random(#dog_images)]
-				hand_loc.piece.gems[i]:setColor("wild", dog)
+				local images = self:_getRandomDog()
+				hand_loc.piece.gems[i]:setColor(
+					"wild", images.dog, images.explode, images.grey, images.pop
+				)
 			end
 		else
-			local dog_images = self.special_images.good_dog
-			local dog = dog_images[math.random(#dog_images)]
+			local images = self:_getRandomDog()
 			local pos = self.game.rng:random(hand_loc.piece.size)
 			-- If it is in rotation_index 2 or 3, the gem table was reversed
 			-- This is because of bad coding from before. Haha
@@ -232,22 +258,26 @@ function Wolfgang:_turnToDog(hand_idx, both)
 			hand_loc.piece.rotation_index == 3) then
 				if pos == 2 then pos = 1 elseif pos == 1 then pos = 2 end
 			end
-			hand_loc.piece.gems[pos]:setColor("wild", dog)
+			hand_loc.piece.gems[pos]:setColor(
+				"wild", images.dog, images.explode, images.grey, images.pop
+			)
 		end
 	else
 		local gem_replace_table
-		if both then
-			local dog_images = self.special_images.good_dog
-			local dog1 = dog_images[math.random(#dog_images)]
-			local dog2 = dog_images[math.random(#dog_images)]
-			gem_replace_table = {
-				{color = "wild", image = dog1},
-				{color = "wild", image = dog2},
+		local function _makeTable()
+			local images = self:_getRandomDog()
+			return {
+				color = "wild",
+				image = images.dog,
+				exploding_gem_image = images.explode,
+				grey_exploding_gem_image = images.grey,
+				pop_particle_image = images.pop,
 			}
+		end
+		if both then
+			gem_replace_table = {_makeTable(), _makeTable()}
 		else
-			local dog_images = self.special_images.good_dog
-			local dog = dog_images[math.random(#dog_images)]
-			gem_replace_table = {color = "wild", image = dog}
+			gem_replace_table = _makeTable()
 		end
 
 		hand_loc.piece = Piece:create{

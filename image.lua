@@ -210,8 +210,8 @@ image.lookup.words_ready = function(size)
 end
 
 image.lookup.gem_explode = {
-	blue = love.graphics.newImage('images/gems/bluegemexplode.png'),
 	red = love.graphics.newImage('images/gems/redgemexplode.png'),
+	blue = love.graphics.newImage('images/gems/bluegemexplode.png'),
 	green = love.graphics.newImage('images/gems/greengemexplode.png'),
 	yellow = love.graphics.newImage('images/gems/yellowgemexplode.png'),
 }

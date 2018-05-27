@@ -75,7 +75,7 @@ function Piece:screenshake(frames)
 	self.shake = frames or 6
 end
 
-
+-- use gem_replace_table to force a specific color or custom gem
 function Piece:addGems(gem_freq_table, gem_replace_table)
 	self.gems = {}
 	for i = 1, self.size do
@@ -93,20 +93,30 @@ function Piece:addGems(gem_freq_table, gem_replace_table)
 		if not gem_replace_table[1] then -- provided as single table
 			local color = gem_replace_table.color
 			local image = gem_replace_table.image
+			local explode = gem_replace_table.exploding_gem_image
+			local grey = gem_replace_table.grey_exploding_gem_image
+			local pop = gem_replace_table.pop_particle_image
 			local pos = self.game.rng:random(self.size)
-			self.gems[pos]:setColor(color, image)
+			self.gems[pos]:setColor(color, image, explode, grey, pop)
 		else
 			if #gem_replace_table == 1 then
 				local color = gem_replace_table[1].color
 				local image = gem_replace_table[1].image
+				local explode = gem_replace_table[1].exploding_gem_image
+				local grey = gem_replace_table[1].grey_exploding_gem_image
+				local pop = gem_replace_table[1].pop_particle_image
+
 				local pos = self.game.rng:random(self.size)
-				print("pos", pos)
-				self.gems[pos]:setColor(color, image)
+				self.gems[pos]:setColor(color, image, explode, grey, pop)
 			else
 				for i = 1, #gem_replace_table do
 					local color = gem_replace_table[i].color
 					local image = gem_replace_table[i].image
-					self.gems[i]:setColor(color, image)
+					local explode = gem_replace_table[i].exploding_gem_image
+					local grey = gem_replace_table[i].grey_exploding_gem_image
+					local pop = gem_replace_table[i].pop_particle_image
+
+					self.gems[i]:setColor(color, image, explode, grey, pop)
 				end
 			end
 		end
