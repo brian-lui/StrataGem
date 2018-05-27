@@ -13,7 +13,7 @@ local Character = require "character"
 
 local Walter = {}
 Walter.character_id = "Walter"
-Walter.meter_gain = {red = 4, blue = 8, green = 4, yellow = 4, wild = 4}
+Walter.meter_gain = {red = 4, blue = 8, green = 4, yellow = 4, none = 4, wild = 4}
 Walter.primary_colors = {"blue"}
 
 Walter.full_size_image = love.graphics.newImage('images/portraits/walter.png')

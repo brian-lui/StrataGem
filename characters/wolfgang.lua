@@ -30,7 +30,7 @@ local Wolfgang = {}
 Wolfgang.full_size_image = love.graphics.newImage('images/portraits/wolfgang.png')
 Wolfgang.small_image = love.graphics.newImage('images/portraits/wolfgangsmall.png')
 Wolfgang.character_id = "Wolfgang"
-Wolfgang.meter_gain = {red = 4, blue = 8, green = 4, yellow = 4, wild = 4}
+Wolfgang.meter_gain = {red = 4, blue = 8, green = 4, yellow = 4, none = 4, wild = 4}
 
 Wolfgang.super_images = {
 	word = image.UI.super.blue_word,
@@ -57,9 +57,9 @@ Wolfgang.special_images = {
 		love.graphics.newImage('images/characters/wolfgang/badrussel.png'),
 	},
 	dog_explode = {
- 		image.lookup.gem_explode.red,
- 		image.lookup.gem_explode.red,
- 		image.lookup.gem_explode.red,
+		image.lookup.gem_explode.red,
+		image.lookup.gem_explode.red,
+		image.lookup.gem_explode.red,
 	},
 	dog_grey = {
 		image.lookup.grey_gem_crumble.red,
@@ -246,7 +246,7 @@ function Wolfgang:_getDogReplaceTable()
 		exploding_gem_image = images.explode,
 		grey_exploding_gem_image = images.grey,
 		pop_particle_image = images.pop,
-	}	
+	}
 end
 
 function Wolfgang:_turnToDog(hand_idx, both)
@@ -279,7 +279,7 @@ function Wolfgang:_turnToDog(hand_idx, both)
 		if both then
 			gem_replace_table = {
 				self:_getDogReplaceTable(),
-				self:_getDogReplaceTable(), 
+				self:_getDogReplaceTable(),
 			}
 		else
 			gem_replace_table = self:_getDogReplaceTable()
@@ -332,10 +332,9 @@ function Wolfgang:beforeMatch()
 		if owned_by_me then
 			local is_vertical = true
 			local color
-			local row = list[1].row
 			local total_x, total_y = 0, 0 -- for calculating average
 			for _, gem in ipairs(list) do
-				if gem.column ~= column then is_vertical = false end
+				if gem.column ~= list[1].column then is_vertical = false end
 				if gem.color == "red" or gem.color == "blue" or gem.color == "green" or gem.color == "yellow" then
 					color = gem.color
 				end

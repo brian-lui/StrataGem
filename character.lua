@@ -13,7 +13,7 @@ Character.shadow_image = love.graphics.newImage('images/portraits/heathshadow.pn
 Character.super_fuzz_image = love.graphics.newImage('images/ui/superfuzzred.png')
 
 Character.character_id = "Lamer"
-Character.meter_gain = {red = 4, blue = 4, green = 4, yellow = 4, wild = 4}
+Character.meter_gain = {red = 4, blue = 4, green = 4, yellow = 4, none = 4, wild = 4}
 Character.primary_colors = {"red"}
 
 Character.super_images = {

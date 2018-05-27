@@ -9,7 +9,7 @@ local Mort = {}
 Mort.full_size_image = love.graphics.newImage('images/portraits/mort.png')
 Mort.small_image = love.graphics.newImage('images/portraits/mortsmall.png')
 Mort.character_id = "Mort"
-Mort.meter_gain = {red = 4, blue = 4, green = 8, yellow = 4, wild = 4}
+Mort.meter_gain = {red = 4, blue = 4, green = 8, yellow = 4, none = 4, wild = 4}
 Mort.super_images = {
 	word = image.UI.super.green_word,
 	empty = image.UI.super.green_empty,

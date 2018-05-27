@@ -214,6 +214,7 @@ image.lookup.gem_explode = {
 	blue = love.graphics.newImage('images/gems/bluegemexplode.png'),
 	green = love.graphics.newImage('images/gems/greengemexplode.png'),
 	yellow = love.graphics.newImage('images/gems/yellowgemexplode.png'),
+	none = image.dummy,
 }
 
 image.lookup.grey_gem_crumble = {
@@ -221,6 +222,7 @@ image.lookup.grey_gem_crumble = {
 	blue = love.graphics.newImage('images/gems/bluegemgrey.png'),
 	green = love.graphics.newImage('images/gems/greengemgrey.png'),
 	yellow = love.graphics.newImage('images/gems/yellowgemgrey.png'),
+	none = image.dummy,
 }
 
 image.lookup.particle_freq = {
@@ -229,12 +231,13 @@ image.lookup.particle_freq = {
 	green = {[image.green_particle1] = 12, [image.green_particle2] = 7, [image.green_particle3] = 1},
 	yellow = {[image.yellow_particle1] = 12, [image.yellow_particle2] = 7, [image.yellow_particle3] = 1},
 	healing = {[image.healing_particle1] = 12, [image.healing_particle2] = 7, [image.healing_particle3] = 1},
+	none = {[image.dummy] = 1},
 	wild = {
 		[image.red_particle1] = 12, [image.red_particle2] = 7, [image.red_particle3] = 1,
 		[image.blue_particle1] = 12, [image.blue_particle2] = 7, [image.blue_particle3] = 1,
 		[image.green_particle1] = 12, [image.green_particle2] = 7, [image.green_particle3] = 1,
 		[image.yellow_particle1] = 12, [image.yellow_particle2] = 7, [image.yellow_particle3] = 1,
-	}
+	},
 }
 image.lookup.particle_freq.random = function(color)
 	local rand_table = {}
@@ -254,6 +257,7 @@ image.lookup.super_particle = {
 	blue = love.graphics.newImage('images/particles/bluesuperparticle.png'),
 	green = love.graphics.newImage('images/particles/greensuperparticle.png'),
 	yellow = love.graphics.newImage('images/particles/yellowsuperparticle.png'),
+	none = image.dummy,
 }
 
 image.lookup.pop_particle = {
@@ -261,6 +265,7 @@ image.lookup.pop_particle = {
 	blue = love.graphics.newImage('images/gems/popblue.png'),
 	green = love.graphics.newImage('images/gems/popgreen.png'),
 	yellow = love.graphics.newImage('images/gems/popyellow.png'),
+	none = image.dummy,
 }
 
 image.lookup.trail_particle = {
@@ -269,6 +274,7 @@ image.lookup.trail_particle = {
 	green = love.graphics.newImage('images/particles/greentrail.png'),
 	yellow = love.graphics.newImage('images/particles/yellowtrail.png'),
 	healing = love.graphics.newImage('images/particles/healingtrail.png'),
+	none = image.dummy,
 }
 
 image.lookup.platform_star = {
@@ -297,6 +303,8 @@ image.lookup.dust = {
 			elseif color == "yellow" then
 				local tbl = {image.dust.yellow1, image.dust.yellow2, image.dust.yellow3}
 				return tbl[math.random(#tbl)]
+			elseif color == "none" then
+				return image.dummy
 			elseif color == "wild" then
 				local tbl = {
 					image.dust.red1, image.dust.red2, image.dust.red3,
@@ -317,6 +325,7 @@ image.lookup.dust = {
 		elseif color == "blue" then return image.blue_particle1
 		elseif color == "green" then return image.green_particle1
 		elseif color == "yellow" then return image.yellow_particle1
+		elseif color == "none" then return image.dummy
 		elseif color == "wild" then
 			local tbl = {
 				image.red_particle1,

@@ -9,7 +9,7 @@ local Hailey = {}
 Hailey.full_size_image = love.graphics.newImage('images/portraits/hailey.png')
 Hailey.small_image = love.graphics.newImage('images/portraits/haileysmall.png')
 Hailey.character_id = "Hailey"
-Hailey.meter_gain = {red = 4, blue = 8, green = 4, yellow = 4, wild = 4}
+Hailey.meter_gain = {red = 4, blue = 8, green = 4, yellow = 4, none = 4, wild = 4}
 Hailey.super_images = {
 	word = image.UI.super.blue_word,
 	empty = image.UI.super.blue_empty,

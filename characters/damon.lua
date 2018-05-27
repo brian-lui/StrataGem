@@ -9,7 +9,7 @@ local Damon = {}
 Damon.full_size_image = love.graphics.newImage('images/portraits/damon.png')
 Damon.small_image = love.graphics.newImage('images/portraits/damonsmall.png')
 Damon.character_id = "Damon"
-Damon.meter_gain = {red = 4, blue = 4, green = 8, yellow = 4, wild = 4}
+Damon.meter_gain = {red = 4, blue = 4, green = 8, yellow = 4, none = 4, wild = 4}
 Damon.super_images = {
 	word = image.UI.super.green_word,
 	empty = image.UI.super.green_empty,
