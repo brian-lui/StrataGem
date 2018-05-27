@@ -23,8 +23,8 @@ function Gem:init(params)
 	ID.gem = ID.gem + 1
 	self.is_in_a_horizontal_match = false -- for gem matches
 	self.is_in_a_vertical_match = false -- for gem matches
-	self.target_x = x
-	self.target_y = y
+	self.target_x = params.x
+	self.target_y = params.y
 	self.target_rotation = 0
 	self.pivot_x = self.width * 0.5
 	self.pivot_y = self.height * 0.5
@@ -37,6 +37,7 @@ function Gem:init(params)
 	self.pending = false -- piece that's been placed in basin but not activated
 	self.exploding_gem_image = params.exploding_gem_image
 	self.grey_exploding_gem_image = params.grey_exploding_gem_image
+	self.pop_particle_image = params.pop_particle_image
 end
 
 -- If a non-standard gem color is created, must also provide exploding gem and
@@ -51,6 +52,7 @@ function Gem:create(params)
 	params.color ~= "green" and params.color ~= "yellow" then
 		assert(params.exploding_gem_image, "No exploding_gem_image for custom color")
 		assert(params.grey_exploding_gem_image, "No grey_exploding_gem_image for custom color")
+		assert(params.pop_particle_image, "No pop_particle_image for custom color")
 	end
 	return common.instance(self, params)
 end
@@ -74,9 +76,9 @@ function Gem.random(game, gem_table)
 end
 
 -- default colors are "red", "blue", "green", "yellow"
--- If a non-standard gem color is specified, must also provide exploding gem
--- and grey exploding gem images
-function Gem:setColor(color, gem_image, exploding_gem_image, grey_exploding_gem_image)
+-- If a non-standard gem color is specified, must also provide exploding gem,
+-- grey exploding gem, and pop particle images
+function Gem:setColor(color, gem_image, exploding_gem, grey_exploding_gem, pop_particle)
 	assert(color, "No color provided")
 
 	self.color = color
@@ -87,10 +89,12 @@ function Gem:setColor(color, gem_image, exploding_gem_image, grey_exploding_gem_
 	end
 
 	if color ~= "red" and color ~= "blue" and color ~= "green" and color ~= "yellow" then
-		assert(exploding_gem_image, "No exploding_gem_image for custom color")
-		assert(grey_exploding_gem_image, "No grey_exploding_gem_image for custom color")
-		self.exploding_gem_image = exploding_gem_image
-		self.grey_exploding_gem_image = grey_exploding_gem_image
+		assert(exploding_gem, "No exploding_gem_image for custom color")
+		assert(grey_exploding_gem, "No grey_exploding_gem_image for custom color")
+		assert(pop_particle, "No pop_particle_image for custom color")
+		self.exploding_gem_image = exploding_gem
+		self.grey_exploding_gem_image = grey_exploding_gem
+		self.pop_particle_image = pop_particle
 	end
 end
 

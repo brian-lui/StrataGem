@@ -506,7 +506,8 @@ function PopParticles.generate(params)
 	local manager = params.game.particles
 	local x = params.x or params.gem.x
 	local y = params.y or params.gem.y
-	local img = params.image or image.lookup.pop_particle[params.gem.color]
+	local img = params.image or image.lookup.pop_particle[params.gem.color] or
+		params.gem.pop_particle_image
 	local duration = params.duration or 30
 
 	local p = common.instance(PopParticles, {manager = manager, x = x, y = y, image = img})
