@@ -16,7 +16,7 @@ local Character = require "character"
 
 local Heath = {}
 Heath.character_id = "Heath"
-Heath.meter_gain = {red = 8, blue = 4, green = 4, yellow = 4}
+Heath.meter_gain = {red = 8, blue = 4, green = 4, yellow = 4, wild = 4}
 Heath.primary_colors = {"red"}
 
 Heath.full_size_image = love.graphics.newImage('images/portraits/heath.png')

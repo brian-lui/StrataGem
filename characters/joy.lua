@@ -9,7 +9,7 @@ local Joy = {}
 Joy.full_size_image = love.graphics.newImage('images/portraits/joy.png')
 Joy.small_image = love.graphics.newImage('images/portraits/joysmall.png')
 Joy.character_id = "Joy"
-Joy.meter_gain = {red = 4, blue = 8, green = 4, yellow = 4}
+Joy.meter_gain = {red = 4, blue = 8, green = 4, yellow = 4, wild = 4}
 Joy.super_images = {
 	word = image.UI.super.blue_word,
 	empty = image.UI.super.blue_empty,

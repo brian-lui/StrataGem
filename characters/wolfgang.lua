@@ -30,7 +30,7 @@ local Wolfgang = {}
 Wolfgang.full_size_image = love.graphics.newImage('images/portraits/wolfgang.png')
 Wolfgang.small_image = love.graphics.newImage('images/portraits/wolfgangsmall.png')
 Wolfgang.character_id = "Wolfgang"
-Wolfgang.meter_gain = {red = 4, blue = 8, green = 4, yellow = 4}
+Wolfgang.meter_gain = {red = 4, blue = 8, green = 4, yellow = 4, wild = 4}
 
 Wolfgang.super_images = {
 	word = image.UI.super.blue_word,
