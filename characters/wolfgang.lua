@@ -237,6 +237,18 @@ function Wolfgang:_getRandomDog()
 	return {dog = dog, explode = explode, grey = grey, pop = pop}
 end
 
+-- returns a random dog in the form of a gem_replace_table
+function Wolfgang:_getDogReplaceTable()
+	local images = self:_getRandomDog()
+	return {
+		color = "wild",
+		image = images.dog,
+		exploding_gem_image = images.explode,
+		grey_exploding_gem_image = images.grey,
+		pop_particle_image = images.pop,
+	}	
+end
+
 function Wolfgang:_turnToDog(hand_idx, both)
 	assert(hand_idx >= 1 and hand_idx <= 5, "hand_idx not within range!")
 	local hand_loc = self.hand[hand_idx]
@@ -264,20 +276,13 @@ function Wolfgang:_turnToDog(hand_idx, both)
 		end
 	else
 		local gem_replace_table
-		local function _makeTable()
-			local images = self:_getRandomDog()
-			return {
-				color = "wild",
-				image = images.dog,
-				exploding_gem_image = images.explode,
-				grey_exploding_gem_image = images.grey,
-				pop_particle_image = images.pop,
-			}
-		end
 		if both then
-			gem_replace_table = {_makeTable(), _makeTable()}
+			gem_replace_table = {
+				self:_getDogReplaceTable(),
+				self:_getDogReplaceTable(), 
+			}
 		else
-			gem_replace_table = _makeTable()
+			gem_replace_table = self:_getDogReplaceTable()
 		end
 
 		hand_loc.piece = Piece:create{
@@ -393,24 +398,17 @@ end
 
 -- Make a bark dog if there are any dogs queued
 function Wolfgang:modifyGemTable()
+
 	if self.double_dogs_to_make > 0 then
 		local dog_return = function()
 			self.double_dogs_to_make = self.double_dogs_to_make - 1
-			local dog_images = self.special_images.good_dog
-			local dog1 = dog_images[math.random(#dog_images)]
-			local dog2 = dog_images[math.random(#dog_images)]
-			return {
-				{color = "wild", image = dog1},
-				{color = "wild", image = dog2},
-			}
+			return {self:_getDogReplaceTable(),	self:_getDogReplaceTable()}
 		end
 		return nil, dog_return
 	elseif self.single_dogs_to_make > 0 then
 		local dog_return = function()
 			self.single_dogs_to_make = self.single_dogs_to_make - 1
-			local dog_images = self.special_images.good_dog
-			local dog = dog_images[math.random(#dog_images)]
-			return {color = "wild", image = dog}
+			return self:_getDogReplaceTable()
 		end
 		return nil, dog_return
 	end
