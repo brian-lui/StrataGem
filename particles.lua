@@ -129,6 +129,11 @@ end
 local DamageParticle = {}
 function DamageParticle:init(manager, gem)
 	local img = image.lookup.particle_freq.random(gem.color)
+	if not img then
+		local colors = {"red", "blue", "green", "yellow"}
+		local color = colors[math.random(#colors)]
+		img = image.lookup.particle_freq.random(color)
+	end
 	Pic.init(self, manager.game, {x = gem.x, y = gem.y, image = img, transparency = 0, thanks = "thanks"})
 	self.owner = gem.owner
 	manager.allParticles.Damage[ID.particle] = self
@@ -292,6 +297,12 @@ function SuperParticle.generate(game, gem, num_particles, delay_frames, force_ma
 
 		-- create particle
 		local img = image.lookup.super_particle[gem.color]
+		if not img then
+			local colors = {"red", "blue", "green", "yellow"}
+			local color = colors[math.random(#colors)]
+			img = image.lookup.super_particle[color]
+		end
+
 		local p = common.instance(SuperParticle, game.particles, gem.x, gem.y,
 			img, gem.owner, gem.color)
 		game.particles:incrementCount("created", "MP", gem.owner)
