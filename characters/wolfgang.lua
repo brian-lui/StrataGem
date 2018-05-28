@@ -22,19 +22,19 @@ local Wolfgang = {}
 Wolfgang.full_size_image = love.graphics.newImage('images/portraits/wolfgang.png')
 Wolfgang.small_image = love.graphics.newImage('images/portraits/wolfgangsmall.png')
 Wolfgang.character_id = "Wolfgang"
-Wolfgang.meter_gain = {red = 4, blue = 8, green = 4, yellow = 4, none = 4, wild = 4}
+Wolfgang.meter_gain = {red = 8, blue = 4, green = 4, yellow = 4, none = 4, wild = 4}
 
 Wolfgang.super_images = {
-	word = image.UI.super.blue_word,
-	empty = image.UI.super.blue_empty,
-	full = image.UI.super.blue_full,
-	glow = image.UI.super.blue_glow,
+	word = image.UI.super.red_word,
+	empty = image.UI.super.red_empty,
+	full = image.UI.super.red_full,
+	glow = image.UI.super.red_glow,
 	overlay = love.graphics.newImage('images/characters/wolfgang/wolfganglogo.png'),
 }
 Wolfgang.burst_images = {
-	partial = image.UI.burst.blue_partial,
-	full = image.UI.burst.blue_full,
-	glow = {image.UI.burst.blue_glow1, image.UI.burst.blue_glow2}
+	partial = image.UI.burst.red_partial,
+	full = image.UI.burst.red_full,
+	glow = {image.UI.burst.red_glow1, image.UI.burst.red_glow2}
 }
 
 Wolfgang.special_images = {

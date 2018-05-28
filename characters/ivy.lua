@@ -9,19 +9,19 @@ local Ivy = {}
 Ivy.full_size_image = love.graphics.newImage('images/portraits/ivy.png')
 Ivy.small_image = love.graphics.newImage('images/portraits/ivysmall.png')
 Ivy.character_id = "Ivy"
-Ivy.meter_gain = {red = 4, blue = 8, green = 4, yellow = 4, none = 4, wild = 4}
+Ivy.meter_gain = {red = 4, blue = 4, green = 8, yellow = 4, none = 4, wild = 4}
 
 Ivy.super_images = {
-	word = image.UI.super.blue_word,
-	empty = image.UI.super.blue_empty,
-	full = image.UI.super.blue_full,
-	glow = image.UI.super.blue_glow,
+	word = image.UI.super.green_word,
+	empty = image.UI.super.green_empty,
+	full = image.UI.super.green_full,
+	glow = image.UI.super.green_glow,
 	overlay = love.graphics.newImage('images/dummy.png'),
 }
 Ivy.burst_images = {
-	partial = image.UI.burst.blue_partial,
-	full = image.UI.burst.blue_full,
-	glow = {image.UI.burst.blue_glow1, image.UI.burst.blue_glow2}
+	partial = image.UI.burst.green_partial,
+	full = image.UI.burst.green_full,
+	glow = {image.UI.burst.green_glow1, image.UI.burst.green_glow2}
 }
 
 Ivy.sounds = {
