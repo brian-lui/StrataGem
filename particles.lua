@@ -524,7 +524,7 @@ function PopParticles.generate(params)
 	local x = params.x or params.gem.x
 	local y = params.y or params.gem.y
 	local img = params.image or image.lookup.pop_particle[params.gem.color] or
-		params.gem.pop_particle_image
+		params.gem.pop_particle_image or image.dummy
 	local duration = params.duration or 30
 
 	local p = common.instance(PopParticles, {manager = manager, x = x, y = y, image = img})
@@ -862,6 +862,7 @@ function Dust.generateBigFountain(params)
 
 	for i = 1, num do
 		if color == "wild" then	img = image.lookup.dust.small(color) end
+		if color == "none" then img = image.dummy end
 		local p_type = (i % 2 == 1) and "Dust" or "OverDust"
 		local x_vel = (math.random() - 0.5) * 0.4 * game.stage.width
 		local y_vel = (math.random() - 0.75) * 0.52 * game.stage.height
