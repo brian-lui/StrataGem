@@ -6,14 +6,6 @@ Dogs placed in your basin are good dogs. Good dogs are wild and last until
 matched. Basins placed in the opponent's basin (rush) are bad dogs. Bad dogs
 do not listen and do nothing. They last for 3 turns and then go home.
 
-Passive animation:
-When the BARK meter is lit entirely, a good dog piece (Random) appears in the
-next set of gems on the stars when it moves again.
-
-When you drag a piece to the opponent's side (rush), the good dog should change
-to a bad dog as soon as you hover to the other side, and return to good dog if
-you bring the piece back.
-
 Super: The bottom most platform in your hand gains a double Dog (or becomes a
 double dog), and the 4th platform gains a single dog + [gem] (or becomes a
 single dog + [gem].
@@ -99,11 +91,10 @@ Wolfgang.sounds = {
 
 function Wolfgang:init(...)
 	Character.init(self, ...)
-
 	local game = self.game
 	local stage = game.stage
+
 	-- init BARK
-	local y = stage.height * 0.57
 	local add = self.player_num == 2 and stage.width * 0.77 or 0
 	local x = {
 		stage.width * 0.055 + add,
@@ -111,7 +102,7 @@ function Wolfgang:init(...)
 		stage.width * 0.135 + add,
 		stage.width * 0.175 + add,
 	}
-
+	local y = stage.height * 0.57
 	self.letters = {
 		blue = self.fx.colorLetter.generate(game, self, x[1], y, "blue"),
 		yellow = self.fx.colorLetter.generate(game, self, x[2], y, "yellow"),
@@ -119,8 +110,9 @@ function Wolfgang:init(...)
 		green = self.fx.colorLetter.generate(game, self, x[4], y, "green"),
 	}
 
+	self.BAD_DOG_DURATION = 3
 	self.this_turn_matched_colors = {}
-	self.bad_dogs = {} -- turn counter for bad dog disappearance
+	self.bad_dogs = {} -- dict of {dog-gem, turns remaining to disappearance}
 	self.single_dogs_to_make, self.double_dogs_to_make = 0, 0
 end
 -------------------------------------------------------------------------------
@@ -296,26 +288,99 @@ function Wolfgang:_turnToDog(hand_idx, both)
 			gem_replace_table = gem_replace_table,
 		}
 	end
+	self:_assignBadDogImages()
 end
 
+-- Goes through hand dogs and writes the bad dog images. No hurry to do so,
+-- since it won't matter until next action phase, so we do it in cleanup phase
+function Wolfgang:_assignBadDogImages()
+	for piece in self.hand:pieces() do
+		for gem in piece:getGems() do
+			if gem.color == "wild" and not gem.bad_dog_image then
+				for i = 1, #self.special_images.good_dog do
+					if gem.image == self.special_images.good_dog[i] then
+						gem.good_dog_image = gem.image
+						gem.bad_dog_image = self.special_images.bad_dog[i]
+						piece.contains_dog = true
+					end
+				end
+			end
+		end
+	end
+end
+
+
+-- countdown bad dogs and destroy if at zero
+-- Only once per turn
 function Wolfgang:_countdownBadDogs()
-	-- reduce all bad dog time counters by 1
-	-- if time == 0 then destroyGem with credit to (???)
+	for dog, counter in pairs(self.bad_dogs) do
+		assert(counter > 0, "Wolfgang countdown went wrong somewhere")
+		self.bad_dogs[dog] = counter - 1
+	end
 end
 
+-- If any dogs were destroyed, force a new gravity phase
+function Wolfgang:_upkeepBadDogs()
+	local any_dogs_destroyed = false
+	local delete_dogs = {}
+	for dog, counter in pairs(self.bad_dogs) do
+		if counter == 0 then
+			dog.indestructible = false
+			self.game.grid:destroyGem{
+				gem = dog,
+				super_meter = false,
+				damage = false,
+				credit_to = self.player_num,
+			}
+			delete_dogs[#delete_dogs+1] = dog
+		end
+	end
+	for _, dog in ipairs(delete_dogs) do
+		self.bad_dogs[dog] = nil
+		any_dogs_destroyed = true
+	end
+
+	return any_dogs_destroyed
+end
+
+-- update a piece to bad dog if it is rushable
 function Wolfgang:actionPhase()
-	-- if activepiece contains dog
-	-- if rush
-	-- turn to bad dog image
-end
+	local piece = self.game.active_piece
+	if piece and piece.contains_dog then
+		local midline, on_left = piece:isOnMidline()
+		local shift = 0
+		if midline then
+			if on_left then shift = -1 else shift = 1 end
+		end
+		local _, place_type = piece:isDropValid(shift)
 
-function Wolfgang:afterActionPhaseUpdate()
-	-- if rush with dog piece
-	-- turn dog gem into bad dog gem with "none" & indestructible
-	-- add to bad dog counter
+		for gem in piece:getGems() do
+			if gem.color == "wild" then
+				if place_type == "rush" and gem.image == gem.good_dog_image then
+					gem:newImage(gem.bad_dog_image)
+				elseif place_type ~= "rush" and gem.image == gem.bad_dog_image then
+					gem:newImage(gem.good_dog_image)
+				end
+			end
+		end
+	end
 end
 
 function Wolfgang:beforeGravity()
+	local grid = self.game.grid
+	local pending_gems = grid:getPendingGems(self.enemy)
+
+	-- Change good dogs to bad dogs if they are in rush column
+	for _, gem in ipairs(pending_gems) do
+		if gem.owner == self.player_num and gem.color == "wild" then
+			gem.indestructible = true
+			gem.color = "none"
+			gem.image = gem.bad_dog_image
+			self.bad_dogs[gem] = self.BAD_DOG_DURATION
+		end
+	end
+
+	-- Create super dogs
 	if self.supering then
 		self:_turnToDog(4, false)
 		self:_turnToDog(5, true)
@@ -396,6 +461,7 @@ function Wolfgang:afterMatch()
 end
 
 -- Queue the dog if all BARK was lit up
+-- Also update bad dogs
 function Wolfgang:afterAllMatches()
 	local delay = 0
 	local all_lit_up = true
@@ -410,12 +476,13 @@ function Wolfgang:afterAllMatches()
 		delay = 60
 	end
 
-	return delay
+	-- if any bad dogs were destroyed, go to gravity phase again
+	local force_gravity_phase = self:_upkeepBadDogs()
+	return delay, force_gravity_phase
 end
 
 -- Make a bark dog if there are any dogs queued
 function Wolfgang:modifyGemTable()
-
 	if self.double_dogs_to_make > 0 then
 		local dog_return = function()
 			self.double_dogs_to_make = self.double_dogs_to_make - 1
@@ -432,7 +499,10 @@ function Wolfgang:modifyGemTable()
 end
 
 function Wolfgang:cleanup()
+	self:_assignBadDogImages()
+	self:_countdownBadDogs()
 	self.this_turn_matched_colors = {}
+	self.need_to_countdown_bad_dogs = true
 	Character.cleanup(self)
 end
 

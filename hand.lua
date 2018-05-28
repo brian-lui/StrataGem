@@ -157,7 +157,7 @@ end
 	Takes optional mandatory flag to force a piece (default off).
 	NOTE: this function can be called more than once per turn.
 --]]
-function Hand:getNewTurnPieces(mandatory, gem_freq, gem_replace)
+function Hand:createNewTurnPieces(mandatory, gem_freq, gem_replace)
 	if mandatory then self.damage = math.max(self.damage, 4) end
 	local pieces_to_get = math.floor(self.damage * 0.25)
 	if pieces_to_get < 1 then return end
