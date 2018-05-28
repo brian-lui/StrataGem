@@ -120,6 +120,7 @@ function Wolfgang:init(...)
 	}
 
 	self.this_turn_matched_colors = {}
+	self.bad_dogs = {} -- turn counter for bad dog disappearance
 	self.single_dogs_to_make, self.double_dogs_to_make = 0, 0
 end
 -------------------------------------------------------------------------------
@@ -295,6 +296,23 @@ function Wolfgang:_turnToDog(hand_idx, both)
 			gem_replace_table = gem_replace_table,
 		}
 	end
+end
+
+function Wolfgang:_countdownBadDogs()
+	-- reduce all bad dog time counters by 1
+	-- if time == 0 then destroyGem with credit to (???)
+end
+
+function Wolfgang:actionPhase()
+	-- if activepiece contains dog
+	-- if rush
+	-- turn to bad dog image
+end
+
+function Wolfgang:afterActionPhaseUpdate()
+	-- if rush with dog piece
+	-- turn dog gem into bad dog gem with "none" & indestructible
+	-- add to bad dog counter
 end
 
 function Wolfgang:beforeGravity()
