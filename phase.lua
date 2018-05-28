@@ -302,11 +302,14 @@ end
 function Phase:resolvedMatches(dt)
 	local game = self.game
 	local grid = game.grid
+
+	local next_phase = "DestroyDamagedPlatforms"
 	if self.should_call_char_ability_this_phase then
 		local delay = 0
 		for player in game:players() do
-			local player_delay = player:afterAllMatches()
+			local player_delay, go_to_gravity_phase = player:afterAllMatches()
 			delay = math.max(delay, player_delay or 0)
+			if go_to_gravity_phase then next_phase = "DuringGravity" end
 		end
 
 		local platforms_get_destroyed = false
@@ -335,7 +338,7 @@ function Phase:resolvedMatches(dt)
 			end
 		end
 		self.should_call_char_ability_this_phase = true
-		self:activatePause("DestroyDamagedPlatforms")
+		self:activatePause(next_phase)
 	end
 end
 
@@ -394,7 +397,7 @@ end
 function Phase:getHandPieces(dt)
 	for player in self.game:players() do
 		local gem_freq, gem_replace = player:modifyGemTable()
-		player.hand:getNewTurnPieces(self.force_minimum_1_piece, gem_freq, gem_replace)
+		player.hand:createNewTurnPieces(self.force_minimum_1_piece, gem_freq, gem_replace)
 	end
 	self.force_minimum_1_piece = false
 

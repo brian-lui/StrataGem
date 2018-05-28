@@ -600,7 +600,6 @@ function ui:update(dt)
 	local active_piece = game.active_piece
 	if active_piece then
 		active_piece:generateDust()
-		--local legal = game.active_piece:isDropLegal()
 		local midline, on_left = active_piece:isOnMidline()
 		local shift = 0
 		if midline then
