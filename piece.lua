@@ -99,25 +99,13 @@ function Piece:addGems(gem_freq_table, gem_replace_table)
 			local pos = self.game.rng:random(self.size)
 			self.gems[pos]:setColor(color, image, explode, grey, pop)
 		else
-			if #gem_replace_table == 1 then
-				local color = gem_replace_table[1].color
-				local image = gem_replace_table[1].image
-				local explode = gem_replace_table[1].exploding_gem_image
-				local grey = gem_replace_table[1].grey_exploding_gem_image
-				local pop = gem_replace_table[1].pop_particle_image
-
-				local pos = self.game.rng:random(self.size)
-				self.gems[pos]:setColor(color, image, explode, grey, pop)
-			else
-				for i = 1, #gem_replace_table do
-					local color = gem_replace_table[i].color
-					local image = gem_replace_table[i].image
-					local explode = gem_replace_table[i].exploding_gem_image
-					local grey = gem_replace_table[i].grey_exploding_gem_image
-					local pop = gem_replace_table[i].pop_particle_image
-
-					self.gems[i]:setColor(color, image, explode, grey, pop)
-				end
+			for i = 1, #gem_replace_table do
+				local color = gem_replace_table[i].color
+				local image = gem_replace_table[i].image
+				local explode = gem_replace_table[i].exploding_gem_image
+				local grey = gem_replace_table[i].grey_exploding_gem_image
+				local pop = gem_replace_table[i].pop_particle_image
+				self.gems[i]:setColor(color, image, explode, grey, pop)
 			end
 		end
 	end
@@ -476,7 +464,7 @@ function Piece:dropIntoBasin(coords, received_from_opponent)
 	end
 end
 
-function Piece:gems()
+function Piece:getGems()
 	local gems, index = {}, 0
 	for i = 1, #self.gems do gems[#gems+1] = self.gems[i] end
 
