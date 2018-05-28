@@ -819,16 +819,24 @@ function Grid:destroyGem(params)
 		local soundfile_name = "gembreak" .. math.min(5, game.scoring_combo + 1)
 		game.queue:add(delay_until_explode, game.sound.newSFX, game.sound, soundfile_name)
 
-		local num_super_particles = player.supering and 0 or player.meter_gain[gem.color]
-		particles.superParticles.generate(game, gem, num_super_particles, delay_until_explode, params.force_max_alpha)
-		particles.damage.generate(game, gem, delay_until_explode, params.force_max_alpha)
+		if params.super_meter ~= false then
+			local num = player.supering and 0 or player.meter_gain[gem.color]
+			particles.superParticles.generate(game, gem, num, delay_until_explode, params.force_max_alpha)
+		end
+
+		if params.damage ~= false then
+			particles.damage.generate(game, gem, delay_until_explode, params.force_max_alpha)
+			for _ = 1, extra_damage do
+				particles.damage.generate(game, gem, delay_until_explode, params.force_max_alpha)
+			end
+		end
+
 		particles.dust.generateBigFountain{
 			game = game,
 			gem = gem,
 			delay_frames = delay_until_explode,
-			force_max_alpha = params.force_max_alpha
+			force_max_alpha = params.force_max_alpha,
 		}
-		for _ = 1, extra_damage do particles.damage.generate(game, gem, delay_until_explode, params.force_max_alpha) end
 
 		particles.popParticles.generate{
 			game = game,
