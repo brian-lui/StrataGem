@@ -442,11 +442,11 @@ local function wolfgangLightUp(game)
 end
 
 local function wolfgangCreate3Dog(game)
-	game.p1:_turnToDog(3, false)
+	game.p1:_turnPieceToDog(3, false)
 end
 
 local function wolfgangCreate4Dog(game)
-	game.p1:_turnToDog(4, true)
+	game.p1:_turnPieceToDog(4, true)
 end
 local function toggleScreencaps(game)
 	if game.debug_screencaps then

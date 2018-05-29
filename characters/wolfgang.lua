@@ -6,9 +6,8 @@ Dogs placed in your basin are good dogs. Good dogs are wild and last until
 matched. Basins placed in the opponent's basin (rush) are bad dogs. Bad dogs
 do not listen and do nothing. They last for 3 turns and then go home.
 
-Super: The bottom most platform in your hand gains a double Dog (or becomes a
-double dog), and the 4th platform gains a single dog + [gem] (or becomes a
-single dog + [gem].
+Super: Up to four non-wilds in your half of the basin are replaced with
+friendly dogs.
 --]]
 
 local love = _G.love
@@ -110,7 +109,9 @@ function Wolfgang:init(...)
 		green = self.fx.colorLetter.generate(game, self, x[4], y, "green"),
 	}
 
+	self.FULL_BARK_DOG_ADDS = 2
 	self.BAD_DOG_DURATION = 3
+	self.SUPER_DOG_CREATION_DELAY = 45 -- in frames
 	self.this_turn_matched_colors = {}
 	self.bad_dogs = {} -- dict of {dog-gem, turns remaining to disappearance}
 	self.single_dogs_to_make, self.double_dogs_to_make = 0, 0
@@ -242,7 +243,43 @@ function Wolfgang:_getDogReplaceTable()
 	}
 end
 
-function Wolfgang:_turnToDog(hand_idx, both)
+-- Turns a grid gem into a friendly dog
+-- Used during super
+function Wolfgang:_turnGemToDog(gem)
+	local images = self:_getRandomDog()
+	gem:setColor("wild", images.dog, images.explode, images.grey, images.pop)
+	gem:setOwner(self.player_num)
+	gem:setMaxAlpha(true)
+end
+
+function Wolfgang:_turnRandomFriendlyBasinGemToDog()
+	local game = self.game
+
+	local start_col, end_col
+	if self.player_num == 1 then
+		start_col, end_col = 1, 4
+	elseif self.player_num == 2 then
+		start_col, end_col = 5, 8
+	else
+		error("Invalid player number")
+	end
+
+	local valid_gems = {}
+	for gem, _, col in game.grid:basinGems() do
+		if col >= start_col and col <= end_col and gem.color ~= "wild" then
+			valid_gems[#valid_gems+1] = gem
+		end
+	end
+
+	if #valid_gems > 0 then
+		local rand = game.rng:random(#valid_gems)
+		self:_turnGemToDog(valid_gems[rand])
+	end
+end
+
+-- Turn a hand piece into a dog. Was previously used for Wolfgang super
+-- Currently unused
+function Wolfgang:_turnPieceToDog(hand_idx, both)
 	assert(hand_idx >= 1 and hand_idx <= 5, "hand_idx not within range!")
 	local hand_loc = self.hand[hand_idx]
 
@@ -309,6 +346,27 @@ function Wolfgang:_assignBadDogImages()
 	end
 end
 
+-- undarken the screen after super
+function Wolfgang:_brightenScreen()
+	local game = self.game
+
+	local start_col, end_col
+	if self.player_num == 1 then
+		start_col, end_col = 1, 4
+	elseif self.player_num == 2 then
+		start_col, end_col = 5, 8
+	else
+		error("Invalid player number")
+	end
+
+	for gem, _, col in game.grid:gems() do
+		if col >= start_col and col <= end_col and gem.color == "wild" then
+			gem:setMaxAlpha(false)
+		end
+	end
+
+	game:brightenScreen(self.player_num)
+end
 
 -- countdown bad dogs and destroy if at zero
 -- Only once per turn
@@ -369,6 +427,7 @@ end
 function Wolfgang:beforeGravity()
 	local grid = self.game.grid
 	local pending_gems = grid:getPendingGems(self.enemy)
+	local delay = 0
 
 	-- Change good dogs to bad dogs if they are in rush column
 	for _, gem in ipairs(pending_gems) do
@@ -382,9 +441,18 @@ function Wolfgang:beforeGravity()
 
 	-- Create super dogs
 	if self.supering then
-		self:_turnToDog(4, false)
-		self:_turnToDog(5, true)
+		for _ = 1, 4 do
+			self:_turnRandomFriendlyBasinGemToDog()
+			delay = self.SUPER_DOG_CREATION_DELAY
+		end
 	end
+
+	return delay
+end
+
+function Wolfgang:beforeTween()
+	self.supering = false
+	self:_brightenScreen()
 end
 
 function Wolfgang:beforeMatch()
@@ -429,7 +497,13 @@ function Wolfgang:beforeMatch()
 
 			-- don't do anything if it's already lighted up
 			-- also handle rare case of no color if we have a 3 wild gems match
-			if (not self.letters[color].lighted) and color then
+			if not color then
+				for _, c in ipairs{"red", "blue", "green", "yellow"} do
+					if not self.letters[c].lighted then
+						self.this_turn_matched_colors[c] = true
+					end
+				end
+			elseif not self.letters[color].lighted then
 				local overwrite = true
 				if is_vertical and create_words[color] and (not create_words[color].is_vertical) then
 					overwrite = false
@@ -471,7 +545,7 @@ function Wolfgang:afterAllMatches()
 
 	if all_lit_up then
 		-- TODO: animation to show we're making a dog
-		self.single_dogs_to_make = self.single_dogs_to_make + 1
+		self.single_dogs_to_make = self.single_dogs_to_make + self.FULL_BARK_DOG_ADDS
 		for _, letter in pairs(self.letters) do letter:darken() end
 		delay = 60
 	end
