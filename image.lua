@@ -58,7 +58,8 @@ end
 local coroLoadImage = coroutine.create(loadImage)
 
 local load_dt = 0
-local load_step = 0.02
+local load_step = 0.05
+local load_count = 1
 local already_loaded = false
 -- every load_step seconds it loads a new image and writes it
 local function updateLoader(_self, dt)
@@ -80,7 +81,6 @@ local function updateLoader(_self, dt)
 			if key ~= nil and img ~= nil then
 				if rawget(_self, key) then
 					already_loaded = true
-					updateLoader(_self, 0)
 				else
 					_self[key] = img
 					already_loaded = false
@@ -90,7 +90,6 @@ local function updateLoader(_self, dt)
 	end
 end
 
-local gem_colors = {"red", "blue", "green", "yellow"}
 local image = {
 	updateLoader = updateLoader,
 	lookup = {},
@@ -114,6 +113,7 @@ image.GEM_HEIGHT = image.redgem:getHeight()
 
 
 image.dust = {}
+local gem_colors = {"red", "blue", "green", "yellow"}
 for _, c in pairs(gem_colors) do
 	for i = 1, 3 do
 		-- e.g. image.dust.red1 = love.graphics.newImage('images/particles/reddust1.png')
@@ -262,14 +262,31 @@ image.lookup.grey_gem_crumble = {
 	none = image.dummy,
 }
 
-image.lookup.particle_freq = function(color)
-	local image_num_freq = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 3}
-	local image_num = image_num_freq[math.random(#image_num_freq)]
-	local image_color = color
-	if color == "wild" then image_color = gem_colors[math.random(#gem_colors)] end
-	local image_name = image_color .. "particle" .. image_num
-	if color == "none" then image_name = "dummy" end
-	return image[image_name]
+image.lookup.particle_freq = {
+	red = {[image.redparticle1] = 12, [image.redparticle2] = 7, [image.redparticle3] = 1},
+	blue = {[image.blueparticle1] = 12, [image.blueparticle2] = 7, [image.blueparticle3] = 1},
+	green = {[image.greenparticle1] = 12, [image.greenparticle2] = 7, [image.greenparticle3] = 1},
+	yellow = {[image.yellowparticle1] = 12, [image.yellowparticle2] = 7, [image.yellowparticle3] = 1},
+	healing = {[image.healingparticle1] = 12, [image.healingparticle2] = 7, [image.healingparticle3] = 1},
+	none = {[image.dummy] = 1},
+	wild = {
+		[image.redparticle1] = 12, [image.redparticle2] = 7, [image.redparticle3] = 1,
+		[image.blueparticle1] = 12, [image.blueparticle2] = 7, [image.blueparticle3] = 1,
+		[image.greenparticle1] = 12, [image.greenparticle2] = 7, [image.greenparticle3] = 1,
+		[image.yellowparticle1] = 12, [image.yellowparticle2] = 7, [image.yellowparticle3] = 1,
+	},
+}
+image.lookup.particle_freq.random = function(color)
+	local rand_table = {}
+	local num = 0
+	for c, freq in pairs(image.lookup.particle_freq[color]) do
+		for _ = 1, freq do
+			num = num + 1
+			rand_table[num] = c
+		end
+	end
+	local rand = math.random(num)
+	return rand_table[rand]
 end
 
 image.lookup.super_particle = {

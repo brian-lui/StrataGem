@@ -128,11 +128,11 @@ end
 -- Damage particles generated when a player makes a match
 local DamageParticle = {}
 function DamageParticle:init(manager, gem)
-	local img = image.lookup.particle_freq(gem.color)
+	local img = image.lookup.particle_freq.random(gem.color)
 	if not img then
 		local colors = {"red", "blue", "green", "yellow"}
 		local color = colors[math.random(#colors)]
-		img = image.lookup.particle_freq(color)
+		img = image.lookup.particle_freq.random(color)
 	end
 	Pic.init(self, manager.game, {x = gem.x, y = gem.y, image = img, transparency = 0, thanks = "thanks"})
 	self.owner = gem.owner
@@ -358,7 +358,7 @@ function HealingParticle.generate(params)
 		if x_range then x = math.random(x + x_range, x - x_range) end
 		if y_range then y = math.random(y + y_range, y - y_range) end
 
-		local img = image.lookup.particle_freq("healing")
+		local img = image.lookup.particle_freq.random("healing")
 		local x4, y4 = owner.hand[i].x, owner.hand[i].y
 		local dist = ((x4 - x) ^ 2 + (y4 - y) ^ 2) ^ 0.5
 		local x3, y3 = 0.5 * (x + x4), 0.5 * (y + y4)
@@ -418,7 +418,7 @@ function HealingParticle.generateTwinkle(game, platform, delay_frames)
 	delay_frames = delay_frames or 0
 	local stars_to_make = math.random(6, 9)
 	for i = 1, stars_to_make do
-		local img = image.lookup.particle_freq("healing")
+		local img = image.lookup.particle_freq.random("healing")
 		local x_change = platform.width * 1.5 * (math.random() - 0.5)
 		local y_change = platform.height * 1.5 * (math.random() - 0.5)
 		local x = platform.owner.hand[platform.hand_idx].x + x_change
@@ -440,7 +440,7 @@ HealingParticle = common.class("HealingParticle", HealingParticle, Pic)
 -- Garbage particles generated when a piece falls off a platform
 local GarbageParticles = {}
 function GarbageParticles:init(manager, gem)
-	local img = image.lookup.particle_freq(gem.color)
+	local img = image.lookup.particle_freq.random(gem.color)
 	Pic.init(self, manager.game, {x = gem.x, y = gem.y, image = img})
 	self.owner = gem.owner
 	manager.allParticles.GarbageParticles[ID.particle] = self
@@ -908,7 +908,7 @@ function Dust.generateStarFountain(params)
 	local y_speed_mult = params.fast and 1.5 or 1
 
 	for i = 1, num do
-		local todraw = image.lookup.particle_freq(color)
+		local todraw = image.lookup.particle_freq.random(color)
 		local p_type = (i % 2 == 1) and "Dust" or "OverDust"
 		local x_vel = (math.random() - 0.5) * game.stage.width * x_speed_mult
 		local y_vel = (math.random() - 0.75) * 2 * game.stage.height * y_speed_mult
