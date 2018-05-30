@@ -219,31 +219,27 @@ image.words = {
 	rush_cloud_v = love.graphics.newImage('images/words/rushvert.png'),
 	rush_particle = love.graphics.newImage('images/words/rushparticle.png'),
 	go_star = image.UI.platform_gold,
-	ready_star1 = image.starparticlesilver1,
-	ready_star2 = image.starparticlesilver2,
-	ready_star3 = image.starparticlesilver3,
-	ready_tinystar1 = image.tinystarparticlesilver1,
-	ready_tinystar2 = image.tinystarparticlesilver2,
-	ready_tinystar3 = image.tinystarparticlesilver3,
 }
 
 image.lookup.words_ready = function(size)
-	local choice
+	assert(size == "small" or size == "large", "invalid size")
+	local ret
 	if size == "small" then
-		choice = {
-			image.words.ready_tinystar1,
-			image.words.ready_tinystar2,
-			image.words.ready_tinystar3
+		local choice = {
+			image.tinystarparticlesilver1,
+			image.tinystarparticlesilver2,
+			image.tinystarparticlesilver3,
 		}
-	elseif size == "large" then
-		choice = {
-			image.words.ready_star1,
-			image.words.ready_star2,
-			image.words.ready_star3,
+		ret = choice[math.random(#choice)]
+	else
+		local choice = {
+			image.starparticlesilver1,
+			image.starparticlesilver2,
+			image.starparticlesilver3,
 		}
-	else print ("lol dumb") end
-	local rand = math.random(#choice)
-	return choice[rand]
+		ret = choice[math.random(#choice)]
+	end
+	return ret
 end
 
 image.lookup.gem_explode = {
@@ -302,17 +298,9 @@ image.lookup.platform_star = function(player_num, is_tiny)
 	local image_name
 	local image_num = math.random(3)
 	if player_num == 1 then
-		if is_tiny then
-			image_name = "tinystarparticlegold"
-		else
-			image_name = "starparticlegold"
-		end
+		image_name = is_tiny and "tinystarparticlegold" or "starparticlegold"
 	else
-		if is_tiny then
-			image_name = "tinystarparticlesilver"
-		else
-			image_name = "starparticlesilver"
-		end
+		image_name = is_tiny and "tinystarparticlesilver" or "starparticlesilver"
 	end
 
 	return image[image_name .. image_num]
