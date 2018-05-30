@@ -264,7 +264,7 @@ local function shuffleHands(game)
 				game = game,
 				hand_idx = i,
 				owner = hand.owner,
-				owner_num = hand.owner.player_num,
+				player_num = hand.owner.player_num,
 				x = hand[i].x,
 				y = hand[i].y,
 			}

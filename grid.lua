@@ -361,12 +361,12 @@ function Grid:flagMatchedGems()
 		end
 
 		-- calculate new flags
-		local owner_num = 0
+		local player_num = 0
 		if this_match_p1 then
-			owner_num = owner_num + 1
+			player_num = player_num + 1
 		end
 		if this_match_p2 then
-			owner_num = owner_num + 2
+			player_num = player_num + 2
 		end
 
 		-- store flags
@@ -375,20 +375,20 @@ function Grid:flagMatchedGems()
 				if gem_flags[gem] == 0 then
 					print("This shouldn't happen")
 				elseif gem_flags[gem] == 1 then
-					if owner_num == 2 or owner_num == 3 then gem_flags[gem] = 3 end
+					if player_num == 2 or player_num == 3 then gem_flags[gem] = 3 end
 				elseif gem_flags[gem] == 2 then
-					if owner_num == 1 or owner_num == 3 then gem_flags[gem] = 3 end
+					if player_num == 1 or player_num == 3 then gem_flags[gem] = 3 end
 				else
 					print("This shouldn't happen either")
 				end
 			else
-				gem_flags[gem] = owner_num
+				gem_flags[gem] = player_num
 			end
 		end
 	end
 
 	-- apply the flags
-	for gem, owner_num in pairs(gem_flags) do gem:setOwner(owner_num, true) end
+	for gem, player_num in pairs(gem_flags) do gem:setOwner(player_num, true) end
 end
 
 --[[ Any gems placed in the action phase will be considered an "original" gem.

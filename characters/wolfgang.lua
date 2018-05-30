@@ -319,7 +319,7 @@ function Wolfgang:_turnPieceToDog(hand_idx, both)
 			game = self.game,
 			hand_idx = hand_idx,
 			owner = self,
-			owner_num = self.player_num,
+			player_num = self.player_num,
 			x = hand_loc.x,
 			y = hand_loc.y,
 			gem_replace_table = gem_replace_table,

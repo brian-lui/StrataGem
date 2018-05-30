@@ -12,7 +12,7 @@ function Hand:init(params)
 
 	--assert((player == p1 or player == p2), "Invalid player given!")
 	self.owner = params.player
-	self.owner_num = self.owner.player_num
+	self.player_num = self.owner.player_num
 
 	for i = 0, 10 do
 		self[i] = {}
@@ -43,7 +43,7 @@ function Hand:makeInitialPieces(gem_freq_table, gem_replace_table)
 			game = self.game,
 			hand_idx = i,
 			owner = self.owner,
-			owner_num = self.owner_num,
+			player_num = self.player_num,
 			x = self[i].x,
 			y = self[i].y,
 			gem_freq_table = gem_freq_table,
@@ -181,7 +181,7 @@ function Hand:createNewTurnPieces(mandatory, gem_freq, gem_replace)
 			game = self.game,
 			hand_idx = i,
 			owner = self.owner,
-			owner_num = self.owner_num,
+			player_num = self.player_num,
 			x = self[i].x,
 			y = self[i].y,
 			gem_freq_table = gem_freq_table,

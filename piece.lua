@@ -14,7 +14,7 @@ function Piece:init(tbl)
 	self.game = tbl.game
 
 	ID.piece = ID.piece + 1
-	local tocopy = {"x", "y", "owner", "owner_num", "gem_table"}
+	local tocopy = {"x", "y", "owner", "player_num", "gem_table"}
 	for i = 1, #tocopy do
 		local item = tocopy[i]
 		self[item] = tbl[item]
@@ -44,7 +44,7 @@ function Piece:create(params)
 	assert(params.game, "Game object not received!")
 	assert(params.hand_idx, "Piece creation location hand index not received!")
 	assert(params.owner, "Owner not received!")
-	assert(params.owner_num, "Owner number not received!")
+	assert(params.player_num, "Owner number not received!")
 	assert(params.x, "x-location not received!")
 	assert(params.y, "y-location not received!")
 
