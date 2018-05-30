@@ -774,7 +774,14 @@ function Grid:destroyMatchedGems(combo_bonus)
 			p2_remaining_damage = p2_remaining_damage - 1
 			extra_damage = 1
 		end
-		self:destroyGem{gem = gem, extra_damage = extra_damage}
+
+		local owner = self.game:playerByIndex(gem.owner)
+
+		self:destroyGem{
+			gem = gem,
+			extra_damage = extra_damage,
+			super_meter = owner.gain_super_meter,
+		}
 	end
 end
 

@@ -47,6 +47,7 @@ Character.dropped_piece = nil
 Character.supering = false
 Character.super_params = {}
 Character.place_type = "none"
+Character.gain_super_meter = nil -- set to 'false' if don't wanna gain meter from matches
 Character.CAN_SUPER_AND_PLAY_PIECE = false -- this is always false now
 
 function Character:init(player_num, game)

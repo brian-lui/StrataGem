@@ -444,6 +444,7 @@ function Wolfgang:beforeGravity()
 		for _ = 1, 4 do
 			self:_turnRandomFriendlyBasinGemToDog()
 			delay = self.SUPER_DOG_CREATION_DELAY
+			self.gain_super_meter = false
 		end
 	end
 
@@ -577,6 +578,7 @@ function Wolfgang:cleanup()
 	self:_countdownBadDogs()
 	self.this_turn_matched_colors = {}
 	self.need_to_countdown_bad_dogs = true
+	self.gain_super_meter = nil
 	Character.cleanup(self)
 end
 
