@@ -575,8 +575,10 @@ function ExplodingGem:init(params)
 				if not img then error("No grey_exploding_gem_image for custom gem") end
 			end
 		else
-			img = image.lookup.gem_explode[gem.color]
-			if not img then
+			if gem.color == "red" or gem.color == "blue" or gem.color == "green" or
+			gem.color == "yellow" then
+				img = image["gemexplode_" .. gem.color]
+			else
 				img = gem.exploding_gem_image
 				if not img then error("No exploding_gem_image for custom gem") end
 			end

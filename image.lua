@@ -20,7 +20,8 @@ for _, item in pairs(unclickables) do
 	count = count + 1
 end
 
-local gems = {"redgem", "bluegem", "greengem", "yellowgem"}
+local gems = {"redgem", "bluegem", "greengem", "yellowgem", "gemexplode_red",
+	"gemexplode_blue", "gemexplode_green", "gemexplode_yellow"}
 for _, item in pairs(gems) do
 	image_data[item] = "images/gems/" .. item .. ".png"
 	count = count + 1
@@ -241,14 +242,6 @@ image.lookup.words_ready = function(size)
 	end
 	return ret
 end
-
-image.lookup.gem_explode = {
-	red = love.graphics.newImage('images/gems/redgemexplode.png'),
-	blue = love.graphics.newImage('images/gems/bluegemexplode.png'),
-	green = love.graphics.newImage('images/gems/greengemexplode.png'),
-	yellow = love.graphics.newImage('images/gems/yellowgemexplode.png'),
-	none = image.dummy,
-}
 
 image.lookup.grey_gem_crumble = {
 	red = love.graphics.newImage('images/gems/redgemgrey.png'),

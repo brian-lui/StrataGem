@@ -572,7 +572,7 @@ function Grid:addBottomRow(player, skip_animation)
 			local x = grid.x[col]
 			local y = grid.y[grid.BOTTOM_ROW]
 			local pop_image = image.lookup.pop_particle[gem_color]
-			local explode_image = image.lookup.gem_explode[gem_color]
+			local explode_image = image["gemexplode_"..gem_color]
 
 			particles.dust.generateGarbageCircle{game = game, x = x, y = y,
 				color = gem_color}

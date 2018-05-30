@@ -48,9 +48,9 @@ Wolfgang.special_images = {
 		love.graphics.newImage('images/characters/wolfgang/badrussel.png'),
 	},
 	dog_explode = {
-		image.lookup.gem_explode.red,
-		image.lookup.gem_explode.red,
-		image.lookup.gem_explode.red,
+		image.gemexplode_red,
+		image.gemexplode_red,
+		image.gemexplode_red,
 	},
 	dog_grey = {
 		image.lookup.grey_gem_crumble.red,
