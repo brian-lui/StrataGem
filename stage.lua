@@ -12,8 +12,8 @@ local HALF_SUPER_HEIGHT = 0.09 * drawspace.height
 function stage:init(game)
 	self.width = drawspace.width
 	self.height = drawspace.height
-	self.gem_width = image.red_gem:getWidth()
-	self.gem_height = image.red_gem:getHeight()
+	self.gem_width = image.redgem:getWidth()
+	self.gem_height = image.redgem:getHeight()
 	self.x_mid = self.width / 2
 	self.y_mid = self.height / 2
 	self.super_click = {

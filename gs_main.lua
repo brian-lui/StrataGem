@@ -26,9 +26,9 @@ function gs_main:enter()
 
 	local settings_image
 	if self.type == "1P" then
-		settings_image = image.button.pause
+		settings_image = image.buttons_pause
 	elseif self.type == "Netplay" then
-		settings_image = image.button.stop
+		settings_image = image.buttons_stop
 	else
 		print("invalid game type!")
 	end

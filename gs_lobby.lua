@@ -10,8 +10,8 @@ function lobby:init()
 	lobby.ui = {clickable = {}, static = {}, popup_clickable = {}, popup_static = {}}
 	self:_createSettingsMenu(lobby, {
 		exitstate = "gs_title",
-		settings_icon = image.button.back,
-		settings_iconpush = image.button.backpush,
+		settings_icon = image.buttons_back,
+		settings_iconpush = image.buttons_backpush,
 	})
 end
 -- refer to game.lua for instructions for _createButton and _createImage
@@ -42,8 +42,8 @@ function lobby:_createCharacterButtons()
 		end
 		lobby._createButton(self, {
 			name = char,
-			image = image.charselect[char.."ring"],
-			image_pushed = image.charselect[char.."ring"], -- need new pics!
+			image = image["charselect_"..char.."ring"],
+			image_pushed = image["charselect_"..char.."ring"],
 			duration = 30,
 			start_x = -0.05 * i,
 			end_x = end_x,
@@ -55,8 +55,8 @@ function lobby:_createCharacterButtons()
 			action = function() 
 				if lobby.my_character ~= char and not self.client.queuing then
 					lobby.my_character = char
-					lobby.displayed_character:newImage(image.charselect[char.."char"])
-					lobby.displayed_character_text:newImage(image.charselect[char.."name"])
+					lobby.displayed_character:newImage(image["charselect_"..char.."char"])
+					lobby.displayed_character_text:newImage(image["charselect_"..char.."name"])
 					lobby.displayed_character:reset()
 					lobby.displayed_character_text:reset()
 				end
@@ -72,11 +72,11 @@ function lobby:_createUIButtons()
 	-- start button
 	lobby._createButton(self, {
 		name = "start",
-		image = image.button.start,
-		image_pushed = image.button.startpush,
+		image = image.buttons_start,
+		image_pushed = image.buttons_startpush,
 		duration = 15,
 		end_x = stage.width * 0.25,
-		start_y = stage.height + image.button.start:getHeight(),
+		start_y = stage.height + image.buttons_start:getHeight(),
 		end_y = stage.height * 0.8,
 		easing = "outQuad",
 		action = function()
@@ -93,8 +93,8 @@ function lobby:_createUIButtons()
 	-- left arrow for background select
 	lobby._createButton(self, {
 		name = "backgroundleft",
-		image = image.button.backgroundleft,
-		image_pushed = image.button.backgroundleft,
+		image = image.buttons_backgroundleft,
+		image_pushed = image.buttons_backgroundleft,
 		duration = 60,
 		end_x = stage.width * 0.6,
 		end_y = stage.height * 0.8,
@@ -111,8 +111,8 @@ function lobby:_createUIButtons()
 	-- right arrow for background select
 	lobby._createButton(self, {
 		name = "backgroundright",
-		image = image.button.backgroundright,
-		image_pushed = image.button.backgroundright,
+		image = image.buttons_backgroundright,
+		image_pushed = image.buttons_backgroundright,
 		duration = 60,
 		end_x = stage.width * 0.9,
 		end_y = stage.height * 0.8,
@@ -168,7 +168,7 @@ function lobby:_createUIImages()
 	-- background_image_frame
 	lobby._createImage(self, {
 		name = "backgroundframe",
-		image = image.unclickable.select_stageborder,
+		image = image.unclickables_selectstageborder,
 		duration = 60,
 		end_x = stage.width * 0.75,
 		end_y = stage.height * 0.8,
@@ -212,8 +212,8 @@ function lobby:enter()
 	-- cancel ranked match search
 	lobby._createButton(self, {
 		name = "cancelsearch",
-		image = image.button.lobbycancelsearch,
-		image_pushed = image.button.lobbycancelsearch,
+		image = image.buttons_lobbycancelsearch,
+		image_pushed = image.buttons_lobbycancelsearch,
 		duration = 60,
 		start_x = stage.width * 0.2,
 		end_x = stage.width * 0.75,
@@ -226,7 +226,7 @@ function lobby:enter()
 	-- status indicator image
 	lobby.status_image = lobby._createImage(self, {
 		name = "status",
-		image = image.unclickable.lobby_searchingnone,
+		image = image.unclickables_lobbysearchingnone,
 		duration = 20,
 		start_x = stage.width * 0.9,
 		end_x = stage.x_mid,
@@ -337,12 +337,12 @@ function lobby:update(dt)
 	local client = self.client
 	if client.queuing then
 		if lobby.status_image.status == "idle" then
-			lobby.status_image:newImage(image.unclickable.lobby_searchingranked)
+			lobby.status_image:newImage(image.unclickables_lobbysearchingranked)
 			lobby.status_image.status = "queuing"
 		end
 	else
 		if lobby.status_image.status == "queuing" then
-			lobby.status_image:newImage(image.unclickable.lobby_searchingnone)
+			lobby.status_image:newImage(image.unclickables_lobbysearchingnone)
 			lobby.status_image.status = "idle"
 		end
 	end

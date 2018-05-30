@@ -31,8 +31,8 @@ function title:init()
 
 	title.createButton(self, {
 		name = "vscpu",
-		image = image.button.vscpu,
-		image_pushed = image.button.vscpupush,
+		image = image.buttons_vscpu,
+		image_pushed = image.buttons_vscpupush,
 		duration = 60,
 		end_x = stage.width * 0.35,
 		start_y = stage.height * 1.2,
@@ -45,8 +45,8 @@ function title:init()
 	})
 	title.createButton(self, {
 		name = "netplay",
-		image = image.button.netplay,
-		image_pushed = image.button.netplaypush,
+		image = image.buttons_netplay,
+		image_pushed = image.buttons_netplaypush,
 		duration = 60,
 		end_x = stage.width * 0.65,
 		start_y = stage.height * 1.2,
@@ -60,7 +60,7 @@ function title:init()
 	})
 	title.createImage(self, {
 		name = "logo",
-		image = image.unclickable.title_logo,
+		image = image.unclickables_titlelogo,
 		duration = 45,
 		end_x = stage.width * 0.5,
 		start_y = 0,

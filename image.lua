@@ -1,52 +1,126 @@
 local love = _G.love
 
+-- A table {name, file location} of all the images to be gradually loaded
+local image_data = {}
+local count = 1
+
+local buttons = {"vscpu", "vscpupush", "netplay", "netplaypush", "back", "backpush",
+	"details", "detailspush", "start", "startpush", "backgroundleft", "backgroundright",
+	"lobbycreatenew", "lobbyqueueranked", "lobbycancelsearch", "pause", "stop",
+	"settings", "settingspush", "yes", "yespush", "no", "nopush", "quit", "quitpush"}
+for _, item in pairs(buttons) do
+	image_data["buttons_" .. item] = "images/buttons/" .. item .. ".png"
+	count = count + 1
+end
+
+local unclickables = {"titlelogo", "lobbygamebackground", "lobbysearchingnone",
+	"lobbysearchingranked", "selectstageborder", "settingsframe", "suretoquit", "pausetext"}
+for _, item in pairs(unclickables) do
+	image_data["unclickables_" .. item] = "images/unclickables/" .. item .. ".png"
+	count = count + 1
+end
+
+local gems = {"redgem", "bluegem", "greengem", "yellowgem"}
+for _, item in pairs(gems) do
+	image_data[item] = "images/gems/" .. item .. ".png"
+	count = count + 1
+end
+
+local particles = {"redparticle1", "redparticle2", "redparticle3", "blueparticle1",
+	"blueparticle2", "blueparticle3", "greenparticle1", "greenparticle2",
+	"greenparticle3", "yellowparticle1", "yellowparticle2", "yellowparticle3",
+	"healingparticle1", "healingparticle2", "healingparticle3", "starparticlesilver1",
+	"starparticlesilver2", "starparticlesilver3", "starparticlegold1",
+	"starparticlegold2", "starparticlegold3", "tinystarparticlesilver1",
+	"tinystarparticlesilver2", "tinystarparticlesilver3", "tinystarparticlegold1",
+	"tinystarparticlegold2", "tinystarparticlegold3"}
+for _, item in pairs(particles) do
+	image_data[item] = "images/particles/" .. item .. ".png"
+	count = count + 1
+end
+
+local selectablechars = {"heath", "walter", "gail", "holly", "wolfgang",
+	"hailey", "diggory", "buzz", "ivy", "joy", "mort", "damon"}
+for _, item in pairs(selectablechars) do
+	image_data["charselect_"..item.."char"] = "images/portraits/"..item.."action.png"
+	image_data["charselect_"..item.."shadow"] = "images/portraits/"..item.."shadow.png"
+	image_data["charselect_"..item.."name"] = "images/words/"..item.."name.png"
+	image_data["charselect_"..item.."ring"] = "images/charselect/"..item.."ring.png"
+end
+
+
+-- coroutine that yields a single image each time it's called
+local function loadImage()
+	for k, v in pairs(image_data) do
+		coroutine.yield(k, love.graphics.newImage(v))
+	end
+end
+local coroLoadImage = coroutine.create(loadImage)
+
+local load_dt = 0
+local load_step = 0.05
+local load_count = 1
+local already_loaded = false
+-- every load_step seconds it loads a new image and writes it
+local function updateLoader(_self, dt)
+	load_dt = load_dt + dt
+
+	local proceed = false
+	if already_loaded == true then
+		proceed = true
+	elseif load_dt > load_step then
+		proceed = true
+		load_dt = load_dt - load_step
+	end
+
+	if proceed then
+		if coroutine.status(coroLoadImage) == "dead" then
+			return true -- stop calling when all loaded
+		else
+			local _, key, img = coroutine.resume(coroLoadImage)
+			if key ~= nil and img ~= nil then
+				if rawget(_self, key) then
+					already_loaded = true
+				else
+					_self[key] = img
+					already_loaded = false
+				end
+			end
+		end
+	end
+end
+
 local image = {
+	updateLoader = updateLoader,
 	lookup = {},
 	dummy = love.graphics.newImage('images/dummy.png'),
-
-	-- Gems
-	red_gem = love.graphics.newImage('images/gems/redgem.png'),
-	blue_gem = love.graphics.newImage('images/gems/bluegem.png'),
-	green_gem = love.graphics.newImage('images/gems/greengem.png'),
-	yellow_gem = love.graphics.newImage('images/gems/yellowgem.png'),
-
-	red_particle1 = love.graphics.newImage('images/particles/redparticle1.png'),
-	red_particle2 = love.graphics.newImage('images/particles/redparticle2.png'),
-	red_particle3 = love.graphics.newImage('images/particles/redparticle3.png'),
-	blue_particle1 = love.graphics.newImage('images/particles/blueparticle1.png'),
-	blue_particle2 = love.graphics.newImage('images/particles/blueparticle2.png'),
-	blue_particle3 = love.graphics.newImage('images/particles/blueparticle3.png'),
-	green_particle1 = love.graphics.newImage('images/particles/greenparticle1.png'),
-	green_particle2 = love.graphics.newImage('images/particles/greenparticle2.png'),
-	green_particle3 = love.graphics.newImage('images/particles/greenparticle3.png'),
-	yellow_particle1 = love.graphics.newImage('images/particles/yellowparticle1.png'),
-	yellow_particle2 = love.graphics.newImage('images/particles/yellowparticle2.png'),
-	yellow_particle3 = love.graphics.newImage('images/particles/yellowparticle3.png'),
-
-	healing_particle1 = love.graphics.newImage('images/particles/healingparticle1.png'),
-	healing_particle2 = love.graphics.newImage('images/particles/healingparticle2.png'),
-	healing_particle3 = love.graphics.newImage('images/particles/healingparticle3.png'),
-
-	star_particle_silver1 = love.graphics.newImage('images/particles/silverstar1.png'),
-	star_particle_silver2 = love.graphics.newImage('images/particles/silverstar2.png'),
-	star_particle_silver3 = love.graphics.newImage('images/particles/silverstar3.png'),
-	star_particle_gold1 = love.graphics.newImage('images/particles/goldstar1.png'),
-	star_particle_gold2 = love.graphics.newImage('images/particles/goldstar2.png'),
-	star_particle_gold3 = love.graphics.newImage('images/particles/goldstar3.png'),
-	tinystar_particle_silver1 = love.graphics.newImage('images/particles/tinystarsilver1.png'),
-	tinystar_particle_silver2 = love.graphics.newImage('images/particles/tinystarsilver2.png'),
-	tinystar_particle_silver3 = love.graphics.newImage('images/particles/tinystarsilver3.png'),
-	tinystar_particle_gold1 = love.graphics.newImage('images/particles/tinystargold1.png'),
-	tinystar_particle_gold2 = love.graphics.newImage('images/particles/tinystargold2.png'),
-	tinystar_particle_gold3 = love.graphics.newImage('images/particles/tinystargold3.png'),
 }
 
-image.GEM_WIDTH = image.red_gem:getWidth()
-image.GEM_HEIGHT = image.red_gem:getHeight()
+-- If an image isn't loaded yet but is called, immediately load it
+local fallback = {
+	__index = function(t, k)
+		print("using fallback for " .. k)
+		local img = love.graphics.newImage(image_data[k])
+		t[k] = img
+		return img
+	end
+}
+setmetatable(image, fallback)
 
+image.GEM_WIDTH = image.redgem:getWidth()
+image.GEM_HEIGHT = image.redgem:getHeight()
+
+
+
+image.dust = {}
 local gem_colors = {"red", "blue", "green", "yellow"}
-local super_colors = {"red", "blue", "green", "yellow"}
-local burst_colors = {"red", "blue", "green", "yellow"}
+for _, c in pairs(gem_colors) do
+	for i = 1, 3 do
+		-- e.g. image.dust.red1 = love.graphics.newImage('images/particles/reddust1.png')
+		image.dust[c..i] = love.graphics.newImage('images/particles/'..c..'dust'..i..'.png')
+	end
+end
+
 
 image.background = {}
 image.background.colors = {
@@ -112,6 +186,7 @@ for i = 1, 3 do
 end
 
 image.UI.super = {}
+local super_colors = {"red", "blue", "green", "yellow"}
 for _, c in pairs(super_colors) do
 	image.UI.super[c.."_word"] = love.graphics.newImage('images/words/supertext'..c..'.png')
 	image.UI.super[c.."_empty"] = love.graphics.newImage('images/ui/'..c..'superempty.png')
@@ -120,51 +195,12 @@ for _, c in pairs(super_colors) do
 end
 
 image.UI.burst = {}
+local burst_colors = {"red", "blue", "green", "yellow"}
 for _, c in pairs(burst_colors) do
 	image.UI.burst[c .. "_partial"] = love.graphics.newImage('images/ui/' .. c .. 'segmentpartial.png')
 	image.UI.burst[c .. "_full"] = love.graphics.newImage('images/ui/' .. c .. 'segmentfull.png')
 	for i = 1, 2 do
 		image.UI.burst[c .. "_glow" .. i] = love.graphics.newImage('images/ui/' .. c .. 'barglow' .. i .. '.png')
-	end
-end
-
-assert(image.UI.burst.red_partial)
-
-local buttons = {"vscpu", "vscpupush", "netplay", "netplaypush", "back", "backpush",
-	"details", "detailspush", "start", "startpush", "backgroundleft", "backgroundright",
-	"lobbycreatenew", "lobbyqueueranked", "lobbycancelsearch", "pause", "stop",
-	"settings", "settingspush", "yes", "yespush", "no", "nopush", "quit", "quitpush"}
-image.button = {}
-for _, v in pairs(buttons) do
-	image.button[v] = love.graphics.newImage('images/buttons/' .. v .. '.png')
-end
-
-local unclickables = {"title_logo", "lobby_gamebackground", "lobby_searchingnone",
-	"lobby_searchingranked", "select_stageborder", "settingsframe", "suretoquit", "pausetext"}
-image.unclickable = {}
-for _, v in pairs(unclickables) do
-	image.unclickable[v] = love.graphics.newImage('images/unclickables/' .. v .. '.png')
-end
-
-
-
--- characters
-local selectable_chars = {"heath", "walter", "gail", "holly", "wolfgang",
-	"hailey", "diggory", "buzz", "ivy", "joy", "mort", "damon"}
-image.charselect = {}
-for _, v in pairs(selectable_chars) do
-	image.charselect[v.."char"] = love.graphics.newImage('images/portraits/'..v.."action.png")
-	image.charselect[v.."shadow"] = love.graphics.newImage('images/portraits/'..v.."shadow.png")
-	image.charselect[v.."name"] = love.graphics.newImage('images/words/'..v.."name.png")
-	image.charselect[v.."ring"] = love.graphics.newImage('images/charselect/'..v.."ring.png")
-end
-
-
-image.dust = {}
-for _, c in pairs(gem_colors) do
-	for i = 1, 3 do
-		-- e.g. image.dust.red1 = love.graphics.newImage('images/particles/reddust1.png')
-		image.dust[c..i] = love.graphics.newImage('images/particles/'..c..'dust'..i..'.png')
 	end
 end
 
@@ -183,12 +219,12 @@ image.words = {
 	rush_cloud_v = love.graphics.newImage('images/words/rushvert.png'),
 	rush_particle = love.graphics.newImage('images/words/rushparticle.png'),
 	go_star = image.UI.platform_gold,
-	ready_star1 = image.star_particle_silver1,
-	ready_star2 = image.star_particle_silver2,
-	ready_star3 = image.star_particle_silver3,
-	ready_tinystar1 = image.tinystar_particle_silver1,
-	ready_tinystar2 = image.tinystar_particle_silver2,
-	ready_tinystar3 = image.tinystar_particle_silver3,
+	ready_star1 = image.starparticlesilver1,
+	ready_star2 = image.starparticlesilver2,
+	ready_star3 = image.starparticlesilver3,
+	ready_tinystar1 = image.tinystarparticlesilver1,
+	ready_tinystar2 = image.tinystarparticlesilver2,
+	ready_tinystar3 = image.tinystarparticlesilver3,
 }
 
 image.lookup.words_ready = function(size)
@@ -227,17 +263,17 @@ image.lookup.grey_gem_crumble = {
 }
 
 image.lookup.particle_freq = {
-	red = {[image.red_particle1] = 12, [image.red_particle2] = 7, [image.red_particle3] = 1},
-	blue = {[image.blue_particle1] = 12, [image.blue_particle2] = 7, [image.blue_particle3] = 1},
-	green = {[image.green_particle1] = 12, [image.green_particle2] = 7, [image.green_particle3] = 1},
-	yellow = {[image.yellow_particle1] = 12, [image.yellow_particle2] = 7, [image.yellow_particle3] = 1},
-	healing = {[image.healing_particle1] = 12, [image.healing_particle2] = 7, [image.healing_particle3] = 1},
+	red = {[image.redparticle1] = 12, [image.redparticle2] = 7, [image.redparticle3] = 1},
+	blue = {[image.blueparticle1] = 12, [image.blueparticle2] = 7, [image.blueparticle3] = 1},
+	green = {[image.greenparticle1] = 12, [image.greenparticle2] = 7, [image.greenparticle3] = 1},
+	yellow = {[image.yellowparticle1] = 12, [image.yellowparticle2] = 7, [image.yellowparticle3] = 1},
+	healing = {[image.healingparticle1] = 12, [image.healingparticle2] = 7, [image.healingparticle3] = 1},
 	none = {[image.dummy] = 1},
 	wild = {
-		[image.red_particle1] = 12, [image.red_particle2] = 7, [image.red_particle3] = 1,
-		[image.blue_particle1] = 12, [image.blue_particle2] = 7, [image.blue_particle3] = 1,
-		[image.green_particle1] = 12, [image.green_particle2] = 7, [image.green_particle3] = 1,
-		[image.yellow_particle1] = 12, [image.yellow_particle2] = 7, [image.yellow_particle3] = 1,
+		[image.redparticle1] = 12, [image.redparticle2] = 7, [image.redparticle3] = 1,
+		[image.blueparticle1] = 12, [image.blueparticle2] = 7, [image.blueparticle3] = 1,
+		[image.greenparticle1] = 12, [image.greenparticle2] = 7, [image.greenparticle3] = 1,
+		[image.yellowparticle1] = 12, [image.yellowparticle2] = 7, [image.yellowparticle3] = 1,
 	},
 }
 image.lookup.particle_freq.random = function(color)
@@ -279,10 +315,10 @@ image.lookup.trail_particle = {
 }
 
 image.lookup.platform_star = {
-	StarP2 = {image.star_particle_silver1, image.star_particle_silver2, image.star_particle_silver3},
-	StarP1 = {image.star_particle_gold1, image.star_particle_gold2, image.star_particle_gold3},
-	TinyStarP2 = {image.tinystar_particle_silver1, image.tinystar_particle_silver2, image.tinystar_particle_silver3},
-	TinyStarP1 = {image.tinystar_particle_gold1, image.tinystar_particle_gold2, image.tinystar_particle_gold3},
+	StarP2 = {image.starparticlesilver1, image.starparticlesilver2, image.starparticlesilver3},
+	StarP1 = {image.starparticlegold1, image.starparticlegold2, image.starparticlegold3},
+	TinyStarP2 = {image.tinystarparticlesilver1, image.tinystarparticlesilver2, image.tinystarparticlesilver3},
+	TinyStarP1 = {image.tinystarparticlegold1, image.tinystarparticlegold2, image.tinystarparticlegold3},
 }
 
 image.lookup.dust = {
@@ -322,27 +358,22 @@ image.lookup.dust = {
 	end,
 
 	star = function(color)
-		if color == "red" then return image.red_particle1
-		elseif color == "blue" then return image.blue_particle1
-		elseif color == "green" then return image.green_particle1
-		elseif color == "yellow" then return image.yellow_particle1
+		if color == "red" then return image.redparticle1
+		elseif color == "blue" then return image.blueparticle1
+		elseif color == "green" then return image.greenparticle1
+		elseif color == "yellow" then return image.yellowparticle1
 		elseif color == "none" then return image.dummy
 		elseif color == "wild" then
 			local tbl = {
-				image.red_particle1,
-				image.blue_particle1,
-				image.green_particle1,
-				image.yellow_particle1,
+				image.redparticle1,
+				image.blueparticle1,
+				image.greenparticle1,
+				image.yellowparticle1,
 			}
 			return tbl[math.random(#tbl)]
-		else print("image.lookup.dust Sucka MC") return image.red_particle1 end
+		else print("image.lookup.dust Sucka MC") return image.redparticle1 end
 	end
 }
 
-image.lookup.colorline = {
-	red = love.graphics.newImage('images/ui/blueline.png'),
-	blue = love.graphics.newImage('images/ui/blueline.png'),
-	green = love.graphics.newImage('images/ui/blueline.png'),
-	yellow = love.graphics.newImage('images/ui/blueline.png'),
-}
+
 return image

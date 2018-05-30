@@ -47,8 +47,8 @@ function Charselect:_createCharacterButtons()
 		end
 		self:_createButton{
 			name = char,
-			image = image.charselect[char.."ring"],
-			image_pushed = image.charselect[char.."ring"],
+			image = image["charselect_"..char.."ring"],
+			image_pushed = image["charselect_"..char.."ring"],
 			duration = 30,
 			start_x = -0.05 * i,
 			end_x = end_x,
@@ -60,9 +60,9 @@ function Charselect:_createCharacterButtons()
 			action = function()
 				if self.my_character ~= char then
 					self.my_character = char
-					self.displayed_character_shadow:newImage(image.charselect[char.."shadow"])
-					self.displayed_character:newImage(image.charselect[char.."char"])
-					self.displayed_character_text:newImage(image.charselect[char.."name"])
+					self.displayed_character_shadow:newImage(image["charselect_"..char.."shadow"])
+					self.displayed_character:newImage(image["charselect_"..char.."char"])
+					self.displayed_character_text:newImage(image["charselect_"..char.."name"])
 					self.displayed_character_shadow:reset()
 					self.displayed_character:reset()
 					self.displayed_character_text:reset()
@@ -113,11 +113,11 @@ function Charselect:_createUIButtons()
 	-- start button
 	self:_createButton{
 		name = "start",
-		image = image.button.start,
-		image_pushed = image.button.startpush,
+		image = image.buttons_start,
+		image_pushed = image.buttons_startpush,
 		duration = 15,
 		end_x = stage.width * 0.15,
-		start_y = stage.height + image.button.start:getHeight(),
+		start_y = stage.height + image.buttons_start:getHeight(),
 		end_y = stage.height * 0.9,
 		easing = "outQuad",
 		action = start_action,
@@ -126,11 +126,11 @@ function Charselect:_createUIButtons()
 	-- details button
 	self:_createButton{
 		name = "details",
-		image = image.button.details,
-		image_pushed = image.button.detailspush,
+		image = image.buttons_details,
+		image_pushed = image.buttons_detailspush,
 		duration = 15,
-		end_x = stage.width * 0.155 + image.button.details:getWidth(),
-		start_y = stage.height + image.button.start:getHeight(),
+		end_x = stage.width * 0.155 + image.buttons_details:getWidth(),
+		start_y = stage.height + image.buttons_start:getHeight(),
 		end_y = stage.height * 0.9,
 		easing = "outQuad",
 		action = function()
@@ -143,8 +143,8 @@ function Charselect:_createUIButtons()
 	-- back button
 	self:_createButton{
 		name = "back",
-		image = image.button.back,
-		image_pushed = image.button.backpush,
+		image = image.buttons_back,
+		image_pushed = image.buttons_backpush,
 		duration = 15,
 		end_x = stage.width * 0.05,
 		end_y = stage.height * 0.09,
@@ -157,8 +157,8 @@ function Charselect:_createUIButtons()
 	-- left arrow for background select
 	self:_createButton{
 		name = "backgroundleft",
-		image = image.button.backgroundleft,
-		image_pushed = image.button.backgroundleft,
+		image = image.buttons_backgroundleft,
+		image_pushed = image.buttons_backgroundleft,
 		duration = 60,
 		end_x = stage.width * 0.6,
 		end_y = stage.height * 0.8,
@@ -175,8 +175,8 @@ function Charselect:_createUIButtons()
 	-- right arrow for background select
 	self:_createButton{
 		name = "backgroundright",
-		image = image.button.backgroundright,
-		image_pushed = image.button.backgroundright,
+		image = image.buttons_backgroundright,
+		image_pushed = image.buttons_backgroundright,
 		duration = 60,
 		end_x = stage.width * 0.9,
 		end_y = stage.height * 0.8,
@@ -252,7 +252,7 @@ function Charselect:_createUIImages()
 	-- background_image_frame
 	self:_createImage{
 		name = "backgroundframe",
-		image = image.unclickable.select_stageborder,
+		image = image.unclickables_selectstageborder,
 		duration = 60,
 		end_x = stage.width * 0.75,
 		end_y = stage.height * 0.8,

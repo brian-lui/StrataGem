@@ -5,10 +5,10 @@ local image = require 'image'
 local Pic = require 'pic'
 
 local gemImages = {
-	red = image.red_gem,
-	blue = image.blue_gem,
-	green = image.green_gem,
-	yellow = image.yellow_gem,
+	red = image.redgem,
+	blue = image.bluegem,
+	green = image.greengem,
+	yellow = image.yellowgem,
 }
 
 local Gem = {}

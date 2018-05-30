@@ -125,7 +125,9 @@ function Game:start(gametype, char1, char2, bkground, seed, side)
 	self.statemanager:switch(require "gs_main")
 end
 
+local finished_loading = false
 function Game:update(dt)
+	if not finished_loading then finished_loading = image:updateLoader(dt) end
 	self.client:update(dt)
 	self.sound:update()
 	self:updateDarkenedScreenTracker(dt) -- haha
@@ -338,18 +340,18 @@ function Game:_closeSettingsMenu(gamestate)
 end
 
 --[[	optional arguments:
-	settings_icon: image for the settings icon (defaults to image.button.settings)
-	settings_iconpush: image for the pushed settings icon (defaults to image.button.settingspush)
-	settings_text: image for the text display (defaults to image.unclickable.pausetext)
+	settings_icon: image for the settings icon (defaults to image.buttons_settings)
+	settings_iconpush: image for the pushed settings icon (defaults to image.buttons_settingspush)
+	settings_text: image for the text display (defaults to image.unclickables_pausetext)
 	exitstate: state to exit upon confirm (e.g. "gs_title", "gs_gamestate", "gs_main", "gs_lobby")
 		Defaults to quitting the game if not provided
 --]]
 function Game:_createSettingsMenu(gamestate, params)
 	params = params or {}
 	local stage = self.stage
-	local settings_icon = params.settings_icon or image.button.settings
-	local settings_pushed_icon = params.settings_iconpush or image.button.settingspush
-	local settings_text = params.settings_text or image.unclickable.pausetext
+	local settings_icon = params.settings_icon or image.buttons_settings
+	local settings_pushed_icon = params.settings_iconpush or image.buttons_settingspush
+	local settings_text = params.settings_text or image.unclickables_pausetext
 
 	self:_createButton(gamestate, {
 		name = "settings",
@@ -373,8 +375,8 @@ function Game:_createSettingsMenu(gamestate, params)
 	self:_createButton(gamestate, {
 		name = "open_quit_menu",
 		container = gamestate.ui.popup_clickable,
-		image = image.button.quit,
-		image_pushed = image.button.quitpush,
+		image = image.buttons_quit,
+		image_pushed = image.buttons_quitpush,
 		end_x = stage.settings_locations.quit_button.x,
 		end_y = stage.settings_locations.quit_button.y,
 		action = function()
@@ -385,8 +387,8 @@ function Game:_createSettingsMenu(gamestate, params)
 	self:_createButton(gamestate, {
 		name = "close_settings_menu",
 		container = gamestate.ui.popup_clickable,
-		image = image.button.back,
-		image_pushed = image.button.backpush,
+		image = image.buttons_back,
+		image_pushed = image.buttons_backpush,
 		end_x = stage.settings_locations.close_menu_button.x,
 		end_y = stage.settings_locations.close_menu_button.y,
 		pushed_sfx = "buttonback",
@@ -398,7 +400,7 @@ function Game:_createSettingsMenu(gamestate, params)
 	self:_createImage(gamestate, {
 		name = "sure_to_quit",
 		container = gamestate.ui.popup_static,
-		image = image.unclickable.suretoquit,
+		image = image.unclickables_suretoquit,
 		end_x = stage.settings_locations.confirm_quit_text.x,
 		end_y = stage.settings_locations.confirm_quit_text.y,
 		end_transparency = 0,
@@ -407,7 +409,7 @@ function Game:_createSettingsMenu(gamestate, params)
 	self:_createImage(gamestate, {
 		name = "settingsframe",
 		container = gamestate.ui.popup_static,
-		image = image.unclickable.settingsframe,
+		image = image.unclickables_settingsframe,
 		end_x = stage.settings_locations.frame.x,
 		end_y = stage.settings_locations.frame.y,
 		end_transparency = 0,
@@ -416,8 +418,8 @@ function Game:_createSettingsMenu(gamestate, params)
 	self:_createButton(gamestate, {
 		name = "close_quit_menu",
 		container = gamestate.ui.popup_clickable,
-		image = image.button.no,
-		image_pushed = image.button.nopush,
+		image = image.buttons_no,
+		image_pushed = image.buttons_nopush,
 		end_x = stage.settings_locations.cancel_quit_button.x,
 		end_y = stage.settings_locations.cancel_quit_button.y,
 		end_transparency = 0,
@@ -430,8 +432,8 @@ function Game:_createSettingsMenu(gamestate, params)
 	self:_createButton(gamestate, {
 		name = "confirm_quit",
 		container = gamestate.ui.popup_clickable,
-		image = image.button.yes,
-		image_pushed = image.button.yespush,
+		image = image.buttons_yes,
+		image_pushed = image.buttons_yespush,
 		end_x = stage.settings_locations.confirm_quit_button.x,
 		end_y = stage.settings_locations.confirm_quit_button.y,
 		pushed_sfx = "buttonback",
