@@ -775,12 +775,14 @@ function Grid:destroyMatchedGems(combo_bonus)
 			extra_damage = 1
 		end
 
+		local gain_super = nil
 		local owner = self.game:playerByIndex(gem.owner)
+		if owner then gain_super = owner.gain_super_meter end
 
 		self:destroyGem{
 			gem = gem,
 			extra_damage = extra_damage,
-			super_meter = owner.gain_super_meter,
+			super_meter = gain_super,
 		}
 	end
 end
