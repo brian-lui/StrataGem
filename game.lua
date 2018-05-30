@@ -127,7 +127,10 @@ end
 
 local finished_loading = false
 function Game:update(dt)
-	if not finished_loading then finished_loading = image:updateLoader(dt) end
+	if not finished_loading then
+		finished_loading = image:updateLoader(dt)
+		if finished_loading then print("loaded " .. finished_loading .. " images!") end
+	end
 	self.client:update(dt)
 	self.sound:update()
 	self:updateDarkenedScreenTracker(dt) -- haha

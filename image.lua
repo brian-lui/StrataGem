@@ -75,7 +75,7 @@ local function updateLoader(_self, dt)
 
 	if proceed then
 		if coroutine.status(coroLoadImage) == "dead" then
-			return true -- stop calling when all loaded
+			return count -- stop calling when all loaded
 		else
 			local _, key, img = coroutine.resume(coroLoadImage)
 			if key ~= nil and img ~= nil then
