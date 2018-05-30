@@ -737,9 +737,7 @@ function PlatformStar.generate(game, star_type)
 	if star_type == "TinyStar" then rotation = 0.06 * duration end
 
 	-- p1 star
-	local star = star_type .. "P1"
-	local rand = math.random(1, #image.lookup.platform_star[star])
-	local todraw = image.lookup.platform_star[star][rand]
+	local todraw = image.lookup.platform_star(1, star_type == "TinyStar")
 	local x = math.random(left * stage.width, right_max * stage.width)
 	-- bezier curve for bottom half movement
 	local curve_right_min = math.max(right_min * stage.width, x)
@@ -753,9 +751,7 @@ function PlatformStar.generate(game, star_type)
 		transparency = 0, remove = true}
 
 	-- p2 star
-	star = star_type .. "P2"
-	rand = math.random(1, #image.lookup.platform_star[star])
-	todraw = image.lookup.platform_star[star][rand]
+	local todraw = image.lookup.platform_star(2, star_type == "TinyStar")
 	x = math.random((1-left) * stage.width, (1-right_max) * stage.width)
 	-- bezier curve for bottom half movement
 	curve_right_min = math.min((1-right_min) * stage.width, x)

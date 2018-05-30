@@ -297,12 +297,26 @@ image.lookup.trail_particle = {
 	none = image.dummy,
 }
 
-image.lookup.platform_star = {
-	StarP2 = {image.starparticlesilver1, image.starparticlesilver2, image.starparticlesilver3},
-	StarP1 = {image.starparticlegold1, image.starparticlegold2, image.starparticlegold3},
-	TinyStarP2 = {image.tinystarparticlesilver1, image.tinystarparticlesilver2, image.tinystarparticlesilver3},
-	TinyStarP1 = {image.tinystarparticlegold1, image.tinystarparticlegold2, image.tinystarparticlegold3},
-}
+image.lookup.platform_star = function(player_num, is_tiny)
+	assert(player_num == 1 or player_num == 2, "invalid player_num provided")
+	local image_name
+	local image_num = math.random(3)
+	if player_num == 1 then
+		if is_tiny then
+			image_name = "tinystarparticlegold"
+		else
+			image_name = "starparticlegold"
+		end
+	else
+		if is_tiny then
+			image_name = "tinystarparticlesilver"
+		else
+			image_name = "starparticlesilver"
+		end
+	end
+
+	return image[image_name .. image_num]
+end
 
 image.lookup.dust = {
 	small = function(color, big_possible)
