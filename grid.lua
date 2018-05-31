@@ -276,7 +276,7 @@ end
 	also owned by that player (may be owned by both players).
 	Call this function only once per matching, otherwise intersecting matches
 	will be flagged incorrectly.
-	the addOwner method adds a matched_this_turn flag to the gem, too, for use
+	the addOwner method adds a allow_flag_propagation flag to the gem, too, for use
 	in propagating the flags upwards, in the destroyGem method.
 
 	Also sets .is_in_a_horizontal_match and/or .is_in_a_vertical_match attributes of gems
@@ -640,6 +640,7 @@ function Grid:dropColumns(params)
 			end
 		end
 	end
+	print("dropping columns with time ", max_anim_duration)
 	return max_anim_duration
 end
 
@@ -871,13 +872,13 @@ function Grid:destroyGem(params)
 	}
 
 	-- flag above gems
+	print("allowed propagate up?", params.gem.allow_flag_propagation)
 	if params.propagate_flags_up ~= false then
-		assert(gem.row, "Gem doesn't have .row property!")
 		for i = gem.row - 1, 1, -1 do
 			local current_gem = self[i][gem.column].gem
 			if current_gem then
-				 -- skip propagation if this gem was part of a match
-				if not current_gem.matched_this_turn then
+				 -- skip propagation if this gem was part of (another) match
+				if not current_gem.set_due_to_match then
 					current_gem:setOwner(gem.owner)
 				end
 			end
@@ -953,7 +954,14 @@ function Grid:animateGameOver(loser_num)
 		for col in game.grid:cols(loser_num) do
 			if self[row][col].gem then
 				local gem = self[row][col].gem
-				local img = image.lookup.grey_gem_crumble[gem.color]
+				local img
+				if gem.color == "red" or gem.color == "blue" or	gem.color == "green" or
+				gem.color == "yellow" then
+					img = image["gem_grey_" .. gem.color]
+				else
+					img = gem.grey_exploding_gem_image
+					assert(img, "No grey gem image found for grey_exploding_gem_image")
+				end
 				particles.gemImage.generate{game = game, x = gem.x, y = gem.y, image = img,
 					duration = duration, delay_frames = delay}
 			end

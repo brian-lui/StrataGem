@@ -169,7 +169,16 @@ function Gem:setOwner(player, set_due_to_match)
 	else
 		self.owner = player
 	end
-	if set_due_to_match then self.matched_this_turn = true end
+	if set_due_to_match then
+		self.set_due_to_match = true
+		self:allowFlagPropagation()
+	end
+end
+
+-- sometimes we don't want to propagate flags up if they were removed by
+-- a special move or passive
+function Gem:allowFlagPropagation()
+	self.allow_flag_propagation = true
 end
 
 function Gem:addOwner(player)

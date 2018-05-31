@@ -110,7 +110,7 @@ function Wolfgang:init(...)
 	}
 
 	self.FULL_BARK_DOG_ADDS = 2
-	self.BAD_DOG_DURATION = 3
+	self.BAD_DOG_DURATION = 1
 	self.SUPER_DOG_CREATION_DELAY = 45 -- in frames
 	self.this_turn_matched_colors = {}
 	self.bad_dogs = {} -- dict of {dog-gem, turns remaining to disappearance}
@@ -386,6 +386,7 @@ function Wolfgang:_upkeepBadDogs()
 	for dog, counter in pairs(self.bad_dogs) do
 		if counter == 0 then
 			dog.indestructible = false
+			dog:allowFlagPropagation()
 			self.game.grid:destroyGem{
 				gem = dog,
 				super_meter = false,
@@ -399,7 +400,7 @@ function Wolfgang:_upkeepBadDogs()
 		self.bad_dogs[dog] = nil
 		any_dogs_destroyed = true
 	end
-
+	print("any dogs destroyed?", any_dogs_destroyed)
 	return any_dogs_destroyed
 end
 
@@ -555,6 +556,7 @@ function Wolfgang:afterAllMatches()
 
 	-- if any bad dogs were destroyed, go to gravity phase again
 	local force_gravity_phase = self:_upkeepBadDogs()
+	if force_gravity_phase then print("going to gravity phase") end
 	return delay, force_gravity_phase
 end
 
