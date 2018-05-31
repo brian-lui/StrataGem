@@ -23,17 +23,17 @@ Walter.shadow_image = love.graphics.newImage('images/portraits/waltershadow.png'
 Walter.super_fuzz_image = love.graphics.newImage('images/ui/superfuzzblue.png')
 
 Walter.super_images = {
-	word = image.UI.super.blue_word,
-	empty = image.UI.super.blue_empty,
-	full = image.UI.super.blue_full,
-	glow = image.UI.super.blue_glow,
+	word = image.ui_super_text_blue,
+	empty = image.ui_super_empty_blue,
+	full = image.ui_super_full_blue,
+	glow = image.ui_super_glow_blue,
 	overlay = love.graphics.newImage('images/characters/walter/walterlogo.png'),
 }
 
 Walter.burst_images = {
-	partial = image.UI.burst.blue_partial,
-	full = image.UI.burst.blue_full,
-	glow = {image.UI.burst.blue_glow1, image.UI.burst.blue_glow2}
+	partial = image.ui_burst_part_blue,
+	full = image.ui_burst_full_blue,
+	glow = {image.ui_burst_partglow_blue, image.ui_burst_fullglow_blue}
 }
 
 Walter.special_images = {
@@ -420,7 +420,7 @@ function HealingCloud.generate(game, owner, col)
 		local dust_distance = img_width * (math.random() + 1)
 		local dust_rotation = math.random() < 0.5 and 30 or -30
 		local dust_p_type = math.random() < 0.5 and "Dust" or "OverDust"
-		local dust_image = image.lookup.dust.small("blue", false)
+		local dust_image = image.lookup.smalldust("blue", false)
  		local angle = math.random() * math.pi * 2
  		local x_start = dust_distance * math.cos(angle) + x
  		local y_start = dust_distance * math.sin(angle) + y
@@ -513,7 +513,7 @@ end
 function MatchDust.generate(game, owner, match_list)
 	local grid = game.grid
 	local dust_color = match_list[1].color
-	local img = image.lookup.dust.small(dust_color, false)
+	local img = image.lookup.smalldust(dust_color, false)
 	assert(img, "Invalid color specified for dust")
 
 	for i = 1, #match_list do

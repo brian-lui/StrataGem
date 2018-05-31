@@ -12,8 +12,8 @@ local HALF_SUPER_HEIGHT = 0.09 * drawspace.height
 function stage:init(game)
 	self.width = drawspace.width
 	self.height = drawspace.height
-	self.gem_width = image.redgem:getWidth()
-	self.gem_height = image.redgem:getHeight()
+	self.gem_width = image.gem_red:getWidth()
+	self.gem_height = image.gem_red:getHeight()
 	self.x_mid = self.width / 2
 	self.y_mid = self.height / 2
 	self.super_click = {
@@ -23,7 +23,7 @@ function stage:init(game)
 	self.burst = {P1 = {}, P2 = {}}
 	self.burst.P1.frame = {x = self.x_mid - (9.5 * self.gem_width), y = self.y_mid - 3 * self.gem_height}
 	self.burst.P2.frame = {x = self.x_mid + (9.5 * self.gem_width), y = self.y_mid - 3 * self.gem_height}
-	local burst_width = image.UI.burst.red_partial:getWidth()
+	local burst_width = image.ui_burst_part_red:getWidth()
 
 	for i = 1, 2 do
 		self.burst.P1[i] = {
@@ -74,7 +74,7 @@ function stage:init(game)
 	self.timer = {x = self.x_mid, y = self.height * 0.3}
 	self.timertext = {x = self.x_mid, y = self.height * 0.28}
 
-	self.tub = {x = self.x_mid, y = self.height * 0.646}
+	self.basin = {x = self.x_mid, y = self.height * 0.646}
 	self.settings_button = {
 		gs_main = {x = self.x_mid, y = self.height * 0.957},
 		title = {x = self.width * 0.92, y = self.height * 0.91},

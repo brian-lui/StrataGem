@@ -11,16 +11,16 @@ Diggory.small_image = love.graphics.newImage('images/portraits/diggorysmall.png'
 Diggory.character_id = "Diggory"
 Diggory.meter_gain = {red = 4, blue = 4, green = 4, yellow = 8, none = 4, wild = 4}
 Diggory.super_images = {
-	word = image.UI.super.yellow_word,
-	empty = image.UI.super.yellow_empty,
-	full = image.UI.super.yellow_full,
-	glow = image.UI.super.yellow_glow,
+	word = image.ui_super_text_yellow,
+	empty = image.ui_super_empty_yellow,
+	full = image.ui_super_full_yellow,
+	glow = image.ui_super_glow_yellow,
 	overlay = love.graphics.newImage('images/dummy.png'),
 }
 Diggory.burst_images = {
-	partial = image.UI.burst.yellow_partial,
-	full = image.UI.burst.yellow_full,
-	glow = {image.UI.burst.yellow_glow1, image.UI.burst.yellow_glow2}
+	partial = image.ui_burst_part_yellow,
+	full = image.ui_burst_full_yellow,
+	glow = {image.ui_burst_partglow_yellow, image.ui_burst_fullglow_yellow}
 }
 
 Diggory.sounds = {

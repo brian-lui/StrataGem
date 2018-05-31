@@ -31,7 +31,7 @@ function Grid:init(game)
 	self.BASIN_END_ROW = 20
 
 	local stage = game.stage
-	local tub_bottom = stage.height * 0.95
+	local basin_bottom = stage.height * 0.95
 	self.game = game
 	self.x = {}
 	self.y = {}
@@ -46,16 +46,16 @@ function Grid:init(game)
 	for i = 1, 6 do self.y[i] = stage.gem_height * (i - 8) end
 
 	-- landing gem positions
-	self.y[7] = tub_bottom - 11.75 * stage.gem_height
-	self.y[8] = tub_bottom - 10.75 * stage.gem_height
-	self.y[9] = tub_bottom - 10.75 * stage.gem_height
-	self.y[10] = tub_bottom - 9.75 * stage.gem_height
-	self.y[11] = tub_bottom - 9.75 * stage.gem_height
-	self.y[12] = tub_bottom - 8.75 * stage.gem_height
+	self.y[7] = basin_bottom - 11.75 * stage.gem_height
+	self.y[8] = basin_bottom - 10.75 * stage.gem_height
+	self.y[9] = basin_bottom - 10.75 * stage.gem_height
+	self.y[10] = basin_bottom - 9.75 * stage.gem_height
+	self.y[11] = basin_bottom - 9.75 * stage.gem_height
+	self.y[12] = basin_bottom - 8.75 * stage.gem_height
 
 	-- basin positions
 	for i = self.BASIN_START_ROW, self.BASIN_END_ROW + 1 do
-		self.y[i] = tub_bottom + (i - self.ROWS - 0.75) * stage.gem_height
+		self.y[i] = basin_bottom + (i - self.ROWS - 0.75) * stage.gem_height
 	end
 
 	for row = self.PENDING_START_ROW, self.BASIN_END_ROW + 1 do
@@ -571,8 +571,8 @@ function Grid:addBottomRow(player, skip_animation)
 		if not skip_animation then
 			local x = grid.x[col]
 			local y = grid.y[grid.BOTTOM_ROW]
-			local pop_image = image.lookup.pop_particle[gem_color]
-			local explode_image = image["gemexplode_"..gem_color]
+			local pop_image = image["gem_pop_" .. gem_color]
+			local explode_image = image["gem_explode_"..gem_color]
 
 			particles.dust.generateGarbageCircle{game = game, x = x, y = y,
 				color = gem_color}
@@ -676,7 +676,7 @@ end
 
 
 function Grid:getIDs()
--- returns the ID, column, row of all gems in the tub
+-- returns the ID, column, row of all gems in the basin
 	local ret = {}
 	for gem in self:gems() do
 		if gem then

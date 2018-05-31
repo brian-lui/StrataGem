@@ -267,7 +267,7 @@ function Piece:getColumns(shift)
 	return ret
 end
 
--- Checks that all gems are within columns 1-8 of the tub, and not overlapping midline.
+-- Checks that all gems are within columns 1-8 of the basin, and not overlapping midline.
 -- accepts optional boolean to test for midline-shifted piece
 function Piece:isDropLegal(test_shifted_piece)
 	local shift = nil
@@ -276,15 +276,15 @@ function Piece:isDropLegal(test_shifted_piece)
 		if midline then	shift = on_left and -1 or 1	end
 	end
 	local cols = self:getColumns(shift)
-	local gems_in_my_tub = 0
+	local gems_in_my_basin = 0
 	for i = 1, self.size do
 		if not cols[i] then
 			return false
 		elseif cols[i] >= self.owner.start_col and cols[i] <= self.owner.end_col then
-			gems_in_my_tub = gems_in_my_tub + 1
+			gems_in_my_basin = gems_in_my_basin + 1
 		end
 	end
-	return gems_in_my_tub == self.size or gems_in_my_tub == 0
+	return gems_in_my_basin == self.size or gems_in_my_basin == 0
 end
 
 -- Checks if the drop location is a legal drop location, and also that the player
@@ -294,24 +294,24 @@ function Piece:isDropValid(shift)
 	local player = self.owner
 	local place_type
 	local cols = self:getColumns(shift)
-	local gems_in_my_tub = 0
+	local gems_in_my_basin = 0
 	if self.game.current_phase ~= "Action" then return false end
 	for i = 1, self.size do
 		if not cols[i] then
 			return false
 		elseif cols[i] >= player.start_col and cols[i] <= player.end_col then
-			gems_in_my_tub = gems_in_my_tub + 1
+			gems_in_my_basin = gems_in_my_basin + 1
 		end
 	end
 	if not player.dropped_piece then
-		if gems_in_my_tub == self.size then
+		if gems_in_my_basin == self.size then
 			place_type = "normal"
-		elseif gems_in_my_tub == 0 and self:isValidRush() then
+		elseif gems_in_my_basin == 0 and self:isValidRush() then
 			place_type = "rush"
 		else
 			return false
 		end
-	elseif gems_in_my_tub == self.size and player.cur_burst >= player.current_double_cost
+	elseif gems_in_my_basin == self.size and player.cur_burst >= player.current_double_cost
 		and player.dropped_piece == "normal" then
 			place_type = "double"
 	else

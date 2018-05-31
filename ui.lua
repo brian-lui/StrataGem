@@ -23,13 +23,13 @@ function Timer:init(game)
 		game = game,
 		x = stage.timer.x,
 		y = stage.timer.y,
-		image = image.UI.timer_gauge,
+		image = image.ui_timer_gauge,
 	}
 	self.timerbar = Pic:create{
 		game = game,
 		x = stage.timer.x,
 		y = stage.timer.y,
-		image = image.UI.timer_bar,
+		image = image.ui_timer_bar,
 	}
 	self.timertext = Pic:create{
 		game = game,
@@ -62,7 +62,7 @@ function Timer:update(dt)
 		self.timertext.scaling = self.text_scaling(t)
 		self.timertext.transparency = self.text_transparency(t)
 		if self.time_remaining_int < previous_time_remaining_int then
-			self.timertext:newImage(image.UI.timer[self.time_remaining_int])
+			self.timertext:newImage(image["ui_timer_" .. self.time_remaining_int])
 			self.game.sound:newSFX("countdown"..self.time_remaining_int)
 		end
 	else
@@ -100,7 +100,7 @@ function Burst:init(game, character, player_num)
 		print("invalid player_num provided")
 	end
 
-	local frame_img = ID == "P1" and image.UI.gauge_gold or image.UI.gauge_silver
+	local frame_img = ID == "P1" and image.ui_burst_gauge_gold or image.ui_burst_gauge_silver
 	self.burst_frame = Pic:create{
 		game = self.game,
 		x = stage.burst[ID].frame.x,
@@ -197,7 +197,7 @@ function Super:_generateSingleTwinkle()
 	local color_lookup = self.character.primary_colors
 	local idx = math.random(#color_lookup)
 	local image_color = color_lookup[idx]
-	local img = image.lookup.dust.star(image_color)
+	local img = image.lookup.stardust(image_color)
 
 	local super_frame = self.super_frame
 	local x = super_frame.x + super_frame.width * (math.random() - 0.5)
@@ -357,7 +357,7 @@ function ui:init(game)
 	self.game = game
 	self.timer = common.instance(Timer, game)
 	-- Red X shown on gems in invalid placement spots
-	self.redX = Pic:create{game = game, x = 0, y = 0, image = image.UI.redX}
+	self.redx = Pic:create{game = game, x = 0, y = 0, image = image.ui_redx}
 	self.components = components
 end
 
@@ -480,8 +480,8 @@ local function drawDestinationShadow(self, piece, shift, account_for_doublecast)
 
 	for i = 1, piece.size do
 		toshow[i] = {}
-		toshow[i].x = grid.x[ drop_locs[i][1] ] -- tub c column
-		toshow[i].y = grid.y[ drop_locs[i][2] ] -- tub r row
+		toshow[i].x = grid.x[ drop_locs[i][1] ] -- basin c column
+		toshow[i].y = grid.y[ drop_locs[i][2] ] -- basin r row
 		if toshow[i].x and toshow[i].y then
 			piece.gems[i]:draw{pivot_x = toshow[i].x, pivot_y = toshow[i].y, RGBTable = {255, 255, 255, 160}}
 		end
@@ -515,7 +515,7 @@ function ui:showX(piece)
 
 	for i = piece.size, 1, -1 do
 		if (legal or midline) and not valid then
-			self.redX:draw{x = piece.gems[i].x, y = piece.gems[i].y}
+			self.redx:draw{x = piece.gems[i].x, y = piece.gems[i].y}
 		end
 	end
 end

@@ -12,16 +12,16 @@ Ivy.character_id = "Ivy"
 Ivy.meter_gain = {red = 4, blue = 4, green = 8, yellow = 4, none = 4, wild = 4}
 
 Ivy.super_images = {
-	word = image.UI.super.green_word,
-	empty = image.UI.super.green_empty,
-	full = image.UI.super.green_full,
-	glow = image.UI.super.green_glow,
+	word = image.ui_super_text_green,
+	empty = image.ui_super_empty_green,
+	full = image.ui_super_full_green,
+	glow = image.ui_super_glow_green,
 	overlay = love.graphics.newImage('images/dummy.png'),
 }
 Ivy.burst_images = {
-	partial = image.UI.burst.green_partial,
-	full = image.UI.burst.green_full,
-	glow = {image.UI.burst.green_glow1, image.UI.burst.green_glow2}
+	partial = image.ui_burst_part_green,
+	full = image.ui_burst_full_green,
+	glow = {image.ui_burst_partglow_green, image.ui_burst_fullglow_green}
 }
 
 Ivy.sounds = {

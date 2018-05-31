@@ -24,16 +24,16 @@ Wolfgang.character_id = "Wolfgang"
 Wolfgang.meter_gain = {red = 8, blue = 4, green = 4, yellow = 4, none = 4, wild = 4}
 
 Wolfgang.super_images = {
-	word = image.UI.super.red_word,
-	empty = image.UI.super.red_empty,
-	full = image.UI.super.red_full,
-	glow = image.UI.super.red_glow,
+	word = image.ui_super_text_red,
+	empty = image.ui_super_empty_red,
+	full = image.ui_super_full_red,
+	glow = image.ui_super_glow_red,
 	overlay = love.graphics.newImage('images/characters/wolfgang/wolfganglogo.png'),
 }
 Wolfgang.burst_images = {
-	partial = image.UI.burst.red_partial,
-	full = image.UI.burst.red_full,
-	glow = {image.UI.burst.red_glow1, image.UI.burst.red_glow2}
+	partial = image.ui_burst_part_red,
+	full = image.ui_burst_full_red,
+	glow = {image.ui_burst_partglow_red, image.ui_burst_fullglow_red}
 }
 
 Wolfgang.special_images = {
@@ -48,19 +48,19 @@ Wolfgang.special_images = {
 		love.graphics.newImage('images/characters/wolfgang/badrussel.png'),
 	},
 	dog_explode = {
-		image.gemexplode_red,
-		image.gemexplode_red,
-		image.gemexplode_red,
+		image.gem_explode_red,
+		image.gem_explode_red,
+		image.gem_explode_red,
 	},
 	dog_grey = {
-		image.lookup.grey_gem_crumble.red,
-		image.lookup.grey_gem_crumble.red,
-		image.lookup.grey_gem_crumble.red,
+		image.gem_grey_red,
+		image.gem_grey_red,
+		image.gem_grey_red,
 	},
 	dog_pop = {
-		image.lookup.pop_particle.red,
-		image.lookup.pop_particle.red,
-		image.lookup.pop_particle.red,
+		image.gem_pop_red,
+		image.gem_pop_red,
+		image.gem_pop_red,
 	},
 	red = {
 		dark = love.graphics.newImage('images/characters/wolfgang/r.png'),
@@ -277,6 +277,7 @@ function Wolfgang:_turnRandomFriendlyBasinGemToDog()
 	end
 end
 
+--[[
 -- Turn a hand piece into a dog. Was previously used for Wolfgang super
 -- Currently unused
 function Wolfgang:_turnPieceToDog(hand_idx, both)
@@ -327,6 +328,7 @@ function Wolfgang:_turnPieceToDog(hand_idx, both)
 	end
 	self:_assignBadDogImages()
 end
+--]]
 
 -- Goes through hand dogs and writes the bad dog images. No hurry to do so,
 -- since it won't matter until next action phase, so we do it in cleanup phase

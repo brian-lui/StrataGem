@@ -1,54 +1,94 @@
 local love = _G.love
 
+local gem_colors = {"red", "blue", "green", "yellow"}
+
 -- A table {name, file location} of all the images to be gradually loaded
 local image_data = {}
-local count = 1
 
-local buttons = {"vscpu", "vscpupush", "netplay", "netplaypush", "back", "backpush",
+local buttons = {
+	"vscpu", "vscpupush", "netplay", "netplaypush", "back", "backpush",
 	"details", "detailspush", "start", "startpush", "backgroundleft", "backgroundright",
 	"lobbycreatenew", "lobbyqueueranked", "lobbycancelsearch", "pause", "stop",
-	"settings", "settingspush", "yes", "yespush", "no", "nopush", "quit", "quitpush"}
-for _, item in pairs(buttons) do
-	image_data["buttons_" .. item] = "images/buttons/" .. item .. ".png"
-	count = count + 1
-end
+	"settings", "settingspush", "yes", "yespush", "no", "nopush", "quit", "quitpush"
+}
 
-local unclickables = {"titlelogo", "lobbygamebackground", "lobbysearchingnone",
-	"lobbysearchingranked", "selectstageborder", "settingsframe", "suretoquit", "pausetext"}
-for _, item in pairs(unclickables) do
-	image_data["unclickables_" .. item] = "images/unclickables/" .. item .. ".png"
-	count = count + 1
-end
+local unclickables = {
+	"titlelogo", "lobbygamebackground", "lobbysearchingnone", "lobbysearchingranked",
+	"selectstageborder", "settingsframe", "suretoquit", "pausetext"
+}
 
-local gems = {"redgem", "bluegem", "greengem", "yellowgem", "gemexplode_red",
-	"gemexplode_blue", "gemexplode_green", "gemexplode_yellow"}
-for _, item in pairs(gems) do
-	image_data[item] = "images/gems/" .. item .. ".png"
-	count = count + 1
-end
+local gem = {
+	"red", "blue", "green", "yellow",
+	"explode_red", "explode_blue", "explode_green", "explode_yellow",
+	"grey_red", "grey_blue", "grey_green", "grey_yellow",
+	"pop_red", "pop_blue", "pop_green", "pop_yellow",
+}
+local words = {
+	"doublecast", "rush", "ready", "go", "gameoverthanks", "norushonecolumn",
+	"norushfull", "doublecastcloudh", "doublecastcloudv", "rushcloudh",
+	"rushcloudv", "rushparticle", "gostar",
+}
 
-local particles = {"redparticle1", "redparticle2", "redparticle3", "blueparticle1",
-	"blueparticle2", "blueparticle3", "greenparticle1", "greenparticle2",
-	"greenparticle3", "yellowparticle1", "yellowparticle2", "yellowparticle3",
-	"healingparticle1", "healingparticle2", "healingparticle3", "starparticlesilver1",
-	"starparticlesilver2", "starparticlesilver3", "starparticlegold1",
-	"starparticlegold2", "starparticlegold3", "tinystarparticlesilver1",
-	"tinystarparticlesilver2", "tinystarparticlesilver3", "tinystarparticlegold1",
-	"tinystarparticlegold2", "tinystarparticlegold3"}
+local ui = {
+	"basin", "platform_gold", "platform_silver", "platform_red", "redx",
+	"timer_gauge", "timer_bar", "timer_1", "timer_2", "timer_3",
+	"super_text_red", "super_text_blue", "super_text_green", "super_text_yellow",
+	"super_empty_red", "super_empty_blue", "super_empty_green", "super_empty_yellow",
+	"super_full_red", "super_full_blue", "super_full_green", "super_full_yellow",
+	"super_glow_red", "super_glow_blue", "super_glow_green", "super_glow_yellow",
+	"burst_gauge_silver", "burst_gauge_gold",
+	"burst_part_red", "burst_part_blue", "burst_part_green", "burst_part_yellow",
+	"burst_full_red", "burst_full_blue", "burst_full_green", "burst_full_yellow",
+	"burst_partglow_red", "burst_partglow_blue", "burst_partglow_green", "burst_partglow_yellow",
+	"burst_fullglow_red", "burst_fullglow_blue", "burst_fullglow_green", "burst_fullglow_yellow",
+	"starpiece1", "starpiece2", "starpiece3", "starpiece4",
+}
+
+local particles = {
+	"star_normal_silver1", "star_normal_silver2", "star_normal_silver3",
+	"star_normal_gold1", "star_normal_gold2", "star_normal_gold3",
+	"star_tiny_silver1", "star_tiny_silver2", "star_tiny_silver3",
+	"star_tiny_gold1", "star_tiny_gold2", "star_tiny_gold3",
+	"particle_red_1", "particle_red_2", "particle_red_3",
+	"particle_blue_1", "particle_blue_2", "particle_blue_3",
+	"particle_green_1", "particle_green_2", "particle_green_3",
+	"particle_yellow_1", "particle_yellow_2", "particle_yellow_3",
+	"particle_healing_1", "particle_healing_2", "particle_healing_3",
+	"particle_super_red", "particle_super_blue", "particle_super_green", "particle_super_yellow",
+	"trail_red", "trail_blue", "trail_green", "trail_yellow", "trail_healing",
+}
 for _, item in pairs(particles) do
 	image_data[item] = "images/particles/" .. item .. ".png"
-	count = count + 1
 end
 
-local selectablechars = {"heath", "walter", "gail", "holly", "wolfgang",
-	"hailey", "diggory", "buzz", "ivy", "joy", "mort", "damon"}
+local selectablechars = {
+	"heath", "walter", "gail", "holly", "wolfgang",	"hailey", "diggory",
+	"buzz", "ivy", "joy", "mort", "damon"
+}
 for _, item in pairs(selectablechars) do
 	image_data["charselect_"..item.."char"] = "images/portraits/"..item.."action.png"
 	image_data["charselect_"..item.."shadow"] = "images/portraits/"..item.."shadow.png"
-	image_data["charselect_"..item.."name"] = "images/words/"..item.."name.png"
+	image_data["charselect_"..item.."name"] = "images/charselect/"..item.."name.png"
 	image_data["charselect_"..item.."ring"] = "images/charselect/"..item.."ring.png"
 end
 
+-- categories to create, in the form [key] = {category}
+-- assumes that key is the same as pathname
+-- e.g. buttons = buttons will create
+-- image_data["buttons_" .. item] = "images/buttons/" .. item .. ".png"
+local categories = {
+	buttons = buttons,
+	unclickables = unclickables,
+	words = words,
+	ui = ui,
+	gem = gem,
+}
+
+for str, tbl in pairs(categories) do
+	for _, item in pairs(tbl) do
+		image_data[str .. "_" .. item] = "images/" .. str .. "/" .. item .. ".png"
+	end
+end
 
 -- coroutine that yields a single image each time it's called
 local function loadImage()
@@ -62,10 +102,12 @@ local load_dt = 0
 local load_step = 0.02
 local already_loaded = false
 -- every load_step seconds it loads a new image and writes it
+local LOAD_DT_LIMIT = 500000 -- bytes to load per load_dt
+local bytes_used = 0
 local function updateLoader(_self, dt)
 	load_dt = load_dt + dt
-
 	local proceed = false
+
 	if already_loaded == true then
 		proceed = true
 	elseif load_dt > load_step then
@@ -75,6 +117,8 @@ local function updateLoader(_self, dt)
 
 	if proceed then
 		if coroutine.status(coroLoadImage) == "dead" then
+			local count = 0
+			for _ in pairs(image_data) do count = count + 1 end
 			return count -- stop calling when all loaded
 		else
 			local _, key, img = coroutine.resume(coroLoadImage)
@@ -85,13 +129,20 @@ local function updateLoader(_self, dt)
 				else
 					_self[key] = img
 					already_loaded = false
+					local w, h = img:getDimensions()
+					bytes_used = bytes_used + 4 * w * h + LOAD_DT_LIMIT * 0.3
+					if bytes_used < LOAD_DT_LIMIT then
+						updateLoader(_self, 0)
+					else
+						bytes_used = 0
+					end
 				end
 			end
 		end
 	end
 end
 
-local gem_colors = {"red", "blue", "green", "yellow"}
+
 local image = {
 	updateLoader = updateLoader,
 	lookup = {},
@@ -101,7 +152,8 @@ local image = {
 -- If an image isn't loaded yet but is called, immediately load it
 local fallback = {
 	__index = function(t, k)
-		print("using fallback for " .. k)
+		print("using fallback for " .. k .. " at:")
+		print(image_data[k])
 		local img = love.graphics.newImage(image_data[k])
 		t[k] = img
 		return img
@@ -109,16 +161,14 @@ local fallback = {
 }
 setmetatable(image, fallback)
 
-image.GEM_WIDTH = image.redgem:getWidth()
-image.GEM_HEIGHT = image.redgem:getHeight()
-
-
+image.GEM_WIDTH = image.gem_red:getWidth()
+image.GEM_HEIGHT = image.gem_red:getHeight()
 
 image.dust = {}
 for _, c in pairs(gem_colors) do
 	for i = 1, 3 do
 		-- e.g. image.dust.red1 = love.graphics.newImage('images/particles/reddust1.png')
-		image.dust[c..i] = love.graphics.newImage('images/particles/'..c..'dust'..i..'.png')
+		image.dust[c..i] = love.graphics.newImage('images/particles/dust_'..c..i..'.png')
 	end
 end
 
@@ -163,195 +213,103 @@ for i = 1, 6 do
 	image.background.cloud["smallcloud"..i] =	love.graphics.newImage('images/backgrounds/cloud/smallcloud'..i..'.png')
 end
 
-image.UI = {
-	tub = love.graphics.newImage('images/ui/basin.png'),
-	platform_gold = love.graphics.newImage('images/ui/platformstargold.png'),
-	platform_silver = love.graphics.newImage('images/ui/platformstarsilver.png'),
-	platform_red = love.graphics.newImage('images/ui/platformstarred.png'),
-	redX = love.graphics.newImage('images/ui/redx.png'),
-	timer_gauge = love.graphics.newImage('images/ui/timergauge.png'),
-	timer_bar = love.graphics.newImage('images/ui/timerbar.png'),
-	gauge_silver = love.graphics.newImage('images/ui/gaugesilver.png'),
-	gauge_gold = love.graphics.newImage('images/ui/gaugegold.png'),
-	starpiece = {
-		love.graphics.newImage('images/ui/starbreak1.png'),
-		love.graphics.newImage('images/ui/starbreak2.png'),
-		love.graphics.newImage('images/ui/starbreak3.png'),
-		love.graphics.newImage('images/ui/starbreak4.png'),
-	}
-}
-
-image.UI.timer = {}
-for i = 1, 3 do
-	image.UI.timer[i] = love.graphics.newImage('images/numbers/' .. i .. '.png')
-end
-
-image.UI.super = {}
-local super_colors = {"red", "blue", "green", "yellow"}
-for _, c in pairs(super_colors) do
-	image.UI.super[c.."_word"] = love.graphics.newImage('images/words/supertext'..c..'.png')
-	image.UI.super[c.."_empty"] = love.graphics.newImage('images/ui/'..c..'superempty.png')
-	image.UI.super[c.."_full"] = love.graphics.newImage('images/ui/'..c..'superfull.png')
-	image.UI.super[c.."_glow"] = love.graphics.newImage('images/ui/'..c..'superglow.png')
-end
-
-image.UI.burst = {}
-local burst_colors = {"red", "blue", "green", "yellow"}
-for _, c in pairs(burst_colors) do
-	image.UI.burst[c .. "_partial"] = love.graphics.newImage('images/ui/' .. c .. 'segmentpartial.png')
-	image.UI.burst[c .. "_full"] = love.graphics.newImage('images/ui/' .. c .. 'segmentfull.png')
-	for i = 1, 2 do
-		image.UI.burst[c .. "_glow" .. i] = love.graphics.newImage('images/ui/' .. c .. 'barglow' .. i .. '.png')
-	end
-end
-
-image.words = {
-	doublecast = love.graphics.newImage('images/words/doublecast.png'),
-	rush = love.graphics.newImage('images/words/rush.png'),
-	ready = love.graphics.newImage('images/words/ready.png'),
-	go = love.graphics.newImage('images/words/go.png'),
-	gameoverthanks = love.graphics.newImage('images/words/gameoverthanks.png'),
-	no_rush_one_column = love.graphics.newImage('images/words/norushonecolumn.png'),
-	no_rush_full = love.graphics.newImage('images/words/norushfull.png'),
-
-	doublecast_cloud_h = love.graphics.newImage('images/words/doublecasthori.png'),
-	doublecast_cloud_v = love.graphics.newImage('images/words/doublecastvert.png'),
-	rush_cloud_h = love.graphics.newImage('images/words/rushhori.png'),
-	rush_cloud_v = love.graphics.newImage('images/words/rushvert.png'),
-	rush_particle = love.graphics.newImage('images/words/rushparticle.png'),
-	go_star = image.UI.platform_gold,
-}
-
-image.lookup.words_ready = function(size)
+function image.lookup.words_ready(size)
 	assert(size == "small" or size == "large", "invalid size")
 	local ret
 	if size == "small" then
 		local choice = {
-			image.tinystarparticlesilver1,
-			image.tinystarparticlesilver2,
-			image.tinystarparticlesilver3,
+			image.star_tiny_silver1,
+			image.star_tiny_silver2,
+			image.star_tiny_silver3,
 		}
 		ret = choice[math.random(#choice)]
 	else
 		local choice = {
-			image.starparticlesilver1,
-			image.starparticlesilver2,
-			image.starparticlesilver3,
+			image.star_normal_silver1,
+			image.star_normal_silver2,
+			image.star_normal_silver3,
 		}
 		ret = choice[math.random(#choice)]
 	end
 	return ret
 end
 
-image.lookup.grey_gem_crumble = {
-	red = love.graphics.newImage('images/gems/redgemgrey.png'),
-	blue = love.graphics.newImage('images/gems/bluegemgrey.png'),
-	green = love.graphics.newImage('images/gems/greengemgrey.png'),
-	yellow = love.graphics.newImage('images/gems/yellowgemgrey.png'),
-	none = image.dummy,
-}
-
-image.lookup.particle_freq = function(color)
+function image.lookup.particle_freq(color)
 	local image_num_freq = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 3}
 	local image_num = image_num_freq[math.random(#image_num_freq)]
 	local image_color = color
 	if color == "wild" then image_color = gem_colors[math.random(#gem_colors)] end
-	local image_name = image_color .. "particle" .. image_num
+	local image_name = "particle_" .. image_color .. "_" .. image_num
 	if color == "none" then image_name = "dummy" end
 	return image[image_name]
 end
 
-image.lookup.super_particle = {
-	red = love.graphics.newImage('images/particles/redsuperparticle.png'),
-	blue = love.graphics.newImage('images/particles/bluesuperparticle.png'),
-	green = love.graphics.newImage('images/particles/greensuperparticle.png'),
-	yellow = love.graphics.newImage('images/particles/yellowsuperparticle.png'),
-	none = image.dummy,
-}
-
-image.lookup.pop_particle = {
-	red = love.graphics.newImage('images/gems/popred.png'),
-	blue = love.graphics.newImage('images/gems/popblue.png'),
-	green = love.graphics.newImage('images/gems/popgreen.png'),
-	yellow = love.graphics.newImage('images/gems/popyellow.png'),
-	none = image.dummy,
-}
-
-image.lookup.trail_particle = {
-	red = love.graphics.newImage('images/particles/redtrail.png'),
-	blue = love.graphics.newImage('images/particles/bluetrail.png'),
-	green = love.graphics.newImage('images/particles/greentrail.png'),
-	yellow = love.graphics.newImage('images/particles/yellowtrail.png'),
-	healing = love.graphics.newImage('images/particles/healingtrail.png'),
-	none = image.dummy,
-}
-
-image.lookup.platform_star = function(player_num, is_tiny)
+function image.lookup.platform_star(player_num, is_tiny)
 	assert(player_num == 1 or player_num == 2, "invalid player_num provided")
 	local image_name
 	local image_num = math.random(3)
 	if player_num == 1 then
-		image_name = is_tiny and "tinystarparticlegold" or "starparticlegold"
+		image_name = is_tiny and "star_tiny_gold" or "star_normal_gold"
 	else
-		image_name = is_tiny and "tinystarparticlesilver" or "starparticlesilver"
+		image_name = is_tiny and "star_tiny_silver" or "star_normal_silver"
 	end
 
 	return image[image_name .. image_num]
 end
 
-image.lookup.dust = {
-	small = function(color, big_possible)
-		if big_possible ~= false then big_possible = true end
-		local star_instead = big_possible and math.random() < 0.05
-		if star_instead then
-			return image.lookup.dust.star(color)
-		else
-			if color == "red" then
-				local tbl = {image.dust.red1, image.dust.red2, image.dust.red3}
-				return tbl[math.random(#tbl)]
-			elseif color == "blue" then
-				local tbl = {image.dust.blue1, image.dust.blue2, image.dust.blue3}
-				return tbl[math.random(#tbl)]
-			elseif color == "green" then
-				local tbl = {image.dust.green1, image.dust.green2, image.dust.green3}
-				return tbl[math.random(#tbl)]
-			elseif color == "yellow" then
-				local tbl = {image.dust.yellow1, image.dust.yellow2, image.dust.yellow3}
-				return tbl[math.random(#tbl)]
-			elseif color == "none" then
-				return image.dummy
-			elseif color == "wild" then
-				local tbl = {
-					image.dust.red1, image.dust.red2, image.dust.red3,
-					image.dust.blue1, image.dust.blue2, image.dust.blue3,
-					image.dust.green1, image.dust.green2, image.dust.green3,
-					image.dust.yellow1, image.dust.yellow2, image.dust.yellow3,
-				}
-				return tbl[math.random(#tbl)]
-			else
-				print("image.lookup.dust Sucka MC")
-				return image.dust.red1
-			end
-		end
-	end,
-
-	star = function(color)
-		if color == "red" then return image.redparticle1
-		elseif color == "blue" then return image.blueparticle1
-		elseif color == "green" then return image.greenparticle1
-		elseif color == "yellow" then return image.yellowparticle1
-		elseif color == "none" then return image.dummy
+function image.lookup.smalldust(color, big_possible)
+	if big_possible ~= false then big_possible = true end
+	local star_instead = big_possible and math.random() < 0.05
+	if star_instead then
+		return image.lookup.stardust(color)
+	else
+		if color == "red" then
+			local tbl = {image.dust.red1, image.dust.red2, image.dust.red3}
+			return tbl[math.random(#tbl)]
+		elseif color == "blue" then
+			local tbl = {image.dust.blue1, image.dust.blue2, image.dust.blue3}
+			return tbl[math.random(#tbl)]
+		elseif color == "green" then
+			local tbl = {image.dust.green1, image.dust.green2, image.dust.green3}
+			return tbl[math.random(#tbl)]
+		elseif color == "yellow" then
+			local tbl = {image.dust.yellow1, image.dust.yellow2, image.dust.yellow3}
+			return tbl[math.random(#tbl)]
+		elseif color == "none" then
+			return image.dummy
 		elseif color == "wild" then
 			local tbl = {
-				image.redparticle1,
-				image.blueparticle1,
-				image.greenparticle1,
-				image.yellowparticle1,
+				image.dust.red1, image.dust.red2, image.dust.red3,
+				image.dust.blue1, image.dust.blue2, image.dust.blue3,
+				image.dust.green1, image.dust.green2, image.dust.green3,
+				image.dust.yellow1, image.dust.yellow2, image.dust.yellow3,
 			}
 			return tbl[math.random(#tbl)]
-		else print("image.lookup.dust Sucka MC") return image.redparticle1 end
+		else
+			print("image.lookup.smalldust Sucka MC")
+			return image.dust.red1
+		end
 	end
-}
+end
 
+function image.lookup.stardust(color)
+	if color == "red" then return image.particle_red_1
+	elseif color == "blue" then return image.particle_blue_1
+	elseif color == "green" then return image.particle_green_1
+	elseif color == "yellow" then return image.particle_yellow_1
+	elseif color == "none" then return image.dummy
+	elseif color == "wild" then
+		local tbl = {
+			image.particle_red_1,
+			image.particle_blue_1,
+			image.particle_green_1,
+			image.particle_yellow_1,
+		}
+		return tbl[math.random(#tbl)]
+	else
+		print("image.lookup.stardust Sucka MC")
+		return image.particle_red_1
+	end
+end
 
 return image

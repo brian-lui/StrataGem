@@ -45,18 +45,18 @@ function gs_main:enter()
 	self.settings_menu_open = false
 
 	gs_main.createImage(self, {
-		name = "tub",
-		image = image.UI.tub,
-		end_x = stage.tub.x,
-		end_y = stage.tub.y,
+		name = "basin",
+		image = image.ui_basin,
+		end_x = stage.basin.x,
+		end_y = stage.basin.y,
 	})
 
 	local BURST_SEGMENTS = 2
 	for player in self:players() do
 		local ID = player.ID
-
+		print("loading burst from gs_main")
 		-- burst meter objects
-		local burst_frame_img = ID == "P1" and image.UI.gauge_gold or image.UI.gauge_silver
+		local burst_frame_img = ID == "P1" and image.ui_burst_gauge_gold or image.ui_burst_gauge_silver
 		gs_main.createImage(self, {
 			name = ID .. "burstframe",
 			image = burst_frame_img,
@@ -138,7 +138,7 @@ function gs_main:drawScreenElements(params)
 	-- under-platform trails
 	for _, v in pairs(self.particles.allParticles.PlatformTinyStar) do v:draw(params) end
 	for _, v in pairs(self.particles.allParticles.PlatformStar) do v:draw(params) end
-	gs_main.ui.static.tub:draw(params)
+	gs_main.ui.static.basin:draw(params)
 	self.ui.timer:draw(params)	-- timer bar
 
 	for player in self:players() do
@@ -367,7 +367,7 @@ function gs_main:drawButtons()
 end
 
 function gs_main:drawUI(params)
-	local draws = {"tub", "P1burstframe", "P2burstframe", "P1burstblock1",
+	local draws = {"basin", "P1burstframe", "P2burstframe", "P1burstblock1",
 		"P1burstblock2", "P2burstblock1", "P2burstblock2", "P1burstpartial1",
 		"P1burstpartial2", "P2burstpartial1", "P2burstpartial2", "P1burstglow1",
 		"P1burstglow2", "P2burstglow1", "P2burstglow2",}

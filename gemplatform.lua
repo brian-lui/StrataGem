@@ -18,7 +18,7 @@ function GemPlatform:init(params)
 		game = self.game,
 		x = self.owner.hand[self.hand_idx].x,
 		y = self.owner.hand[self.hand_idx].y,
-		image = self.owner.ID == "P1" and image.UI.platform_gold or image.UI.platform_silver,
+		image = self.owner.ID == "P1" and image.ui_platform_gold or image.ui_platform_silver,
 	}
 	self.width = self.pic.width
 	self.height = self.pic.height
@@ -45,7 +45,7 @@ function GemPlatform:draw(params)
 
 	if self.redness > 0 then
 		p.RGBTable = {255, 255, 255, self.redness}
-		p.image = image.UI.platform_red
+		p.image = image.ui_platform_red
 		self.pic:draw(p)
 	end
 end

@@ -17,16 +17,16 @@ Character.meter_gain = {red = 4, blue = 4, green = 4, yellow = 4, none = 4, wild
 Character.primary_colors = {"red"}
 
 Character.super_images = {
-	word = image.UI.super.red_word,
-	empty = image.UI.super.red_empty,
-	full = image.UI.super.red_full,
-	glow = image.UI.super.red_glow,
+	word = image.ui_super_text_red,
+	empty = image.ui_super_empty_red,
+	full = image.ui_super_full_red,
+	glow = image.ui_super_glow_red,
 	overlay = love.graphics.newImage('images/dummy.png'),
 }
 Character.burst_images = {
-	partial = image.UI.burst.red_partial,
-	full = image.UI.burst.red_full,
-	glow = {image.UI.burst.red_glow1, image.UI.burst.red_glow2}
+	partial = image.ui_burst_part_red,
+	full = image.ui_burst_full_red,
+	glow = {image.ui_burst_partglow_red, image.ui_burst_fullglow_red}
 }
 
 Character.sounds = {
