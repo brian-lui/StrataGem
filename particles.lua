@@ -233,9 +233,9 @@ local DamageTrailParticle = {}
 function DamageTrailParticle:init(manager, gem)
 	local img
 	if isStandardColor(gem.color) then
-		img = image["trail_" .. gem.color]
+		img = image["particles_trail_" .. gem.color]
 	else
-		img = image["trail_" .. randomStandardColor()]
+		img = image["particles_trail_" .. randomStandardColor()]
 	end
 	Pic.init(self, manager.game, {x = gem.x, y = gem.y, image = img})
 	manager.allParticles.DamageTrail[ID.particle] = self
@@ -304,9 +304,9 @@ function SuperParticle.generate(game, gem, num_particles, delay_frames, force_ma
 		local img
 		-- create particle
 		if isStandardColor(gem.color) then
-			img = image["particle_super_" .. gem.color]
+			img = image["particles_super_" .. gem.color]
 		else
-			img = image["particle_super_" .. randomStandardColor()]
+			img = image["particles_super_" .. randomStandardColor()]
 		end
 
 		local p = common.instance(SuperParticle, game.particles, gem.x, gem.y,
@@ -407,7 +407,7 @@ function HealingParticle.generateTrail(params)
 	local duration = params.duration
 
 	for i = 1, 3 do
-		local trail_image = image.trail_healing
+		local trail_image = image.particles_trail_healing
 		local trail = common.instance(HealingParticle, game.particles, x, y,
 			trail_image, owner, "HealingTrail")
 		trail.scaling = 1.25 - 0.25 * i
@@ -935,9 +935,9 @@ function Dust.generateStarFountain(params)
 		for frames = 1, 3 do
 			local trail_image
 			if isStandardColor(color) then
-				trail_image = image["trail_" .. color]
+				trail_image = image["particles_trail_" .. color]
 			else
-				trail_image = image["trail_" .. randomStandardColor()]
+				trail_image = image["particles_trail_" .. randomStandardColor()]
 			end
 
 			local trail = common.instance(Dust, game.particles, x, y, trail_image, p_type)

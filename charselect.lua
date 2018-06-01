@@ -167,7 +167,7 @@ function Charselect:_createUIButtons()
 		action = function()
 			self.game_background = (self.game_background - 2) % game.background.total + 1
 			local selected_background = game.background:idx_to_str(self.game_background)
-			local new_image = image.background[selected_background].thumbnail
+			local new_image = image["thumbnail_" .. selected_background]
 			self.game_background_image:newImage(new_image)
 		end,
 	}
@@ -185,7 +185,7 @@ function Charselect:_createUIButtons()
 		action = function()
 			self.game_background = self.game_background % game.background.total + 1
 			local selected_background = game.background:idx_to_str(self.game_background)
-			local new_image = image.background[selected_background].thumbnail
+			local new_image = image["thumbnail_" .. selected_background]
 			self.game_background_image:newImage(new_image)
 		end,
 	}
@@ -264,7 +264,7 @@ function Charselect:_createUIImages()
 	-- background_image
 	self.game_background_image = self:_createImage{
 		name = "backgroundimage",
-		image = image.background[selected_background].thumbnail,
+		image = image["thumbnail_" .. selected_background],
 		duration = 60,
 		end_x = stage.width * 0.75,
 		end_y = stage.height * 0.8,

@@ -103,7 +103,7 @@ function lobby:_createUIButtons()
 		action = function()
 			lobby.game_background = (lobby.game_background - 2) % self.background.total + 1
 			local selected_background = self.background:idx_to_str(lobby.game_background)
-			local new_image = image.background[selected_background].thumbnail
+			local new_image = image["thumbnail_" .. selected_background]
 			lobby.game_background_image:newImage(new_image)
 		end,
 	})
@@ -121,7 +121,7 @@ function lobby:_createUIButtons()
 		action = function()
 			lobby.game_background = lobby.game_background % self.background.total + 1
 			local selected_background = self.background:idx_to_str(lobby.game_background)
-			local new_image = image.background[selected_background].thumbnail
+			local new_image = image["thumbnail_" .. selected_background]
 			lobby.game_background_image:newImage(new_image)
 		end,
 	})
@@ -180,7 +180,7 @@ function lobby:_createUIImages()
 	-- background_image
 	lobby.game_background_image = lobby._createImage(self, {
 		name = "backgroundimage",
-		image = image.background[selected_background].thumbnail,
+		image = image["thumbnail_" .. selected_background],
 		duration = 60,
 		end_x = stage.width * 0.75,
 		end_y = stage.height * 0.8,

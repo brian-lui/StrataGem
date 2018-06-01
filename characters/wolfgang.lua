@@ -48,19 +48,19 @@ Wolfgang.special_images = {
 		love.graphics.newImage('images/characters/wolfgang/badrussel.png'),
 	},
 	dog_explode = {
-		image.gem_explode_red,
-		image.gem_explode_red,
-		image.gem_explode_red,
+		image.gems_explode_red,
+		image.gems_explode_red,
+		image.gems_explode_red,
 	},
 	dog_grey = {
-		image.gem_grey_red,
-		image.gem_grey_red,
-		image.gem_grey_red,
+		image.gems_grey_red,
+		image.gems_grey_red,
+		image.gems_grey_red,
 	},
 	dog_pop = {
-		image.gem_pop_red,
-		image.gem_pop_red,
-		image.gem_pop_red,
+		image.gems_pop_red,
+		image.gems_pop_red,
+		image.gems_pop_red,
 	},
 	red = {
 		dark = love.graphics.newImage('images/characters/wolfgang/r.png'),

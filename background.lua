@@ -23,7 +23,7 @@ function RabbitInASnowstorm:init(game)
 		game = game,
 		x = game.stage.x_mid,
 		y = game.stage.y_mid,
-		image = image.background.rabbitsnowstorm.background,
+		image = love.graphics.newImage('images/backgrounds/rabbitsnowstorm/rabbitsnowstorm.png'),
 	}
 	ID.background_particle = 0
 end
@@ -41,11 +41,17 @@ RabbitInASnowstorm = common.class("RabbitInASnowstorm", RabbitInASnowstorm)
 -------------------------------------------------------------------------------
 ---------------------------------- CHECKMATE ----------------------------------
 -------------------------------------------------------------------------------
+-- temporary holder, will put into pre-loader later
+local checkmate_images = {}
+for i = 0, 9 do
+	checkmate_images[i] = love.graphics.newImage('images/backgrounds/checkmate/checkmate'..i..'.png')
+end
+
 local Checkmate = {ID_number = 1}
 function Checkmate:init(game)
 	self.game = game
-	self.IMAGE_WIDTH = image.background.checkmate[0]:getWidth()
-	self.IMAGE_HEIGHT = image.background.checkmate[0]:getHeight()
+	self.IMAGE_WIDTH = checkmate_images[0]:getWidth()
+	self.IMAGE_HEIGHT = checkmate_images[0]:getHeight()
 	self.SCROLL_RATE = 220 -- pixels per second
 	self.OVERLAY_RATE = 220 -- pixels per second
 	self.OVERLAY_DURATION = (self.IMAGE_HEIGHT / self.OVERLAY_RATE) / game.timeStep
@@ -57,7 +63,7 @@ function Checkmate:init(game)
 		game = game,
 		x = self.IMAGE_WIDTH * 0.5,
 		y = self.IMAGE_HEIGHT * 0.5,
-		image = image.background.checkmate[0],
+		image = checkmate_images[0],
 		container = self.images,
 		counter = "background_particle",
 	}
@@ -81,11 +87,11 @@ function Checkmate:update(dt)
 	-- swap images
 	self.swap_time = self.swap_time - dt
 	if self.swap_time <= 0 then
-		self.background:newImage(image.background.checkmate[self.image_idx])
+		self.background:newImage(checkmate_images[self.image_idx])
 
 		self.swap_time = self.NEXT_SWAP_TIME
 		self.image_idx = (self.image_idx + 1) % 10
-		local new_bk = image.background.checkmate[self.image_idx]
+		local new_bk = checkmate_images[self.image_idx]
 		self.overlay = Pic:create{
 			game = self.game,
 			x = bk.x,
@@ -135,7 +141,7 @@ function Clouds:init(game)
 		game = game,
 		x = game.stage.x_mid,
 		y = game.stage.y_mid,
-		image = image.background.cloud.background,
+		image = love.graphics.newImage('images/backgrounds/cloud/sky.png'),
 	}
 	self.big_clouds, self.medium_clouds, self.small_clouds = {}, {}, {}
 	self.big_timer_func = function() return math.random(300, 400) end
@@ -145,28 +151,28 @@ function Clouds:init(game)
 	self.medium_timer = math.ceil(self.medium_timer_func() * 0.5)
 	self.small_timer = math.ceil(self.small_timer_func() * 0.5)
 	self.big_cloud_images = {
-		image.background.cloud.bigcloud1,
-		image.background.cloud.bigcloud2,
-		image.background.cloud.bigcloud3,
-		image.background.cloud.bigcloud4,
-		image.background.cloud.bigcloud5,
-		image.background.cloud.bigcloud6,
+		love.graphics.newImage('images/backgrounds/cloud/bigcloud1.png'),
+		love.graphics.newImage('images/backgrounds/cloud/bigcloud2.png'),
+		love.graphics.newImage('images/backgrounds/cloud/bigcloud3.png'),
+		love.graphics.newImage('images/backgrounds/cloud/bigcloud4.png'),
+		love.graphics.newImage('images/backgrounds/cloud/bigcloud5.png'),
+		love.graphics.newImage('images/backgrounds/cloud/bigcloud6.png'),
 	}
 	self.medium_cloud_images = {
-		image.background.cloud.medcloud1,
-		image.background.cloud.medcloud2,
-		image.background.cloud.medcloud3,
-		image.background.cloud.medcloud4,
-		image.background.cloud.medcloud5,
-		image.background.cloud.medcloud6,
+		love.graphics.newImage('images/backgrounds/cloud/medcloud1.png'),
+		love.graphics.newImage('images/backgrounds/cloud/medcloud2.png'),
+		love.graphics.newImage('images/backgrounds/cloud/medcloud3.png'),
+		love.graphics.newImage('images/backgrounds/cloud/medcloud4.png'),
+		love.graphics.newImage('images/backgrounds/cloud/medcloud5.png'),
+		love.graphics.newImage('images/backgrounds/cloud/medcloud6.png'),
 	}
 	self.small_cloud_images = {
-		image.background.cloud.smallcloud1,
-		image.background.cloud.smallcloud2,
-		image.background.cloud.smallcloud3,
-		image.background.cloud.smallcloud4,
-		image.background.cloud.smallcloud5,
-		image.background.cloud.smallcloud6,
+		love.graphics.newImage('images/backgrounds/cloud/smallcloud1.png'),
+		love.graphics.newImage('images/backgrounds/cloud/smallcloud2.png'),
+		love.graphics.newImage('images/backgrounds/cloud/smallcloud3.png'),
+		love.graphics.newImage('images/backgrounds/cloud/smallcloud4.png'),
+		love.graphics.newImage('images/backgrounds/cloud/smallcloud5.png'),
+		love.graphics.newImage('images/backgrounds/cloud/smallcloud6.png'),
 	}
 	ID.background_particle = 0
 
@@ -264,7 +270,7 @@ function Starfall:init(game)
 		game = game,
 		x = game.stage.x_mid,
 		y = game.stage.y_mid,
-		image = image.background.starfall.background
+		image = love.graphics.newImage('images/backgrounds/starfall/starfall.png'),
 	}
 	self.star_timer_func = function() return math.random(70, 100) end
 	self.star_timer = self.star_timer_func()
@@ -276,10 +282,10 @@ function Starfall:_generateStar()
 	local stage = self.game.stage
 
 	local image_table = {
-		image.background.starfall.star1,
-		image.background.starfall.star2,
-		image.background.starfall.star3,
-		image.background.starfall.star4
+		love.graphics.newImage('images/backgrounds/starfall/star1.png'),
+		love.graphics.newImage('images/backgrounds/starfall/star2.png'),
+		love.graphics.newImage('images/backgrounds/starfall/star3.png'),
+		love.graphics.newImage('images/backgrounds/starfall/star4.png'),
 	}
 	local image_index = math.random(1, #image_table)
 	local img = image_table[image_index]
@@ -331,16 +337,16 @@ function Colors:init(game)
 		game = self.game,
 		x = game.stage.x_mid,
 		y = game.stage.y_mid,
-		image = image.background.colors.white,
+		image = love.graphics.newImage('images/backgrounds/colors/white.png'),
 	}
 	self.previous_color = nil
 	self.timing_full_cycle = 1800
 	self.timings = {
-		[0] = image.background.colors.white,
-		[360] = image.background.colors.blue,
-		[720] = image.background.colors.red,
-		[1080] = image.background.colors.green,
-		[1440] =  image.background.colors.yellow,
+		[0] = love.graphics.newImage('images/backgrounds/colors/white.png'),
+		[360] = love.graphics.newImage('images/backgrounds/colors/blue.png'),
+		[720] = love.graphics.newImage('images/backgrounds/colors/red.png'),
+		[1080] = love.graphics.newImage('images/backgrounds/colors/green.png'),
+		[1440] =  love.graphics.newImage('images/backgrounds/colors/yellow.png'),
 	}
 	ID.background_particle = 0
 end
