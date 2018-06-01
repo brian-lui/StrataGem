@@ -171,6 +171,8 @@ function ColorLetter:darken()
 			y = self.y,
 			color = self.color,
 		}
+		self:change{duration = 25, scaling = 0.7, easing = "inBack"}
+		self:change{duration = 25, scaling = 1, easing = "outBack"}
 	end
 end
 
