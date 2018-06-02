@@ -242,123 +242,12 @@ function gs_main:drawGems(params)
 	for _, v in pairs(allParticles.PlacedGem) do v:draw(params) end
 end
 
--- draw text items
+-- draw word particles and debug items
 function gs_main:drawText(params)
-	local grid = self.grid
-	-- words
 	for _, v in pairs(self.particles.allParticles.Words) do
 		v:draw(params)
 	end
-
-	-- debug: row/column display
-	if self.debug_drawGrid then
-		love.graphics.push("all")
-			love.graphics.setColor(0, 255, 0)
-			for r = 1, grid.ROWS + 1 do
-				love.graphics.print(r, 200, grid.y[r])
-			end
-			for c = 0, grid.COLUMNS + 1 do
-				love.graphics.print(c, grid.x[c], 200)
-			end
-		love.graphics.pop()
-	end
-
-	-- debug: top middle HUD
-	if self.debug_overlay then
-		love.graphics.push("all")
-			love.graphics.setFont(FONT.SLIGHTLY_BIGGER)
-			love.graphics.setColor(0, 0, 0)
-			love.graphics.printf(self.debug_overlay(), 0, 40, self.stage.width, "center")
-		love.graphics.pop()
-	end
-
-	-- debug: overlays
-	love.graphics.push("all")
-		love.graphics.setColor(0, 0, 0)
-		love.graphics.setFont(FONT.REGULAR)
-		if self.debug_drawGemOwners then
-			for gem in grid:gems() do
-				love.graphics.print("ROW:" .. gem.row, gem.x - gem.width * 0.4, gem.y - gem.height * 0.2)
-				love.graphics.print("COL:" .. gem.column, gem.x - gem.width * 0.4, gem.y)
-				if gem.is_in_a_horizontal_match then
-					love.graphics.print("H", gem.x - gem.width * 0.2, gem.y + gem.height * 0.2)
-				end
-				if gem.is_in_a_vertical_match then
-					love.graphics.print("V", gem.x + gem.width * 0.2, gem.y + gem.height * 0.2)
-				end
-
-				-- graphically show owners
-				love.graphics.push("all")
-					local y_start, height = gem.y - gem.height * 0.5, gem.height
-					if gem.owner == 1 then
-						love.graphics.setColor(100, 0, 200, 160)
-						love.graphics.rectangle("fill", gem.x - gem.width * 0.5, y_start, gem.width * 0.5, height)
-					elseif gem.owner == 2 then
-						love.graphics.setColor(255, 153, 51, 230)
-						love.graphics.rectangle("fill", gem.x, y_start, gem.width * 0.5, height)
-					elseif gem.owner == 3 then
-						love.graphics.setColor(160, 160, 160, 255)
-						love.graphics.rectangle("fill", gem.x - gem.width * 0.5, y_start, gem.width, height * 0.5)
-					end
-					if gem.flag_match_originator then
-						if gem.owner == 1 then
-							love.graphics.setColor(255, 0, 255, 255)
-						elseif gem.owner == 2 then
-							love.graphics.setColor(255, 255, 0, 255)
-						end
-						love.graphics.circle("fill", gem.x, gem.y, 10)
-					end
-				love.graphics.pop()
-			end
-
-		end
-		if self.debug_drawParticleDestinations then
-			for _, p in pairs(self.particles.allParticles.Damage) do
-				love.graphics.print(p.final_loc_idx, p.x, p.y)
-			end
-		end
-		if self.debug_drawGamestate then
-			local toprint = {}
-			local i = 1
-			local colors = {red = "R", blue = "B", green = "G", yellow = "Y"}
-			for row = grid.PENDING_START_ROW, grid.BASIN_END_ROW do
-				for col = 1, 8 do
-					toprint[i] = grid[row][col].gem and colors[grid[row][col].gem.color] or " "
-					i = i + 1
-				end
-				toprint[i] = "\n"
-				i = i + 1
-			end
-
-			love.graphics.print(table.concat(toprint), 50, 400)
-		end
-		if self.debug_drawDamage then
-			local p1hand, p2hand = self.p1.hand, self.p2.hand
-
-			local p1_destroyed_damage_particles = self.particles:getCount("destroyed", "Damage", 2)
-			local p1_destroyed_healing_particles = self.particles:getCount("destroyed", "Healing", 1)
-			local p1_displayed_damage = (self.p1.hand.turn_start_damage + p1_destroyed_damage_particles/3 - p1_destroyed_healing_particles/5)
-
-			local p2_destroyed_damage_particles = self.particles:getCount("destroyed", "Damage", 1)
-			local p2_destroyed_healing_particles = self.particles:getCount("destroyed", "Healing", 2)
-			local p2_displayed_damage = (self.p2.hand.turn_start_damage + p2_destroyed_damage_particles/3 - p2_destroyed_healing_particles/5)
-
-			local p1print = "Actual damage " .. p1hand.damage .. "\nShown damage " .. p1_displayed_damage
-			local p2print = "Actual damage " .. p2hand.damage .. "\nShown damage " .. p2_displayed_damage
-
-			love.graphics.setFont(FONT.SLIGHTLY_BIGGER)
-			love.graphics.print(p1print, p1hand[2].x - 120, 150)
-			love.graphics.print(p2print, p2hand[2].x - 180, 150)
-		end
-		if self.debug_drawTurnNumber then
-			local toprint = "Turn: " .. self.turn
-			love.graphics.push("all")
-				love.graphics.setFont(FONT.SLIGHTLY_BIGGER)
-				love.graphics.setColor(0, 0, 0)
-				love.graphics.printf(toprint, 0, 120, self.stage.width, "center")
-			love.graphics.pop()
-		end
-	love.graphics.pop()
+	self.debugconsole:draw()
 end
 
 function gs_main:drawButtons()

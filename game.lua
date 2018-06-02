@@ -86,6 +86,8 @@ function Game:init()
 	self.queue = common.instance(Queue, self)
 	self.statemanager = common.instance(require "statemanager", self)
 	self.statemanager:switch(require "gs_title")
+	self.debugconsole = common.instance(require "debugconsole", self)
+	self.debugconsole:setDefaultDisplayParams()
 	self:reset()
 end
 

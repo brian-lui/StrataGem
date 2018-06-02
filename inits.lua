@@ -47,6 +47,7 @@ ID = {
 
 FONT = {
 	REGULAR = love.graphics.newFont('/fonts/anonymous.ttf', 20),
+	MEDIUM = love.graphics.newFont('/fonts/anonymous.ttf', 30),
 	SLIGHTLY_BIGGER = love.graphics.newFont('/fonts/anonymous.ttf', 40),
 }
 
