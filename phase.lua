@@ -220,7 +220,6 @@ function Phase:afterGravity(dt)
 	end
 	self:activatePause("GetMatchedGems")
 
-	-- screencap
 	game.debugconsole:saveScreencap()
 end
 
@@ -429,9 +428,7 @@ function Phase:cleanup(dt)
 	local grid = game.grid
 	local p1, p2 = game.p1, game.p2
 
-	if game.debug_screencaps then
-		game.debug_screencap_number = 0
-	end
+	game.debugconsole:resetScreencapNum()
 
 	for i = 1, grid.COLUMNS do --checks if should generate no rush
 		if self.no_rush[i] then

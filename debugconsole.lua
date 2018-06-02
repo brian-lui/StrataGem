@@ -198,6 +198,10 @@ function DebugConsole:saveScreencap()
 	end
 end
 
+function DebugConsole:resetScreencapNum()
+	self.screencap_number = 0
+end
+
 function DebugConsole:update(dt)
 	print("update the debug console stuff here")
 end

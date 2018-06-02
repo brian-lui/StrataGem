@@ -449,12 +449,12 @@ local function wolfgangCreate4Dog(game)
 	game.p1:_turnPieceToDog(4, true)
 end
 local function toggleScreencaps(game)
-	if game.debug_screencaps then
+	if game.debugconsole.save_screencaps then
 		print("Screencaps off")
-		game.debug_screencaps = false
+		game.debugconsole.save_screencaps = false
 	else
 		print("Screencaps saving to " .. love.filesystem.getSaveDirectory())
-		game.debug_screencaps = true
+		game.debugconsole.save_screencaps = true
 	end
 end
 

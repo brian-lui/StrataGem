@@ -53,7 +53,6 @@ Game.TWEEN_TO_LANDING_ZONE_DURATION = 24
 Game.VERSION = "65.0"
 
 function Game:init()
-	self.debug_screencaps = true
 	self.debug_pause_mode = false
 
 	self.rng = love.math.newRandomGenerator()
