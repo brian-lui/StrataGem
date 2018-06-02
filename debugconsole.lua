@@ -12,6 +12,31 @@ function DebugConsole:init(game)
 	self.stage = game.stage
 	self.phase = game.phase
 	self.screencap_number = 0
+	self.prints = {}
+	self.PRINT_DURATION = 240 -- frames to display prints
+end
+
+-- makes the print also wrie to debug.txt and display
+function DebugConsole:replacePrint()
+	love.filesystem.remove("debug.txt")
+	local reallyprint = print
+	function print(...)
+		reallyprint(...)
+		local args = {...}
+		for i = 1, #args do
+			if type(args[i]) == "table" then args[i] = "table"
+			elseif args[i] == true then args[i] = "true"
+			elseif args[i] == false then args[i] = "false"
+			elseif args[i] == nil then args[i] = "nil"
+			elseif type(args[i]) == "userdata" then args[i] = "userdata"
+			elseif type(args[i]) == "function" then args[i] = "function"
+			elseif type(args[i]) == "thread" then args[i] = "thread"
+			end
+		end
+		local write = table.concat(args, ", ")
+		love.filesystem.append("debug.txt", write .. "\n")
+		self.prints[#self.prints+1] = {self.game.frame, write}
+	end
 end
 
 function DebugConsole:setDisplay(params)
@@ -22,7 +47,7 @@ function DebugConsole:setDefaultDisplayParams()
 	local game = self.game
 	local phase = self.phase
 	local params = {
-		display_phases = true,
+		display_prints = true,
 		display_gem_info = true,
 		display_gem_owners = true,
 		display_particle_destinations = true,
@@ -30,12 +55,20 @@ function DebugConsole:setDefaultDisplayParams()
 		display_damage = true,
 		display_grid = false,
 		display_turn_number = true,
-		overlay_function = function()
+		display_overlays = true,
+		overlay_middle_function = function()
 			if game.current_phase == "Pause" then
 				return "Pausing at " .. phase.current_phase_for_debug_purposes_only .. ", " ..
 				phase.frames_until_next_phase .. "\nGarbage this round: " .. phase.garbage_this_round
 			else
 				return game.current_phase
+			end
+		end,
+		overlay_right_function = function()
+			if game.current_phase == "Pause" then
+				return "Garbage this round: " .. phase.garbage_this_round
+			else
+				return ""
 			end
 		end,
 		save_screencaps = true,
@@ -55,13 +88,6 @@ function DebugConsole:_drawGrid()
 		for c = 0, grid.COLUMNS + 1 do
 			love.graphics.print(c, grid.x[c], 200)
 		end
-	love.graphics.pop()
-end
-
-function DebugConsole:_drawOverlay()
-	love.graphics.push("all")
-		love.graphics.setFont(FONT.SLIGHTLY_BIGGER)
-		love.graphics.printf(self.overlay_function(), 0, 40, self.stage.width, "center")
 	love.graphics.pop()
 end
 
@@ -150,20 +176,48 @@ function DebugConsole:_drawDamage()
 		local p2print = "Actual damage " .. p2hand.damage .. "\nShown damage " .. p2_displayed_damage
 
 		love.graphics.setFont(FONT.SLIGHTLY_BIGGER)
-		love.graphics.print(p1print, p1hand[2].x - 120, 150)
-		love.graphics.print(p2print, p2hand[2].x - 180, 150)
+		love.graphics.print(p1print, p1hand[2].x - 200, 900)
+		love.graphics.print(p2print, p2hand[2].x - 100, 900)
 	love.graphics.pop()
 end
 
 function DebugConsole:_drawTurnNumber()
 	local toprint = "Turn: " .. self.game.turn
+	local stage = self.stage
 	love.graphics.push("all")
 		love.graphics.setFont(FONT.SLIGHTLY_BIGGER)
-		love.graphics.printf(toprint, 0, 120, self.stage.width, "center")
+		love.graphics.printf(toprint, stage.width * 0.01, stage.height * 0.965, stage.width, "left")
 	love.graphics.pop()
 end
 
-function DebugConsole:_drawPhases()
+function DebugConsole:_drawOverlays()
+	local stage = self.stage
+	love.graphics.push("all")
+		love.graphics.setFont(FONT.SLIGHTLY_BIGGER)
+		love.graphics.printf(self.overlay_middle_function(), 0, stage.height * 0.965, stage.width, "center")
+		love.graphics.printf(self.overlay_right_function(), 0, stage.height * 0.965, stage.width * 0.99, "right")
+	love.graphics.pop()
+end
+
+function DebugConsole:_drawPrints()
+	local game = self.game
+	local y = 30
+	local Y_STEP = 30
+	love.graphics.push("all")
+		love.graphics.setFont(FONT.MEDIUM)
+		for i = #self.prints, 1, -1 do
+			local frame_diff = game.frame - self.prints[i][1]
+			local frame_percentage = frame_diff / self.PRINT_DURATION
+			if frame_percentage > 1 then
+				table.remove(self.prints, i)
+			else
+				local toprint = self.prints[i][1] .. ":" .. self.prints[i][2]
+				local x = 400 + frame_diff * 2
+				love.graphics.print(toprint, x, y)
+				y = y + Y_STEP
+			end
+		end
+	love.graphics.pop()
 end
 
 function DebugConsole:draw()
@@ -171,14 +225,14 @@ function DebugConsole:draw()
 		love.graphics.setColor(0, 0, 0)
 		love.graphics.setFont(FONT.REGULAR)
 		if self.display_grid then self:_drawGrid() end
-		if self.overlay_function then self:_drawOverlay() end
+		if self.display_overlays then self:_drawOverlays() end
 		if self.display_gem_info then self:_drawGemInfo() end
 		if self.display_gem_owners then self:_drawGemOwners() end
 		if self.display_particle_destinations then self:_drawParticleDestinations() end
 		if self.display_gamestate then self:_drawGamestate() end
 		if self.display_damage then self:_drawDamage() end
 		if self.display_turn_number then self:_drawTurnNumber() end
-		if self.display_phases then self:_drawPhases() end
+		if self.display_prints then self:_drawPrints() end
 	love.graphics.pop()
 end
 

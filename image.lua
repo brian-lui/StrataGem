@@ -167,9 +167,9 @@ local image = {
 -- If an image isn't loaded yet but is called, immediately load it
 local fallback = {
 	__index = function(t, k)
-		print("using fallback for " .. k .. " at:")
-		print(image_data[k])
-		local img = love.graphics.newImage(image_data[k])
+		local img
+		local success = pcall(function() img = love.graphics.newImage(image_data[k]) end)
+		assert(success, image_data[k])
 		t[k] = img
 		return img
 	end

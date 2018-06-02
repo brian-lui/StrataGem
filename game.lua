@@ -71,6 +71,7 @@ function Game:init()
 	self.statemanager:switch(require "gs_title")
 	self.debugconsole = common.instance(require "debugconsole", self)
 	self.debugconsole:setDefaultDisplayParams()
+	self.debugconsole:replacePrint()
 	self:reset()
 end
 
