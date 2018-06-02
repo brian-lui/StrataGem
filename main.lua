@@ -12,18 +12,6 @@ function love.load()
 	-- default windowed resolution is half native
 	local desktopWidth, desktopHeight = love.window.getDesktopDimensions()
 	love.window.setMode(desktopWidth / 2, desktopHeight / 2, {resizable=true})
-
-	local DEMO_MODE_ON = false
-	if DEMO_MODE_ON then
-		game.debug_drawGemOwners = false
-		game.debug_drawParticleDestinations = false
-		game.debug_drawGamestate = false
-		game.debug_drawDamage = false
-		game.debug_drawGrid = false
-		game.debug_overlay = false
-		game.debug_screencaps = false
-		game.unittests = {}
-	end
 end
 -- local sandbox = require 'animationsandbox'
 

@@ -12,6 +12,7 @@ function DebugConsole:init(game)
 	self.grid = game.grid
 	self.stage = game.stage
 	self.phase = game.phase
+	self.screencap_number = 0
 end
 
 function DebugConsole:setDisplay(params)
@@ -23,7 +24,7 @@ function DebugConsole:setDisplay(params)
 	self.display_grid = params.display_grid
 	self.display_turn_number = params.display_turn_number
 	self.overlay_function = params.overlay_function
-	self.write_screencaps = params.write_screencaps
+	self.save_screencaps = params.save_screencaps
 	self.is_pause_mode_on = params.is_pause_mode_on
 end
 
@@ -46,7 +47,7 @@ function DebugConsole:setDefaultDisplayParams()
 				return game.current_phase
 			end
 		end,
-		write_screencaps = true,
+		save_screencaps = true,
 		is_pause_mode_on = false,
 	}
 	self:setDisplay(params)
@@ -184,6 +185,17 @@ function DebugConsole:draw()
 		if self.display_damage then self:_drawDamage() end
 		if self.display_turn_number then self:_drawTurnNumber() end
 	love.graphics.pop()	
+end
+
+-- save screenshot to disk
+function DebugConsole:saveScreencap()
+	if self.save_screencaps then
+		self.screencap_number = self.screencap_number + 1
+		local screenshot = love.graphics.newScreenshot()
+		local filename = "turn" .. self.game.turn .. "cap" .. self.screencap_number .. ".png"
+		screenshot:encode("png", filename)
+		print("Saved file: " .. filename)
+	end
 end
 
 function DebugConsole:update(dt)

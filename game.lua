@@ -53,20 +53,6 @@ Game.TWEEN_TO_LANDING_ZONE_DURATION = 24
 Game.VERSION = "65.0"
 
 function Game:init()
-	self.debug_drawGemOwners = true	-- TODO: Remove this someday.
-	self.debug_drawParticleDestinations = true
-	self.debug_drawGamestate = true
-	self.debug_drawDamage = true
-	self.debug_drawGrid = true
-	self.debug_drawTurnNumber = true
-	self.debug_overlay = function()
-		if self.current_phase == "Pause" then
-			return "Pausing at " .. self.phase.current_phase_for_debug_purposes_only .. ", " ..
-				self.phase.frames_until_next_phase .. "\nGarbage this round: " .. self.phase.garbage_this_round
-		else
-			return self.current_phase
-		end
-	end
 	self.debug_screencaps = true
 	self.debug_pause_mode = false
 
