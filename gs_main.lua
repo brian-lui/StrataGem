@@ -1,5 +1,3 @@
-local love = _G.love
-local FONT = _G.FONT
 local common = require "class.commons"
 local image = require 'image'
 local pointIsInRect = require "utilities".pointIsInRect

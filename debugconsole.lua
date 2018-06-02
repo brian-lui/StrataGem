@@ -1,9 +1,7 @@
 local love = _G.love
-require 'utilities' -- move
-local image = require 'image'
+local FONT = _G.FONT
 local common = require "class.commons" -- class support
 local pointIsInRect = require "utilities".pointIsInRect
-local Pic = require 'pic'
 
 local DebugConsole = {}
 
@@ -139,7 +137,7 @@ function DebugConsole:_drawGamestate()
 			i = i + 1
 		end
 		love.graphics.print(table.concat(toprint), 50, 400)
-	love.graphics.pop()		
+	love.graphics.pop()
 end
 
 function DebugConsole:_drawDamage()
@@ -162,7 +160,7 @@ function DebugConsole:_drawDamage()
 		love.graphics.setFont(FONT.SLIGHTLY_BIGGER)
 		love.graphics.print(p1print, p1hand[2].x - 120, 150)
 		love.graphics.print(p2print, p2hand[2].x - 180, 150)
-	love.graphics.pop()	
+	love.graphics.pop()
 end
 
 function DebugConsole:_drawTurnNumber()
@@ -176,7 +174,7 @@ end
 function DebugConsole:draw()
 	love.graphics.push("all")
 		love.graphics.setColor(0, 0, 0)
-		love.graphics.setFont(FONT.REGULAR)	
+		love.graphics.setFont(FONT.REGULAR)
 		if self.display_grid then self:_drawGrid() end
 		if self.overlay_function then self:_drawOverlay() end
 		if self.display_gem_info then self:_drawGemInfo() end
@@ -185,7 +183,7 @@ function DebugConsole:draw()
 		if self.display_gamestate then self:_drawGamestate() end
 		if self.display_damage then self:_drawDamage() end
 		if self.display_turn_number then self:_drawTurnNumber() end
-	love.graphics.pop()	
+	love.graphics.pop()
 end
 
 -- save screenshot to disk

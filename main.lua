@@ -1,4 +1,5 @@
 local love = _G.love
+local drawspace = _G.drawspace
 require "inits"
 require "lovedebug"
 require "classcommons"
