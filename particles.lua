@@ -532,7 +532,7 @@ function PopParticles.generate(params)
 	local img = params.image
 	if not img then
 		if isStandardColor(params.gem.color) then
-			img = image["gem_pop_" .. params.gem.color]
+			img = image["gems_pop_" .. params.gem.color]
 		else
 			img = params.gem.pop_particle_image or image.dummy
 		end
@@ -583,14 +583,14 @@ function ExplodingGem:init(params)
 	if gem then
 		if gem.owner == 3 then
 			if isStandardColor(gem.color) then
-				img = image["gem_grey_" .. gem.color]
+				img = image["gems_grey_" .. gem.color]
 			else
 				img = gem.grey_exploding_gem_image
 				assert(img, "No grey_exploding_gem_image for custom gem")
 			end
 		else
 			if isStandardColor(gem.color) then
-				img = image["gem_explode_" .. gem.color]
+				img = image["gems_explode_" .. gem.color]
 			else
 				img = gem.exploding_gem_image
 				assert(img, "No exploding_gem_image for custom gem")

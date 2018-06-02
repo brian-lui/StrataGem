@@ -571,8 +571,8 @@ function Grid:addBottomRow(player, skip_animation)
 		if not skip_animation then
 			local x = grid.x[col]
 			local y = grid.y[grid.BOTTOM_ROW]
-			local pop_image = image["gem_pop_" .. gem_color]
-			local explode_image = image["gem_explode_"..gem_color]
+			local pop_image = image["gems_pop_" .. gem_color]
+			local explode_image = image["gems_explode_"..gem_color]
 
 			particles.dust.generateGarbageCircle{game = game, x = x, y = y,
 				color = gem_color}
@@ -957,7 +957,7 @@ function Grid:animateGameOver(loser_num)
 				local img
 				if gem.color == "red" or gem.color == "blue" or	gem.color == "green" or
 				gem.color == "yellow" then
-					img = image["gem_grey_" .. gem.color]
+					img = image["gems_grey_" .. gem.color]
 				else
 					img = gem.grey_exploding_gem_image
 					assert(img, "No grey gem image found for grey_exploding_gem_image")
