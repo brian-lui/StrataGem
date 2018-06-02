@@ -302,26 +302,8 @@ function gs_main:mousepressed(x, y)
 		end
 	end
 
-	if self.debug_pause_mode then
-		local grid = self.grid
-		for col in grid:cols() do
-			for row = grid.BASIN_START_ROW, grid.BASIN_END_ROW do
-				local gem = grid[row][col].gem
-				if gem then
-					if pointIsInRect(x, y, gem:getRect()) then
-						if gem.color == "red" then
-							gem:setColor("blue")
-						elseif gem.color == "blue" then
-							gem:setColor("green")
-						elseif gem.color == "green" then
-							gem:setColor("yellow")
-						else
-							gem:setColor("red")
-						end
-					end
-				end
-			end
-		end
+	if self.debugconsole.is_pause_mode_on then
+		self.debugconsole:swapGridGem(x, y)
 	end
 
 	self:_mousepressed(x, y, gs_main)

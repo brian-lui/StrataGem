@@ -2,6 +2,7 @@ local love = _G.love
 require 'utilities' -- move
 local image = require 'image'
 local common = require "class.commons" -- class support
+local pointIsInRect = require "utilities".pointIsInRect
 local Pic = require 'pic'
 
 local DebugConsole = {}
@@ -202,8 +203,28 @@ function DebugConsole:resetScreencapNum()
 	self.screencap_number = 0
 end
 
-function DebugConsole:update(dt)
-	print("update the debug console stuff here")
+-- TODO: able to destroy and create gems
+function DebugConsole:swapGridGem(x, y)
+	local grid = self.grid
+	for col in grid:cols() do
+		for row = grid.BASIN_START_ROW, grid.BASIN_END_ROW do
+			local gem = grid[row][col].gem
+			if gem then
+				if pointIsInRect(x, y, gem:getRect()) then
+					if gem.color == "red" then
+						gem:setColor("blue")
+					elseif gem.color == "blue" then
+						gem:setColor("green")
+					elseif gem.color == "green" then
+						gem:setColor("yellow")
+					else
+						gem:setColor("red")
+					end
+				end
+			end
+		end
+	end
 end
+
 
 return common.class("DebugConsole", DebugConsole)
