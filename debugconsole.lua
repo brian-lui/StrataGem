@@ -15,22 +15,14 @@ function DebugConsole:init(game)
 end
 
 function DebugConsole:setDisplay(params)
-	self.display_gem_info = params.display_gem_info
-	self.display_gem_owners = params.display_gem_owners
-	self.display_particle_destinations = params.display_particle_destinations
-	self.display_gamestate = params.display_gamestate
-	self.display_damage = params.display_damage
-	self.display_grid = params.display_grid
-	self.display_turn_number = params.display_turn_number
-	self.overlay_function = params.overlay_function
-	self.save_screencaps = params.save_screencaps
-	self.is_pause_mode_on = params.is_pause_mode_on
+	for k, v in pairs(params) do self[k] = v end
 end
 
 function DebugConsole:setDefaultDisplayParams()
 	local game = self.game
 	local phase = self.phase
 	local params = {
+		display_phases = true,
 		display_gem_info = true,
 		display_gem_owners = true,
 		display_particle_destinations = true,
@@ -171,6 +163,9 @@ function DebugConsole:_drawTurnNumber()
 	love.graphics.pop()
 end
 
+function DebugConsole:_drawPhases()
+end
+
 function DebugConsole:draw()
 	love.graphics.push("all")
 		love.graphics.setColor(0, 0, 0)
@@ -183,6 +178,7 @@ function DebugConsole:draw()
 		if self.display_gamestate then self:_drawGamestate() end
 		if self.display_damage then self:_drawDamage() end
 		if self.display_turn_number then self:_drawTurnNumber() end
+		if self.display_phases then self:_drawPhases() end
 	love.graphics.pop()
 end
 
