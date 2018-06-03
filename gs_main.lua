@@ -52,7 +52,6 @@ function gs_main:enter()
 	local BURST_SEGMENTS = 2
 	for player in self:players() do
 		local ID = player.ID
-		print("loading burst from gs_main")
 		-- burst meter objects
 		local burst_frame_img = ID == "P1" and image.ui_burst_gauge_gold or image.ui_burst_gauge_silver
 		gs_main.createImage(self, {

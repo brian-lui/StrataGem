@@ -640,7 +640,6 @@ function Grid:dropColumns(params)
 			end
 		end
 	end
-	print("dropping columns with time ", max_anim_duration)
 	return max_anim_duration
 end
 
@@ -872,7 +871,6 @@ function Grid:destroyGem(params)
 	}
 
 	-- flag above gems
-	print("allowed propagate up?", params.gem.allow_flag_propagation)
 	if params.propagate_flags_up ~= false then
 		for i = gem.row - 1, 1, -1 do
 			local current_gem = self[i][gem.column].gem
