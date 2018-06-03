@@ -48,7 +48,13 @@ function Phase:_pause(dt)
 		self.game.current_phase = self.next_phase
 		self.update_gravity_during_pause = nil
 		self.next_phase = nil
+		print("New phase: " .. self.game.current_phase)
 	end
+end
+
+function Phase:setPhase(next_phase)
+	self.game.current_phase = next_phase
+	print("New phase: " .. self.game.current_phase)
 end
 
 -------------------------------------------------------------------------------
@@ -62,7 +68,7 @@ function Phase:intro(dt)
 		game.sound:newBGM(game.p1.sounds.bgm, true)
 		game.particles.words.generateGo(self.game)
 		game.sound:newSFX("fountaingo")
-		game.current_phase = "Action"
+		self:setPhase("Action")
 	end
 end
 
@@ -82,10 +88,10 @@ function Phase:action(dt)
 		love.mousereleased(drawspace.tlfres.getMousePosition(drawspace.width, drawspace.height))
 
 		if game.type == "Netplay" then
-			game.current_phase = "NetplaySendDelta"
+			self:setPhase("NetplaySendDelta")
 		else
 			ai:performQueuedAction()
-			game.current_phase = "Resolve"
+			self:setPhase("Resolve")
 		end
 
 		game.particles.wordEffects.clear(game.particles)
@@ -102,7 +108,7 @@ function Phase:netplaySendDelta(dt)
 	if game.me_player.supering then client:writeDeltaSuper() end
 
 	client:sendDelta()
-	game.current_phase = "NetplayWaitForDelta"
+	self:setPhase("NetplayWaitForDelta")
 end
 
 -- Wait for client:receiveDelta here. Once received, push it to game
@@ -123,7 +129,7 @@ function Phase:netplayWaitForDelta(dt)
 		game.particles.placedGem.removeAll(game.particles)
 
 		client:sendDeltaConfirmation()
-		game.current_phase = "Resolve"
+		self:setPhase("Resolve")
 	end
 end
 
@@ -382,7 +388,7 @@ function Phase:garbageMoving(dt)
 	grid:updateGravity(dt)
 
 	if grid:isSettled() and game.particles:getNumber("GarbageParticles") == 0 then
-		game.current_phase = "GetHandPieces"
+		self:setPhase("GetHandPieces")
 	end
 end
 
@@ -393,7 +399,7 @@ function Phase:getHandPieces(dt)
 	end
 	self.force_minimum_1_piece = false
 
-	self.game.current_phase = "PlatformsMoving"
+	self:setPhase("PlatformsMoving")
 end
 
 function Phase:platformsMoving(dt)
@@ -409,7 +415,7 @@ function Phase:platformsMoving(dt)
 
 	if handsettled then
 		if self.garbage_this_round > 0 then
-			game.current_phase = "DuringGravity"
+			self:setPhase("DuringGravity")
 		else
 			local delay = 0
 			for player in game:players() do
@@ -474,7 +480,7 @@ function Phase:netplaySendState(dt)
 	local game = self.game
 	game.client:writeState()
 	game.client:sendState()
-	game.current_phase = "NetplayWaitForState"
+	self:setPhase("NetplayWaitForState")
 end
 
 function Phase:netplayWaitForState(dt)
@@ -484,7 +490,7 @@ function Phase:netplayWaitForState(dt)
 	if client.their_state then
 		assert(client.our_state == client.their_state, "States don't match! Ours:\n "
 			.. client.our_state .. "\nTheirs:\n" .. client.their_state)
-		game.current_phase = "NetplayNewTurn"
+		self:setPhase("NetplayNewTurn")
 	end
 end
 
@@ -494,7 +500,7 @@ function Phase:netplayNewTurn(dt)
 
 	client:newTurn()
 	game:newTurn()
-	game.current_phase = "Action"
+	self:setPhase("Action")
 
 	if not client.connected then
 		self.game.type = "1P"
@@ -505,7 +511,7 @@ end
 function Phase:singlePlayerNewTurn(dt)
 	local game = self.game
 	game:newTurn()
-	game.current_phase = "Action"
+	self:setPhase("Action")
 end
 
 function Phase:gameOver(dt)
