@@ -8,6 +8,7 @@ local gs_main = {name = "gs_main"}
 function gs_main:init()
 	self.camera = common.instance(require "camera")
 	gs_main.ui = {clickable = {}, static = {}, popup_clickable = {}, popup_static = {}}
+	gs_main.ui.static.burst = {update = function() end}
 end
 
 -- refer to game.lua for instructions for createButton and createImage
@@ -49,8 +50,6 @@ function gs_main:enter()
 		end_y = stage.basin.y,
 	})
 
-	--local BURST_SEGMENTS = 2
-	gs_main.ui.static.burst = {update = function() end}
 	for player in self:players() do
 		gs_main.ui.static.burst[player.player_num] = self.uielements.components.burst.create(self, player)
 		player.super_button = self.uielements.components.super.create(self, player, player.player_num)
@@ -88,7 +87,6 @@ function gs_main:update(dt)
 		self.particles:update(dt) -- variable fps
 		gs_main.current_background:update(dt) -- variable fps
 		self.uielements.timer:update(dt)
-		--self.uielements:updateBursts(gs_main)
 		for player in self:players() do
 			gs_main.ui.static.burst[player.player_num]:update(dt)
 			player.super_button:update(dt)
@@ -226,19 +224,11 @@ function gs_main:drawButtons()
 end
 
 function gs_main:drawUI(params)
-	local draws = {"basin"}
-	--[[
-	local draws = {"basin", "P1burstframe", "P2burstframe", "P1burstblock1",
-		"P1burstblock2", "P2burstblock1", "P2burstblock2", "P1burstpartial1",
-		"P1burstpartial2", "P2burstpartial1", "P2burstpartial2", "P1burstglow1",
-		"P1burstglow2", "P2burstglow1", "P2burstglow2",}
---]]
+	gs_main.ui.static.basin:draw(params)
 	for player in self:players() do
 		player.super_button:draw(params)
 		gs_main.ui.static.burst[player.player_num]:draw(params)
 	end
-	for i = 1, #draws do gs_main.ui.static[ draws[i] ]:draw(params) end
-
 	gs_main.ui.clickable.settings:draw(params)
 end
 
