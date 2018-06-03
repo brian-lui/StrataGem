@@ -77,7 +77,7 @@ function Phase:action(dt)
 	local ai = game.ai
 
 	for player in game:players() do player:actionPhase(dt) end
-	self.game.ui:update()
+	self.game.uielements:update()
 
 	self.time_to_next = self.time_to_next - 1
 	if game.type ~= "Netplay" then
@@ -175,7 +175,7 @@ function Phase:beforeGravity(dt)
 		local player_delay = player:beforeGravity()
 		delay = math.max(delay, player_delay or 0)
 	end
-	game.ui:putPendingAtTop(delay)
+	game.uielements:putPendingAtTop(delay)
 	self:setPause(delay)
 	self:activatePause("GemTween", true)
 end

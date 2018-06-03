@@ -822,7 +822,7 @@ function Grid:destroyGem(params)
 			assert(player.meter_gain[gem.color], "Nil value found when looking up super meter gain!")
 			player:addSuper(player.meter_gain[gem.color])
 		end
-		game.queue:add(delay_until_explode, game.ui.screenshake, game.ui, 1)
+		game.queue:add(delay_until_explode, game.uielements.screenshake, game.uielements, 1)
 
 		-- animations
 		local soundfile_name = "gembreak" .. math.min(5, game.scoring_combo + 1)

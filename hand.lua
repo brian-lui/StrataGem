@@ -216,7 +216,7 @@ function Hand:createGarbageAnimation(pos, delay_frames)
 		particles.popParticles.generate{game = game, gem = gem, delay_frames = explode_frames}
 		particles.dust.generateBigFountain{game = game, gem = gem, delay_frames = explode_frames}
 		arrival_frame = particles.garbageParticles.generate(game, gem, explode_frames)
-		game.queue:add(explode_frames, game.ui.screenshake, game.ui, 2)
+		game.queue:add(explode_frames, game.uielements.screenshake, game.uielements, 2)
 	end
 
 	self[pos].piece:breakUp()

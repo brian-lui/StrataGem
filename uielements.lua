@@ -351,9 +351,9 @@ local components = {
 }
 
 
-local ui = {}
+local uielements = {}
 
-function ui:init(game)
+function uielements:init(game)
 	self.game = game
 	self.timer = common.instance(Timer, game)
 	-- Red X shown on gems in invalid placement spots
@@ -364,7 +364,7 @@ end
 -- updates the super drawables for player based on player MP
 -- shown super meter is less than the actual super meter when super particles are on screen
 -- as particles disappear, they visually go into the super meter
-function ui:updateSupers(gamestate)
+function uielements:updateSupers(gamestate)
 	local game = self.game
 	for player in game:players() do
 		local onscreen_mp = game.particles:getCount("onscreen", "MP", player.player_num)
@@ -385,7 +385,7 @@ function ui:updateSupers(gamestate)
 	end
 end
 
-function ui:updateBursts(gamestate)
+function uielements:updateBursts(gamestate)
 	for player in self.game:players() do
 		local ID = player.ID
 		local max_segs = 2
@@ -489,7 +489,7 @@ local function drawDestinationShadow(self, piece, shift, account_for_doublecast)
 end
 
 -- show all the possible shadows!
-function ui:showShadows(piece)
+function uielements:showShadows(piece)
 	local midline, on_left = piece:isOnMidline()
 	local shift = 0
 	if midline then
@@ -507,7 +507,7 @@ function ui:showShadows(piece)
 end
 
 -- This is the red X shown on top of the active gem
-function ui:showX(piece)
+function uielements:showX(piece)
 	local legal = piece:isDropLegal()
 	local midline, on_left = piece:isOnMidline()
 	local shift = midline and (on_left and -1 or 1) or 0
@@ -521,7 +521,7 @@ function ui:showX(piece)
 end
 
 -- sends screenshake data depending on how many gems matched, called on match
-function ui:screenshake(damage)
+function uielements:screenshake(damage)
 	self.game.screenshake_frames = self.game.screenshake_frames + math.max(0, damage * 5)
 	self.game.screenshake_vel = self.game.screenshake_vel + math.max(0, damage)
 end
@@ -552,7 +552,7 @@ end
 
 -- animation: places pieces at top of basin, and tweens them down.
 -- also calls the cloud effects and the words/star fountains.
-function ui:putPendingAtTop(delay)
+function uielements:putPendingAtTop(delay)
 	local game = self.game
 	local pending = {
 		p1 = game.grid:getPendingGems(game.p1),
@@ -588,7 +588,7 @@ end
 
 -- generates dust for active piece, and calculates tweens for gem shadows
 -- only called during active phase
-function ui:update(dt)
+function uielements:update(dt)
 	local game = self.game
 	local player = game.me_player
 	local pending_gems = game.grid:getPendingGems(player)
@@ -634,4 +634,4 @@ function ui:update(dt)
 	end
 end
 
-return common.class("UI", ui)
+return common.class("UIelements", uielements)

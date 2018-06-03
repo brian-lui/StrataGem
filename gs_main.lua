@@ -83,7 +83,7 @@ function gs_main:enter()
 		end
 
 		-- super meter
-		player.super_button = self.ui.components.super.create(self, player, player.player_num)
+		player.super_button = self.uielements.components.super.create(self, player, player.player_num)
 	end
 end
 
@@ -117,8 +117,8 @@ function gs_main:update(dt)
 		timeDip(self, function() self.phase:run(self.timeStep) end)
 		self.particles:update(dt) -- variable fps
 		gs_main.current_background:update(dt) -- variable fps
-		self.ui.timer:update(dt)
-		self.ui:updateBursts(gs_main)
+		self.uielements.timer:update(dt)
+		self.uielements:updateBursts(gs_main)
 		for player in self:players() do player.super_button:update(dt) end
 		self.animations:updateAll(dt)
 		self.screenshake_frames = math.max(0, self.screenshake_frames - 1)
@@ -136,7 +136,7 @@ function gs_main:drawScreenElements(params)
 	for _, v in pairs(self.particles.allParticles.PlatformTinyStar) do v:draw(params) end
 	for _, v in pairs(self.particles.allParticles.PlatformStar) do v:draw(params) end
 	gs_main.ui.static.basin:draw(params)
-	self.ui.timer:draw(params)	-- timer bar
+	self.uielements.timer:draw(params)	-- timer bar
 
 	for player in self:players() do
 		player.animation:draw{h_flip = player.ID == "P2"} -- sprite
@@ -227,9 +227,9 @@ function gs_main:drawGems(params)
 
 	-- draw the gem when it's been grabbed by the player
 	if self.active_piece then
-		self.ui:showShadows(self.active_piece)
+		self.uielements:showShadows(self.active_piece)
 		self.active_piece:draw(params)
-		self.ui:showX(self.active_piece)
+		self.uielements:showX(self.active_piece)
 	end
 
 	-- more over-gem particles

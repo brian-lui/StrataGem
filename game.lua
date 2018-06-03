@@ -65,7 +65,7 @@ function Game:init()
 	self.animations = common.instance(require "animations", self)
 	self.particles = common.instance(require "particles", self)
 	self.client = common.instance(require "client", self)
-	self.ui = common.instance(require "ui", self)
+	self.uielements = common.instance(require "uielements", self)
 	self.queue = common.instance(Queue, self)
 	self.statemanager = common.instance(require "statemanager", self)
 	self.statemanager:switch(require "gs_title")
@@ -511,8 +511,8 @@ end
 function Game:keypressed(key)
 	if key == "escape" then
 		love.event.quit()
-	elseif key == "f3" then	-- Toggle debug mode (see lovedebug.lua). Key chosen from Minecraft.
-		_G.debugEnabled = not _G.debugEnabled
+	--elseif key == "f3" then	-- Toggle debug mode (see lovedebug.lua). Key chosen from Minecraft.
+		--_G.debugEnabled = not _G.debugEnabled
 	else
 		if self.unittests[key] then
 			self.unittests[key](self)
