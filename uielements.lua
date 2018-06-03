@@ -84,23 +84,24 @@ Timer = common.class("Timer", Timer)
 local Burst = {}
 
 -- gs_main:enter()
-function Burst:init(game, character, player_num)
+function Burst:init(game, character)
 	local stage = game.stage
 	self.game = game
 	self.character = character
-	self.player_num = player_num
+	self.player_num = character.player_num
+	self.t = 0
 	self.SEGMENTS = 2
 
 	local ID
-	if player_num == 1 then
+	if self.player_num == 1 then
 		ID = "P1"
-	elseif player_num == 2 then
+	elseif self.player_num == 2 then
 		ID = "P2"
 	else
 		print("invalid player_num provided")
 	end
 
-	local frame_img = ID == "P1" and image.ui_burst_gauge_gold or image.ui_burst_gauge_silver
+	local frame_img = self.player_num == 1 and image.ui_burst_gauge_gold or image.ui_burst_gauge_silver
 	self.burst_frame = Pic:create{
 		game = self.game,
 		x = stage.burst[ID].frame.x,
@@ -131,18 +132,14 @@ function Burst:init(game, character, player_num)
 	end
 end
 
-function Burst.create(game, character, player_num)
-	return common.instance(Burst, game, character, player_num)
+function Burst.create(game, character)
+	return common.instance(Burst, game, character)
 end
 
---gs_main:update()
--- remove updateBursts()
 function Burst:update(dt)
-	local character = self.character
-
 	self.t = self.t + dt
 
-	local full_segs = (character.cur_burst / character.MAX_BURST) * self.SEGMENTS -- percent multiplied by 2
+	local full_segs = (self.character.cur_burst / self.character.MAX_BURST) * self.SEGMENTS
 	local full_segs_int = math.floor(full_segs)
 	local part_fill_percent = full_segs % 1
 
@@ -159,13 +156,13 @@ function Burst:update(dt)
 		if full_segs >= i then
 			self.burst_block[i].transparency = 255
 		else
-			self.burst_block[i].transparency = 255
+			self.burst_block[i].transparency = 0
 		end
 
 		if full_segs < i and full_segs + 1 > i then
 			self.burst_partial[i].transparency = 255
 		else
-			self.burst_partial[i].transparency = 255
+			self.burst_partial[i].transparency = 0
 		end
 	end
 
@@ -229,43 +226,34 @@ function Super:init(game, character, player_num)
 	self.TWINKLE_FREQ = 0.15 -- this is in seconds, not frames
 	self.twinkles = {}
 
-	local ID
-	if player_num == 1 then
-		ID = "P1"
-	elseif player_num == 2 then
-		ID = "P2"
-	else
-		error("invalid player_num provided")
-	end
-
 	self.super_frame = Pic:create{
 		game = self.game,
-		x = stage.super[ID].x,
-		y = stage.super[ID].y,
+		x = stage.super[self.player_num].x,
+		y = stage.super[self.player_num].y,
 		image = character.super_images.empty,
 	}
 	self.super_word = Pic:create{
 		game = self.game,
-		x = stage.super[ID].x,
-		y = stage.super[ID].word_y,
+		x = stage.super[self.player_num].x,
+		y = stage.super[self.player_num].word_y,
 		image = character.super_images.word,
 	}
 	self.super_meter_image = Pic:create{
 		game = self.game,
-		x = stage.super[ID].x,
-		y = stage.super[ID].y,
+		x = stage.super[self.player_num].x,
+		y = stage.super[self.player_num].y,
 		image = character.super_images.full,
 	}
 	self.super_glow = Pic:create{
 		game = self.game,
-		x = stage.super[ID].x,
-		y = stage.super[ID].y,
+		x = stage.super[self.player_num].x,
+		y = stage.super[self.player_num].y,
 		image = character.super_images.glow,
 	}
 	self.super_overlay = Pic:create{
 		game = self.game,
-		x = stage.super[ID].x,
-		y = stage.super[ID].y,
+		x = stage.super[self.player_num].x,
+		y = stage.super[self.player_num].y,
 		image = character.super_images.overlay,
 }
 end
@@ -382,44 +370,6 @@ function uielements:updateSupers(gamestate)
 			superglow.transparency = 0
 			gamestate.ui.static[player.ID .. "superword"].transparency = 0
 		end
-	end
-end
-
-function uielements:updateBursts(gamestate)
-	for player in self.game:players() do
-		local ID = player.ID
-		local max_segs = 2
-		local full_segs = (player.cur_burst / player.MAX_BURST) * max_segs -- percent multiplied by 2
-		local full_segs_int = math.floor(full_segs)
-		local part_fill_percent = full_segs % 1
-
-		-- partial fill block length
-		if part_fill_percent > 0 then
-			local part_fill_block = gamestate.ui.static[ID .. "burstpartial" .. (full_segs_int + 1)]
-			local width = part_fill_block.width * part_fill_percent
-			local start = ID == "P2" and part_fill_block.width - width or 0
-			part_fill_block:setQuad(start, 0, width, part_fill_block.height)
-		end
-
-		-- super meter
-		for i = 1, max_segs do
-			if full_segs >= i then
-				gamestate.ui.static[ID .. "burstblock" .. i].transparency = 255
-			else
-				gamestate.ui.static[ID .. "burstblock" .. i].transparency = 0
-			end
-
-			if full_segs < i and full_segs + 1 > i then
-				gamestate.ui.static[ID .. "burstpartial" .. i].transparency = 255
-			else
-				gamestate.ui.static[ID .. "burstpartial" .. i].transparency = 0
-			end
-		end
-
-		-- glow
-		local glow_amount = math.sin(self.game.frame / 30) * 127.5 + 127.5
-		gamestate.ui.static[ID .. "burstglow1"].transparency = full_segs_int == 1 and glow_amount or 0
-		gamestate.ui.static[ID .. "burstglow2"].transparency = full_segs_int == 2 and glow_amount or 0
 	end
 end
 
