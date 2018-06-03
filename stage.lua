@@ -41,27 +41,27 @@ function stage:init(game)
 	end
 
 	self.super = {
-		P1 = {
+		{
 			x = self.x_mid - 9.5 * self.gem_width,
 			y = self.y_mid - self.gem_height,
 			word_y = self.y_mid - self.gem_height
 		},
-		P2 = {
+		{
 			x = self.x_mid + 9.5 * self.gem_width,
 			y = self.y_mid - self.gem_height,
 			word_y = self.y_mid - self.gem_height
-		}
+		},
 	}
-	self.super.P1.rect = {
-		self.super.P1.x - HALF_SUPER_WIDTH,
-		self.super.P1.y - HALF_SUPER_HEIGHT,
+	self.super[1].rect = {
+		self.super[1].x - HALF_SUPER_WIDTH,
+		self.super[1].y - HALF_SUPER_HEIGHT,
 		2 * HALF_SUPER_WIDTH,
 		2 * HALF_SUPER_HEIGHT
 	}
 
-	self.super.P2.rect = {
-		self.super.P2.x - HALF_SUPER_WIDTH,
-		self.super.P2.y - HALF_SUPER_HEIGHT,
+	self.super[2].rect = {
+		self.super[2].x - HALF_SUPER_WIDTH,
+		self.super[2].y - HALF_SUPER_HEIGHT,
 		2 * HALF_SUPER_WIDTH,
 		2 * HALF_SUPER_HEIGHT
 	}

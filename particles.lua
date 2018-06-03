@@ -286,13 +286,12 @@ function SuperParticle:remove()
 	self.manager.allParticles.SuperParticles[self.ID] = nil
 end
 
+-- particles follow cubic Bezier curve from gem origin to super bar.
 function SuperParticle.generate(game, gem, num_particles, delay_frames, force_max_alpha)
-	-- particles follow cubic Bezier curve from gem origin to super bar.
-	local player = game:playerByIndex(gem.owner)
 	for _ = 1, num_particles do
 		-- create bezier curve
 		local x1, y1 = gem.x, gem.y -- start
-		local x4, y4 = game.stage.super[player.ID].x, game.stage.super[player.ID].y -- end
+		local x4, y4 = game.stage.super[gem.owner].x, game.stage.super[gem.owner].y -- end
 		-- dist and angle vary the second point within a circle around the origin
 		local dist = ((x4 - x1) ^ 2 + (y4 - y1) ^ 2) ^ 0.5
 		local angle = math.random() * math.pi * 2
