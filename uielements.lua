@@ -284,6 +284,9 @@ function Super.create(game, character, player_num)
 	return common.instance(Super, game, character, player_num)
 end
 
+-- updates the super drawables for player based on player MP
+-- shown super meter is less than the actual super meter when super particles are on screen
+-- as particles disappear, they visually go into the super meter
 function Super:update(dt)
 	local game = self.game
 	local character = self.character
@@ -347,30 +350,6 @@ function uielements:init(game)
 	-- Red X shown on gems in invalid placement spots
 	self.redx = Pic:create{game = game, x = 0, y = 0, image = image.ui_redx}
 	self.components = components
-end
-
--- updates the super drawables for player based on player MP
--- shown super meter is less than the actual super meter when super particles are on screen
--- as particles disappear, they visually go into the super meter
-function uielements:updateSupers(gamestate)
-	local game = self.game
-	for player in game:players() do
-		local onscreen_mp = game.particles:getCount("onscreen", "MP", player.player_num)
-		local displayed_mp = math.min(player.MAX_MP, player.mp - onscreen_mp)
-		local fill_percent = 0.12 + 0.76 * displayed_mp / player.MAX_MP
-		local meter = gamestate.ui.static[player.ID .. "supermeter"]
-		meter:setQuad(0, meter.height * (1 - fill_percent), meter.width, meter.height * fill_percent)
-
-		local superglow = gamestate.ui.static[player.ID .. "superglow"]
-		if player.supering then
-			superglow.transparency = 255
-		elseif player:canUseSuper() then
-			superglow.transparency = math.sin(game.frame / 30) * 127.5 + 127.5
-		else
-			superglow.transparency = 0
-			gamestate.ui.static[player.ID .. "superword"].transparency = 0
-		end
-	end
 end
 
 -- draws the shadow underneath the player's gem piece, called if gem is picked up
