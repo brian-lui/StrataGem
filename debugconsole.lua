@@ -2,7 +2,8 @@ local love = _G.love
 local FONT = _G.FONT
 local common = require "class.commons" -- class support
 local pointIsInRect = require "utilities".pointIsInRect
-
+local image = require "image"
+local Gem = require "gem"
 local DebugConsole = {}
 
 function DebugConsole:init(game)
@@ -266,8 +267,24 @@ function DebugConsole:swapGridGem(x, y)
 					elseif gem.color == "green" then
 						gem:setColor("yellow")
 					else
-						gem:setColor("red")
+						grid[row][col].gem = false
 					end
+					return
+				end
+			else
+				local start_x = grid.x[col] - 0.5 * image.GEM_WIDTH
+				local start_y = grid.y[row] - 0.5 * image.GEM_HEIGHT
+				local w = image.GEM_WIDTH
+				local h = image.GEM_HEIGHT
+				if pointIsInRect(x, y, start_x, start_y, w, h) then
+					grid[row][col].gem = Gem:create{
+						game = self.game,
+						x = grid.x[col],
+						y = grid.y[row],
+						color = "red",
+					}
+					grid[row][col].gem:updateGrid(row, col)
+					return
 				end
 			end
 		end
