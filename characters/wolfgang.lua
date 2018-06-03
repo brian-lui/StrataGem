@@ -550,8 +550,8 @@ function Wolfgang:afterAllMatches()
 	end
 
 	if all_lit_up then
-		-- TODO: animation to show we're making a dog
 		self.single_dogs_to_make = self.single_dogs_to_make + self.FULL_BARK_DOG_ADDS
+		print("adding dog pieces, now: " .. self.single_dogs_to_make)
 		for _, letter in pairs(self.letters) do letter:darken() end
 		delay = 60
 	end
@@ -572,6 +572,7 @@ function Wolfgang:modifyGemTable()
 		return nil, dog_return
 	elseif self.single_dogs_to_make > 0 then
 		local dog_return = function()
+			print("starting dog-pieces to make: " .. self.single_dogs_to_make)
 			self.single_dogs_to_make = self.single_dogs_to_make - 1
 			return self:_getDogReplaceTable()
 		end

@@ -151,32 +151,23 @@ function Hand:movePieceToGrid(grid, piece, locations)
 end
 
 --[[
-	creates the new pieces for the turn.
-	Takes optional gem_mod for gem frequencies. This can be provided as a table,
-	or as a function that returns a gem_table.
+	Creates the new pieces for the turn.
 	Takes optional mandatory flag to force a piece (default off).
+	Takes optional gem_mod_func that returns: freq, replace
+	freq and replace should be provided as a table or function
 	NOTE: this function can be called more than once per turn.
 --]]
-function Hand:createNewTurnPieces(mandatory, gem_freq, gem_replace)
+function Hand:createNewTurnPieces(mandatory, gem_mod_func)
 	if mandatory then self.damage = math.max(self.damage, 4) end
 	local pieces_to_get = math.floor(self.damage * 0.25)
 	if pieces_to_get < 1 then return end
 
-	local gem_freq_table = nil
-	if type(gem_freq) == "function" then
-		gem_freq_table = gem_freq()
-	elseif type(gem_freq) == "table" then
-		gem_freq_table = gem_freq
-	end
-
-	local gem_replace_table = nil
-	if type(gem_replace) == "function" then
-		gem_replace_table = gem_replace()
-	elseif type(gem_replace) == "table" then
-		gem_replace_table = gem_replace
-	end
-
 	for i = 6, pieces_to_get + 5 do
+		local freq, replace = nil, nil
+		if gem_mod_func then freq, replace = gem_mod_func(self.owner) end
+		if type(freq) == "function" then freq = freq() end
+		if type(replace) == "function" then replace = replace() end
+
 		self[i].piece = Piece:create{
 			game = self.game,
 			hand_idx = i,
@@ -184,8 +175,8 @@ function Hand:createNewTurnPieces(mandatory, gem_freq, gem_replace)
 			player_num = self.player_num,
 			x = self[i].x,
 			y = self[i].y,
-			gem_freq_table = gem_freq_table,
-			gem_replace_table = gem_replace_table,
+			gem_freq_table = freq,
+			gem_replace_table = replace,
 		}
 		self[i].platform = GemPlatform:create{game = self.game, owner = self.owner, hand_idx = i}
 	end
