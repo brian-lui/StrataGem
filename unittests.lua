@@ -458,6 +458,19 @@ local function toggleScreencaps(game)
 	end
 end
 
+local function wolfgangToggle13TurnBadDog(game)
+	for player in game:players() do
+		if player.character_id == "Wolfgang" then
+			if player.BAD_DOG_DURATION == 1 then
+				player.BAD_DOG_DURATION = 3
+				print("BAD DOG now 3 turns")
+			elseif player.BAD_DOG_DURATION == 3 then
+				player.BAD_DOG_DURATION = 1
+				print("BAD DOG now 1 turn")
+			end
+		end
+	end
+end
 local function printGamestate(game)
 	local gamestate = game.client:getGamestateString()
 	print(gamestate)
@@ -483,7 +496,7 @@ local Unittests = {
 	j = addSuperAndBurst,
 	k = superToggle,
 	l = showDebugInfo,
-	--z = heathFireFadeTest, -- heath fire
+	z = wolfgangToggle13TurnBadDog,
 	x = toggleSlowdown,
 	c = testGemImage,
 	--v = ,
