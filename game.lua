@@ -111,12 +111,7 @@ function Game:start(gametype, char1, char2, bkground, seed, side)
 	self.statemanager:switch(require "gs_main")
 end
 
-local finished_loading = false
 function Game:update(dt)
-	if not finished_loading then
-		finished_loading = image:updateLoader(dt)
-		if finished_loading then print("loaded " .. finished_loading .. " images!") end
-	end
 	self.client:update(dt)
 	self.sound:update()
 	self:updateDarkenedScreenTracker(dt) -- haha
@@ -511,8 +506,6 @@ end
 function Game:keypressed(key)
 	if key == "escape" then
 		love.event.quit()
-	--elseif key == "f3" then	-- Toggle debug mode (see lovedebug.lua). Key chosen from Minecraft.
-		--_G.debugEnabled = not _G.debugEnabled
 	else
 		if self.unittests[key] then
 			self.unittests[key](self)

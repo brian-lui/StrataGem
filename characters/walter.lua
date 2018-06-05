@@ -18,8 +18,8 @@ Walter.primary_colors = {"blue"}
 
 Walter.full_size_image = love.graphics.newImage('images/portraits/walter.png')
 Walter.small_image = love.graphics.newImage('images/portraits/waltersmall.png')
-Walter.action_image = love.graphics.newImage('images/portraits/walteraction.png')
-Walter.shadow_image = love.graphics.newImage('images/portraits/waltershadow.png')
+Walter.action_image = love.graphics.newImage('images/portraits/action_walter.png')
+Walter.shadow_image = love.graphics.newImage('images/portraits/shadow_walter.png')
 Walter.super_fuzz_image = love.graphics.newImage('images/ui/superfuzzblue.png')
 
 Walter.super_images = {

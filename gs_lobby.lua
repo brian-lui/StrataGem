@@ -42,8 +42,8 @@ function lobby:_createCharacterButtons()
 		end
 		lobby._createButton(self, {
 			name = char,
-			image = image["charselect_"..char.."ring"],
-			image_pushed = image["charselect_"..char.."ring"],
+			image = image["charselect_ring_"..char],
+			image_pushed = image["charselect_ring_"..char],
 			duration = 30,
 			start_x = -0.05 * i,
 			end_x = end_x,
@@ -55,8 +55,8 @@ function lobby:_createCharacterButtons()
 			action = function() 
 				if lobby.my_character ~= char and not self.client.queuing then
 					lobby.my_character = char
-					lobby.displayed_character:newImage(image["charselect_"..char.."char"])
-					lobby.displayed_character_text:newImage(image["charselect_"..char.."name"])
+					lobby.displayed_character:newImage(image["portraits_action_"..char])
+					lobby.displayed_character_text:newImage(image["charselect_name_"..char])
 					lobby.displayed_character:reset()
 					lobby.displayed_character_text:reset()
 				end
@@ -103,7 +103,7 @@ function lobby:_createUIButtons()
 		action = function()
 			lobby.game_background = (lobby.game_background - 2) % self.background.total + 1
 			local selected_background = self.background:idx_to_str(lobby.game_background)
-			local new_image = image["thumbnail_" .. selected_background]
+			local new_image = image["charselect_thumbnail_" .. selected_background]
 			lobby.game_background_image:newImage(new_image)
 		end,
 	})
@@ -121,7 +121,7 @@ function lobby:_createUIButtons()
 		action = function()
 			lobby.game_background = lobby.game_background % self.background.total + 1
 			local selected_background = self.background:idx_to_str(lobby.game_background)
-			local new_image = image["thumbnail_" .. selected_background]
+			local new_image = image["charselect_thumbnail_" .. selected_background]
 			lobby.game_background_image:newImage(new_image)
 		end,
 	})
@@ -180,7 +180,7 @@ function lobby:_createUIImages()
 	-- background_image
 	lobby.game_background_image = lobby._createImage(self, {
 		name = "backgroundimage",
-		image = image["thumbnail_" .. selected_background],
+		image = image["charselect_thumbnail_" .. selected_background],
 		duration = 60,
 		end_x = stage.width * 0.75,
 		end_y = stage.height * 0.8,

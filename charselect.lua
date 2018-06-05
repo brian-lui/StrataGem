@@ -47,8 +47,8 @@ function Charselect:_createCharacterButtons()
 		end
 		self:_createButton{
 			name = char,
-			image = image["charselect_"..char.."ring"],
-			image_pushed = image["charselect_"..char.."ring"],
+			image = image["charselect_ring_"..char],
+			image_pushed = image["charselect_ring_"..char],
 			duration = 30,
 			start_x = -0.05 * i,
 			end_x = end_x,
@@ -60,9 +60,9 @@ function Charselect:_createCharacterButtons()
 			action = function()
 				if self.my_character ~= char then
 					self.my_character = char
-					self.displayed_character_shadow:newImage(image["charselect_"..char.."shadow"])
-					self.displayed_character:newImage(image["charselect_"..char.."char"])
-					self.displayed_character_text:newImage(image["charselect_"..char.."name"])
+					self.displayed_character_shadow:newImage(image["portraits_shadow_"..char])
+					self.displayed_character:newImage(image["portraits_action_"..char])
+					self.displayed_character_text:newImage(image["charselect_name_"..char])
 					self.displayed_character_shadow:reset()
 					self.displayed_character:reset()
 					self.displayed_character_text:reset()
@@ -167,7 +167,7 @@ function Charselect:_createUIButtons()
 		action = function()
 			self.game_background = (self.game_background - 2) % game.background.total + 1
 			local selected_background = game.background:idx_to_str(self.game_background)
-			local new_image = image["thumbnail_" .. selected_background]
+			local new_image = image["charselect_thumbnail_" .. selected_background]
 			self.game_background_image:newImage(new_image)
 		end,
 	}
@@ -185,7 +185,7 @@ function Charselect:_createUIButtons()
 		action = function()
 			self.game_background = self.game_background % game.background.total + 1
 			local selected_background = game.background:idx_to_str(self.game_background)
-			local new_image = image["thumbnail_" .. selected_background]
+			local new_image = image["charselect_thumbnail_" .. selected_background]
 			self.game_background_image:newImage(new_image)
 		end,
 	}
@@ -264,7 +264,7 @@ function Charselect:_createUIImages()
 	-- background_image
 	self.game_background_image = self:_createImage{
 		name = "backgroundimage",
-		image = image["thumbnail_" .. selected_background],
+		image = image["charselect_thumbnail_" .. selected_background],
 		duration = 60,
 		end_x = stage.width * 0.75,
 		end_y = stage.height * 0.8,

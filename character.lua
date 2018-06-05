@@ -8,8 +8,8 @@ local Hand = require 'hand'
 local Character = {}
 Character.full_size_image = love.graphics.newImage('images/portraits/heath.png')
 Character.small_image = love.graphics.newImage('images/portraits/heathsmall.png')
-Character.action_image = love.graphics.newImage('images/portraits/heathaction.png')
-Character.shadow_image = love.graphics.newImage('images/portraits/heathshadow.png')
+Character.action_image = love.graphics.newImage('images/portraits/action_heath.png')
+Character.shadow_image = love.graphics.newImage('images/portraits/shadow_heath.png')
 Character.super_fuzz_image = love.graphics.newImage('images/ui/superfuzzred.png')
 
 Character.character_id = "Lamer"

@@ -20,6 +20,10 @@ local Wolfgang = {}
 
 Wolfgang.full_size_image = love.graphics.newImage('images/portraits/wolfgang.png')
 Wolfgang.small_image = love.graphics.newImage('images/portraits/wolfgangsmall.png')
+Wolfgang.action_image = love.graphics.newImage('images/portraits/action_wolfgang.png')
+Wolfgang.shadow_image = love.graphics.newImage('images/portraits/shadow_wolfgang.png')
+Wolfgang.super_fuzz_image = love.graphics.newImage('images/ui/superfuzzred.png')
+
 Wolfgang.character_id = "Wolfgang"
 Wolfgang.meter_gain = {red = 8, blue = 4, green = 4, yellow = 4, none = 4, wild = 4}
 

@@ -1,7 +1,5 @@
 local love = _G.love
-
--- A table {name, file location} of all the images to be gradually loaded
-local image_data = {}
+local lily = require 'lily'
 
 local buttons = {
 	"vscpu", "vscpupush", "netplay", "netplaypush", "back", "backpush",
@@ -66,30 +64,33 @@ local particles = {
 	"trail_red", "trail_blue", "trail_green", "trail_yellow", "trail_healing",
 }
 
-local selectablechars = {
-	"heath", "walter", "gail", "holly", "wolfgang",	"hailey", "diggory",
-	"buzz", "ivy", "joy", "mort", "damon"
-}
-for _, item in pairs(selectablechars) do
-	image_data["charselect_"..item.."char"] = "images/portraits/"..item.."action.png"
-	image_data["charselect_"..item.."shadow"] = "images/portraits/"..item.."shadow.png"
-	image_data["charselect_"..item.."name"] = "images/charselect/"..item.."name.png"
-	image_data["charselect_"..item.."ring"] = "images/charselect/"..item.."ring.png"
-end
+local portraits = {
+	"action_heath", "action_walter", "action_gail", "action_holly",
+	"action_wolfgang", "action_hailey", "action_diggory", "action_buzz",
+	"action_ivy", "action_joy", "action_mort", "action_damon",
 
-local background_thumbnails = {
+	"shadow_heath", "shadow_walter", "shadow_gail", "shadow_holly",
+	"shadow_wolfgang", "shadow_hailey", "shadow_diggory", "shadow_buzz",
+	"shadow_ivy", "shadow_joy", "shadow_mort", "shadow_damon",
+}
+
+local charselect = {
+	"name_heath", "name_walter", "name_gail", "name_holly", "name_wolfgang",
+	"name_hailey", "name_diggory", "name_buzz", "name_ivy", "name_joy",
+	"name_mort", "name_damon",
+
+	"ring_heath", "ring_walter", "ring_gail", "ring_holly", "ring_wolfgang",
+	"ring_hailey", "ring_diggory", "ring_buzz", "ring_ivy", "ring_joy",
+	"ring_mort", "ring_damon",
+
 	"thumbnail_colors", "thumbnail_starfall", "thumbnail_cloud",
 	"thumbnail_rabbitsnowstorm", "thumbnail_checkmate",
 }
 
-for _, item in pairs(background_thumbnails) do
-	image_data[item] = "images/charselect/" .. item .. ".png"
-end
-
 -- categories to create, in the form [key] = {category}
 -- assumes that key is the same as pathname
 -- e.g. buttons = buttons will create
--- image_data["buttons_" .. item] = "images/buttons/" .. item .. ".png"
+-- image_names["buttons_" .. item] = "images/buttons/" .. item .. ".png"
 local categories = {
 	buttons = buttons,
 	unclickables = unclickables,
@@ -97,79 +98,50 @@ local categories = {
 	ui = ui,
 	gems = gems,
 	particles = particles,
+	portraits = portraits,
+	charselect = charselect,
 }
 
-for str, tbl in pairs(categories) do
-	for _, item in pairs(tbl) do
-		image_data[str .. "_" .. item] = "images/" .. str .. "/" .. item .. ".png"
-	end
-end
-
--- coroutine that yields a single image each time it's called
-local function loadImage()
-	for k, v in pairs(image_data) do
-		coroutine.yield(k, love.graphics.newImage(v))
-	end
-end
-local coroLoadImage = coroutine.create(loadImage)
-
-local load_dt = 0
-local load_step = 0.02
-local already_loaded = false
--- every load_step seconds it loads a new image and writes it
-local LOAD_DT_LIMIT = 500000 -- bytes to load per load_dt
-local bytes_used = 0
-local function updateLoader(_self, dt)
-	load_dt = load_dt + dt
-	local proceed = false
-
-	if already_loaded == true then
-		proceed = true
-	elseif load_dt > load_step then
-		proceed = true
-		load_dt = load_dt - load_step
-	end
-
-	if proceed then
-		if coroutine.status(coroLoadImage) == "dead" then
-			local count = 0
-			for _ in pairs(image_data) do count = count + 1 end
-			return count -- stop calling when all loaded
-		else
-			local _, key, img = coroutine.resume(coroLoadImage)
-			if key ~= nil and img ~= nil then
-				if rawget(_self, key) then
-					already_loaded = true
-					updateLoader(_self, 0)
-				else
-					_self[key] = img
-					already_loaded = false
-					local w, h = img:getDimensions()
-					bytes_used = bytes_used + 4 * w * h + LOAD_DT_LIMIT * 0.3
-					if bytes_used < LOAD_DT_LIMIT then
-						updateLoader(_self, 0)
-					else
-						bytes_used = 0
-					end
-				end
-			end
-		end
-	end
-end
-
-
 local image = {
-	updateLoader = updateLoader,
 	lookup = {},
 	dummy = love.graphics.newImage('images/dummy.png'),
 }
 
+local image_names = {}
+local lily_table = {}
+local lily_count = 1
+for str, tbl in pairs(categories) do
+	for _, item in pairs(tbl) do
+		local handle = str .. "_" .. item
+		local filepath = "images/" .. str .. "/" .. item .. ".png"
+		image_names[handle] = filepath
+
+		lily_table[lily_count] = {handle = handle, filepath = filepath}
+		lily_count = lily_count + 1
+	end
+end
+
+-- Create the lily data table
+local to_load = {}
+for i, tbl in ipairs(lily_table) do
+	to_load[i] = {"newImage", tbl.filepath}
+end
+
+local function processImage(i, imagedata)
+	local handle = lily_table[i].handle
+	image[handle] = imagedata
+end
+
+local multilily = lily.loadMulti(to_load)
+multilily:onLoaded(function(_, i, imagedata) processImage(i, imagedata) end)
+
 -- If an image isn't loaded yet but is called, immediately load it
 local fallback = {
 	__index = function(t, k)
+		print("loading image as fallback " .. k)
 		local img
-		local success = pcall(function() img = love.graphics.newImage(image_data[k]) end)
-		assert(success, image_data[k])
+		local success = pcall(function() img = love.graphics.newImage(image_names[k]) end)
+		assert(success, "Failed to load " .. k)
 		t[k] = img
 		return img
 	end
