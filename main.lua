@@ -1,6 +1,5 @@
 local love = _G.love
 require "inits"
---require "lovedebug"
 require "classcommons"
 local common = require "class.commons"
 local game
