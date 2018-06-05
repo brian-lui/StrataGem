@@ -16,6 +16,11 @@ end
 
 local __NOP__ = function () end
 
+function love.quit()
+	local lily = require "lily"
+	lily.quit()
+end
+
 function love.draw()
 	love.graphics.push("all")
 	if game.draw then
