@@ -339,7 +339,7 @@ function Wolfgang:_upkeepBadDogs()
 	for dog, counter in pairs(self.bad_dogs) do
 		if counter == 0 then
 			dog.indestructible = false
-			dog:allowFlagPropagation()
+			dog:setOwner(self.player_num)
 			self.game.grid:destroyGem{
 				gem = dog,
 				super_meter = false,
