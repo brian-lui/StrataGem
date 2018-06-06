@@ -114,7 +114,7 @@ function Wolfgang:init(...)
 	}
 
 	self.FULL_BARK_DOG_ADDS = 2
-	self.BAD_DOG_DURATION = 1
+	self.BAD_DOG_DURATION = 3
 	self.SUPER_DOG_CREATION_DELAY = 45 -- in frames
 	self.this_turn_matched_colors = {}
 	self.bad_dogs = {} -- dict of {dog-gem, turns remaining to disappearance}
@@ -283,59 +283,6 @@ function Wolfgang:_turnRandomFriendlyBasinGemToDog()
 	end
 end
 
---[[
--- Turn a hand piece into a dog. Was previously used for Wolfgang super
--- Currently unused
-function Wolfgang:_turnPieceToDog(hand_idx, both)
-	assert(hand_idx >= 1 and hand_idx <= 5, "hand_idx not within range!")
-	local hand_loc = self.hand[hand_idx]
-
-	if hand_loc.piece then
-		if both then
-			for i = 1, hand_loc.piece.size do
-				local images = self:_getRandomDog()
-				hand_loc.piece.gems[i]:setColor(
-					"wild", images.dog, images.explode, images.grey, images.pop
-				)
-			end
-		else
-			local images = self:_getRandomDog()
-			local pos = self.game.rng:random(hand_loc.piece.size)
-			-- If it is in rotation_index 2 or 3, the gem table was reversed
-			-- This is because of bad coding from before. Haha
-			if hand_loc.piece.size == 2 and (hand_loc.piece.rotation_index == 2 or
-			hand_loc.piece.rotation_index == 3) then
-				if pos == 2 then pos = 1 elseif pos == 1 then pos = 2 end
-			end
-			hand_loc.piece.gems[pos]:setColor(
-				"wild", images.dog, images.explode, images.grey, images.pop
-			)
-		end
-	else
-		local gem_replace_table
-		if both then
-			gem_replace_table = {
-				self:_getDogReplaceTable(),
-				self:_getDogReplaceTable(),
-			}
-		else
-			gem_replace_table = self:_getDogReplaceTable()
-		end
-
-		hand_loc.piece = Piece:create{
-			game = self.game,
-			hand_idx = hand_idx,
-			owner = self,
-			player_num = self.player_num,
-			x = hand_loc.x,
-			y = hand_loc.y,
-			gem_replace_table = gem_replace_table,
-		}
-	end
-	self:_assignBadDogImages()
-end
---]]
-
 -- Goes through hand dogs and writes the bad dog images. No hurry to do so,
 -- since it won't matter until next action phase, so we do it in cleanup phase
 function Wolfgang:_assignBadDogImages()
@@ -406,7 +353,6 @@ function Wolfgang:_upkeepBadDogs()
 		self.bad_dogs[dog] = nil
 		any_dogs_destroyed = true
 	end
-	print("any dogs destroyed?", any_dogs_destroyed)
 	return any_dogs_destroyed
 end
 
