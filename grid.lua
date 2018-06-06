@@ -276,9 +276,6 @@ end
 	also owned by that player (may be owned by both players).
 	Call this function only once per matching, otherwise intersecting matches
 	will be flagged incorrectly.
-	the addOwner method adds a allow_flag_propagation flag to the gem, too, for use
-	in propagating the flags upwards, in the destroyGem method.
-
 	Also sets .is_in_a_horizontal_match and/or .is_in_a_vertical_match attributes of gems
 --]]
 

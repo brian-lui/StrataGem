@@ -168,17 +168,11 @@ function Gem:setOwner(player, set_due_to_match)
 		self:addOwner(player)
 	else
 		self.owner = player
+		print("set a gem to owner " .. player)
 	end
 	if set_due_to_match then
 		self.set_due_to_match = true
-		self:allowFlagPropagation()
 	end
-end
-
--- sometimes we don't want to propagate flags up if they were removed by
--- a special move or passive
-function Gem:allowFlagPropagation()
-	self.allow_flag_propagation = true
 end
 
 function Gem:addOwner(player)
