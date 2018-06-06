@@ -13,12 +13,13 @@ function Client:init(game)
 	--client.host = "64.137.189.132" -- sharpo
 	self.host = "85.234.133.240" -- thelo
 	--client.host = "127.0.0.1" -- local
-	self:clear()
-	self.client_socket = socket.tcp()
-	self.client_socket:settimeout(3)
 end
 
 function Client:connect()
+	self:clear()
+	self.client_socket = socket.tcp()
+	self.client_socket:settimeout(3)
+
 	local success, err = self.client_socket:connect(self.host, self.port)
 	if success then
 		print("Connected to server, sending user data")
