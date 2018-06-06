@@ -524,9 +524,9 @@ end
 function Phase:leave(dt)
 	local game = self.game
 	if game.type == "Netplay" then
-		game.statemanager:switch(require "gs_lobby")
+		game.statemanager:switch(require "gs_multiplayerselect")
 	elseif game.type == "1P" then
-		game.statemanager:switch(require "gs_charselect")
+		game.statemanager:switch(require "gs_singleplayerselect")
 	end
 end
 

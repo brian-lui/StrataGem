@@ -40,7 +40,7 @@ function title:init()
 		start_transparency = 0,
 		easing = "inQuart",
 		action = function()
-			self.statemanager:switch(require "gs_charselect")
+			self.statemanager:switch(require "gs_singleplayerselect")
 		end,
 	})
 	title.createButton(self, {
@@ -54,8 +54,7 @@ function title:init()
 		start_transparency = 0,
 		easing = "inQuart",
 		action = function()
-			self.statemanager:switch(require "gs_lobby")
-			self.client:connect()
+			self.statemanager:switch(require "gs_multiplayerselect")
 		end,
 	})
 	title.createImage(self, {

@@ -6,15 +6,95 @@ local image = require 'image'
 local Pic = require 'pic'
 local spairs = require "utilities".spairs
 
+-------------------------------------------------------------------------------
+------------------------------- LOBBY CLASS -----------------------------------
+-------------------------------------------------------------------------------
+local Lobby = {}
+
+function Lobby:init(game, charselect)
+	self.game = game
+	self.client = game.client
+	self.charselect = charselect
+end
+
+function Lobby:connect()
+	self.client:connect()
+end
+
+function Lobby:createCustomGame()
+	print("TBD - Create custom game")
+end
+
+function Lobby:joinCustomGame()
+	print("TBD - Join custom game")
+end
+
+function Lobby:spectateGame()
+	print("TBD - Spectate game")
+end
+
+function Lobby:joinRankedQueue(queue_details)
+	self.client:queue("join", queue_details)
+	print("Joining queue")
+end
+
+function Lobby:cancelRankedQueue()
+	self.client:queue("leave")
+	print("Leaving queue...")
+end
+
+function Lobby:goBack()
+	local client = self.client
+
+	if client.queuing then
+		client:queue("leave")
+
+		local queue_time = os.time()
+		while client.queuing do
+			client:update()
+			love.timer.sleep(0.1)
+			if os.time() - queue_time > 3 then
+				print("server problem!")
+				client.queuing = false
+			end
+		end
+	end
+
+	client:disconnect()
+	local disc_time = os.time()
+	while client.connected do
+		client:update()
+		love.timer.sleep(0.1)
+		if os.time() - disc_time > 3 then
+			print("server problem!")
+			client.connected = false
+		end
+	end
+	self.game.statemanager:switch(require "gs_title")
+end
+
+function Lobby:draw()
+end
+
+Lobby = common.class("Lobby", Lobby)
+
+
+-------------------------------------------------------------------------------
+------------------------- CHARACTER SELECT CLASS ------------------------------
+-------------------------------------------------------------------------------
 local Charselect = {}
 function Charselect:init(game, gamestate)
-	assert(gamestate.name == "SinglePlayer" or gamestate.name == "Netplay",
+	assert(gamestate.name == "SinglePlayer" or gamestate.name == "MultiPlayer",
 		"Invalid gamestate name '" .. gamestate.name .. "' provided!")
 	self.game = game
 	self.gamestate = gamestate
 	self.selectable_chars = {"heath", "walter", "gail", "holly",
 		"wolfgang", "hailey", "buzz", "ivy", "joy", "mort", "diggory", "damon"}
-	self.gamestate.ui = {clickable = {}, static = {}, popup_clickable = {}, popup_static = {}}
+	self.gamestate.ui = {clickable = {}, static = {}, fades = {}, popup_clickable = {}, popup_static = {}}
+
+	if gamestate.name == "MultiPlayer" then
+		self.lobby = common.instance(Lobby, game, self)
+	end
 end
 
 -- refer to game.lua for instructions for _createButton and _createImage
@@ -98,14 +178,19 @@ function Charselect:_createUIButtons()
 				game:start(gametype, char1, char2, bkground, nil, 1)
 			end
 		end
-	elseif gamestate.name == "Netplay" then
+	elseif gamestate.name == "MultiPlayer" then
 		start_action = function()
 			if self.my_character and not game.client.queuing then
 				local queue_details = {
 					character = self.my_character,
 					background = game.background:idx_to_str(self.game_background),
 				}
-				game.client:queue("join", queue_details)
+				self.lobby:joinRankedQueue(queue_details)
+				gamestate.ui.clickable.start:newImage(image.buttons_lobbycancelsearch)
+			elseif self.my_character and game.client.queuing then
+				self.lobby:cancelRankedQueue()
+				gamestate.ui.clickable.start:newImage(image.buttons_start)
+				-- TODO: we should probably have a separate button object here
 			end
 		end
 	end
@@ -140,6 +225,17 @@ function Charselect:_createUIButtons()
 		end,
 	}
 
+	local back_action
+	if gamestate.name == "SinglePlayer" then
+		back_action = function()
+			game.statemanager:switch(require "gs_title")
+		end
+	elseif gamestate.name == "MultiPlayer" then
+		back_action = function()
+			self.lobby:goBack()
+		end
+	end
+
 	-- back button
 	self:_createButton{
 		name = "back",
@@ -149,9 +245,7 @@ function Charselect:_createUIButtons()
 		end_x = stage.width * 0.05,
 		end_y = stage.height * 0.09,
 		pushed_sfx = "buttonback",
-		action = function()
-			game.statemanager:switch(require "gs_title")
-		end,
+		action = back_action,
 	}
 
 	-- left arrow for background select
@@ -189,11 +283,6 @@ function Charselect:_createUIButtons()
 			self.game_background_image:newImage(new_image)
 		end,
 	}
-
-	-- leave queue button in netplay
-	if gamestate.name == "Netplay" then
-		-- create leave queue button
-	end
 end
 
 -- creates the unclickable UI display images
@@ -271,15 +360,11 @@ function Charselect:_createUIImages()
 		transparency = 127,
 		easing = "linear",
 	}
-
-	-- leave queue window
-	if gamestate.name == "Netplay" then
-		-- create leave queue background + text
-	end
 end
 
 function Charselect:enter()
 	local game = self.game
+	local stage = game.stage
 	local gamestate = self.gamestate
 	self.clicked = nil
 	if game.sound:getCurrentBGM() ~= "bgm_menu" then
@@ -294,6 +379,22 @@ function Charselect:enter()
 	self:_createUIImages()
 	self.my_character = nil -- selected character for gamestart
 	self.opponent_character = math.random() < 0.5 and "walter" or "heath"-- ditto
+
+	self:_createImage{
+		name = "fadein",
+		container = gamestate.ui.fades,
+		image = image.unclickables_fadein,
+		duration = 30,
+		end_x = stage.width * 0.5,
+		end_y = stage.height * 0.5,
+		end_transparency = 0,
+		easing = "linear",
+		remove = true,
+	}
+
+	if gamestate.name == "MultiPlayer" then
+		self.lobby:connect()
+	end
 end
 
 function Charselect:openSettingsMenu()
@@ -314,11 +415,6 @@ function Charselect:update(dt)
 	self.displayed_character_shadow:update(dt)
 	self.displayed_character:update(dt)
 	self.displayed_character_text:update(dt)
-
-	if gamestate.name == "Netplay" then
-		-- update "Waiting in queue..." image
-		-- update "Leave queue" button
-	end
 end
 
 function Charselect:draw()
@@ -334,9 +430,10 @@ function Charselect:draw()
 	self.displayed_character_text:draw{darkened = darkened}
 	game:_drawSettingsMenu(self.gamestate)
 
-	if gamestate.name == "Netplay" then
-		-- draw waiting in queue background, text, and leave queue button
+	if gamestate.name == "MultiPlayer" then
+		self.lobby:draw()
 	end
+	for _, v in pairs(gamestate.ui.fades) do v:draw{darkened = darkened} end
 end
 
 function Charselect:mousepressed(x, y)

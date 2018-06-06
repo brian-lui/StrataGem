@@ -328,7 +328,7 @@ end
 	settings_icon: image for the settings icon (defaults to image.buttons_settings)
 	settings_iconpush: image for the pushed settings icon (defaults to image.buttons_settingspush)
 	settings_text: image for the text display (defaults to image.unclickables_pausetext)
-	exitstate: state to exit upon confirm (e.g. "gs_title", "gs_gamestate", "gs_main", "gs_lobby")
+	exitstate: state to exit upon confirm (e.g. "gs_title", "gs_gamestate", "gs_main", "gs_multiplayerselect")
 		Defaults to quitting the game if not provided
 --]]
 function Game:_createSettingsMenu(gamestate, params)
