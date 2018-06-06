@@ -5,12 +5,13 @@ local buttons = {
 	"vscpu", "vscpupush", "netplay", "netplaypush", "back", "backpush",
 	"details", "detailspush", "start", "startpush", "backgroundleft", "backgroundright",
 	"lobbycreatenew", "lobbyqueueranked", "lobbycancelsearch", "pause", "stop",
-	"settings", "settingspush", "yes", "yespush", "no", "nopush", "quit", "quitpush"
+	"settings", "settingspush", "yes", "yespush", "no", "nopush", "quit", "quitpush",
 }
 
 local unclickables = {
-	"titlelogo", "lobbygamebackground", "lobbysearchingnone", "lobbysearchingranked",
-	"selectstageborder", "settingsframe", "suretoquit", "pausetext"
+	"fadein", "titlelogo", "lobbygamebackground", "lobbysearchingnone",
+	"lobbysearchingranked",	"selectstageborder", "settingsframe", "suretoquit",
+	"pausetext",
 }
 
 local gems = {

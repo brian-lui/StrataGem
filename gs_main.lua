@@ -7,7 +7,7 @@ local gs_main = {name = "gs_main"}
 
 function gs_main:init()
 	self.camera = common.instance(require "camera")
-	gs_main.ui = {clickable = {}, static = {}, popup_clickable = {}, popup_static = {}}
+	gs_main.ui = {clickable = {}, static = {}, fades = {}, popup_clickable = {}, popup_static = {}}
 	gs_main.ui.static.burst = {update = function() end}
 end
 
@@ -54,6 +54,18 @@ function gs_main:enter()
 		gs_main.ui.static.burst[player.player_num] = self.uielements.components.burst.create(self, player)
 		player.super_button = self.uielements.components.super.create(self, player, player.player_num)
 	end
+
+	gs_main.createImage(self, {
+		name = "fadein",
+		container = gs_main.ui.fades,
+		image = image.unclickables_fadein,
+		duration = 30,
+		end_x = self.stage.width * 0.5,
+		end_y = self.stage.height * 0.5,
+		end_transparency = 0,
+		easing = "linear",
+		remove = true,
+	})			
 end
 
 function gs_main:openSettingsMenu()
@@ -249,6 +261,7 @@ function gs_main:draw()
 	self.camera:unset()
 	gs_main.drawText(self, {darkened = darkened})
 	gs_main.drawButtons(self)
+	for _, v in pairs(gs_main.ui.fades) do v:draw{darkened = darkened} end
 end
 
 function gs_main:mousepressed(x, y)

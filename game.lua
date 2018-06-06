@@ -234,7 +234,7 @@ end
 --[[ creates an object that can be tweened but not clicked
 	mandatory parameters: name, image, end_x, end_y
 	optional parameters: duration, start_transparency, end_transparency,
-		start_x, start_y, easing, exit, force_max_alpha
+		start_x, start_y, easing, remove, exit_func, force_max_alpha
 --]]
 function Game:_createImage(gamestate, params)
 	params = params or {}
@@ -252,7 +252,8 @@ function Game:_createImage(gamestate, params)
 	}
 
 	button:change{duration = params.duration, x = params.end_x, y = params.end_y,
-		transparency = params.end_transparency or 255, easing = params.easing, exit_func = params.exit_func}
+		transparency = params.end_transparency or 255, easing = params.easing,
+		remove = params.remove, exit_func = params.exit_func}
 	return button
 end
 

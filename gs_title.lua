@@ -26,7 +26,7 @@ end
 function title:init()
 	local stage = self.stage
 	self.timeStep, self.timeBucket = 1/60, 0
-	title.ui = {clickable = {}, static = {}, popup_clickable = {}, popup_static = {}}
+	title.ui = {clickable = {}, static = {}, fades = {}, popup_clickable = {}, popup_static = {}}
 	self:_createSettingsMenu(title)
 
 	title.createButton(self, {
@@ -87,6 +87,18 @@ function title:enter()
 			end}
 	end
 	title.current_background = common.instance(self.background.checkmate, self)
+
+	title.createImage(self, {
+		name = "fadein",
+		container = title.ui.fades,
+		image = image.unclickables_fadein,
+		duration = 30,
+		end_x = self.stage.width * 0.5,
+		end_y = self.stage.height * 0.5,
+		end_transparency = 0,
+		easing = "linear",
+		remove = true,
+	})		
 end
 
 function title:openSettingsMenu()
@@ -109,6 +121,7 @@ function title:draw()
 	title.current_background:draw{darkened = darkened}
 	for _, v in pairs(title.ui.static) do v:draw{darkened = darkened} end
 	for _, v in pairs(title.ui.clickable) do v:draw{darkened = darkened} end
+	for _, v in pairs(title.ui.fades) do v:draw{darkened = darkened} end
 	self:_drawSettingsMenu(title)
 end
 
