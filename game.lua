@@ -193,13 +193,120 @@ function Game:isScreenDark()
 	if darkness_level ~= 1 then return darkness_level end
 end
 
+-- returns the delta from playing a piece
+function Game:serializeDelta(piece, coords)
+end
+
+-- returns the delta from playing a super
+function Game:serializeSuper(argsmaybe)
+end
+--[[ Serializes the current state.
+State information:
+	1) P1 character, P2 character
+	2) P1 burst, P1 super, P1 damage
+	3) P2 burst, P2 super, P2 damage
+	4) Grid gems
+	5) Player 1 pieces
+	6) Player 2 pieces
+	7) Current rng_state
+	8) P1 other special info
+	9) P2 other special info
+	Note: special items must belong to a player, even if they are "neutral".
+Encoding:
+	1) P1CHAR[char]P1CHAR[char]_
+		e.g. P1CHARHeathP2CHARWalter_
+	2) P1B[burst meter]S[super]D[damage]_
+		e.g. P1B4S35D4_
+	3) P2B[burst meter]S[super]D[damage]_
+		e.g. P2B5S23D6_
+	4) 64 byte string, 8 rows, from top left across to bottom right. [color] or 0_
+		e.g. 000000000000000000000000000000000000000000000000RRYBG000RYRBGGYB_
+	5) P1H1[color][color][ID]_ .. P1H5_
+		e.g. P1H1RY29_P1H2YY30_P1H3_P1H4_P1H5_
+	6) P2H1[color][color][ID]_ .. P2H5_
+		e.g. P2H1RY31_P2H2YY32_P2H3GG33_P2H4_P2H5_
+	7) RNG[rng_state]_
+	6) P1SPEC_[depends]_
+		e.g. SPEC__ to denote location of Heath fires
+	7) P2SPEC_[depends]_
+		e.g. SPEC__ to denote column/remaining turns of Walter clouds
+--]]
+function Game:serializeState()
+	local p1, p2 = self.p1, self.p2
+
+	local function getPieceString(pc) -- get string representation of piece
+		local s
+		if pc.size == 1 then
+			s = pc.gems[1].color:sub(1, 1) .. pc.ID
+		elseif pc.size == 2 then
+			-- If it is in rotation_index 2 or 3, the gem table was reversed
+			-- This is because of bad coding from before. Haha
+			if pc.rotation_index == 2 or pc.rotation_index == 3 then
+				s = pc.gems[2].color:sub(1, 1) .. pc.gems[1].color:sub(1, 1) .. pc.ID
+			else
+				s = pc.gems[1].color:sub(1, 1) .. pc.gems[2].color:sub(1, 1) .. pc.ID
+			end
+		else
+			error("Piece size is not 1 or 2")
+		end
+		return s:upper()
+	end
+
+	local function getGridString(loc) -- get string representation of grid
+		return loc.gem and loc.gem.color:sub(1, 1):upper() or "0"
+	end
+
+	local p1char, p2char = p1.character_id, p2.character_id
+
+	-- super, burst, damage
+	local p1burst, p1super, p1damage = p1.cur_burst, p1.mp, p1.hand.damage
+	local p2burst, p2super, p2damage = p2.cur_burst, p2.mp, p2.hand.damage
+
+	-- grid gems
+	local grid = self.grid
+	local grid_str, idx = {}, 1
+	for row = grid.BASIN_START_ROW, grid.BASIN_END_ROW do
+		for col = 1, grid.COLUMNS do
+			grid_str[idx] = getGridString(grid[row][col])
+			idx = idx + 1
+		end
+	end
+	grid_str = "GRID" .. table.concat(grid_str)
+
+	-- player hand pieces
+	local p1hand, p2hand = {}, {}
+	for i = 1, 5 do
+		local p1str = p1.hand[i].piece and getPieceString(p1.hand[i].piece) or ""
+		local p2str = p2.hand[i].piece and getPieceString(p2.hand[i].piece) or ""
+		p1hand[i] = "P1H" .. i .. p1str .. "_"
+		p2hand[i] = "P2H" .. i .. p2str .. "_"
+	end
+	p1hand, p2hand = table.concat(p1hand), table.concat(p2hand)
+
+	-- rng state
+	local rng_state = "RNG" .. self.rng:getState()
+
+	-- player passives
+	local p1special, p2special = p1:serializeSpecials(), p2:serializeSpecials()
+
+	return
+		"P1CHAR" .. p1char .. "P2CHAR" .. p2char .. "_" ..
+		"P1B" .. p1burst .. "S" .. p1super .. "D" .. p1damage .. "_" ..
+		"P2B" .. p2burst .. "S" .. p2super .. "D" .. p2damage .. "_" ..
+		grid_str .. "_" ..
+		p1hand ..
+		p2hand ..
+		rng_state .. "_" ..
+		p1special .. "_" ..
+		p2special .. "_"
+end
+
 --[[ create a clickable object
 	mandatory parameters: name, image, image_pushed, end_x, end_y, action
 	optional parameters: duration, start_transparency, end_transparency,
 		start_x, start_y, easing, exit, pushed, pushed_sfx, released,
 		released_sfx, force_max_alpha
 --]]
-
 function Game:_createButton(gamestate, params)
 	params = params or {}
 	if params.name == nil then print("No object name received!") end
