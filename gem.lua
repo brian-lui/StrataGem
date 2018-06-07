@@ -9,6 +9,8 @@ local gemImages = {
 	blue = image.gems_blue,
 	green = image.gems_green,
 	yellow = image.gems_yellow,
+	wild = image.dummy,
+	none = image.dummy,
 }
 
 local Gem = {}
@@ -17,7 +19,7 @@ function Gem:init(params)
 	Pic.init(self, self.game, {
 		x = params.x,
 		y = params.y,
-		image = gemImages[params.color:lower()],
+		image = params.image or gemImages[params.color:lower()],
 	})
 	ID.gem = ID.gem + 1
 	self.is_in_a_horizontal_match = false -- for gem matches

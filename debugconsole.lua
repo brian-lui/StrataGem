@@ -54,7 +54,7 @@ function DebugConsole:setDefaultDisplayParams()
 		display_particle_destinations = true,
 		display_gamestate = true,
 		display_damage = true,
-		display_grid = false,
+		display_grid = true,
 		display_turn_number = true,
 		display_overlays = true,
 		overlay_middle_function = function()

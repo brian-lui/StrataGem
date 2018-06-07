@@ -10,7 +10,6 @@ function Hand:init(params)
 	self.game = params.game
 	local stage = self.game.stage
 
-	--assert((player == p1 or player == p2), "Invalid player given!")
 	self.owner = params.player
 	self.player_num = self.owner.player_num
 
