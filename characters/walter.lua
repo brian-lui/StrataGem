@@ -729,7 +729,10 @@ function Walter:deserializeSpecials(str)
 		local col = i - 1
 
 		self.cloud_turns_remaining[col] = tonumber(str:sub(i, i))
-		self.fx.healingCloud.generate(self.game, self, col)
+		if self.cloud_turns_remaining[col] ~= 0 then
+			self.fx.healingCloud.generate(self.game, self, col)
+			print("set column " .. col .. " to cloud turns remaining " .. self.cloud_turns_remaining[col])
+		end
 	end
 
 	for cloud in self.game.particles:getInstances("CharEffects", self.player_num, "WalterCloud") do
