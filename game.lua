@@ -1,7 +1,9 @@
-local Pic = require 'pic'
+local Pic = require "pic"
 local love = _G.love
 local common = require "classcommons"
-local image = require 'image'
+local Gem = require "gem"
+local Piece = require "piece"
+local image = require "image"
 
 --[==================[
 QUEUE COMPONENT
@@ -327,22 +329,22 @@ State information:
 	9) P2 other special info
 	Note: special items must belong to a player, even if they are "neutral".
 Encoding:
-	1) P1CHAR[char]P1CHAR[char]_
-		e.g. P1CHARHeathP2CHARWalter_
-	2) P1B[burst meter]S[super]D[damage]_
-		e.g. P1B4S35D4_
-	3) P2B[burst meter]S[super]D[damage]_
-		e.g. P2B5S23D6_
+	1) [char1]_[char2]_
+		e.g. Heath_Walter_
+	2) [p1 burst meter]_[p1 super]_[p1 damage]_
+		e.g. 4_35_4_
+	3) [p2 burst meter]_[p2 super]_[p2 damage]_
+		e.g. 5_23_6_
 	4) 64 byte string, 8 rows, from top left across to bottom right. [color] or 0_
 		e.g. 000000000000000000000000000000000000000000000000RRYBG000RYRBGGYB_
-	5) P1H1[color][color][ID]_ .. P1H5_
-		e.g. P1H1RY29_P1H2YY30_P1H3_P1H4_P1H5_
-	6) P2H1[color][color][ID]_ .. P2H5_
-		e.g. P2H1RY31_P2H2YY32_P2H3GG33_P2H4_P2H5_
-	7) RNG[rng_state]_
-	6) P1SPEC_[depends]_
+	5) P1 pieces from 1-5, [color][color]_
+		e.g. RY_YY____
+	6) P2 pieces from 1-5, [color][color]_
+		e.g. RY_YY_GG___
+	7) [rng_state]_
+	6) [depends]_
 		e.g. SPEC__ to denote location of Heath fires
-	7) P2SPEC_[depends]_
+	7) [depends]_
 		e.g. SPEC__ to denote column/remaining turns of Walter clouds
 --]]
 function Game:serializeState()
@@ -351,14 +353,14 @@ function Game:serializeState()
 	local function getPieceString(pc) -- get string representation of piece
 		local s
 		if pc.size == 1 then
-			s = pc.gems[1].color:sub(1, 1) .. pc.ID
+			s = pc.gems[1].color:sub(1, 1)
 		elseif pc.size == 2 then
 			-- If it is in rotation_index 2 or 3, the gem table was reversed
 			-- This is because of bad coding from before. Haha
 			if pc.rotation_index == 2 or pc.rotation_index == 3 then
-				s = pc.gems[2].color:sub(1, 1) .. pc.gems[1].color:sub(1, 1) .. pc.ID
+				s = pc.gems[2].color:sub(1, 1) .. pc.gems[1].color:sub(1, 1)
 			else
-				s = pc.gems[1].color:sub(1, 1) .. pc.gems[2].color:sub(1, 1) .. pc.ID
+				s = pc.gems[1].color:sub(1, 1) .. pc.gems[2].color:sub(1, 1)
 			end
 		else
 			error("Piece size is not 1 or 2")
@@ -367,7 +369,7 @@ function Game:serializeState()
 	end
 
 	local function getGridString(loc) -- get string representation of grid
-		return loc.gem and loc.gem.color:sub(1, 1):upper() or "0"
+		return loc.gem and loc.gem.color:sub(1, 1):upper() or "z"
 	end
 
 	local p1char, p2char = p1.character_id, p2.character_id
@@ -385,28 +387,28 @@ function Game:serializeState()
 			idx = idx + 1
 		end
 	end
-	grid_str = "GRID" .. table.concat(grid_str)
+	grid_str = table.concat(grid_str)
 
 	-- player hand pieces
 	local p1hand, p2hand = {}, {}
 	for i = 1, 5 do
 		local p1str = p1.hand[i].piece and getPieceString(p1.hand[i].piece) or ""
 		local p2str = p2.hand[i].piece and getPieceString(p2.hand[i].piece) or ""
-		p1hand[i] = "P1H" .. i .. p1str .. "_"
-		p2hand[i] = "P2H" .. i .. p2str .. "_"
+		p1hand[i] = p1str .. "_"
+		p2hand[i] = p2str .. "_"
 	end
 	p1hand, p2hand = table.concat(p1hand), table.concat(p2hand)
 
 	-- rng state
-	local rng_state = "RNG" .. self.rng:getState()
+	local rng_state = self.rng:getState()
 
 	-- player passives
 	local p1special, p2special = p1:serializeSpecials(), p2:serializeSpecials()
 
 	return
-		"P1CHAR" .. p1char .. "P2CHAR" .. p2char .. "_" ..
-		"P1B" .. p1burst .. "S" .. p1super .. "D" .. p1damage .. "_" ..
-		"P2B" .. p2burst .. "S" .. p2super .. "D" .. p2damage .. "_" ..
+		p1char .. "_" .. p2char .. "_" ..
+		p1burst .. "_" .. p1super .. "_" .. p1damage .. "_" ..
+		p2burst .. "_" .. p2super .. "_" .. p2damage .. "_" ..
 		grid_str .. "_" ..
 		p1hand ..
 		p2hand ..
@@ -415,12 +417,170 @@ function Game:serializeState()
 		p2special .. "_"
 end
 
--- takes a delta and plays it to the game
-function Game:deserializeDelta(delta)
-end
+--[[ replaces the current state with the provided state
+	index to data:
+	1: p1 character, string
+	2: p2 character, string
+	3: p1 burst, integer
+	4: p1 super, integer
+	5: p1 damage, integer
+	6: p2 burst, integer
+	7: p2 super, integer
+	8: p2 damage, integer
+	9: grid, 64-length string
+	10-14: p1 pieces, [color][color][ID#] string
+	15-19: p2 pieces, [color][color][ID#] string
+	20: rng state, string
+	21: p1 specials, serialized string
+	22: p2 specials, serialized string
+--]]
+function Game:deserializeState(state_string)
+	print("applying state " .. state_string)
+	local state = {}
+	for s in (state_string.."_"):gmatch("(.-)_") do table.insert(state, s) end
+	assert(#state == 23, "Malformed state string" .. #state)
 
--- replaces the current state with the provided state
-function Game:deserializeState(state)
+	local p1char, p2char = state[1]:lower(), state[2]:lower()
+	local p1burst, p1super, p1damage = tonumber(state[3]), tonumber(state[4]), tonumber(state[5])
+	local p2burst, p2super, p2damage = tonumber(state[6]), tonumber(state[7]), tonumber(state[8])
+	local grid_str = state[9]
+	local p1_hand = {state[10], state[11], state[12], state[13], state[14]}
+	local p2_hand = {state[15], state[16], state[17], state[18], state[19]}
+	local rng_state = state[20]
+	local p1_special_str, p2_special_str = state[21], state[22]
+
+	-- if p1.character_id or p2.character_id not match, replace them
+	self.p1 = common.instance(require("characters." .. p1char), 1, self)
+	self.p2 = common.instance(require("characters." .. p2char), 2, self)
+	self.p1.enemy = self.p2
+	self.p2.enemy = self.p1
+	local p1, p2 = self.p1, self.p2
+
+	-- overwrite burst, super, damage for both players
+	p1.cur_burst = p1burst
+	p1.mp = p1super
+	p1.hand.damage = p1damage
+	p2.cur_burst = p2burst
+	p2.mp = p2super
+	p2.hand.damage = p2damage
+
+	local color_table = {
+		R = "red",
+		B = "blue",
+		G = "green",
+		Y = "yellow",
+		W = "wild",
+		N = "none",
+		z = "empty",
+	}
+	-- overwrite grid
+	local function writeGridString(row, col, color) -- get string representation of grid
+		local loc = self.grid[row][col]
+		loc.gem = false
+
+		assert(color_table[color], "Invalid color " .. color .. " provided!")
+		if color == "R" or color == "B" or color == "G" or color == "Y" then
+			loc.gem = Gem:create{
+				game = self,
+				x = self.grid.x[col],
+				y = self.grid.y[row],
+				color = color_table[color],
+			}
+		elseif color == "W" or color == "N" then
+			loc.gem = Gem:create{
+				game = self,
+				x = self.grid.x[col],
+				y = self.grid.y[row],
+				color = color_table[color],
+				exploding_gem_image = image.dummy,
+				grey_exploding_gem_image = image.dummy,
+				pop_particle_image = image.dummy,
+			}
+		end
+	end
+
+	local grid = self.grid
+	for i = 1, #grid_str do
+		local color = grid_str:sub(i, i)
+		local row = math.ceil(i / grid.COLUMNS) + grid.PENDING_END_ROW
+		local col = i % grid.COLUMNS + 1
+		writeGridString(row, col, color)
+	end
+
+	-- delete current hands, overwrite with new hands
+	for i = 1, 5 do
+		p1.hand[i].piece = nil
+		if #p1_hand[i] == 1 or #p1_hand[i] == 2 then
+			local gem_replace_table = {}
+			for gem_idx = 1, #p1_hand[i] do
+				local color_abbrev = p1_hand[i]:sub(gem_idx, gem_idx)
+				local color = color_table[color_abbrev]
+
+				if color == "red" or color == "blue" or color == "green" or color == "yellow" then
+					gem_replace_table[gem_idx] = {color = color}
+				elseif color == "wild" or color == "none" then
+					gem_replace_table[gem_idx] = {
+						color = color,
+						image = image.dummy,
+						exploding_gem_image = image.dummy,
+						grey_exploding_gem_image = image.dummy,
+						pop_particle_image = image.dummy,
+					}
+				end
+			end
+
+			p1.hand[i].piece = Piece:create{
+				game = self,
+				hand_idx = i,
+				owner = p1,
+				player_num = p1.player_num,
+				x = p1.hand[i].x,
+				y = p1.hand[i].y,
+				gem_replace_table = gem_replace_table,
+			}
+		end
+	end
+
+	for i = 1, 5 do
+		p2.hand[i].piece = nil
+		if #p2_hand[i] == 1 or #p2_hand[i] == 2 then
+			local gem_replace_table = {}
+			for gem_idx = 1, #p2_hand[i] do
+				local color_abbrev = p2_hand[i]:sub(gem_idx, gem_idx)
+				local color = color_table[color_abbrev]
+
+				if color == "red" or color == "blue" or color == "green" or color == "yellow" then
+					gem_replace_table[gem_idx] = {color = color}
+				elseif color == "wild" or color == "none" then
+					gem_replace_table[gem_idx] = {
+						color = color,
+						image = image.dummy,
+						exploding_gem_image = image.dummy,
+						grey_exploding_gem_image = image.dummy,
+						pop_particle_image = image.dummy,
+					}
+				end
+			end
+
+			p2.hand[i].piece = Piece:create{
+				game = self,
+				hand_idx = i,
+				owner = p2,
+				player_num = p2.player_num,
+				x = p2.hand[i].x,
+				y = p2.hand[i].y,
+				gem_replace_table = gem_replace_table,
+			}
+		end
+	end
+	grid:updateGrid()
+
+	-- replace rng state
+	self.rng:setState(rng_state)
+
+	-- run p1special, p2special deserialization functions
+	p1:deserializeSpecials(p1_special_str)
+	p2:deserializeSpecials(p2_special_str)
 end
 
 

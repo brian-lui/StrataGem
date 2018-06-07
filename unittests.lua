@@ -471,13 +471,25 @@ local function wolfgangToggle13TurnBadDog(game)
 		end
 	end
 end
-local function printGamestate(game)
-	local gamestate = game.client:getGamestateString()
-	print(gamestate)
+
+local function saveGamestate(game)
+	local filename = "gamestate.txt"
+	local gamestate = game:serializeState()
+	love.filesystem.write(filename, gamestate)
+	print("saved gamestate in " .. love.filesystem.getSaveDirectory() .. "/" .. filename)
+end
+
+local function loadGamestate(game)
+	local filename = "gamestate.txt"
+	local gamestate = love.filesystem.read(filename)
+	game:deserializeState(gamestate)
+	print("loaded gamestate")
 end
 
 local Unittests = {
-	q = printGamestate,
+	f1 = saveGamestate,
+	f2 = loadGamestate,
+	--q = printGamestate,
 	w = wolfgangLightUp,
 	e = charselectScreenCPUCharToggle,
 	r = testComboPropagate,
