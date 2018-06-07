@@ -182,65 +182,15 @@ end
 ------------------------------------DELTA--------------------------------------
 -------------------------------------------------------------------------------
 
---[[
-our_delta: Current turn's delta. Caleld from ai_net:performDeltas as their_delta.
 
-Actions can be:
-	1) Play first piece
-	2) Play second piece (doublecast)
-	3) Play super + super parameters. Mutually exclusive with 1/2
-Encoding:
-	0) Default string is "N_", for no action.
-	1) Pc1_ID[piece hand position]_[piece rotation index]_[first gem column]_
-		e.g. Pc1_60_3_3_
-	2) Same as above, e.g. Pc2_60_2_3_
-	3) S_[parameters]_
-		e.g. S__, S_58390496405_
-	Concatenate to get final string, e.g.:
-		Pc1_59_3_2_Pc2_60_1_3_
-		Pc1_59_3_2_
-		S__
-		N_ (no action)
---]]
-
--- Write the delta when player plays a piece, by modifying self.our_delta.
 -- Called immediately upon playing a piece, from Piece:dropIntoBasin.
 function Client:writeDeltaPiece(piece, coords)
-	local delta = self.our_delta
-	assert(delta:sub(1, 2) ~= "S_", "Received delta, but player is supering")
-	local pos = piece.hand_idx
-	local rotation = piece.rotation_index
-	local column = coords[1]
-	local pc
-	if delta == "N_" then -- no piece played yet
-		pc = "Pc1"
-	elseif delta:sub(1, 3) == "Pc1" then
-		pc = "Pc2"
-	else
-		error("Unexpected delta found: ", delta)
-	end
-
-	local serial = pc .. "_" .. pos .. "_" .. rotation .. "_" .. column .. "_"
-
-	if delta == "N_" then
-		self.our_delta = serial
-	elseif delta:sub(1, 3) == "Pc1" then
-		self.our_delta = delta .. serial
-	else
-		error("Unexpected delta found: ", delta)
-	end
-	print("delta serial is now " .. self.our_delta)
+	self.our_delta = self.game:serializeDelta(self.our_delta, piece, coords)
 end
 
--- Writes the super when player activates super, by modifying self.our_delta.
 -- Called at end of turn, from Phase:action.
 function Client:writeDeltaSuper()
-	local player = self.game.me_player
-	assert(player.supering, "Received super instruction, but player not supering")
-	assert(self.our_delta == "N_", "Received super instruction, but player has action")
-	local serial = player:serializeSuperDeltaParams()
-
-	self.our_delta = "S_" .. serial .. "_"
+	self.our_delta = self.game:serializeSuper(self.our_delta)
 end
 
 -- Called after turn ends, from Phase:netplaySendDelta.

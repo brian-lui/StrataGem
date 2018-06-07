@@ -193,12 +193,61 @@ function Game:isScreenDark()
 	if darkness_level ~= 1 then return darkness_level end
 end
 
+--[[
+Actions can be:
+	1) Play first piece
+	2) Play second piece (doublecast)
+	3) Play super + super parameters. Mutually exclusive with 1/2
+Encoding:
+	0) Default string is "N_", for no action.
+	1) Pc1_ID[piece hand position]_[piece rotation index]_[first gem column]_
+		e.g. Pc1_60_3_3_
+	2) Same as above, e.g. Pc2_60_2_3_
+	3) S_[parameters]_
+		e.g. S__, S_58390496405_
+	Concatenate to get final string, e.g.:
+		Pc1_59_3_2_Pc2_60_1_3_
+		Pc1_59_3_2_
+		S__
+		N_ (no action)
+--]]
+
 -- returns the delta from playing a piece
-function Game:serializeDelta(piece, coords)
+function Game:serializeDelta(current_delta, piece, coords)
+	assert(current_delta:sub(1, 2) ~= "S_", "Received piece delta, but player is supering")
+	local pos = piece.hand_idx
+	local rotation = piece.rotation_index
+	local column = coords[1]
+	local pc, ret
+	if current_delta == "N_" then -- no piece played yet
+		pc = "Pc1"
+	elseif current_delta:sub(1, 3) == "Pc1" then
+		pc = "Pc2"
+	else
+		error("Unexpected current_delta found: ", current_delta)
+	end
+
+	local serial = pc .. "_" .. pos .. "_" .. rotation .. "_" .. column .. "_"
+
+	if current_delta == "N_" then
+		ret = serial
+	elseif current_delta:sub(1, 3) == "Pc1" then
+		ret = current_delta .. serial
+	else
+		error("Unexpected current_delta found: ", current_delta)
+	end
+	print("current_delta serial is now " .. ret)
+	return ret
 end
 
 -- returns the delta from playing a super
-function Game:serializeSuper(argsmaybe)
+function Game:serializeSuper(current_delta)
+	local player = self.me_player
+	assert(player.supering, "Received super instruction, but player not supering")
+	assert(current_delta == "N_", "Received super instruction, but player has action")
+	local serial = player:serializeSuperDeltaParams()
+
+	return "S_" .. serial .. "_"
 end
 --[[ Serializes the current state.
 State information:
