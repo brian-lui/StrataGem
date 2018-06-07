@@ -7,13 +7,13 @@ player inputs from over the net.
 --]]
 
 local ai_net = {}
-
+--[[
 local function split(s)
     local result = {}
     for match in (s.."_"):gmatch("(.-)_") do table.insert(result, match) end
     return result
 end
-
+--]]
 --[[ Delta decoding:
 	0) Default string is "N_", for no action.
 	1) Pc1_ID[piece hand position]_[piece rotation index]_[first gem column]_
@@ -27,6 +27,7 @@ end
 		S__
 		N_ (no action)
 --]]
+--[[
 local function performDeltas(self, player)
 	print("performing delta " .. self.game.client.their_delta)
 	local delta = split(self.game.client.their_delta)
@@ -74,10 +75,13 @@ local function performDeltas(self, player)
 		end
 	end
 end
-
+--]]
 -- Easy peasy, no thinking to do here.
 function ai_net:evaluateActions(them_player)
 	self:queueAction(performDeltas, {self, them_player})
+	--[[
+	self:queueAction(self.game.deserializeDelta, {self.game, self.game.client.their_delta, them_player})
+	--]]
 end
 
 return common.class("AI_Net", ai_net, require "ai")

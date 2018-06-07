@@ -193,6 +193,9 @@ function Game:isScreenDark()
 	if darkness_level ~= 1 then return darkness_level end
 end
 
+-------------------------------------------------------------------------------
+------------------------------------DELTA--------------------------------------
+-------------------------------------------------------------------------------
 --[[
 Actions can be:
 	1) Play first piece
@@ -249,12 +252,69 @@ function Game:serializeSuper(current_delta)
 
 	return "S_" .. serial .. "_"
 end
+
+
+-- takes a delta and plays it to the game
+function Game:deserializeDelta(delta_string, player)
+	print("performing delta " .. delta_string)
+
+	local delta = {}
+	for s in (delta_string.."_"):gmatch("(.-)_") do table.insert(delta, s) end
+
+	for i, v in ipairs(delta) do
+		if (v == "Pc1") or (v == "Pc2") then
+			local pos = tonumber(delta[i+1])
+			local piece = player.hand[pos].piece
+			local rotation = tonumber(delta[i+2])
+			local column = tonumber(delta[i+3])
+
+			assert(piece, "piece in position " .. pos .. " not found")
+			assert(rotation, "rotation not provided")
+			assert(column, "placement column not provided")
+
+			if v == "Pc2" then
+				player.place_type = "double"
+			else
+				for col in self.game.grid:cols(player.player_num) do
+					if column == col then
+						player.place_type = "normal"
+						break
+					end
+					player.place_type = "rush"
+				end
+			end
+
+			for _ = 1, rotation do piece:rotate() end
+
+			local coords
+			if piece.size == 2 then
+				if piece.is_horizontal then
+					coords = {column, column + 1}
+				else
+					coords = {column, column}
+				end
+			else
+				coords = {column}
+			end
+
+			piece:dropIntoBasin(coords, true)
+
+		elseif v == "S" then
+			player.supering = true
+			player.super_params = delta[i+1]
+		end
+	end
+end
+
+-------------------------------------------------------------------------------
+------------------------------------STATE--------------------------------------
+-------------------------------------------------------------------------------
 --[[ Serializes the current state.
 State information:
 	1) P1 character, P2 character
 	2) P1 burst, P1 super, P1 damage
 	3) P2 burst, P2 super, P2 damage
-	4) Grid gems
+	4) Grid gems. Colors are (R, B, G, Y, W, N)
 	5) Player 1 pieces
 	6) Player 2 pieces
 	7) Current rng_state
