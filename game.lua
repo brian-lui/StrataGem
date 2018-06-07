@@ -350,6 +350,15 @@ function Game:serializeState()
 		p2special .. "_"
 end
 
+-- takes a delta and plays it to the game
+function Game:deserializeDelta(delta)
+end
+
+-- replaces the current state with the provided state
+function Game:deserializeState(state)
+end
+
+
 --[[ create a clickable object
 	mandatory parameters: name, image, image_pushed, end_x, end_y, action
 	optional parameters: duration, start_transparency, end_transparency,
