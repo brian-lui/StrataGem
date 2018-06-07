@@ -164,28 +164,6 @@ function Game:newTurn()
 	self.phase.time_to_next = self.phase.INIT_TIME_TO_NEXT
 end
 
-function Game:reset()
-	self.current_phase = "Intro"
-	self.turn = 1
-	self.phase.time_to_next = self.phase.INIT_TIME_TO_NEXT
-	self.netplay_wait = 0
-	self.inputs_frozen = false
-	self.scoring_combo = 0
-	self.round_ended = false
-	self.me_player = false
-	self.them_player = false
-	self.active_piece = false
-	self.grid_wait = 0
-	self.screenshake_frames = 0
-	self.screenshake_vel = 0
-	self.rng:setSeed(os.time())	-- TODO: This probably causes desyncs
-	self.orig_rng_seed = self.rng:getSeed() -- for debugging
-	self.frame = 0
-	self.paused = false
-	self.settings_menu_open = false
-	self.screen_dark = {false, false, false}
-end
-
 
 -- Screen will remain darkened until all nums are cleared
 -- 1: player 1. 2: player 2. 3: game-wide.
