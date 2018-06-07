@@ -170,7 +170,6 @@ function Gem:setOwner(player, set_due_to_match)
 		self:addOwner(player)
 	else
 		self.owner = player
-		print("set a gem to owner " .. player)
 	end
 	if set_due_to_match then
 		self.set_due_to_match = true
