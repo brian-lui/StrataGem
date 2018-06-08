@@ -62,6 +62,7 @@ end
 
 --[[ Takes the following optional table arguments:
 		h_flip: whether to draw the image flipped around the horizontal axis
+		v_flip: whether to draw the image flipped around the vertical axis
 		x, y: x or y position to draw the image at
 		rotation: rotation number to draw
 		scale: scaling to draw
@@ -87,6 +88,7 @@ function Pic:draw(params)
 			love.graphics.setColor(rgbt)
 		end
 		if (self.h_flip or params.h_flip) then x_scale = x_scale * -1 end
+		if (self.v_flip or params.v_flip) then y_scale = y_scale * -1 end
 
 		love.graphics.draw(
 			params.image or self.image,
