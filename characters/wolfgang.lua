@@ -46,26 +46,25 @@ Wolfgang.special_images = {
 		love.graphics.newImage('images/characters/wolfgang/goodgoldenlab.png'),
 		love.graphics.newImage('images/characters/wolfgang/goodrussel.png'),
 	},
+	good_dog_colored = {
+		love.graphics.newImage('images/characters/wolfgang/goodb.png'),
+		love.graphics.newImage('images/characters/wolfgang/gooda.png'),
+		love.graphics.newImage('images/characters/wolfgang/goodr.png'),
+		love.graphics.newImage('images/characters/wolfgang/goodk.png'),
+	},
 	bad_dog = {
 		love.graphics.newImage('images/characters/wolfgang/badblacklab.png'),
 		love.graphics.newImage('images/characters/wolfgang/badgoldenlab.png'),
 		love.graphics.newImage('images/characters/wolfgang/badrussel.png'),
 	},
+	bad_dog_mad = love.graphics.newImage('images/characters/wolfgang/badmad.png'),
 	dog_explode = {
-		image.gems_explode_red,
-		image.gems_explode_red,
-		image.gems_explode_red,
+		love.graphics.newImage('images/characters/wolfgang/blacklabexplode.png'),
+		love.graphics.newImage('images/characters/wolfgang/goldenlabexplode.png'),
+		love.graphics.newImage('images/characters/wolfgang/russelexplode.png'),
 	},
-	dog_grey = {
-		image.gems_grey_red,
-		image.gems_grey_red,
-		image.gems_grey_red,
-	},
-	dog_pop = {
-		image.gems_pop_red,
-		image.gems_pop_red,
-		image.gems_pop_red,
-	},
+	dog_grey = image.gems_grey_red,
+	dog_pop = love.graphics.newImage('images/characters/wolfgang/dogpop.png'),
 	red = {
 		dark = love.graphics.newImage('images/characters/wolfgang/r.png'),
 		glow = love.graphics.newImage('images/characters/wolfgang/rglow.png'),
@@ -117,7 +116,8 @@ function Wolfgang:init(...)
 	self.BAD_DOG_DURATION = 3
 	self.SUPER_DOG_CREATION_DELAY = 45 -- in frames
 	self.this_turn_matched_colors = {}
-	self.bad_dogs = {} -- dict of {dog-gem, turns remaining to disappearance}
+	self.good_dogs = {} -- table of dog-gems
+	self.bad_dogs = {} -- table of {dog-gem, turns remaining to disappearance}
 	self.single_dogs_to_make, self.double_dogs_to_make = 0, 0
 end
 -------------------------------------------------------------------------------
@@ -232,8 +232,8 @@ function Wolfgang:_getRandomDog()
 	local i = math.random(#self.special_images.good_dog)
 	local dog = self.special_images.good_dog[i]
 	local explode = self.special_images.dog_explode[i]
-	local grey = self.special_images.dog_grey[i]
-	local pop = self.special_images.dog_pop[i]
+	local grey = self.special_images.dog_grey
+	local pop = self.special_images.dog_pop
 	return {dog = dog, explode = explode, grey = grey, pop = pop}
 end
 
