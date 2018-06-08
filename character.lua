@@ -116,6 +116,9 @@ end
 function Character:deserializeSpecials()
 end
 
+-- called every frame
+function Character:update(dt) end
+
 -------------------------------------------------------------------------------
 -- All these abilities can optionally return the number of frames
 -- to pause for the animation.

@@ -566,7 +566,10 @@ function Phase:run(...)
 	if not self.game.paused then
 		local todo = Phase.lookup[self.game.current_phase]
 		assert(todo, "You did a typo for the current phase idiot - " .. self.game.current_phase)
-		for player in self.game:players() do player.hand:update(...) end
+		for player in self.game:players() do
+			player.hand:update(...)
+			player:update(...)
+		end
 		todo(self, ...)
 		self.game.queue:update()
 	end

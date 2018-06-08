@@ -356,6 +356,15 @@ function Wolfgang:_upkeepBadDogs()
 	return any_dogs_destroyed
 end
 
+-------------------------------------------------------------------------------
+-- update the grid good dog and bad dog animations
+function Wolfgang:update(dt)
+	--[[
+	for each 
+	--]]
+end
+
+
 -- update a piece to bad dog if it is rushable
 function Wolfgang:actionPhase()
 	local piece = self.game.active_piece
