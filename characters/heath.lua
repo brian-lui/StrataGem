@@ -41,15 +41,28 @@ Heath.burst_images = {
 
 Heath.special_images = {
 	fire = {
-		love.graphics.newImage('images/characters/heath/fire1.png'),
-		love.graphics.newImage('images/characters/heath/fire2.png'),
-		love.graphics.newImage('images/characters/heath/fire3.png'),
+		{
+			love.graphics.newImage('images/characters/heath/fire1t3.png'),
+			love.graphics.newImage('images/characters/heath/fire2t3.png'),
+			love.graphics.newImage('images/characters/heath/fire3t3.png'),
+		},
+		{
+			love.graphics.newImage('images/characters/heath/fire1t2.png'),
+			love.graphics.newImage('images/characters/heath/fire2t2.png'),
+			love.graphics.newImage('images/characters/heath/fire3t2.png'),
+		},
+		{
+			love.graphics.newImage('images/characters/heath/fire1t1.png'),
+			love.graphics.newImage('images/characters/heath/fire2t1.png'),
+			love.graphics.newImage('images/characters/heath/fire3t1.png'),
+		},
 	},
 	boom = {
 		love.graphics.newImage('images/characters/heath/boom1.png'),
 		love.graphics.newImage('images/characters/heath/boom2.png'),
 		love.graphics.newImage('images/characters/heath/boom3.png'),
 	},
+	smoke = love.graphics.newImage('images/characters/heath/smoke.png'),
 }
 
 Heath.sounds = {
@@ -97,12 +110,11 @@ function SmallFire:updateYPos(delay)
 end
 
 function SmallFire:updateTurnsRemaining()
-	print("phase:", self.game.current_phase)
-	print("fire turns:", unpack(self.owner.ready_fires))
 	self.turns_remaining = self.owner.ready_fires[self.col]
 end
 
 function SmallFire:_fadeOut()
+	self.fading_out = true
 	self:change{duration = 32, transparency = 0, remove = true}
 end
 
@@ -119,7 +131,7 @@ function SmallFire.generateSmallFire(game, owner, col, delay, turns_remain)
 		col = col,
 		scaling = 0,
 		turns_remaining = turns_remain or owner.FIRE_EXIST_TURNS,
-		image = Heath.special_images.fire[1],
+		image = owner.special_images.fire[turns_remain or owner.FIRE_EXIST_TURNS][1],
 		image_index = 1,
 		SWAP_FRAMES = 8,
 		current_frame = 8,
@@ -147,10 +159,13 @@ function SmallFire:update(dt)
 		self.current_frame = self.SWAP_FRAMES
 		local fires = #self.owner.special_images.fire
 		self.image_index = self.image_index % fires + 1
-		local new_image = self.owner.special_images.fire[self.image_index]
+		local img_turns = math.max(self.turns_remaining, 1)
+		local new_image = self.owner.special_images.fire[img_turns][self.image_index]
 		self:newImageFadeIn(new_image, self.SWAP_FRAMES)
 	end
-	if self.turns_remaining <= 0 and self:isStationary() then
+	if self.turns_remaining <= 0 and self:isStationary() and not self.fading_out then
+		self.owner.fx.smokes.generate(self.game, self.owner, self.x, self.y)
+		print("made smoke on frame" .. self.game.frame)
 		self:_fadeOut()
 	end
 end
@@ -158,6 +173,59 @@ end
 SmallFire = common.class("SmallFire", SmallFire, Pic)
 
 -------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- these appear when a fire gets extinguished
+local Smokes = {}
+function Smokes:init(manager, tbl)
+	Pic.init(self, manager.game, tbl)
+	manager.allParticles.CharEffects[ID.particle] = self
+	self.manager = manager
+end
+
+function Smokes:remove()
+	self.manager.allParticles.CharEffects[self.ID] = nil
+end
+
+function Smokes.generate(game, owner, x, y)
+	local img = owner.special_images.smoke
+	local smokes = {
+		left = {sign = -1, flip_x = math.random() < 0.5, flip_y = math.random() < 0.5},
+		right = {sign = 1, flip_x = math.random() < 0.5, flip_y = math.random() < 0.5},
+	}
+
+	for _, smoke in pairs(smokes) do
+		local p = common.instance(Smokes, game.particles, {
+			x = x,
+			y = y,
+			image = img,
+			draw_order = 4,
+			h_flip = smoke.flip_x,
+			v_flip = smoke.flip_y,
+			owner = owner,
+		})
+		p.scaling = 0.5
+		p:change{
+			duration = 30,
+			x = x + game.stage.width * 0.05 * smoke.sign,
+			y = y - game.stage.height * 0.02,
+			rotation = smoke.sign,
+			scaling = 0.8,
+			easing = "outQuart",
+		}
+		p:change{
+			duration = 30,
+			rotation = 1.25 * smoke.sign,
+			scaling = 1,
+			transparency = 0,
+			remove = true,
+		}
+	end
+end
+
+Smokes = common.class("Smokes", Smokes, Pic)
+
+-------------------------------------------------------------------------------
+-- these appear when you make a horizontal match and fires are generated
 local Boom = {}
 function Boom:init(manager, tbl)
 	Pic.init(self, manager.game, tbl)
@@ -222,6 +290,7 @@ Boom = common.class("Boom", Boom, Pic)
 Heath.fx = {
 	smallFire = SmallFire,
 	boom = Boom,
+	smokes = Smokes,
 }
 -------------------------------------------------------------------------------
 
