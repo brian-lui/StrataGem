@@ -115,15 +115,16 @@ function Wolfgang:init(...)
 	self.FULL_BARK_DOG_ADDS = 2
 	self.BAD_DOG_DURATION = 3
 	self.SUPER_DOG_CREATION_DELAY = 45 -- in frames
-	self.GOOD_DOG_CYCLE = 240 -- calling a good dog animation cycle
-	self.BAD_DOG_CYCLE = 80 -- calling a bad dog animation cycle
+	self.GOOD_DOG_CYCLE = 90 -- calling a good dog animation cycle
+	self.BAD_DOG_CYCLE = 30 -- calling a bad dog animation cycle
 	self.good_dog_frames, self.bad_dog_frames = 0, 0
 	self.this_turn_matched_colors = {}
 	self.good_dogs = {} -- set of {dog-gems = true}
 	self.good_dog_color_index = 1 -- current good dog color switch
-	self.good_dog_color_image = self.good_dog_colored[self.good_dog_color_index]
+	self.good_dog_color_image = self.special_images.good_dog_colored[self.good_dog_color_index]
 	self.bad_dogs = {} -- dict of {dog-gem = turns remaining to disappearance}
 	self.bad_dog_counter = 1 -- cycles from 1 to self.BAD_DOG_DURATION
+	self.bad_dog_mad_image = self.special_images.bad_dog_mad
 	self.single_dogs_to_make, self.double_dogs_to_make = 0, 0
 end
 -------------------------------------------------------------------------------
@@ -365,21 +366,22 @@ end
 -- change the colors of the good dog
 -- called every X seconds. queues a swap to the next color, then swap back
 function Wolfgang:_goodDogAnimation(dog)
-	--[[
-	if isStationary:
-		local current_image =
-		new image self.good_dog_color_image
-		new image current_image
-	--]]
+	if dog:isStationary() then
+		local current_image = dog.image
+		local duration = self.GOOD_DOG_CYCLE / 6
+		dog:newImageFadeIn(self.good_dog_color_image, duration)
+		dog:newImageFadeIn(current_image, duration, duration * 2)
+	end
 end
 
 -- change the colors of the bad dog
-function Wolfgang:_badDogAnimation(dog, counter)
-	--[[
-	get turns remaining, use it to calculate whether we should update this cycle
-	update every 3 cycles for 3 turns remaining, 2 cycles for 2 turns remaining, etc. can use modulus == 0
-	also use it to calculate speed of image swap
-	--]]
+function Wolfgang:_badDogAnimation(dog, turns_remaining)
+	if dog:isStationary() then
+		local current_image = dog.image
+		local duration = self.BAD_DOG_CYCLE * turns_remaining / 6
+		dog:newImageFadeIn(self.bad_dog_mad_image, duration)
+		dog:newImageFadeIn(current_image, duration, duration)
+	end
 end
 
 -------------------------------------------------------------------------------
@@ -391,8 +393,8 @@ function Wolfgang:update(dt)
 	local good_dog_anim, bad_dog_anim = false, false
 	if self.good_dog_frames >= self.GOOD_DOG_CYCLE then
 		self.good_dog_frames = self.good_dog_frames - self.GOOD_DOG_CYCLE
-		self.good_dog_color_index = self.good_dog_color_index % #self.good_dog_colored + 1
-		self.good_dog_color_image = self.good_dog_colored[self.good_dog_color_index]
+		self.good_dog_color_index = self.good_dog_color_index % #self.special_images.good_dog_colored + 1
+		self.good_dog_color_image = self.special_images.good_dog_colored[self.good_dog_color_index]
 		good_dog_anim = true
 	end
 
@@ -408,14 +410,15 @@ function Wolfgang:update(dt)
 		else
 			if good_dog_anim then self:_goodDogAnimation(dog) end
 		end
-		dog:update(dt)
+		if dog:isStationary() then dog:update(dt) end
 	end
 
 	for dog, turns_remaining in pairs(self.bad_dogs) do
-		if bad_dog_anim and turns_remaining % self.bad_dog_counter == 0 then
-			self:_badDogAnimation(dog, turns_remaining)
+		local actual_turns_remaining = math.min(turns_remaining + 1, 3) -- lol
+		if bad_dog_anim and self.bad_dog_counter % actual_turns_remaining == 0 then
+			self:_badDogAnimation(dog, actual_turns_remaining)
 		end
-		dog:update(dt)
+		if dog:isStationary() then dog:update(dt) end
 	end
 end
 
