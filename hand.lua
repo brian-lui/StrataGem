@@ -152,18 +152,17 @@ end
 --[[
 	Creates the new pieces for the turn.
 	Takes optional mandatory flag to force a piece (default off).
-	Takes optional gem_mod_func that returns: freq, replace
 	freq and replace should be provided as a table or function
 	NOTE: this function can be called more than once per turn.
 --]]
-function Hand:createNewTurnPieces(mandatory, gem_mod_func)
+function Hand:createNewTurnPieces(mandatory)
+	local gem_mod_func = self.owner.customGemTable
 	if mandatory then self.damage = math.max(self.damage, 4) end
 	local pieces_to_get = math.floor(self.damage * 0.25)
 	if pieces_to_get < 1 then return end
 
 	for i = 6, pieces_to_get + 5 do
-		local freq, replace = nil, nil
-		if gem_mod_func then freq, replace = gem_mod_func(self.owner) end
+		local freq, replace = gem_mod_func(self.owner)
 		if type(freq) == "function" then freq = freq() end
 		if type(replace) == "function" then replace = replace() end
 

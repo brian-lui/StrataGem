@@ -588,7 +588,7 @@ function Wolfgang:afterAllMatches()
 end
 
 -- Make a bark dog if there are any dogs queued
-function Wolfgang:modifyGemTable()
+function Wolfgang:customGemTable()
 	if self.double_dogs_to_make > 0 then
 		local dog_return = function()
 			self.double_dogs_to_make = self.double_dogs_to_make - 1

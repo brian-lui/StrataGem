@@ -131,24 +131,25 @@ function Character:beforeMatch() end -- before gems are matched
 function Character:duringMatch() end -- while matches are exploding
 function Character:afterMatch() end -- after each match
 function Character:whenCreatingGarbageRow() end -- at garbage row creation
-function Character:modifyGemTable()
-	-- provide custom gem freq/gem replacement.
-	-- first arg is gem table {red = 1, blue = 2, green = 3, ...} or function
-	-- second arg is {{color = "red", image = dog.png}, ...} or function
-end
 function Character:afterAllMatches()
 -- after all chain combos finished.
 -- Can be called multiple times in a turn if garbage is created
 end
 function Character:beforeCleanup() end
-
 function Character:cleanup()
 	self.supering = false
 	self.game:brightenScreen(self.player_num)
 end
+function Character:customGemTable() -- custom gem frequency and gem replacement
+	-- first arg is frequency: {red = 1, blue = 2, green = 3, ...} or function
+	-- second arg is replacement: {{color = "red", image = dog.png}, ...} or function
+	local gem_freq_table, gem_replace_table = nil, nil
+	return gem_freq_table, gem_replace_table
+end
+
 -------------------------------------------------------------------------------
 
-function Character:toggleSuper(received_from_opponent)
+function Character:toggleSuper()
 	local game = self.game
 	if game.current_phase ~= "Action" then return end
 
