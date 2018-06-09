@@ -143,9 +143,7 @@ function Gem:draw(params)
 		rgbt[3] = rgbt[3] * params.darkened
 	end
 
-
 	love.graphics.push("all")
-		--if params.RGBTable then love.graphics.setColor(params.RGBTable) end
 		love.graphics.translate(params.pivot_x or self.x, params.pivot_y or self.y)
 		love.graphics.translate(-self.width * 0.5, -self.height * 0.5)
 		if params.rotation then love.graphics.rotate(params.rotation) end
@@ -154,6 +152,12 @@ function Gem:draw(params)
 		if params.rotation then love.graphics.rotate(-params.rotation) end
 		love.graphics.setColor(rgbt)
 		love.graphics.draw(self.image, self.quad)
+
+		if self.new_image then
+			local new_image_rgbt = {rgbt[1], rgbt[2], rgbt[3], self.new_image.transparency or 255}
+			love.graphics.setColor(new_image_rgbt)
+			love.graphics.draw(self.new_image.image, self.quad)
+		end
 	love.graphics.pop()
 end
 
