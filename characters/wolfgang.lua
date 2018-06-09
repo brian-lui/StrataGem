@@ -116,8 +116,11 @@ function Wolfgang:init(...)
 	self.BAD_DOG_DURATION = 3
 	self.SUPER_DOG_CREATION_DELAY = 45 -- in frames
 	self.this_turn_matched_colors = {}
-	self.good_dogs = {} -- table of dog-gems
-	self.bad_dogs = {} -- table of {dog-gem, turns remaining to disappearance}
+	self.good_dogs = {} -- set of {dog-gems = true}
+	self.good_dog_color_index = 1 -- current good dog color switch
+	self.good_dog_color_image = self.good_dog_colored[self.good_dog_color_index]
+	self.bad_dogs = {} -- dict of {dog-gem = turns remaining to disappearance}
+	self.bad_dog_counter = 1 -- cycles from 1 to self.BAD_DOG_DURATION
 	self.single_dogs_to_make, self.double_dogs_to_make = 0, 0
 end
 -------------------------------------------------------------------------------
@@ -356,11 +359,50 @@ function Wolfgang:_upkeepBadDogs()
 	return any_dogs_destroyed
 end
 
+-- change the colors of the good dog
+-- called every X seconds. queues a swap to the next color, then swap back
+function Wolfgang:_goodDogAnimation(dog)
+	--[[
+	if isStationary:
+		local current_image =
+		new image self.good_dog_color_image
+		new image current_image
+	--]]
+end
+
+-- change the colors of the bad dog
+function Wolfgang:_badDogAnimation(dog, counter)
+	--[[
+	get turns remaining, use it to calculate whether we should update this cycle
+	update every 3 cycles for 3 turns remaining, 2 cycles for 2 turns remaining, etc. can use modulus == 0
+	also use it to calculate speed of image swap
+	--]]
+end
+
 -------------------------------------------------------------------------------
 -- update the grid good dog and bad dog animations
 function Wolfgang:update(dt)
 	--[[
-	for each 
+	for each dog in good dogs:
+		if is_destroyed:
+			remove from good dogs table
+		else
+			update every X seconds:
+				call _goodDogAnimation for every dog
+				self.good_dog_color_index = self.good_dog_color_index % #self.good_dog_colored + 1
+				self.good_dog_color_image = self.good_dog_colored[self.good_dog_color_index]
+
+				change to next color in queue
+			dog:update()
+		end
+	end
+
+	for each gem in bad dogs:
+		update every X seconds:
+			self.bad_dog_counter = self.bad_dog_counter % self.BAD_DOG_DURATION + 1
+			call _badDogAnimation for every dog, passing in counter
+		dog:update()
+	end
 	--]]
 end
 
@@ -390,16 +432,24 @@ end
 
 function Wolfgang:beforeGravity()
 	local grid = self.game.grid
-	local pending_gems = grid:getPendingGems(self.enemy)
+	local pending_rush_gems = grid:getPendingGems(self.enemy)
+	local pending_my_gems = grid:getPendingGems(self)
 	local delay = 0
 
 	-- Change good dogs to bad dogs if they are in rush column
-	for _, gem in ipairs(pending_gems) do
+	for _, gem in ipairs(pending_rush_gems) do
 		if gem.owner == self.player_num and gem.color == "wild" then
 			gem.indestructible = true
 			gem.color = "none"
 			gem.image = gem.bad_dog_image
 			self.bad_dogs[gem] = self.BAD_DOG_DURATION
+		end
+	end
+
+	-- Add good dogs to table too
+	for _, gem in ipairs(pending_my_gems) do
+		if gem.owner == self.player_num and gem.color == "wild" then
+			self.good_dogs[gem] = true
 		end
 	end
 
