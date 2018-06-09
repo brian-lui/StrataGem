@@ -155,6 +155,7 @@ end
 function DamageParticle.generate(game, gem, delay_frames, force_max_alpha)
 	local gem_creator = game:playerByIndex(gem.owner)
 	local player = gem_creator.enemy
+	local frames_taken = 0
 
 	-- calculate bezier curve
 	local x1, y1 = gem.x, gem.y -- start
@@ -172,10 +173,9 @@ function DamageParticle.generate(game, gem, delay_frames, force_max_alpha)
 
 		-- create damage particle
 		local p = common.instance(DamageParticle, game.particles, gem)
-
 		p.force_max_alpha = force_max_alpha
 
-		local duration = game.DAMAGE_PARTICLE_TO_PLATFORM_FRAMES + math.random() * 12
+		local duration = game.DAMAGE_PARTICLE_TO_PLATFORM_FRAMES + _ * 3
 		local rotation = math.random() * 5
 		p.final_loc_idx = math.min(5, math.floor(final_loc))
 
@@ -189,9 +189,7 @@ function DamageParticle.generate(game, gem, delay_frames, force_max_alpha)
 		end
 		local exit_2 = function()
 			local platform = player.hand[p.final_loc_idx].platform
-			if platform then
-				platform:screenshake(6)
-			end
+			if platform then platform:screenshake(6) end
 		end
 
 		if delay_frames then
@@ -225,7 +223,10 @@ function DamageParticle.generate(game, gem, delay_frames, force_max_alpha)
 		end
 
 		game.particles:incrementCount("created", "Damage", gem.owner)
+
+		frames_taken = math.max(frames_taken, game.DAMAGE_PARTICLE_TO_PLATFORM_FRAMES + 9 + drop_duration)
 	end
+	return frames_taken
 end
 
 DamageParticle = common.class("DamageParticle", DamageParticle, Pic)

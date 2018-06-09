@@ -761,6 +761,7 @@ end
 -- adds an extra combo_bonus of damage, up to a maximum of double damage
 function Grid:destroyMatchedGems(combo_bonus)
 	local p1_remaining_damage, p2_remaining_damage = combo_bonus, combo_bonus
+	local delay_until_explode, damage_particle_duration = 0, 0
 
 	for _, gem in pairs(self:getMatchedGems()) do
 		local extra_damage = 0
@@ -776,12 +777,15 @@ function Grid:destroyMatchedGems(combo_bonus)
 		local owner = self.game:playerByIndex(gem.owner)
 		if owner then gain_super = owner.gain_super_meter end
 
-		self:destroyGem{
+		local delay_explode, damage_duration = self:destroyGem{
 			gem = gem,
 			extra_damage = extra_damage,
 			super_meter = gain_super,
 		}
+		delay_until_explode = math.max(delay_until_explode, delay_explode)
+		damage_particle_duration = math.max(damage_particle_duration, damage_duration)
 	end
+	return delay_until_explode, damage_particle_duration
 end
 
 -- removes a gem from the grid, and plays all of the associated animations
@@ -802,6 +806,7 @@ function Grid:destroyGem(params)
 	local extra_damage = params.extra_damage or 0
 	local glow_delay = params.glow_delay or 0
 	local delay_until_explode = game.GEM_EXPLODE_FRAMES + glow_delay
+	local damage_particle_duration = 0
 	if gem.is_destroyed then return end
 	if gem.indestructible then return end
 	if params.credit_to then gem:setOwner(params.credit_to) end
@@ -831,9 +836,11 @@ function Grid:destroyGem(params)
 		end
 
 		if params.damage ~= false then
-			particles.damage.generate(game, gem, delay_until_explode, params.force_max_alpha)
+			local dmg_duration = particles.damage.generate(game, gem, delay_until_explode, params.force_max_alpha)
+			damage_particle_duration = math.max(damage_particle_duration, dmg_duration)
 			for _ = 1, extra_damage do
 				particles.damage.generate(game, gem, delay_until_explode, params.force_max_alpha)
+				damage_particle_duration = math.max(damage_particle_duration, dmg_duration)
 			end
 		end
 
@@ -884,7 +891,7 @@ function Grid:destroyGem(params)
 	gem.is_destroyed = true -- in case we try to destroy it again
 	self[gem.row][gem.column].gem = false
 
-	return delay_until_explode
+	return delay_until_explode, damage_particle_duration
 end
 
 function Grid:setGarbageMatchFlags(diff)

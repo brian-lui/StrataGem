@@ -263,7 +263,7 @@ function Phase:destroyMatchedGems(dt)
 	local grid = game.grid
 
 	self.matched_this_round = grid:checkMatchedThisTurn() -- which players made a match
-	grid:destroyMatchedGems(game.scoring_combo)
+	local delay_until_explode, damage_particle_duration = grid:destroyMatchedGems(game.scoring_combo)
 
 	if self.should_call_char_ability_this_phase then
 		local delay = 0
@@ -277,6 +277,7 @@ function Phase:destroyMatchedGems(dt)
 
 	self:activatePause("ResolvingMatches")
 	self.should_call_char_ability_this_phase = true
+	print("predicted damage particles arrive on frame " .. game.frame + damage_particle_duration + delay_until_explode)
 end
 
 function Phase:resolvingMatches(dt)
@@ -303,6 +304,7 @@ function Phase:resolvedMatches(dt)
 
 	-- all damage particles finished
 	if game.particles:getCount("onscreen", "Damage", 1) + game.particles:getCount("onscreen", "Damage", 2) == 0 then
+		print("damage particles arrived at frame " .. game.frame)
 		local next_phase = "DestroyDamagedPlatforms"
 			local delay = 0
 			game.grid:setAllGemOwners(0)
