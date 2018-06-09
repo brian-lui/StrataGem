@@ -49,7 +49,7 @@ function DebugConsole:setDefaultDisplayParams()
 	local phase = self.phase
 	local params = {
 		display_prints = true,
-		display_gem_info = true,
+		display_gem_info = false,
 		display_gem_owners = true,
 		display_particle_destinations = true,
 		display_gamestate = true,
