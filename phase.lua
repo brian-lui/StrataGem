@@ -277,7 +277,7 @@ function Phase:destroyMatchedGems(dt)
 
 	self:activatePause("ResolvingMatches")
 	self.should_call_char_ability_this_phase = true
-	print("predicted damage particles arrive on frame " .. game.frame + damage_particle_duration + delay_until_explode)
+	print("predicted damage particles arrive on frame " .. game.frame + damage_particle_duration + delay_until_explode + game.GEM_EXPLODE_FRAMES)
 end
 
 function Phase:resolvingMatches(dt)
