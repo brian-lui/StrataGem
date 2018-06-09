@@ -161,13 +161,24 @@ function Pic:newImage(img, queue)
 	end
 end
 
--- fades in a new image over the previous one.
-function Pic:newImageFadeIn(img, frames)
-	self.new_image = {
-		image = img,
-		transparency = 0,
-		opaque_speed = 255 / frames,
-	}
+-- fades in a new image over the previous one, with optional delay time.
+-- will queue a fade with queue_wait_time if something is already fading in.
+function Pic:newImageFadeIn(img, frames, delay)
+	if self.new_image then
+		self.new_image_queue = self.new_image_queue or {}
+		self.new_image_queue[#self.new_image_queue+1] = {
+			image = img,
+			frames = frames,
+			delay = delay or 0,
+		}
+	else
+		self.new_image = {
+			image = img,
+			transparency = 0,
+			opaque_speed = 255 / frames,
+			delay = delay or 0,
+		}
+	end
 end
 
 -- clear the junk from all the tweens and stuff. runs exit function too.
@@ -421,10 +432,27 @@ function Pic:update(dt)
 		end
 	end
 	if self.new_image then
-		self.new_image.transparency = self.new_image.transparency + self.new_image.opaque_speed
-		if self.new_image.transparency >= 255 then
-			self.image = self.new_image.image
-			self.new_image = nil
+		if self.new_image.delay > 0 then
+			self.new_image.delay = math.max(self.new_image.delay - 1, 0)
+		else
+			self.new_image.transparency = self.new_image.transparency + self.new_image.opaque_speed
+			if self.new_image.transparency >= 255 then
+				self.image = self.new_image.image
+				self.new_image = nil
+				if self.new_image_queue then
+					if self.new_image_queue[1] then
+						local new_img = table.remove(self.new_image_queue, 1)
+						self.new_image = {
+							image = new_img.image,
+							transparency = 0,
+							opaque_speed = 255 / new_img.frames,
+							delay = new_img.delay,
+						}
+					else
+						self.new_image_queue = nil
+					end
+				end
+			end
 		end
 	end
 end
