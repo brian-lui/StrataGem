@@ -115,6 +115,9 @@ function Wolfgang:init(...)
 	self.FULL_BARK_DOG_ADDS = 2
 	self.BAD_DOG_DURATION = 3
 	self.SUPER_DOG_CREATION_DELAY = 45 -- in frames
+	self.GOOD_DOG_CYCLE = 240 -- calling a good dog animation cycle
+	self.BAD_DOG_CYCLE = 80 -- calling a bad dog animation cycle
+	self.good_dog_frames, self.bad_dog_frames = 0, 0
 	self.this_turn_matched_colors = {}
 	self.good_dogs = {} -- set of {dog-gems = true}
 	self.good_dog_color_index = 1 -- current good dog color switch
@@ -382,28 +385,38 @@ end
 -------------------------------------------------------------------------------
 -- update the grid good dog and bad dog animations
 function Wolfgang:update(dt)
-	--[[
-	for each dog in good dogs:
-		if is_destroyed:
-			remove from good dogs table
+	self.good_dog_frames = self.good_dog_frames + 1
+	self.bad_dog_frames = self.bad_dog_frames + 1
+
+	local good_dog_anim, bad_dog_anim = false, false
+	if self.good_dog_frames >= self.GOOD_DOG_CYCLE then
+		self.good_dog_frames = self.good_dog_frames - self.GOOD_DOG_CYCLE
+		self.good_dog_color_index = self.good_dog_color_index % #self.good_dog_colored + 1
+		self.good_dog_color_image = self.good_dog_colored[self.good_dog_color_index]
+		good_dog_anim = true
+	end
+
+	if self.bad_dog_frames >= self.GOOD_DOG_CYCLE then
+		self.bad_dog_frames = self.bad_dog_frames - self.BAD_DOG_CYCLE
+		self.bad_dog_counter = self.bad_dog_counter % self.BAD_DOG_DURATION + 1
+		bad_dog_anim = true
+	end
+
+	for dog in pairs(self.good_dogs) do
+		if dog.is_destroyed then
+			self.good_dogs[dog] = nil
 		else
-			update every X seconds:
-				call _goodDogAnimation for every dog
-				self.good_dog_color_index = self.good_dog_color_index % #self.good_dog_colored + 1
-				self.good_dog_color_image = self.good_dog_colored[self.good_dog_color_index]
-
-				change to next color in queue
-			dog:update()
+			if good_dog_anim then self:_goodDogAnimation(dog) end
 		end
+		dog:update(dt)
 	end
 
-	for each gem in bad dogs:
-		update every X seconds:
-			self.bad_dog_counter = self.bad_dog_counter % self.BAD_DOG_DURATION + 1
-			call _badDogAnimation for every dog, passing in counter
-		dog:update()
+	for dog, turns_remaining in pairs(self.bad_dogs) do
+		if bad_dog_anim and turns_remaining % self.bad_dog_counter == 0 then
+			self:_badDogAnimation(dog, turns_remaining)
+		end
+		dog:update(dt)
 	end
-	--]]
 end
 
 
