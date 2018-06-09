@@ -184,7 +184,7 @@ function DamageParticle.generate(game, gem, delay_frames, force_max_alpha)
 		local drop_duration = math.max((p.final_loc_idx - 2) * game.DAMAGE_PARTICLE_PER_DROP_FRAMES, 0)
 		local drop_x = function() return player.hand:getx(p.y) end
 		local exit_1 = function()
-			assert(player.hand[2].platform, "No platform found for damage particle to screenshake, in game phase " .. game.phase.overlay_middle_function())
+			assert(player.hand[2].platform, "No platform found for damage particle to screenshake, in game phase " .. game.debugconsole.overlay_middle_function())
 			player.hand[2].platform:screenshake(4)
 		end
 		local exit_2 = function()
