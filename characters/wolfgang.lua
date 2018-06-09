@@ -387,21 +387,22 @@ end
 -------------------------------------------------------------------------------
 -- update the grid good dog and bad dog animations
 function Wolfgang:update(dt)
-	self.good_dog_frames = self.good_dog_frames + 1
-	self.bad_dog_frames = self.bad_dog_frames + 1
-
 	local good_dog_anim, bad_dog_anim = false, false
 	if self.good_dog_frames >= self.GOOD_DOG_CYCLE then
 		self.good_dog_frames = self.good_dog_frames - self.GOOD_DOG_CYCLE
 		self.good_dog_color_index = self.good_dog_color_index % #self.special_images.good_dog_colored + 1
 		self.good_dog_color_image = self.special_images.good_dog_colored[self.good_dog_color_index]
 		good_dog_anim = true
+	else
+		self.good_dog_frames = self.good_dog_frames + 1
 	end
 
-	if self.bad_dog_frames >= self.GOOD_DOG_CYCLE then
+	if self.bad_dog_frames >= self.BAD_DOG_CYCLE then
 		self.bad_dog_frames = self.bad_dog_frames - self.BAD_DOG_CYCLE
 		self.bad_dog_counter = self.bad_dog_counter % self.BAD_DOG_DURATION + 1
 		bad_dog_anim = true
+	else
+		self.bad_dog_frames = self.bad_dog_frames + 1
 	end
 
 	for dog in pairs(self.good_dogs) do
@@ -576,7 +577,6 @@ function Wolfgang:afterAllMatches()
 
 	if all_lit_up then
 		self.single_dogs_to_make = self.single_dogs_to_make + self.FULL_BARK_DOG_ADDS
-		print("adding dog pieces, now: " .. self.single_dogs_to_make)
 		for _, letter in pairs(self.letters) do letter:darken() end
 		delay = 60
 	end
@@ -597,7 +597,6 @@ function Wolfgang:modifyGemTable()
 		return nil, dog_return
 	elseif self.single_dogs_to_make > 0 then
 		local dog_return = function()
-			print("starting dog-pieces to make: " .. self.single_dogs_to_make)
 			self.single_dogs_to_make = self.single_dogs_to_make - 1
 			return self:_getDogReplaceTable()
 		end
