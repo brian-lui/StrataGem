@@ -309,23 +309,23 @@ function Phase:resolvedMatches(dt)
 	local grid = game.grid
 
 	local next_phase = "DestroyDamagedPlatforms"
-		local delay = 0
-		game.grid:setAllGemOwners(0)
-		for player in game:players() do
-			local player_delay, go_to_gravity_phase = player:afterAllMatches()
-			delay = math.max(delay, player_delay or 0)
-			if go_to_gravity_phase then next_phase = "DuringGravity" end
-		end
+	local delay = 0
+	game.grid:setAllGemOwners(0)
+	for player in game:players() do
+		local player_delay, go_to_gravity_phase = player:afterAllMatches()
+		delay = math.max(delay, player_delay or 0)
+		if go_to_gravity_phase then next_phase = "DuringGravity" end
+	end
 
-		local platforms_get_destroyed = false
-		for player in game:players() do
-			if not platforms_get_destroyed then
-				platforms_get_destroyed = player.hand:damagedPlatformsExist()
-			end
+	local platforms_get_destroyed = false
+	for player in game:players() do
+		if not platforms_get_destroyed then
+			platforms_get_destroyed = player.hand:damagedPlatformsExist()
 		end
-		if platforms_get_destroyed then delay = delay + self.PLATFORM_SPIN_DELAY end
+	end
+	if platforms_get_destroyed then delay = delay + self.PLATFORM_SPIN_DELAY end
 
-		self:setPause(delay)
+	self:setPause(delay)
 
 	for player in game:players() do player.place_type = "none" end
 	game.scoring_combo = 0
