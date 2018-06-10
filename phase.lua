@@ -22,6 +22,7 @@ function Phase:reset()
 	self.force_minimum_1_piece = true -- get at least 1 piece per turn
 	self.should_call_char_ability_this_phase = true
 	self.update_gravity_during_pause = false
+	self.damage_particle_duration = 0 -- for ResolvedMatches phase. I couldn't find better place to put it
 end
 
 -------------------------------------------------------------------------------
@@ -248,22 +249,26 @@ function Phase:getMatchedGems(dt)
 		local player_delay = player:beforeMatch()
 		delay = math.max(delay, player_delay or 0)
 	end
-	self:setPause(delay)
 
 	if matches > 0 then
+		self:setPause(delay)
 		self:activatePause("DestroyMatchedGems")
 	else
+		print("previous damage particle duration: ", self.damage_particle_duration)
+		self:setPause(delay + self.damage_particle_duration)
+		self.damage_particle_duration = 0
 		self:activatePause("ResolvedMatches")
 	end
 end
 
+-- TODO: can remove self.should_call_char_ability_this_phase?
 -- destroy matched gems, and create the gems-being-exploded animation
 function Phase:destroyMatchedGems(dt)
 	local game = self.game
 	local grid = game.grid
 
 	self.matched_this_round = grid:checkMatchedThisTurn() -- which players made a match
-	local delay_until_explode, damage_particle_duration = grid:destroyMatchedGems(game.scoring_combo)
+	local explode_delay, particle_duration = grid:destroyMatchedGems(game.scoring_combo)
 
 	if self.should_call_char_ability_this_phase then
 		local delay = 0
@@ -277,7 +282,7 @@ function Phase:destroyMatchedGems(dt)
 
 	self:activatePause("ResolvingMatches")
 	self.should_call_char_ability_this_phase = true
-	print("predicted damage particles arrive on frame " .. game.frame + damage_particle_duration + delay_until_explode + game.GEM_EXPLODE_FRAMES)
+	self.damage_particle_duration = particle_duration + explode_delay + game.GEM_EXPLODE_FRAMES
 end
 
 function Phase:resolvingMatches(dt)
@@ -289,6 +294,8 @@ function Phase:resolvingMatches(dt)
 		local player_delay = player:afterMatch()
 		delay = math.max(delay, player_delay or 0)
 	end
+
+	print("resolving matches set a delay of " .. delay .. " frames")
 	self:setPause(delay)
 
 	game.scoring_combo = game.scoring_combo + 1
@@ -303,7 +310,7 @@ function Phase:resolvedMatches(dt)
 	local grid = game.grid
 
 	-- all damage particles finished
-	if game.particles:getCount("onscreen", "Damage", 1) + game.particles:getCount("onscreen", "Damage", 2) == 0 then
+	--if game.particles:getCount("onscreen", "Damage", 1) + game.particles:getCount("onscreen", "Damage", 2) == 0 then
 		print("damage particles arrived at frame " .. game.frame)
 		local next_phase = "DestroyDamagedPlatforms"
 			local delay = 0
@@ -338,7 +345,7 @@ function Phase:resolvedMatches(dt)
 			end
 		end
 		self:activatePause(next_phase)
-	end
+	--end
 end
 
 function Phase:destroyDamagedPlatforms(dt)
