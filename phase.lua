@@ -474,7 +474,7 @@ function Phase:cleanup(dt)
 	elseif game.type == "Netplay" then
 		self:activatePause("NetplaySendState")
 	else
-		self:activatePause("SinglePlayerNewTurn")
+		self:activatePause("SingleplayerNewTurn")
 	end
 end
 
@@ -505,12 +505,13 @@ function Phase:netplayNewTurn(dt)
 	self:setPhase("Action")
 
 	if not client.connected then
-		self.game.type = "1P"
+		-- TODO: better handling
+		self.game.type = "Singleplayer"
 		print("Disconnected from server :( changing to 1P mode")
 	end
 end
 
-function Phase:singlePlayerNewTurn(dt)
+function Phase:singleplayerNewTurn(dt)
 	local game = self.game
 	game:newTurn()
 	self:setPhase("Action")
@@ -528,7 +529,7 @@ function Phase:leave(dt)
 	local game = self.game
 	if game.type == "Netplay" then
 		game.statemanager:switch(require "gs_multiplayerselect")
-	elseif game.type == "1P" then
+	elseif game.type == "Singleplayer" then
 		game.statemanager:switch(require "gs_singleplayerselect")
 	end
 end
@@ -560,7 +561,7 @@ Phase.lookup = {
 	NetplaySendState = Phase.netplaySendState,
 	NetplayWaitForState = Phase.netplayWaitForState,
 	NetplayNewTurn = Phase.netplayNewTurn,
-	SinglePlayerNewTurn = Phase.singlePlayerNewTurn,
+	SingleplayerNewTurn = Phase.singleplayerNewTurn,
 	GameOver = Phase.gameOver,
 	Leave = Phase.leave,
 }

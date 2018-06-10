@@ -1,5 +1,5 @@
 -- This is the character select as a class, so it can be instantiated by either
--- 1P or netplay 
+-- singleplayer or netplay
 
 local common = require "class.commons"
 local image = require 'image'
@@ -84,7 +84,7 @@ Lobby = common.class("Lobby", Lobby)
 -------------------------------------------------------------------------------
 local Charselect = {}
 function Charselect:init(game, gamestate)
-	assert(gamestate.name == "SinglePlayer" or gamestate.name == "MultiPlayer",
+	assert(gamestate.name == "Singleplayer" or gamestate.name == "Multiplayer",
 		"Invalid gamestate name '" .. gamestate.name .. "' provided!")
 	self.game = game
 	self.gamestate = gamestate
@@ -92,7 +92,7 @@ function Charselect:init(game, gamestate)
 		"wolfgang", "hailey", "buzz", "ivy", "joy", "mort", "diggory", "damon"}
 	self.gamestate.ui = {clickable = {}, static = {}, fades = {}, popup_clickable = {}, popup_static = {}}
 
-	if gamestate.name == "MultiPlayer" then
+	if gamestate.name == "Multiplayer" then
 		self.lobby = common.instance(Lobby, game, self)
 	end
 end
@@ -167,7 +167,7 @@ function Charselect:_createUIButtons()
 	local stage = game.stage
 
 	local start_action
-	if gamestate.name == "SinglePlayer" then
+	if gamestate.name == "Singleplayer" then
 		start_action = function()
 			if self.my_character then
 				local gametype = gamestate.gametype
@@ -178,7 +178,7 @@ function Charselect:_createUIButtons()
 				game:start(gametype, char1, char2, bkground, nil, 1)
 			end
 		end
-	elseif gamestate.name == "MultiPlayer" then
+	elseif gamestate.name == "Multiplayer" then
 		start_action = function()
 			if self.my_character and not game.client.queuing then
 				local queue_details = {
@@ -226,11 +226,11 @@ function Charselect:_createUIButtons()
 	}
 
 	local back_action
-	if gamestate.name == "SinglePlayer" then
+	if gamestate.name == "Singleplayer" then
 		back_action = function()
 			game.statemanager:switch(require "gs_title")
 		end
-	elseif gamestate.name == "MultiPlayer" then
+	elseif gamestate.name == "Multiplayer" then
 		back_action = function()
 			self.lobby:goBack()
 		end
@@ -392,7 +392,7 @@ function Charselect:enter()
 		remove = true,
 	}
 
-	if gamestate.name == "MultiPlayer" then
+	if gamestate.name == "Multiplayer" then
 		self.lobby:connect()
 	end
 end
@@ -430,7 +430,7 @@ function Charselect:draw()
 	self.displayed_character_text:draw{darkened = darkened}
 	game:_drawSettingsMenu(self.gamestate)
 
-	if gamestate.name == "MultiPlayer" then
+	if gamestate.name == "Multiplayer" then
 		self.lobby:draw()
 	end
 	for _, v in pairs(gamestate.ui.fades) do v:draw{darkened = darkened} end

@@ -1,41 +1,41 @@
 local common = require "class.commons"
 
-local MultiPlayer = {name = "MultiPlayer", gametype = "Netplay"}
-function MultiPlayer:init()
-	self.charselect = common.instance(require 'charselect', self, MultiPlayer)
-	self.charselect:init(self, MultiPlayer)
+local Multiplayer = {name = "Multiplayer", gametype = "Netplay"}
+function Multiplayer:init()
+	self.charselect = common.instance(require 'charselect', self, Multiplayer)
+	self.charselect:init(self, Multiplayer)
 end	
 
-function MultiPlayer:enter()
+function Multiplayer:enter()
 	self.charselect:enter()
 end
 
-function MultiPlayer:update(dt)
+function Multiplayer:update(dt)
 	self.charselect:update(dt)
 end
 
-function MultiPlayer:draw()
+function Multiplayer:draw()
 	self.charselect:draw()
 end
 
-function MultiPlayer:openSettingsMenu()
-	self:_openSettingsMenu(MultiPlayer)
+function Multiplayer:openSettingsMenu()
+	self:_openSettingsMenu(Multiplayer)
 end
 
-function MultiPlayer:closeSettingsMenu()
-	self:_closeSettingsMenu(MultiPlayer)
+function Multiplayer:closeSettingsMenu()
+	self:_closeSettingsMenu(Multiplayer)
 end
 
-function MultiPlayer:mousepressed(x, y)
-	self:_mousepressed(x, y, MultiPlayer)
+function Multiplayer:mousepressed(x, y)
+	self:_mousepressed(x, y, Multiplayer)
 end
 
-function MultiPlayer:mousereleased(x, y)
-	self:_mousereleased(x, y, MultiPlayer)
+function Multiplayer:mousereleased(x, y)
+	self:_mousereleased(x, y, Multiplayer)
 end
 
-function MultiPlayer:mousemoved(x, y)
-	self:_mousemoved(x, y, MultiPlayer)
+function Multiplayer:mousemoved(x, y)
+	self:_mousemoved(x, y, Multiplayer)
 end
 
-return MultiPlayer
+return Multiplayer

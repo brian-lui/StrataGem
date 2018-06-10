@@ -273,7 +273,7 @@ local function shuffleHands(game)
 end
 
 local function resetGame(game)
-	game:start("1P", "wolfgang", "walter", "checkmate", nil, 1)
+	game:start("Singleplayer", "wolfgang", "walter", "checkmate", nil, 1)
 end
 
 local function displayNoRush(game)

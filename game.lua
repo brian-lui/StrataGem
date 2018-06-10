@@ -78,12 +78,7 @@ function Game:init()
 end
 
 function Game:start(gametype, char1, char2, bkground, seed, side)
-	--ID:reset()
 	self:reset()
-	--self.sound:reset()
-	--self.grid:reset()
-	--self.particles:reset()
-	--self.phase:reset()
 	if seed then self.rng:setSeed(seed)	end
 
 	self.p1 = common.instance(require("characters." .. char1), 1, self)
@@ -103,7 +98,13 @@ function Game:start(gametype, char1, char2, bkground, seed, side)
 	end
 
 	-- Spawn the appropriate ai to handle opponent (net input or actual AI)
-	self.ai = common.instance(require(gametype == "Netplay" and "ai_net" or "ai"), self, self.them_player)
+	if gametype == "Netplay" then
+		self.ai = common.instance(require("ai_netplay"), self, self.them_player)
+	elseif gametype == "Singleplayer" then
+		self.ai = common.instance(require("ai_singleplayer"), self, self.them_player)
+	else
+		error("Invalid gametype provided")
+	end
 
 	for player in self:players() do player:cleanup() end
 
@@ -137,7 +138,7 @@ function Game:reset()
 	self.sound:reset()
 	self.grid:reset()
 	self.particles:reset()
-	self.phase:reset()	
+	self.phase:reset()
 end
 
 function Game:update(dt)
