@@ -268,68 +268,68 @@ function gs_main:mousepressed(x, y)
 	self.lastClickedFrame = self.frame
 	self.lastClickedX, self.lastClickedY = x, y
 
-	self:_mousepressed(x, y, gs_main)
-
-	if self.type == "Replay" then return end
-
-	local player = self.me_player
-	if not self.paused then
-		for i = 1, player.hand_size do
-			if player.hand[i].piece and pointIsInRect(x, y, player.hand[i].piece:getRect()) then
-				if self.current_phase == "Action" and player:canPlacePiece() then
-					player.hand[i].piece:select()
-				else
-					self.active_piece = player.hand[i].piece
+	if self.type ~= "Replay" then
+		local player = self.me_player
+		if not self.paused then
+			for i = 1, player.hand_size do
+				if player.hand[i].piece and pointIsInRect(x, y, player.hand[i].piece:getRect()) then
+					if self.current_phase == "Action" and player:canPlacePiece() then
+						player.hand[i].piece:select()
+					else
+						self.active_piece = player.hand[i].piece
+					end
 				end
 			end
 		end
+
+		if self.debugconsole.is_pause_mode_on then
+			self.debugconsole:swapGridGem(x, y)
+		end
 	end
 
-	if self.debugconsole.is_pause_mode_on then
-		self.debugconsole:swapGridGem(x, y)
-	end
+	self:_mousepressed(x, y, gs_main)
 
-	local my_super = self.me_player.super_button
-	if pointIsInRect(x, y, my_super:getRect()) then gs_main.clicked = my_super end
+	if self.type ~= "Replay" then
+		local my_super = self.me_player.super_button
+		if pointIsInRect(x, y, my_super:getRect()) then gs_main.clicked = my_super end
+	end
 end
 
 local QUICKCLICK_FRAMES = 15
 local QUICKCLICK_MAX_MOVE = 0.05
 
 function gs_main:mousereleased(x, y)
-	self:_mousereleased(x, y, gs_main)
+	if self.type ~= "Replay" then
+		local player = self.me_player
+		if self.active_piece then
+			local quickclick = self.frame - self.lastClickedFrame < QUICKCLICK_FRAMES
+			local nomove = math.abs(x - self.lastClickedX) < self.stage.width * QUICKCLICK_MAX_MOVE and
+				math.abs(y - self.lastClickedY) < self.stage.height * QUICKCLICK_MAX_MOVE
 
-	if self.type == "Replay" then return end
+			if quickclick and nomove then self.active_piece:rotate() end
+			if self.current_phase == "Action" and player:canPlacePiece() then
+				self.active_piece:deselect()
+			end
 
-	local player = self.me_player
-	if self.active_piece then
-		local quickclick = self.frame - self.lastClickedFrame < QUICKCLICK_FRAMES
-		local nomove = math.abs(x - self.lastClickedX) < self.stage.width * QUICKCLICK_MAX_MOVE and
-			math.abs(y - self.lastClickedY) < self.stage.height * QUICKCLICK_MAX_MOVE
-
-		if quickclick and nomove then self.active_piece:rotate() end
-		if self.current_phase == "Action" and player:canPlacePiece() then
-			self.active_piece:deselect()
+			self.active_piece = false
 		end
 
-		self.active_piece = false
+		local my_super = self.me_player.super_button
+		if pointIsInRect(x, y, my_super:getRect()) and gs_main.clicked == my_super then
+			my_super:action()
+		end
 	end
-
-	local my_super = self.me_player.super_button
-	if pointIsInRect(x, y, my_super:getRect()) and gs_main.clicked == my_super then
-		my_super:action()
-	end
+	self:_mousereleased(x, y, gs_main)
 end
 
 function gs_main:mousemoved(x, y)
-	self:_mousemoved(x, y, gs_main)
-
-	if self.type == "Replay" then return end
-
-	local player = self.me_player
-	if self.active_piece and self.current_phase == "Action" and player:canPlacePiece() then
-		self.active_piece:change{x = x, y = y}
+	if self.type ~= "Replay" then
+		local player = self.me_player
+		if self.active_piece and self.current_phase == "Action" and player:canPlacePiece() then
+			self.active_piece:change{x = x, y = y}
+		end
 	end
+	self:_mousemoved(x, y, gs_main)
 end
 
 return gs_main
