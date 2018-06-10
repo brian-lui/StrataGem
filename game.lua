@@ -52,7 +52,7 @@ Game.PLATFORM_FALL_EXPLODE_FRAMES = 30
 Game.PLATFORM_FALL_FADE_FRAMES = 8
 Game.EXPLODING_PLATFORM_FRAMES = 60
 Game.TWEEN_TO_LANDING_ZONE_DURATION = 24
-Game.VERSION = "65.0"
+Game.VERSION = "66.0"
 
 function Game:init()
 	self.rng = love.math.newRandomGenerator()

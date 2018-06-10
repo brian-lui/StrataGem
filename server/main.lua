@@ -3,7 +3,7 @@
 require 'socket'
 local json = require 'dkjson'
 local server = {
-	version = "65.0"
+	VERSION = "66.0"
 }
 local id_count = 1
 local dudes = {}
@@ -137,9 +137,9 @@ local function attemptedConnection(data, conn)
 	if not dudes[conn].waiting then
 		print("Client attempted re-connection! lame")
 		blob = {type = "rejected", message = "Nope"}
-	elseif data.version ~= server.version then
-		print("Server/client version mismatch: server " .. server.version .. ", client " .. data.version)
-		blob = {type = "rejected", message = "Version", version = server.version}
+	elseif data.version ~= server.VERSION then
+		print("Server/client version mismatch: server " .. server.VERSION .. ", client " .. data.VERSION)
+		blob = {type = "rejected", message = "Version", version = server.VERSION}
 	else
 		addDude(data, conn)
 		blob = {type = "connected", message = "Thanks"}
