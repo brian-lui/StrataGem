@@ -20,7 +20,6 @@ function Phase:reset()
 	self.matched_this_round = {false, false} -- p1 made a match, p2 made a match
 	self.garbage_this_round = 0
 	self.force_minimum_1_piece = true -- get at least 1 piece per turn
-	self.should_call_char_ability_this_phase = true
 	self.update_gravity_during_pause = false
 	self.damage_particle_duration = 0 -- for ResolvedMatches phase. I couldn't find better place to put it
 end
@@ -428,7 +427,6 @@ function Phase:platformsMoving(dt)
 			end
 			self:setPause(delay)
 			self:activatePause("Cleanup")
-			self.should_call_char_ability_this_phase = true
 		end
 	end
 end
