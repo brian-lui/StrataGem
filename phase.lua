@@ -266,7 +266,6 @@ function Phase:getMatchedGems(dt)
 	end
 end
 
--- TODO: can remove self.should_call_char_ability_this_phase?
 -- destroy matched gems, and create the gems-being-exploded animation
 function Phase:destroyMatchedGems(dt)
 	local game = self.game
@@ -275,19 +274,17 @@ function Phase:destroyMatchedGems(dt)
 	self.matched_this_round = grid:checkMatchedThisTurn() -- which players made a match
 	local explode_delay, particle_duration = grid:destroyMatchedGems(game.scoring_combo)
 
-	if self.should_call_char_ability_this_phase then
-		local delay = 0
-		for player in game:players() do
-			local player_delay = player:duringMatch()
-			delay = math.max(delay, player_delay or 0)
-		end
-		self:setPause(game.GEM_EXPLODE_FRAMES + game.GEM_FADE_FRAMES + delay)
-		self.should_call_char_ability_this_phase = false
+	local delay = 0
+	for player in game:players() do
+		local player_delay = player:duringMatch()
+		delay = math.max(delay, player_delay or 0)
 	end
+	local total_gem_explode_delay = game.GEM_EXPLODE_FRAMES + game.GEM_FADE_FRAMES + delay
+	self:setPause(total_gem_explode_delay)
 
+	print("setting a delay of: " .. particle_duration .. " particle duration, " .. explode_delay .. " explode delay, " .. total_gem_explode_delay .. " gem explode + fade delay: total " .. particle_duration + explode_delay + total_gem_explode_delay .. " frames delay")
 	self:activatePause("ResolvingMatches")
-	self.should_call_char_ability_this_phase = true
-	self.damage_particle_duration = particle_duration + explode_delay + game.GEM_EXPLODE_FRAMES
+	self.damage_particle_duration = particle_duration + explode_delay + total_gem_explode_delay
 end
 
 function Phase:resolvingMatches(dt)
