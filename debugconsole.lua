@@ -22,7 +22,7 @@ function DebugConsole:replacePrint()
 	love.filesystem.remove("debug.txt")
 	local reallyprint = print
 	function print(...)
-		reallyprint(... .. " " .. self.game.frame or "")
+		reallyprint(self.game.frame or "", ...)
 		local args = {...}
 		for i = 1, #args do
 			if type(args[i]) == "table" then args[i] = "table"
