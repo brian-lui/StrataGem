@@ -78,8 +78,8 @@ end
 --]]
 -- Easy peasy, no thinking to do here.
 function ai_net:evaluateActions(them_player)
-	self:queueAction(performDeltas, {self, them_player})
-	--[[
+	--self:queueAction(performDeltas, {self, them_player})
+	---[[
 	self:queueAction(self.game.deserializeDelta, {self.game, self.game.client.their_delta, them_player})
 	--]]
 end

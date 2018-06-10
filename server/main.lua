@@ -3,7 +3,7 @@
 require 'socket'
 local json = require 'dkjson'
 local server = {
-	VERSION = "66.0"
+	VERSION = "70.0"
 }
 local id_count = 1
 local dudes = {}
@@ -79,13 +79,9 @@ local function addDude(data, new_conn)
 	print("new connection added", new_conn)
 end
 
-local function sendDudes(conn)
+local function sendDudes()
 	local to_send = {type = "current_dudes", all_dudes = getDudes()}
-	if dude_id then
-		server.send(to_send, dudes[conn])
-	else
-		for conn, _ in pairs(dudes) do server.send(to_send, conn) end
-	end
+	for connection, _ in pairs(dudes) do server.send(to_send, connection) end
 end
 
 local function joinQueue(conn, queue_details)
@@ -98,7 +94,7 @@ local function joinQueue(conn, queue_details)
 			dudes[conn].queuing = true
 			dudes[conn].queue_details = queue_details
 			server.send({type = "queue", action = "queued"}, conn)
-			sendDudes(conn)
+			sendDudes()
 		end
 	else
 		print("woah this guy doesn't exist")
@@ -112,7 +108,7 @@ local function leaveQueue(conn)
 			dudes[conn].queuing = false
 			dudes[conn].queue_details = {}
 			server.send({type = "queue", action = "left"}, conn)
-			sendDudes(conn)
+			sendDudes()
 		else
 			print("Cannot leave queue: Not in queue")
 			server.send({type = "queue", action = "not_queued"}, conn)
@@ -133,12 +129,12 @@ local function receiveQueue(data, conn)
 end
 
 local function attemptedConnection(data, conn)
-	local blob = {}
+	local blob
 	if not dudes[conn].waiting then
 		print("Client attempted re-connection! lame")
 		blob = {type = "rejected", message = "Nope"}
 	elseif data.version ~= server.VERSION then
-		print("Server/client version mismatch: server " .. server.VERSION .. ", client " .. data.VERSION)
+		print("Server/client version mismatch: server " .. server.VERSION .. ", client " .. data.version)
 		blob = {type = "rejected", message = "Version", version = server.VERSION}
 	else
 		addDude(data, conn)
@@ -158,8 +154,8 @@ end
 
 local function getOpponentConn(conn)
 	local opponent_id = dudes[conn].opponent
-	for conn, dude in pairs(dudes) do
-		if opponent_id == dude.id then return conn end
+	for connection, dude in pairs(dudes) do
+		if opponent_id == dude.id then return connection end
 	end
 	print("Opponent not found!")
 end
@@ -265,52 +261,3 @@ while true do
 	local queuers = getQueuers()
 	if #queuers == 2 then startMatch(queuers[1], queuers[2]) end
 end
-
---[[
-
-local function receivePing(_, ip)
-	if server.dudes[ip] then server.dudes[ip].connected = true else print("Cr*p") end
-end
-
-local function sendPing(dude_ip)
-	server:send(json.encode({type = "ping"}), dude_ip)
-end
-
-local function checkDisconnected()
--- temporarily set dude connected = false, then send a ping.
--- if they don't ping back by the next check cycle, remove them.
-	for id, dude in pairs(server.dudes) do
-		if dude.connected then
-			dude.connected = false
-			sendPing(dude.ip)
-		else
-			removeDude(id)
-			sendDudes()
-		end
-	end
-
-	if #server.dudes > 0 then print("Currently connected:") end
-	for id, dude in pairs(server.dudes) do print(id, dude.ip) end
-end
-
-
-cur_time = os.time()
-check_frequency = 5
-while true do
-	local data_str, ip = server:receive()
-	if data_str then
-		local data = json.decode(data_str)
-		server:processData(data, ip)
-	end
-
-	local queuers = getQueuers()
-	if #queuers == 2 then startGame(queuers[1], queuers[2]) end
-
-	if os.time() > cur_time + check_frequency then
-		cur_time = os.time()
-		sendDudes()
-		checkDisconnected()
-	end
-end
-
---]]

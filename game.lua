@@ -52,7 +52,7 @@ Game.PLATFORM_FALL_EXPLODE_FRAMES = 30
 Game.PLATFORM_FALL_FADE_FRAMES = 8
 Game.EXPLODING_PLATFORM_FRAMES = 60
 Game.TWEEN_TO_LANDING_ZONE_DURATION = 24
-Game.VERSION = "66.0"
+Game.VERSION = "70.0"
 
 function Game:init()
 	self.rng = love.math.newRandomGenerator()
@@ -282,7 +282,7 @@ function Game:deserializeDelta(delta_string, player)
 			if v == "Pc2" then
 				player.place_type = "double"
 			else
-				for col in self.game.grid:cols(player.player_num) do
+				for col in self.grid:cols(player.player_num) do
 					if column == col then
 						player.place_type = "normal"
 						break

@@ -86,7 +86,7 @@ end
 
 function Client:connectionRejected(recv)
 	if recv.message == "Version" then
-		print("Incorrect version, please update. Server " .. recv.version .. ", client " .. self.game.version)
+		print("Incorrect version, please update. Server " .. recv.version .. ", client " .. self.game.VERSION)
 	elseif recv.message == "Nope" then
 		print("You were already connected")
 	else
