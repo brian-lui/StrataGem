@@ -311,11 +311,11 @@ function Heath:_updateParticleTimers(column)
 	end
 end
 
-function Heath:_updateParticlePositions(delay_to_return, column)
+function Heath:_updateParticlePositions(delay, column)
 	for _, particle in pairs(self.game.particles.allParticles.CharEffects) do
 		if particle.player_num == self.player_num and particle.name == "HeathFire"
 		and (particle.col == column or not column) then
-			particle:updateYPos(delay_to_return)
+			particle:updateYPos(delay)
 		end
 	end
 end
@@ -428,6 +428,7 @@ end
 -- take away super meter, make fires
 function Heath:afterAllMatches()
 	local grid = self.game.grid
+	local delay, frames_to_explode = 0, 0
 	-- super
 	if self.supering then
 		self:emptyMP()
@@ -440,12 +441,20 @@ function Heath:afterAllMatches()
 			if self.ready_fires[i] > 0 then
 				local row = grid:getFirstEmptyRow(i) + 1
 				if grid[row][i].gem then
-					grid:destroyGem{gem = grid[row][i].gem, credit_to = self.player_num}
+					local explode_delay, damage_duration = grid:destroyGem{
+						gem = grid[row][i].gem,
+						credit_to = self.player_num,
+					}
+					delay = math.max(delay, explode_delay + damage_duration)
+					frames_to_explode = math.max(frames_to_explode, explode_delay)
 				end
 			end
 		end
 	end
 	self.burned_this_turn = true
+
+	self:_updateParticlePositions(frames_to_explode)
+	return delay, false
 end
 
 function Heath:whenCreatingGarbageRow()
