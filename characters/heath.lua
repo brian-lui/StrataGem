@@ -409,20 +409,20 @@ function Heath:afterMatch()
 	local game = self.game
 	local grid = game.grid
 
-	local delay_to_return = 0
+	local delay = 0
 	local fire_sound = false
 	for i in grid:cols() do
 		if self.pending_fires[i] > 0 and not self:_columnHasParticle(i) then
-			delay_to_return = self.fx.smallFire.generateSmallFire(self.game, self, i)
+			delay = self.fx.smallFire.generateSmallFire(self.game, self, i)
 			fire_sound = true
 		end
 	end
 	if fire_sound then game.sound:newSFX(self.sounds.passive) end
 
 	-- fire passive update, in case of chain combo for a gem below the fire
-	self:_updateParticlePositions(delay_to_return)
+	self:_updateParticlePositions(delay)
 
-	return delay_to_return
+	return delay
 end
 
 -- take away super meter, make fires

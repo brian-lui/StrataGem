@@ -698,15 +698,13 @@ function Walter:beforeCleanup()
 	end
 
 	-- updating existing cloud animations
-	local cloud_in_col = {}
 	for cloud in self.game.particles:getInstances("CharEffects", self.player_num, "WalterCloud") do
-		cloud_in_col[cloud.col] = true
 		cloud:updateDropletFrequency()
 	end
 
 	self.pending_clouds = {}
 
-	return delay	
+	return delay
 end
 
 function Walter:cleanup()

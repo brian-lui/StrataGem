@@ -48,7 +48,7 @@ function Phase:_pause(dt)
 		self.game.current_phase = self.next_phase
 		self.update_gravity_during_pause = nil
 		self.next_phase = nil
-		print("New phase: " .. self.game.current_phase)
+		--print("New phase: " .. self.game.current_phase)
 	end
 end
 
