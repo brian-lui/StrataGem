@@ -268,6 +268,10 @@ function gs_main:mousepressed(x, y)
 	self.lastClickedFrame = self.frame
 	self.lastClickedX, self.lastClickedY = x, y
 
+	self:_mousepressed(x, y, gs_main)
+
+	if self.type == "Replay" then return end
+
 	local player = self.me_player
 	if not self.paused then
 		for i = 1, player.hand_size do
@@ -285,8 +289,6 @@ function gs_main:mousepressed(x, y)
 		self.debugconsole:swapGridGem(x, y)
 	end
 
-	self:_mousepressed(x, y, gs_main)
-
 	local my_super = self.me_player.super_button
 	if pointIsInRect(x, y, my_super:getRect()) then gs_main.clicked = my_super end
 end
@@ -295,6 +297,10 @@ local QUICKCLICK_FRAMES = 15
 local QUICKCLICK_MAX_MOVE = 0.05
 
 function gs_main:mousereleased(x, y)
+	self:_mousereleased(x, y, gs_main)
+
+	if self.type == "Replay" then return end
+
 	local player = self.me_player
 	if self.active_piece then
 		local quickclick = self.frame - self.lastClickedFrame < QUICKCLICK_FRAMES
@@ -313,17 +319,17 @@ function gs_main:mousereleased(x, y)
 	if pointIsInRect(x, y, my_super:getRect()) and gs_main.clicked == my_super then
 		my_super:action()
 	end
-
-	self:_mousereleased(x, y, gs_main)
 end
 
 function gs_main:mousemoved(x, y)
+	self:_mousemoved(x, y, gs_main)
+
+	if self.type == "Replay" then return end
+
 	local player = self.me_player
 	if self.active_piece and self.current_phase == "Action" and player:canPlacePiece() then
 		self.active_piece:change{x = x, y = y}
 	end
-
-	self:_mousemoved(x, y, gs_main)
 end
 
 return gs_main

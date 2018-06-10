@@ -114,6 +114,24 @@ function Game:start(gametype, char1, char2, bkground, seed, side)
 	self.statemanager:switch(require "gs_main")
 end
 
+function Game:playReplay(replay_string)
+	-- need to change all of this
+	self:reset()
+	self.rng:setSeed(seed)
+	self.p1 = common.instance(require("characters." .. char1), 1, self)
+	self.p2 = common.instance(require("characters." .. char2), 2, self)
+	self.p1.enemy = self.p2
+	self.p2.enemy = self.p1
+
+	self.ai = common.instance(require("ai_replay"), self, self.p2)
+	self.ai:loadReplay("")
+
+	for player in self:players() do player:cleanup() end
+	self.type = "Replay"
+	self.current_background_name = bkground
+	self.statemanager:switch(require "gs_main")
+end
+
 function Game:reset()
 	self.current_phase = "Intro"
 	self.turn = 1

@@ -81,8 +81,10 @@ function Phase:action(dt)
 	self.game.uielements:update()
 
 	self.time_to_next = self.time_to_next - 1
-	if game.type ~= "Netplay" then
+	if game.type == "Singleplayer" then
 		if not ai.finished then ai:evaluateActions(game.them_player) end
+	elseif game.type == "Replay" then
+		print("replay evaluates actions for both players here")
 	end
 
 	if self.time_to_next <= 0 then
@@ -90,8 +92,11 @@ function Phase:action(dt)
 
 		if game.type == "Netplay" then
 			self:setPhase("NetplaySendDelta")
-		else
+		elseif game.type == "Singleplayer" then
 			ai:performQueuedAction()
+			self:setPhase("Resolve")
+		elseif game.type == "Replay" then
+			print("reply performs queued actions for both players here")
 			self:setPhase("Resolve")
 		end
 
