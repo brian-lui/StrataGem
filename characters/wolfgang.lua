@@ -263,6 +263,7 @@ function Wolfgang:_turnGemToDog(gem)
 	gem:setColor("wild", images.dog, images.explode, images.grey, images.pop)
 	gem:setOwner(self.player_num)
 	gem:setMaxAlpha(true)
+	self.good_dogs[gem] = true
 end
 
 function Wolfgang:_turnRandomFriendlyBasinGemToDog()
@@ -286,7 +287,8 @@ function Wolfgang:_turnRandomFriendlyBasinGemToDog()
 
 	if #valid_gems > 0 then
 		local rand = game.rng:random(#valid_gems)
-		self:_turnGemToDog(valid_gems[rand])
+		local chosen_gem = vaild_gems[rand]
+		self:_turnGemToDog(chosen_gem)
 	end
 end
 
