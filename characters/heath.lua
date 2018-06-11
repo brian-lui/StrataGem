@@ -340,7 +340,7 @@ end
 function Heath:beforeGravity()
 	local game = self.game
 	local grid = game.grid
-	local delay = 0
+	local explode_delay, particle_delay = 0, 0
 
 	local pending_gems = grid:getPendingGemsByNum()
 	for _, gem in ipairs(pending_gems) do
@@ -353,32 +353,33 @@ function Heath:beforeGravity()
 			if top_row <= grid.BOTTOM_ROW then
 				local gem = grid[top_row][col].gem
 				gem:setOwner(self.player_num)
-				delay = grid:destroyGem{
+				explode_delay, particle_delay = grid:destroyGem{
 					gem = gem,
 					super_meter = false,
-					glow_delay = 20,
+					glow_delay = 30,
 					force_max_alpha = true,
 				}
-				self.fx.boom.generate(game, self, top_row, col, delay, 12)
+				self.fx.boom.generate(game, self, top_row, col, explode_delay, 12)
 			end
 		end
 
 		-- generate fires
 		for i in grid:cols(self.player_num) do
-			if not self:_columnHasParticle(i) then
-				self.pending_fires[i] = self.FIRE_EXIST_TURNS
-				self.fx.smallFire.generateSmallFire(self.game, self, i, delay)
+			if self:_columnHasParticle(i) then
+				local particle = self:_getParticle(i)
+				particle.turns_remaining = 0
 			end
+			self.pending_fires[i] = self.FIRE_EXIST_TURNS
+			self.fx.smallFire.generateSmallFire(self.game, self, i, explode_delay)
 		end
 
 		game.sound:newSFX(self.sounds.passive)
 	end
 
-	return delay
+	return explode_delay + particle_delay
 end
 
 function Heath:beforeTween()
-	self.supering = false
 	self.game:brightenScreen(self.player_num)
 end
 
