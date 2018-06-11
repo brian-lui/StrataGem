@@ -68,7 +68,8 @@ function Walter:init(...)
 	self.FOAM_APPEAR_DURATION = 30 -- how long it takes for foam to appear
 	self.FOAM_FRAMES_BETWEEN_DROPLETS = 3 -- how many frames before making new foam-droplet
 	self.SPOUT_SPEED = 8 -- how many frames it takes for the spout to move one gem_height
-	self.SPOUT_BOB_SPEED = 32 -- how many frames for one spout bob
+	self.SPOUT_STAY_FRAMES = 90 -- how many frames spout stays on screen after full height
+	self.SPOUT_FADE_FRAMES = 30 -- how long for fade-out of spout
 	self.CLOUD_SLIDE_DURATION = 36 -- how long for the cloud incoming tween
 	self.CLOUD_ROW = 11 -- which row for clouds to appear on
 	self.CLOUD_EXIST_TURNS = 2 -- how many turns a cloud exists for
@@ -185,8 +186,8 @@ function Foam.generate(game, owner, col)
 	local p = common.instance(Foam, game.particles, params)
 	p:change{duration = owner.FOAM_APPEAR_DURATION * (1/3), scaling = 1.05}
 	p:change{duration = owner.FOAM_APPEAR_DURATION * (2/3), scaling = 0.95}
-	p:wait(owner.SPOUT_SPEED * 8 + owner.SPOUT_BOB_SPEED * 3 + 60)
-	p:change{duration = 20, transparency = 0, remove = true}
+	p:wait(owner.SPOUT_SPEED * 8 + owner.SPOUT_STAY_FRAMES)
+	p:change{duration = owner.SPOUT_FADE_FRAMES, transparency = 0, remove = true}
 end
 Foam = common.class("Foam", Foam, Pic)
 
@@ -230,18 +231,8 @@ function Spout.generate(game, owner, col)
 	local quad_change = {y = true, y_percentage = 1, y_anchor = 0}
 	p:change{duration = owner.SPOUT_SPEED * 8, y = dest_y, quad = quad_change}
 
-	-- bobs
-	-- actually no bobs now
-	--[[
-	for _ = 1, 3 do
-		p:change{duration = owner.SPOUT_BOB_SPEED * 0.25, y = dest_y + stage.height * 0.02}
-		p:change{duration = owner.SPOUT_BOB_SPEED * 0.5, y = dest_y - stage.height * 0.02}
-		p:change{duration = owner.SPOUT_BOB_SPEED * 0.25, y = dest_y}
-	end
-	--]]
-	p:wait(owner.SPOUT_BOB_SPEED * 3)
-	p:wait(60)
-	p:change{duration = 20, transparency = 0, remove = true}
+	p:wait(owner.SPOUT_STAY_FRAMES)
+	p:change{duration = owner.SPOUT_FADE_FRAMES, transparency = 0, remove = true}
 end
 
 function Spout:update(dt)
@@ -255,8 +246,6 @@ function Spout:update(dt)
 		self:newImageFadeIn(new_image, self.SWAP_FRAMES)
 	end
 end
-
-
 Spout = common.class("Spout", Spout, Pic)
 
 -------------------------------------------------------------------------------
