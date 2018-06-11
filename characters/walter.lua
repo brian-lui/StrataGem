@@ -563,6 +563,7 @@ function Walter:_activateSuper()
 	local grid = game.grid
 
 	local delay = 0
+	local explode_delay, particle_delay = 0, 0
 
 	-- find highest column
 	local col, start_row = -1, grid.BOTTOM_ROW
@@ -576,18 +577,22 @@ function Walter:_activateSuper()
 			delay = (grid.BOTTOM_ROW - row) * self.SPOUT_SPEED + self.FOAM_APPEAR_DURATION - game.GEM_EXPLODE_FRAMES
 			local gem = grid[row][col].gem
 			gem:setOwner(self.player_num)
-			grid:destroyGem{
+			local current_explode_delay, current_particle_delay = grid:destroyGem{
 				gem = gem,
 				super_meter = false,
 				glow_delay = delay,
 				force_max_alpha = true,
 			}
+			explode_delay = math.max(explode_delay, current_explode_delay)
+			particle_delay = math.max(particle_delay, current_particle_delay)
+			print("total walter delay for this gem:", explode_delay + particle_delay)
 		end
 
 		self.fx.foam.generate(self.game, self, col)
 		self.fx.spout.generate(self.game, self, col)
 	end
-	return delay + game.GEM_EXPLODE_FRAMES + 30
+
+	return explode_delay + particle_delay
 end
 
 -- Healing damage from rainclouds
