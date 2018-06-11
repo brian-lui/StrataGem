@@ -298,8 +298,14 @@ Heath.fx = {
 -- character.lua has a complete list of all the timings. Can omit unneeded ones
 -- we can add more timing phases if needed
 
--- get the list of pending gem columns for extinguishing in afterGravity
--- also the super
+function Heath:_getParticle(column)
+	for _, particle in pairs(self.game.particles.allParticles.CharEffects) do
+		if particle.player_num == self.player_num and particle.name == "HeathFire"
+		and (particle.col == column) then
+			return particle
+		end
+	end
+end
 
 -- if column is provided, only updates the particle in that column
 function Heath:_updateParticleTimers(column)
@@ -412,20 +418,29 @@ function Heath:afterMatch()
 	local delay = 0
 	local fire_sound = false
 	for i in grid:cols() do
-		if self.pending_fires[i] > 0 and not self:_columnHasParticle(i) then
+		if self.pending_fires[i] > 0 and not self.supering then
+			print("pending fire in column " .. i)
+			if self:_columnHasParticle(i) then
+				print("overwriting old fire")
+				-- when a new fire overwrites an old fire, overwrite the image
+				-- by immediately updating turns_remaining instead of at cleanup
+				local particle = self:_getParticle(i)
+				particle.turns_remaining = self.pending_fires[i]
+				particle:_fadeOut()
+			end
 			delay = self.fx.smallFire.generateSmallFire(self.game, self, i)
 			fire_sound = true
 		end
 	end
 	if fire_sound then game.sound:newSFX(self.sounds.passive) end
 
-	-- fire passive update, in case of chain combo for a gem below the fire
+	-- in case of chain combo for a gem below the fire
 	self:_updateParticlePositions(delay)
 
 	return delay
 end
 
--- take away super meter, make fires
+-- take away super meter, activate fires
 function Heath:afterAllMatches()
 	local grid = self.game.grid
 	local delay, frames_to_explode = 0, 0
@@ -438,7 +453,7 @@ function Heath:afterAllMatches()
 	-- activate horizontal match fires
 	if not self.burned_this_turn then
 		for i in grid:cols() do
-			if self.ready_fires[i] > 0 then
+			if self.ready_fires[i] > 0 and not self.supering then
 				local row = grid:getFirstEmptyRow(i) + 1
 				if grid[row][i].gem then
 					local explode_delay, damage_duration = grid:destroyGem{
@@ -473,6 +488,8 @@ function Heath:cleanup()
 	self:_updateParticleTimers()
 
 	self.burned_this_turn = false
+	self.supering = false
+
 	Character.cleanup(self)
 end
 
