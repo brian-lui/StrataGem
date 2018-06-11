@@ -56,6 +56,7 @@ function DebugConsole:setDefaultDisplayParams()
 		display_damage = true,
 		display_grid = true,
 		display_turn_number = true,
+		display_game_frame = true,
 		display_overlays = true,
 		overlay_middle_function = function()
 			if game.current_phase == "Pause" then
@@ -66,11 +67,10 @@ function DebugConsole:setDefaultDisplayParams()
 			end
 		end,
 		overlay_right_function = function()
-			if game.current_phase == "Pause" then
-				return "Garbage this round: " .. phase.garbage_this_round
-			else
-				return ""
-			end
+			return "Garbage this round: " .. phase.garbage_this_round
+		end,
+		overlay_left_function = function()
+			return "Damage particles: " .. game.particles:getNumber("Damage")
 		end,
 		save_screencaps = true,
 		is_pause_mode_on = false,
@@ -191,12 +191,22 @@ function DebugConsole:_drawTurnNumber()
 	love.graphics.pop()
 end
 
+function DebugConsole:_drawGameFrame()
+	local toprint = "Frame: " .. self.game.frame
+	local stage = self.stage
+	love.graphics.push("all")
+		love.graphics.setFont(FONT.SLIGHTLY_BIGGER)
+		love.graphics.printf(toprint, 0, stage.height * 0.965, stage.width * 0.99, "right")
+	love.graphics.pop()
+end
+
 function DebugConsole:_drawOverlays()
 	local stage = self.stage
 	love.graphics.push("all")
 		love.graphics.setFont(FONT.SLIGHTLY_BIGGER)
+		love.graphics.printf(self.overlay_left_function(), stage.width * 0.01, stage.height * 0.93, stage.width, "left")
 		love.graphics.printf(self.overlay_middle_function(), 0, stage.height * 0.965, stage.width, "center")
-		love.graphics.printf(self.overlay_right_function(), 0, stage.height * 0.965, stage.width * 0.99, "right")
+		love.graphics.printf(self.overlay_right_function(), 0, stage.height * 0.93, stage.width * 0.99, "right")
 	love.graphics.pop()
 end
 
@@ -233,6 +243,7 @@ function DebugConsole:draw()
 		if self.display_gamestate then self:_drawGamestate() end
 		if self.display_damage then self:_drawDamage() end
 		if self.display_turn_number then self:_drawTurnNumber() end
+		if self.display_game_frame then self:_drawGameFrame() end
 		if self.display_prints then self:_drawPrints() end
 	love.graphics.pop()
 end
