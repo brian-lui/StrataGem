@@ -788,8 +788,12 @@ function Grid:destroyMatchedGems(combo_bonus)
 	return delay_until_explode, damage_particle_duration
 end
 
--- removes a gem from the grid, and plays all of the associated animations
---[[ TODO: Takes a table of:
+--[[ removes a gem from the grid, and plays all of the associated animations
+	returns:
+		delay_until_explode - frames until the explosion happens
+	on explosion frame, damage particles are generated, then:
+		damage_particle_duration - how long the particles take to get to platform
+	Takes a table of:
 	gem: gem to destroy
 	super_meter: optional if false, don't build super meter
 	damage: optional if false, don't deal damage
@@ -799,6 +803,7 @@ end
 	propagate_flags_up: optionally credit above gems to owner. Default true
 	force_max_alpha: optional force gem image to be bright
 --]]
+
 function Grid:destroyGem(params)
 	local game = self.game
 	local particles = game.particles
