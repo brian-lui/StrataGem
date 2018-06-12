@@ -21,6 +21,7 @@ local love = require("love")
 local modules, seed, channel, channel_info, errorindicator = ...
 local nts_modules = {"graphics", "window"}
 local has_graphics = false
+local is_love_11 = love._version >= "11.0"
 
 -- We need love.event, always.
 require("love.event")
@@ -73,7 +74,12 @@ local function lily_handler_func(reqtype, minarg, handler)
 end
 
 if love.audio then
-	lily_handler_func("newSource", 1, function(t) return love.audio.newSource(t[1], t[2]) end)
+	-- LOVE 11.0 requires 2 arguments to love.audio.newSource
+	-- but LOVE 0.10.0 only requires 1
+	local argc = is_love_11 and 2 or 1
+	lily_handler_func("newSource", argc, function(t)
+		return love.audio.newSource(t[1], t[2])
+	end)
 end
 
 -- Always exist
@@ -104,10 +110,29 @@ if has_graphics then
 	end)
 	lily_handler_func("newImage", 1, function(t)
 		local s, x = pcall(love.image.newCompressedData, t[1])
-		return s and x or love.image.newImageData(t[1])
+		return (s and x or love.image.newImageData(t[1])), select(2, unpack(t))
 	end)
 	lily_handler_func("newVideo", 1, function(t)
 		return love.video.newVideoStream(t[1]), t[2]
+	end)
+	lily_handler_func("newCubeImage", 1, function(t)
+		-- If it's not table, then it should be processed with
+		-- love.image.newCubeFaces (undocumented function)
+		if type(t[1]) ~= "table" then
+			local id = t[1]
+			if type(id) ~= "userdata" or id:type() ~= "ImageData" then
+				id = love.image.newImageData(id)
+			end
+			t[1] = {love.image.newCubeFaces(id)}
+		end
+		for i = 1, 6 do
+			local v = t[1][i]
+			local t = v:type()
+			if type(v) ~= "userdata" or (t ~= "ImageData" and t ~= "CompressedImageData") then
+				t[1][i] = love.image.newImageData(v)
+			end
+		end
+		return t[1], t[2]
 	end)
 end
 
@@ -126,7 +151,7 @@ if love.image then
 	end)
 end
 
-if love.math and love._version < "11.0" then
+if love.math and not(is_love_11) then
 	lily_handler_func("compress", 2, function(t)
 		-- lily.compress expects LOVE 11.0 order. That's it, format first then data then level
 		return love.math.compress(t[2], t[1], t[3])
@@ -177,17 +202,24 @@ end
 
 -- If main thread puses anything to channel_info, or pop the count, that means we should exit
 while channel_info:performAtomic(not_quit) do
+	-- Structure
+	-- 1. thread_id
+	-- 2. task type
+	-- 3. request ID
+	-- 4. argument count
+	-- n arguments.
 	local tid = channel:demand()
+	if not(not_quit()) then return end -- These 3 checks must be on each demand!
 	local tasktype = channel:demand()
+	if not(not_quit()) then return end -- so even on incomplete, we cna quit
 	local req_id = channel:demand()
+	if not(not_quit()) then return end -- faster and more earlier.
+	
 
 	if not(lily_processor[tasktype]) then
 		-- We don't know such event.
-		while channel:getCount() > 0 do
-			if channel:peek() == thread_lily_id then
-				break
-			end
-
+		local argcount = channel:demand()
+		for i = 1, argcount do
 			channel:pop()
 		end
 	else
@@ -195,37 +227,44 @@ while channel_info:performAtomic(not_quit) do
 		local task = lily_processor[tasktype]
 		local inputs = {}
 
-		for i = 1, task.minarg do
+		-- Get all arguments first, so the channel is clean.
+		local argcount = channel:demand()
+		for i = 1, argcount do
 			inputs[i] = channel:demand()
 		end
-
-		local result = {pcall(task.handler, inputs)}
-
-		if result[1] == false then
-			-- Error
-			push_data(req_id, errorindicator, result[2])
+		
+		if argcount < task.minarg then
+			-- Error: too few arguments
+			push_data(req_id, errorindicator, string.format("'%s': too few arguments (at least %d is required)", tasktype, task.minarg))
 		else
-			-- Remove first element
-			for i = 2, #result do
-				result[i - 1] = result[i]
-			end
-			result[#result] = nil
+			local result = {pcall(task.handler, inputs)}
 
-			-- Unfortunately, due to default love.run way to handle events
-			-- we can't pass more than 6 arguments to event.
-			-- We must pass "req_id", which means we only able to return 5 values.
-			if #result == 0 then
-				push_data(req_id)
-			elseif #result == 1 then
-				push_data(req_id, result[1])
-			elseif #result == 2 then
-				push_data(req_id, result[1], result[2])
-			elseif #result == 3 then
-				push_data(req_id, result[1], result[2], result[3])
-			elseif #result == 4 then
-				push_data(req_id, result[1], result[2], result[3], result[4])
-			elseif #result >= 5 then
-				push_data(req_id, result[1], result[2], result[3], result[4], result[5])
+			if result[1] == false then
+				-- Error
+				push_data(req_id, errorindicator, string.format("'%s': %s", tasktype, result[2]))
+			else
+				-- Remove first element
+				for i = 2, #result do
+					result[i - 1] = result[i]
+				end
+				result[#result] = nil
+
+				-- Unfortunately, due to default love.run way to handle events
+				-- we can't pass more than 6 arguments to event.
+				-- We must pass "req_id", which means we only able to return 5 values.
+				if #result == 0 then
+					push_data(req_id)
+				elseif #result == 1 then
+					push_data(req_id, result[1])
+				elseif #result == 2 then
+					push_data(req_id, result[1], result[2])
+				elseif #result == 3 then
+					push_data(req_id, result[1], result[2], result[3])
+				elseif #result == 4 then
+					push_data(req_id, result[1], result[2], result[3], result[4])
+				elseif #result >= 5 then
+					push_data(req_id, result[1], result[2], result[3], result[4], result[5])
+				end
 			end
 		end
 	end

@@ -23,9 +23,10 @@
 -- 2. When you're handling "quit" event and you integrate Lily into
 --    your `love.run` loop, call `lily.quit` before `return`.
 
-local lily = {_VERSION = "2.0.5"}
+local lily = {_VERSION = "2.0.8"}
 local love = require("love")
 assert(love._version >= "0.10.0", "Lily require at least LOVE 0.10.0")
+local is_love_11 = love._version >= "11.0"
 
 -- Get current script directory
 local _arg = {...}
@@ -47,7 +48,7 @@ assert(love.thread, "Lily requires love.thread. Enable it in conf.lua")
 -- List active modules
 local excluded_modules = {"event", "joystick", "keyboard", "mouse", "physics", "system", "timer", "touch", "window"}
 lily.modules = {}
-if love._version >= "11.0" then lily.modules[1] = "data" end
+if is_love_11 then lily.modules[1] = "data" end
 for a in pairs(love._modules) do
 	local f = false
 	for i = 1, #excluded_modules do
@@ -182,6 +183,10 @@ function lily.quit()
 			-- Pop the task count to tell lily threads to stop
 			a.channel_info:pop()
 			-- Wait it to finish
+			-- Push thread id so demand returns a value
+			-- and it unblocks the thread
+			a.channel:push(a.id)
+			-- Wait
 			a.thread:wait()
 			-- Clear
 			lily.threads[i] = nil
@@ -269,6 +274,7 @@ local function new_lily_object(reqtype, ...)
 	thread.channel_info:performAtomic(increase_task_count)
 
 	-- Push arguments
+	thread.channel:push(#this.arguments)
 	for i = 1, #this.arguments do
 		thread.channel:push(this.arguments[i])
 	end
@@ -284,9 +290,18 @@ local multilily_methods = {__index = {}}
 -- loaded(multilily, val)
 multilily_methods.__index.loaded = lily_methods.__index.complete
 -- error(msg)
-multilily_methods.__index.error = lily_methods.__index.error
+function multilily_methods.__index.error(_, __, msg)
+	error(msg, 2)
+end
 -- complete(lilydatas)
 multilily_methods.__index.complete = lily_methods.__index.complete
+-- error handler
+local miltilily_single_lily_error_handler = function(userdata, msg)
+	-- The userdata:
+	-- 1st index is lilyindex, 2nd index is multilily object
+	local multi = userdata[2]
+	multi.error(multi.userdata, userdata[1], msg)
+end
 
 function multilily_methods.__len(this)
 	return #this.lilies
@@ -304,11 +319,6 @@ end
 
 function multilily_methods.__index.onError(this, func)
 	this.error = assert(type(func) == "function" and func, "bad argument #1 to 'lilyObject:onError' (function expected)")
-
-	for i = 1, #this.lilies do
-		this.lilies[i]:onError(this.error)
-	end
-
 	return this
 end
 
@@ -337,7 +347,11 @@ function multilily_methods.__index.getValues(this, index)
 end
 
 function multilily_methods.__index.getCount(this)
-	return #this.liles
+	return #this.lilies
+end
+
+function multilily_methods.__index.getLoadedCount(this)
+	return this.completed_request
 end
 
 local function multilily_onLoaded(info, ...)
@@ -386,6 +400,7 @@ function lily.loadMulti(tabdecl)
 		local lilyobj = func(unpack(tab, 2))
 			:setUserData({i, this})
 			:onComplete(multilily_onLoaded)
+			:onError(miltilily_single_lily_error_handler)
 
 		this.lilies[#this.lilies + 1] = lilyobj
 	end
@@ -421,6 +436,14 @@ if love.graphics then
 	lily_new_func("newFont", wraphandler(love.graphics.newFont))
 	lily_new_func("newImage", wraphandler(love.graphics.newImage))
 	lily_new_func("newVideo", wraphandler(love.graphics.newVideo))
+	-- Check if LOVE 11.0
+	if is_love_11 then
+		-- Not all system support cobe image, so make it unavailable
+		-- if that's the case
+		if love.graphics.getTextureTypes().cube then
+			lily_new_func("newCubeImage", wraphandler(love.graphics.newCubeImage))
+		end
+	end
 end
 
 if love.image then
@@ -430,7 +453,7 @@ if love.image then
 	lily_new_func("pasteImageData", dummyhandler)
 end
 
-if love.math and love._version < "11.0" or love.data then
+if love.math and not(is_love_11) or love.data then
 	local function dataGetString(_, value)
 		return value:getString()
 	end
@@ -454,6 +477,18 @@ return lily
 
 --[[
 Changelog:
+v2.0.8: 09-06-2018
+> Fixed additional arguments were not passed to task handler in separate thread
+> Make error message more meaningful (but the stack traceback is still meaningless)
+
+v2.0.7: 06-06-2018
+> Fixed `lily.quit` deadlock.
+
+v2.0.6: 05-06-2018
+> Added `lily.newCubeImage`
+> Fix error handler function signature incorrect for MultiLilyObject
+> Added `MultiLilyObject:getLoadedCount()`
+
 v2.0.5: 02-05-2018
 > Fixed LOVE 11.0 detection
 
