@@ -223,8 +223,8 @@ function Super:init(game, character, player_num)
 	self.character = character
 	self.player_num = player_num
 	self.t = 0
-	self.twinkle_t = 0
-	self.TWINKLE_FREQ = 0.15 -- this is in seconds, not frames
+	self.GLOW_PERIOD = 120 -- frames for complete glow cycle
+	self.TWINKLE_FREQUENCY = 9 -- frames per twinkle star generation
 	self.twinkles = {}
 
 	self.super_frame = Pic:create{
@@ -299,7 +299,7 @@ function Super:update(dt)
 	local displayed_mp = math.min(character.MAX_MP, character.mp - onscreen_mp)
 	local fill_percent = 0.12 + 0.76 * displayed_mp / character.MAX_MP
 
-	self.t = self.t + dt
+	self.t = self.t % self.GLOW_PERIOD + 1 
 	meter:setQuad(0, meter.height * (1 - fill_percent), meter.width, meter.height * fill_percent)
 
 	if character.is_supering then
@@ -312,10 +312,8 @@ function Super:update(dt)
 	end
 
 	-- adding twinkles
-	if character.mp >= character.SUPER_COST and not character.supering then
-		self.twinkle_t = self.twinkle_t + dt
-		if self.twinkle_t >= self.TWINKLE_FREQ then
-			self.twinkle_t = self.twinkle_t - self.TWINKLE_FREQ
+	if character.mp >= character.SUPER_COST and not character.is_supering then
+		if self.t % self.TWINKLE_FREQUENCY == 0 then
 			self:_generateSingleTwinkle()
 		end
 	end
