@@ -620,7 +620,7 @@ end
 function Walter:beforeGravity()
 	local delay = 0
 
-	if self.supering then delay = self:_activateSuper()	end
+	if self.is_supering then delay = self:_activateSuper()	end
 	local additional_delay = self:_cloudHealingDamage(delay)
 
 	return delay + additional_delay
@@ -630,7 +630,7 @@ function Walter:beforeTween()
 	local game = self.game
 	local grid = game.grid
 
-	self.supering = false
+	self.is_supering = false
 	game:brightenScreen(self.player_num)
 end
 

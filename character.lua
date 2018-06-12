@@ -44,7 +44,7 @@ Character.cur_burst = 3
 Character.hand_size = 5
 Character.garbage_rows_created = 0
 Character.dropped_piece = nil
-Character.supering = false
+Character.is_supering = false
 Character.super_params = {}
 Character.place_type = "none"
 Character.gain_super_meter = nil -- set to 'false' if don't wanna gain meter from matches
@@ -137,7 +137,7 @@ function Character:afterAllMatches()
 end
 function Character:beforeCleanup() end
 function Character:cleanup()
-	self.supering = false
+	self.is_supering = false
 	self.game:brightenScreen(self.player_num)
 end
 function Character:customGemTable() -- custom gem frequency and gem replacement
@@ -153,14 +153,14 @@ function Character:toggleSuper()
 	local game = self.game
 	if game.current_phase ~= "Action" then return end
 
-	if self.supering then
-		self.supering = false
+	if self.is_supering then
+		self.is_supering = false
 		self.game.sound:newSFX("buttonbacksuper")
 	elseif self.mp >= self.SUPER_COST and self.game.current_phase == "Action" then
-		self.supering = true
+		self.is_supering = true
 		self.game.sound:newSFX("buttonsuper")
 	end
-	return self.supering
+	return self.is_supering
 end
 
 function Character:pieceDroppedOK(piece, shift)
@@ -183,7 +183,7 @@ end
 -- gets whether the player can still place a piece this turn
 function Character:canPlacePiece()
 	return not (
-		(self.supering and not self.CAN_SUPER_AND_PLAY_PIECE) or
+		(self.is_supering and not self.CAN_SUPER_AND_PLAY_PIECE) or
 		(self.dropped_piece == "rushed" or self.dropped_piece == "doubled") or
 		(self.dropped_piece == "normal" and self.cur_burst < self.current_double_cost)
 	)

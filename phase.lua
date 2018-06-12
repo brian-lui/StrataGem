@@ -110,7 +110,7 @@ function Phase:netplaySendDelta(dt)
 	local client = game.client
 
 	-- check for super at end of turn
-	if game.me_player.supering then client:writeDeltaSuper() end
+	if game.me_player.is_supering then client:writeDeltaSuper() end
 
 	client:sendDelta()
 	self:setPhase("NetplayWaitForDelta")
@@ -158,11 +158,11 @@ end
 function Phase:superFreeze(dt)
 	local game = self.game
 	local p1delay, p2delay = 0, 0
-	if game.p1.supering then
+	if game.p1.is_supering then
 		game:darkenScreen(1)
 		p1delay = game.p1:superSlideInAnim()
 	end
-	if game.p2.supering then
+	if game.p2.is_supering then
 		game:darkenScreen(2)
 		p2delay = game.p2:superSlideInAnim(p1delay)
 	end
@@ -172,8 +172,8 @@ end
 
 function Phase:beforeGravity(dt)
 	local game = self.game
-	if game.p1.supering then game.p1:emptyMP() end
-	if game.p2.supering then game.p2:emptyMP() end
+	if game.p1.is_supering then game.p1:emptyMP() end
+	if game.p2.is_supering then game.p2:emptyMP() end
 
 	local delay = 0
 	for player in game:players() do

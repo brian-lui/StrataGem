@@ -270,8 +270,8 @@ function Super:action()
 	local character = self.character
 	if character:canUseSuper() then
 		local word = self.super_word
-		local supering = character:toggleSuper() -- state
-		if supering then
+		local is_supering = character:toggleSuper() -- state
+		if is_supering then
 			word:change{duration = 0, transparency = 128, scaling = 2}
 			word:change{duration = 15, transparency = 255, scaling = 1, easing = "inCubic"}
 		else
@@ -301,7 +301,7 @@ function Super:update(dt)
 	self.t = self.t + dt
 	meter:setQuad(0, meter.height * (1 - fill_percent), meter.width, meter.height * fill_percent)
 
-	if character.supering then
+	if character.is_supering then
 		glow.transparency = 255
 	elseif character:canUseSuper() then
 		glow.transparency = math.sin(self.t * 2) * 127.5 + 127.5

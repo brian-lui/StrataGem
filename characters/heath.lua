@@ -347,7 +347,7 @@ function Heath:beforeGravity()
 		self.pending_gem_cols[gem.column] = true
 	end
 
-	if self.supering then
+	if self.is_supering then
 		for col in grid:cols(self.player_num) do
 			local top_row = grid:getFirstEmptyRow(col, true) + 1
 			if top_row <= grid.BOTTOM_ROW then
@@ -419,7 +419,7 @@ function Heath:afterMatch()
 	local delay = 0
 	local fire_sound = false
 	for i in grid:cols() do
-		if self.pending_fires[i] > 0 and not self.supering then
+		if self.pending_fires[i] > 0 and not self.is_supering then
 			print("pending fire in column " .. i)
 			if self:_columnHasParticle(i) then
 				print("overwriting old fire")
@@ -446,15 +446,15 @@ function Heath:afterAllMatches()
 	local grid = self.game.grid
 	local delay, frames_to_explode = 0, 0
 	-- super
-	if self.supering then
+	if self.is_supering then
 		self:emptyMP()
-		self.supering = false
+		self.is_supering = false
 	end
 
 	-- activate horizontal match fires
 	if not self.burned_this_turn then
 		for i in grid:cols() do
-			if self.ready_fires[i] > 0 and not self.supering then
+			if self.ready_fires[i] > 0 and not self.is_supering then
 				local row = grid:getFirstEmptyRow(i) + 1
 				if grid[row][i].gem then
 					local explode_delay, damage_duration = grid:destroyGem{
@@ -489,7 +489,7 @@ function Heath:cleanup()
 	self:_updateParticleTimers()
 
 	self.burned_this_turn = false
-	self.supering = false
+	self.is_supering = false
 
 	Character.cleanup(self)
 end

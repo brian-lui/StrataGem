@@ -406,20 +406,20 @@ local function superToggle(game)
 	end
 
 	if super_toggle_state == 0 then
-		game.p1.supering = true
-		game.p2.supering = false
+		game.p1.is_supering = true
+		game.p2.is_supering = false
 		super_toggle_state = 1
 	elseif super_toggle_state == 1 then
-		game.p1.supering = false
-		game.p2.supering = true
+		game.p1.is_supering = false
+		game.p2.is_supering = true
 		super_toggle_state = 2
 	elseif super_toggle_state == 2 then
-		game.p1.supering = true
-		game.p2.supering = true
+		game.p1.is_supering = true
+		game.p2.is_supering = true
 		super_toggle_state = 3
 	elseif super_toggle_state == 3 then
-		game.p1.supering = false
-		game.p2.supering = false
+		game.p1.is_supering = false
+		game.p2.is_supering = false
 		super_toggle_state = 0
 	end
 end

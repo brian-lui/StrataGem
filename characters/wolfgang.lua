@@ -473,7 +473,7 @@ function Wolfgang:beforeGravity()
 	end
 
 	-- Create super dogs
-	if self.supering then
+	if self.is_supering then
 		for _ = 1, 4 do
 			self:_turnRandomFriendlyBasinGemToDog()
 			delay = self.SUPER_DOG_CREATION_DELAY
@@ -485,7 +485,7 @@ function Wolfgang:beforeGravity()
 end
 
 function Wolfgang:beforeTween()
-	self.supering = false
+	self.is_supering = false
 	self:_brightenScreen()
 end
 

@@ -340,7 +340,7 @@ function Hand:canPlacePiece()
 	local player = self.owner
 	local place_type = player.dropped_piece
 
-	if player.supering and not player.CAN_SUPER_AND_PLAY_PIECE then
+	if player.is_supering and not player.CAN_SUPER_AND_PLAY_PIECE then
 		return false
 	elseif place_type == "rushed" or place_type == "doubled" then
 		return false

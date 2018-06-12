@@ -66,7 +66,7 @@ end
 
 local function playSuper(self, super_params)
 	super_params = super_params or {}
-	self:queueAction(function() self.player.supering = true end, super_params)
+	self:queueAction(function() self.player.is_supering = true end, super_params)
 end
 
 -- returns a scoring for all possible pieces and their placements

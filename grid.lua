@@ -836,7 +836,7 @@ function Grid:destroyGem(params)
 		game.queue:add(delay_until_explode, game.sound.newSFX, game.sound, soundfile_name)
 
 		if params.super_meter ~= false then
-			local num = player.supering and 0 or player.meter_gain[gem.color]
+			local num = player.is_supering and 0 or player.meter_gain[gem.color]
 			particles.superParticles.generate(game, gem, num, delay_until_explode, params.force_max_alpha)
 		end
 
@@ -923,7 +923,7 @@ function Grid:calculateScore()
 	for player in self.game:players() do
 		local i = player.player_num
 		if dmg[i] > 0 then dmg[i] = dmg[i] + self.game.scoring_combo - 1 end
-		if player.supering then super[i] = 0 end
+		if player.is_supering then super[i] = 0 end
 	end
 	return dmg[1], dmg[2], super[1], super[2]
 end
