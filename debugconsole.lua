@@ -48,6 +48,7 @@ function DebugConsole:setDefaultDisplayParams()
 	local game = self.game
 	local phase = self.phase
 	local params = {
+		display_all = true,
 		display_prints = true,
 		display_gem_info = false,
 		display_gem_owners = true,
@@ -232,20 +233,22 @@ function DebugConsole:_drawPrints()
 end
 
 function DebugConsole:draw()
-	love.graphics.push("all")
-		love.graphics.setColor(0, 0, 0)
-		love.graphics.setFont(FONT.REGULAR)
-		if self.display_grid then self:_drawGrid() end
-		if self.display_overlays then self:_drawOverlays() end
-		if self.display_gem_info then self:_drawGemInfo() end
-		if self.display_gem_owners then self:_drawGemOwners() end
-		if self.display_particle_destinations then self:_drawParticleDestinations() end
-		if self.display_gamestate then self:_drawGamestate() end
-		if self.display_damage then self:_drawDamage() end
-		if self.display_turn_number then self:_drawTurnNumber() end
-		if self.display_game_frame then self:_drawGameFrame() end
-		if self.display_prints then self:_drawPrints() end
-	love.graphics.pop()
+	if self.display_all then
+		love.graphics.push("all")
+			love.graphics.setColor(0, 0, 0)
+			love.graphics.setFont(FONT.REGULAR)
+			if self.display_grid then self:_drawGrid() end
+			if self.display_overlays then self:_drawOverlays() end
+			if self.display_gem_info then self:_drawGemInfo() end
+			if self.display_gem_owners then self:_drawGemOwners() end
+			if self.display_particle_destinations then self:_drawParticleDestinations() end
+			if self.display_gamestate then self:_drawGamestate() end
+			if self.display_damage then self:_drawDamage() end
+			if self.display_turn_number then self:_drawTurnNumber() end
+			if self.display_game_frame then self:_drawGameFrame() end
+			if self.display_prints then self:_drawPrints() end
+		love.graphics.pop()
+	end
 end
 
 -- save screenshot to disk
