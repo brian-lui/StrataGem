@@ -349,10 +349,6 @@ local function toggleSlowdown(game)
 	end
 end
 
-local function testGemImage(game)
-	game.grid:animateGameOver(2)
-end
-
 local function makeAGarbage(game)
 	game.grid:addBottomRow(game.p2)
 	game.grid:updateGrid()
@@ -370,24 +366,6 @@ local function maxDamage(game)
 		game.p1:addDamage(20)
 		player_toggle = game.p2
 	end
-end
-
-local function healingParticleGenerate(game)
-	game.particles.healing.generate{
-		game = game,
-		x = 1000,
-		y = 400,
-		owner = game.p1,
-		delay = 15,
-	}
-end
-
-local function healingCloudGenerate(game)
-	game.p1:_makeCloud(3, 1)
-end
-
-local function healingTwinkleGenerate(game)
-	game.particles.healing.generateTwinkle(game, game.p1.hand[2].platform)
 end
 
 local function glowDestroyTest(game)
@@ -424,10 +402,6 @@ local function superToggle(game)
 	end
 end
 
-local function gailPetalTest(game)
-	game.p1.fx.testPetal.generate(game, game.p1)
-end
-
 local function wolfgangLightUp(game)
 	local wolf = game.p1.letters
 	if not wolf.red.lighted then
@@ -441,13 +415,6 @@ local function wolfgangLightUp(game)
 	end
 end
 
-local function wolfgangCreate3Dog(game)
-	game.p1:_turnPieceToDog(3, false)
-end
-
-local function wolfgangCreate4Dog(game)
-	game.p1:_turnPieceToDog(4, true)
-end
 local function toggleScreencaps(game)
 	if game.debugconsole.save_screencaps then
 		print("Screencaps off")
@@ -494,6 +461,20 @@ local function isGamestateSame(game)
 	end
 end
 
+local function wolfgangGemSpeedToggle(game)
+	for player in game:players() do
+		if player.character_id == "Wolfgang" then
+			if player.GOOD_DOG_CYCLE == 13.5 then
+				player.GOOD_DOG_CYCLE = 135
+				player.BAD_DOG_CYCLE = 30
+			elseif player.GOOD_DOG_CYCLE == 135 then
+				player.GOOD_DOG_CYCLE = 13.5
+				player.BAD_DOG_CYCLE = 3
+			end
+		end
+	end
+end
+
 local Unittests = {
 	f1 = saveGamestate,
 	f2 = loadGamestate,
@@ -508,8 +489,8 @@ local Unittests = {
 	i = displayNoRush,
 	o = tweenPlacedGemDown,
 	p = tweenPlacedGemUp,
-	a = wolfgangCreate3Dog,
-	s = wolfgangCreate4Dog,
+	a = wolfgangGemSpeedToggle,
+	--s = ,
 	d = toggleScreencaps,
 	f = skipToTurnEnd,
 	g = addDamageP1,
@@ -519,7 +500,7 @@ local Unittests = {
 	l = showDebugInfo,
 	z = toggleDebugDisplay,
 	x = toggleSlowdown,
-	c = testGemImage,
+	--c = ,
 	--v = ,
 	b = makeAGarbage,
 	n = changeLayout,
