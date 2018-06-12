@@ -91,6 +91,7 @@ function Burst:init(game, character)
 	self.player_num = character.player_num
 	self.t = 0
 	self.SEGMENTS = 2
+	self.GLOW_PERIOD = 120 -- frames for complete glow cycle
 
 	local ID
 	if self.player_num == 1 then
@@ -137,7 +138,7 @@ function Burst.create(game, character)
 end
 
 function Burst:update(dt)
-	self.t = self.t + dt
+	self.t = self.t % self.GLOW_PERIOD + 1
 
 	local full_segs = (self.character.cur_burst / self.character.MAX_BURST) * self.SEGMENTS
 	local full_segs_int = math.floor(full_segs)
@@ -167,7 +168,7 @@ function Burst:update(dt)
 	end
 
 	-- glow
-	local glow_amount = math.sin(self.t * 2) * 127.5 + 127.5
+	local glow_amount = math.sin(self.t * math.pi * 2 / self.GLOW_PERIOD) * 127.5 + 127.5
 	for i = 1, self.SEGMENTS do
 		self.burst_glow[i].transparency = full_segs_int == i and glow_amount or 0
 	end
