@@ -125,7 +125,7 @@ function Wolfgang:init(...)
 	self.bad_dogs = {} -- dict of {dog-gem = turns remaining to disappearance}
 	self.bad_dog_counter = 1 -- cycles from 1 to self.BAD_DOG_DURATION
 	self.bad_dog_mad_image = self.special_images.bad_dog_mad
-	self.single_dogs_to_make, self.double_dogs_to_make = 0, 0
+	self.single_dogs_to_make = 0
 end
 -------------------------------------------------------------------------------
 -- These are the BARK letter classes
@@ -595,13 +595,7 @@ end
 
 -- Make a bark dog if there are any dogs queued
 function Wolfgang:customGemTable()
-	if self.double_dogs_to_make > 0 then
-		local dog_return = function()
-			self.double_dogs_to_make = self.double_dogs_to_make - 1
-			return {self:_getDogReplaceTable(),	self:_getDogReplaceTable()}
-		end
-		return nil, dog_return
-	elseif self.single_dogs_to_make > 0 then
+	if self.single_dogs_to_make > 0 then
 		local dog_return = function()
 			self.single_dogs_to_make = self.single_dogs_to_make - 1
 			return self:_getDogReplaceTable()
