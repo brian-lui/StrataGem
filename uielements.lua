@@ -304,8 +304,8 @@ function Super:update(dt)
 
 	if character.is_supering then
 		glow.transparency = 255
-	elseif character:canUseSuper() then
-		glow.transparency = math.sin(self.t * 2) * 127.5 + 127.5
+	elseif character.mp >= character.SUPER_COST then
+		glow.transparency = math.sin(self.t * math.pi * 2 / self.GLOW_PERIOD) * 127.5 + 127.5
 	else
 		glow.transparency = 0
 		word.transparency = 0
