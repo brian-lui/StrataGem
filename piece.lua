@@ -470,7 +470,7 @@ function Piece:getGems()
 
 	return function()
 		index = index + 1
-		return gems[index]
+		return gems[index], index
 	end
 end
 
