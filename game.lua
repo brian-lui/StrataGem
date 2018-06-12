@@ -469,8 +469,9 @@ function Game:deserializeState(state_string)
 	local p1_special_str, p2_special_str = state[21], state[22]
 
 	-- if p1.character_id or p2.character_id not match, replace them
-	self.p1 = common.instance(require("characters." .. p1char), 1, self)
-	self.p2 = common.instance(require("characters." .. p2char), 2, self)
+	-- TODO: This doesn't work at the moment
+	--self.p1 = common.instance(require("characters." .. p1char), 1, self)
+	--self.p2 = common.instance(require("characters." .. p2char), 2, self)
 	self.p1.enemy = self.p2
 	self.p2.enemy = self.p1
 	local p1, p2 = self.p1, self.p2
