@@ -711,14 +711,13 @@ end
 
 -- We store the remaining cloud turns in each column
 function Walter:serializeSpecials()
-	return "C" .. table.concat(self.cloud_turns_remaining)
+	return table.concat(self.cloud_turns_remaining)
 end
 
 -- "C" is 67
 function Walter:deserializeSpecials(str)
-	assert(str:byte(1) == 67, "String doesn't start with C: " .. str)
-	for i = 2, #str do
-		local col = i - 1
+	for i = 1, #str do
+		local col = i 
 
 		self.cloud_turns_remaining[col] = tonumber(str:sub(i, i))
 		if self.cloud_turns_remaining[col] ~= 0 then

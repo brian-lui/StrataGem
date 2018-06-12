@@ -272,7 +272,7 @@ end
 -- returns the delta from playing a super
 function Game:serializeSuper(current_delta)
 	local player = self.me_player
-	assert(player.supering, "Received super instruction, but player not supering")
+	assert(player.is_supering, "Received super instruction, but player is not supering")
 	assert(current_delta == "N_", "Received super instruction, but player has action")
 	local serial = player:serializeSuperDeltaParams()
 
@@ -326,7 +326,7 @@ function Game:deserializeDelta(delta_string, player)
 			piece:dropIntoBasin(coords, true)
 
 		elseif v == "S" then
-			player.supering = true
+			player.is_supering = true
 			player.super_params = delta[i+1]
 		end
 	end
@@ -457,7 +457,7 @@ function Game:deserializeState(state_string)
 	print("applying state " .. state_string)
 	local state = {}
 	for s in (state_string.."_"):gmatch("(.-)_") do table.insert(state, s) end
-	assert(#state == 23, "Malformed state string" .. #state)
+	assert(#state == 23, "Malformed state string " .. #state)
 
 	local p1char, p2char = state[1]:lower(), state[2]:lower()
 	local p1burst, p1super, p1damage = tonumber(state[3]), tonumber(state[4]), tonumber(state[5])

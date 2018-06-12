@@ -17,11 +17,8 @@ end
 local __NOP__ = function () end
 
 function love.quit()
-	print("quitting lily")
 	local lily = require "lily"
 	lily.quit()
-	print("quitted lily")
-	return true
 end
 
 function love.draw()
