@@ -615,12 +615,76 @@ function Wolfgang:cleanup()
 	Character.cleanup(self)
 end
 
+--[[
+	Serial is:
+	bark lighting as BARK (Y for on, N for off) ,
+	good dogs in hand, as [hand_idx, gem #] ,
+	good dogs in basin, as [row, col] ,
+	bad dogs in basin, as [row, col, turns remaining] ,
+	single_dogs_to_make, as integer
+--]]
 function Wolfgang:serializeSpecials()
-	local ret = ""
-	return ret
+	local ret = {}
+
+	-- bark lighting
+	ret[#ret+1] = self.letters.blue.lighted and "Y" or "N"
+	ret[#ret+1] = self.letters.yellow.lighted and "Y" or "N"
+	ret[#ret+1] = self.letters.red.lighted and "Y" or "N"
+	ret[#ret+1] = self.letters.green.lighted and "Y" or "N"
+	ret[#ret+1] = ","
+
+	-- dogs in hand
+	for piece in self.hand:pieces() do
+		for gem, location in piece:getGems() do
+			if self.good_dogs[gem] then
+				ret[#ret+1] = piece.hand_idx .. location
+			end
+		end
+	end
+	ret[#ret+1] = ","
+
+	-- good dogs in basin
+	for gem, row, col in self.game.grid:gems() do
+		if self.good_dogs[gem] then
+			-- leftpad it so rows are always 2 digits
+			if row <= 9 then
+				ret[#ret+1] = "0" .. row .. col
+			else
+				ret[#ret+1] = row .. col
+			end
+		end
+	end
+	ret[#ret+1] = ","
+
+	-- bad dogs in basin
+	for gem, row, col in self.game.grid:gems() do
+		if self.bad_dogs[gem] then
+			if row <= 9 then
+				ret[#ret+1] = "0" .. row .. col .. self.bad_dogs[gem]
+			else
+				ret[#ret+1] = row .. col .. self.bad_dogs[gem]
+			end
+		end
+	end
+	ret[#ret+1] = ","
+
+	-- pending dogs to make
+	ret[#ret+1] = self.single_dogs_to_make
+
+	return table.concat(ret)
 end
 
 function Wolfgang:deserializeSpecials(str)
+	--[[
+	apply in following order:
+
+	split
+	bark lighting as BARK (Y for on, N for off) _
+	good dogs in hand, as [hand_idx, gem #] _
+	good dogs in basin, as [row, col] _
+	bad dogs in basin, as [row, col, turns remaining] _
+	single_dogs_to_make, as integer
+	--]]
 end
 
 return common.class("Wolfgang", Wolfgang, Character)

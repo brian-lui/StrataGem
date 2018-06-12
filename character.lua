@@ -108,6 +108,7 @@ function Character:serializeSuperDeltaParams()
 end
 
 -- For netplay: how to serialize the character specials, for gamestate
+-- Do NOT use _ character! That will overload the gamestate deserializer
 function Character:serializeSpecials()
 	return ""
 end
