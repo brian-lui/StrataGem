@@ -522,7 +522,7 @@ function Game:deserializeState(state_string)
 	for i = 1, #grid_str do
 		local color = grid_str:sub(i, i)
 		local row = math.ceil(i / grid.COLUMNS) + grid.PENDING_END_ROW
-		local col = i % grid.COLUMNS + 1
+		local col = (i - 1) % grid.COLUMNS + 1
 		writeGridString(row, col, color)
 	end
 
