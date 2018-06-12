@@ -496,22 +496,22 @@ end
 
 -------------------------------------------------------------------------------
 
--- We only need to store current column fires and duration
--- For each fire, stored as "F" followed by column
+-- We only need to store fire duration. Column is provided by the position
 function Heath:serializeSpecials()
-	local ret = "F"
-	for i in self.game.grid:cols() do
-		ret = ret .. self.ready_fires[i]
-	end
-
+	ret = ""
+	for i in self.game.grid:cols() do ret = ret .. self.ready_fires[i] end
 	return ret
 end
 
 function Heath:deserializeSpecials(str)
-	for i = 2, #str do
-		local col = i - 1
-		self.ready_fires[col] = i
-		self.fx.smallFire.generateSmallFire(self.game, self, col, nil, i)
+	print("string received: " .. str)
+	for i = 1, #str do
+		local col = i
+		local turns_remaining = tonumber(str:sub(i, i))
+		self.ready_fires[col] = turns_remaining
+		if turns_remaining > 0 then
+			self.fx.smallFire.generateSmallFire(self.game, self, col, nil, turns_remaining)
+		end
 	end
 end
 
