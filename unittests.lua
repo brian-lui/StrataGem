@@ -458,18 +458,8 @@ local function toggleScreencaps(game)
 	end
 end
 
-local function wolfgangToggle13TurnBadDog(game)
-	for player in game:players() do
-		if player.character_id == "Wolfgang" then
-			if player.BAD_DOG_DURATION == 1 then
-				player.BAD_DOG_DURATION = 3
-				print("BAD DOG now 3 turns")
-			elseif player.BAD_DOG_DURATION == 3 then
-				player.BAD_DOG_DURATION = 1
-				print("BAD DOG now 1 turn")
-			end
-		end
-	end
+local function toggleDebugDisplay(game)
+	game.debugconsole.display_all = not game.debugconsole.display_all
 end
 
 local function saveGamestate(game)
@@ -486,10 +476,29 @@ local function loadGamestate(game)
 	print("loaded gamestate")
 end
 
+local function p1Serialize(game)
+	print(game.p1:serializeSpecials())
+end
+
+local function isGamestateSame(game)
+	local current_gamestate = game:serializeState()
+	game:deserializeState(current_gamestate)
+	local new_gamestate = game:serializeState()
+	if current_gamestate == new_gamestate then
+		print("Gamestates are the same. Good job coder!")
+	else
+		print("Gamestates are different. Before:")
+		print(current_gamestate)
+		print("After:")
+		print(new_gamestate)
+	end
+end
+
 local Unittests = {
 	f1 = saveGamestate,
 	f2 = loadGamestate,
-	--q = printGamestate,
+	f3 = isGamestateSame,
+	q = p1Serialize,
 	w = wolfgangLightUp,
 	e = charselectScreenCPUCharToggle,
 	r = testComboPropagate,
@@ -508,7 +517,7 @@ local Unittests = {
 	j = addSuperAndBurst,
 	k = superToggle,
 	l = showDebugInfo,
-	z = wolfgangToggle13TurnBadDog,
+	z = toggleDebugDisplay,
 	x = toggleSlowdown,
 	c = testGemImage,
 	--v = ,
