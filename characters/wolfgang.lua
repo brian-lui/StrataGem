@@ -115,8 +115,8 @@ function Wolfgang:init(...)
 	self.FULL_BARK_DOG_ADDS = 2
 	self.BAD_DOG_DURATION = 3
 	self.SUPER_DOG_CREATION_DELAY = 45 -- in frames
-	self.GOOD_DOG_CYCLE = 135 -- calling a good dog animation cycle
-	self.BAD_DOG_CYCLE = 30 -- calling a bad dog animation cycle
+	self.GOOD_DOG_CYCLE = 13.5 -- calling a good dog animation cycle
+	self.BAD_DOG_CYCLE = 3 -- calling a bad dog animation cycle
 	self.good_dog_frames, self.bad_dog_frames = 0, 0
 	self.this_turn_matched_colors = {}
 	self.good_dogs = {} -- set of {dog-gems = true}
@@ -287,7 +287,7 @@ function Wolfgang:_turnRandomFriendlyBasinGemToDog()
 
 	if #valid_gems > 0 then
 		local rand = game.rng:random(#valid_gems)
-		local chosen_gem = vaild_gems[rand]
+		local chosen_gem = valid_gems[rand]
 		self:_turnGemToDog(chosen_gem)
 	end
 end
@@ -441,8 +441,12 @@ function Wolfgang:actionPhase()
 			if gem.color == "wild" then
 				if place_type == "rush" and gem.image == gem.good_dog_image then
 					gem:newImage(gem.bad_dog_image)
+					self.good_dogs[gem] = nil
+					self.bad_dogs[gem] = self.BAD_DOG_DURATION
 				elseif place_type ~= "rush" and gem.image == gem.bad_dog_image then
 					gem:newImage(gem.good_dog_image)
+					self.good_dogs[gem] = true
+					self.bad_dogs[gem] = nil
 				end
 			end
 		end
@@ -603,6 +607,13 @@ function Wolfgang:customGemTable()
 			return self:_getDogReplaceTable()
 		end
 		return nil, dog_return
+	end
+end
+
+-- put the hand piece dogs into the good dog list too
+function Wolfgang:beforeCleanup()
+	for gem in self.hand:gems() do
+		if gem.color == "wild" then self.good_dogs[gem] = true end
 	end
 end
 
