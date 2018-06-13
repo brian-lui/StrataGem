@@ -266,6 +266,37 @@ function Wolfgang:_turnGemToDog(gem)
 	self.good_dogs[gem] = true
 end
 
+-- same but for good dog in deserialization
+function Wolfgang:_turnGemToGoodDog(gem)
+	local images = self:_getRandomDog()
+	gem:setColor("wild", images.dog, images.explode, images.grey, images.pop)
+	self.good_dogs[gem] = true
+end
+
+-- same but for bad dog, used in deserialization
+function Wolfgang:_turnGemToBadDog(gem, turns_remaining)
+	local images = self:_getRandomDog()
+	gem:setColor("wild", images.dog, images.explode, images.grey, images.pop)
+
+	for i = 1, #self.special_images.good_dog do
+		if gem.image == self.special_images.good_dog[i] then
+			gem.bad_dog_image = self.special_images.bad_dog[i]
+		end
+	end
+	gem.good_dog_image = gem.image
+	gem.image = gem.bad_dog_image
+	gem.indestructible = true
+	gem.color = "none"
+	self.bad_dogs[gem] = turns_remaining
+end
+
+-- same but for a dog in the hand, used in deserialization
+function Wolfgang:_turnHandGemToDog(gem)
+	local images = self:_getRandomDog()
+	gem:setColor("wild", images.dog, images.explode, images.grey, images.pop)
+	self.good_dogs[gem] = true
+end
+
 function Wolfgang:_turnRandomFriendlyBasinGemToDog()
 	local game = self.game
 
@@ -680,16 +711,80 @@ function Wolfgang:serializeSpecials()
 end
 
 function Wolfgang:deserializeSpecials(str)
-	--[[
-	apply in following order:
+	local game = self.game
+	local grid = game.grid
 
-	split
-	bark lighting as BARK (Y for on, N for off) _
-	good dogs in hand, as [hand_idx, gem #] _
-	good dogs in basin, as [row, col] _
-	bad dogs in basin, as [row, col, turns remaining] _
-	single_dogs_to_make, as integer
-	--]]
+	local specials = {}
+	for s in (str..","):gmatch("(.-),") do table.insert(specials, s) end
+
+	local lighting = specials[1]
+	local hand_dogs = specials[2]
+	local good_dogs = specials[3]
+	local bad_dogs = specials[4]
+	local upcoming_dogs = specials[5]
+
+	-- lighting
+	local letters = {
+		blue = lighting:sub(1, 1),
+		yellow = lighting:sub(2, 2),
+		red = lighting:sub(3, 3),
+		green = lighting:sub(4, 4),
+	}
+
+	for color, bool in pairs(letters) do
+		assert(bool == "Y" or bool == "N", "Invalid colorletter specified")
+		if bool == "Y" then
+			self.letters[color]:lightUp()
+		else
+			self.letters[color]:darken()
+		end
+	end
+
+	-- clear
+	self.good_dogs = {}
+	self.bad_dogs = {}
+
+	-- hand dogs
+	assert(#hand_dogs % 2 == 0, "Incorrect length of hand dogs")
+	for i = 1, #hand_dogs, 2 do
+		local hand_idx = tonumber(hand_dogs:sub(i, i))
+		local location = tonumber(hand_dogs:sub(i + 1, i + 1))
+		local piece = self.hand[hand_idx].piece
+		assert(piece, "No piece found for hand dog")
+		local gem = piece.gems[location]
+		assert(gem, "No gem found for hand dog piece)")
+		self:_turnHandGemToDog(gem)
+	end
+
+	-- grid good dogs
+	assert(#good_dogs % 3 == 0, "Incorrect length of good dogs")
+	for i = 1, #good_dogs, 3 do
+		local row = tonumber(good_dogs:sub(i, i + 1))
+		local column = tonumber(good_dogs:sub(i + 2, i + 2))
+		local gem = grid[row][column].gem
+		assert(gem, "No gem found for grid good dog")
+		assert(gem.color == "wild", "Non-wild gem provided for grid good dog")
+		self:_turnGemToGoodDog(gem)
+	end
+
+	-- grid bad dogs
+	assert(#bad_dogs % 4 == 0, "Incorrect length of bad dogs")
+	for i = 1, #bad_dogs, 4 do
+		local row = tonumber(bad_dogs:sub(i, i + 1))
+		local column = tonumber(bad_dogs:sub(i + 2, i + 2))
+		local turns_remaining = tonumber(bad_dogs:sub(i + 3, i + 3))
+		print("row, column", row, column)
+
+		local gem = grid[row][column].gem
+		assert(gem, "No gem found for grid bad dog")
+		assert(gem.color == "none", "Non-black gem provided for grid bad dog")
+		self:_turnGemToBadDog(gem, turns_remaining)
+	end
+
+	self.single_dogs_to_make = tonumber(upcoming_dogs)
+
+	-- upkeep
+	self:_assignBadDogImages()
 end
 
 return common.class("Wolfgang", Wolfgang, Character)
