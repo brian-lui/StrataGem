@@ -21,8 +21,14 @@ function stage:init(game)
 		P2 = {self.width * 0.8, 0, self.width * 0.2, self.height * 0.3},
 	}
 	self.burst = {P1 = {}, P2 = {}}
-	self.burst.P1.frame = {x = self.x_mid - (9.5 * self.gem_width), y = self.y_mid - 3 * self.gem_height}
-	self.burst.P2.frame = {x = self.x_mid + (9.5 * self.gem_width), y = self.y_mid - 3 * self.gem_height}
+	self.burst.P1.frame = {
+		x = self.x_mid - (9.5 * self.gem_width),
+		y = self.y_mid - 3 * self.gem_height,
+	}
+	self.burst.P2.frame = {
+		x = self.x_mid + (9.5 * self.gem_width),
+		y = self.y_mid - 3 * self.gem_height,
+	}
 	local burst_width = image.ui_burst_part_red:getWidth()
 
 	for i = 1, 2 do
@@ -67,8 +73,14 @@ function stage:init(game)
 	}
 
 	self.character = {
-		P1 = {x = self.x_mid - (8.2 * self.gem_width), y = self.y_mid - (4.6 * self.gem_height)},
-		P2 = {x = self.x_mid + (8.2 * self.gem_width), y = self.y_mid - (4.6 * self.gem_height)}
+		P1 = {
+			x = self.x_mid - (8.2 * self.gem_width),
+			y = self.y_mid - (4.6 * self.gem_height),
+		},
+		P2 = {
+			x = self.x_mid + (8.2 * self.gem_width),
+			y = self.y_mid - (4.6 * self.gem_height),
+		}
 	}
 
 	self.timer = {x = self.x_mid, y = self.height * 0.3}

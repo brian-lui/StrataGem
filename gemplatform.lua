@@ -79,19 +79,21 @@ function GemPlatform:destroy(delay)
 end
 
 function GemPlatform:update(dt)
+	local game = self.game
 	self.pic:update(dt)
 	local player = self.owner
 	local loc = self.hand_idx
 
 	-- set spin and redness
-	local destroyed_damage_particles = self.game.particles:getCount("destroyed", "Damage", player.enemy.player_num)
-	local destroyed_healing_particles = self.game.particles:getCount("destroyed", "Healing", player.player_num)
-	local displayed_damage = (player.hand.turn_start_damage + destroyed_damage_particles/3 - destroyed_healing_particles/5) * 0.25
+	local destroyed_damage_particles = game.particles:getCount("destroyed", "Damage", player.enemy.player_num)
+	local destroyed_healing_particles = game.particles:getCount("destroyed", "Healing", player.player_num)
+	local displayed_damage = (player.hand.turn_start_damage +
+		destroyed_damage_particles / 3 - destroyed_healing_particles / 5) * 0.25
 
 	if displayed_damage >= loc then	-- fully red, full spin
 		self.redness = math.min(self.redness + 16, 255)
 		if self.redness == 255 and not self.glow_startframe then
-			self.glow_startframe = self.game.frame
+			self.glow_startframe = game.frame
 		end
 		self:setSpin(0.02)
 	elseif displayed_damage > (loc - 1) and displayed_damage < loc then
@@ -111,7 +113,12 @@ function GemPlatform:update(dt)
 	if make_a_dust and loc ~= 1 then
 		local x_adj = (math.random() - 0.5) * self.pic.width * 0.2
 		local y_adj = (math.random() - 0.5) * self.pic.height * 0.2
-		self.game.particles.dust.generatePlatformSpin(self.game, self.pic.x + x_adj, self.pic.y + y_adj, math.abs(current_spin))
+		game.particles.dust.generatePlatformSpin(
+			game,
+			self.pic.x + x_adj,
+			self.pic.y + y_adj,
+			math.abs(current_spin)
+		)
 	end
 
 	self.pic.rotation = self.pic.rotation + current_spin

@@ -77,7 +77,7 @@ function Heath:init(...)
 
 	self.burned_this_turn = false -- whether fires have burned already
 
-	self.pending_fires = {0, 0, 0, 0, 0, 0, 0, 0} -- fires for horizontal matches generated at t0
+	self.pending_fires = {0, 0, 0, 0, 0, 0, 0, 0} -- match fires generated at t0
 	self.ready_fires = {0, 0, 0, 0, 0, 0, 0, 0} -- fires at t1, ready to burn
 	self.pending_gem_cols = {} -- pending gems, for extinguishing of ready_fires
 end
@@ -260,8 +260,12 @@ function Boom._generateBoom(game, owner, x, y, delay_frames)
 	local x_dest2 = x + 1.5 * x_vel
 
 	for i, p in ipairs(booms) do
-		local y_func1 = function() return y + p.t * y_vel + p.t^2 * gravity end
-		local y_func2 = function() return y + (p.t + 1) * y_vel + (p.t + 1)^2 * gravity end
+		local y_func1 = function()
+			return y + p.t * y_vel + p.t^2 * gravity
+		end
+		local y_func2 = function()
+			return y + (p.t + 1) * y_vel + (p.t + 1)^2 * gravity
+		end
 		local rotation_func1 = function()
 			return math.atan2(y_vel + p.t * 2 * gravity, x_vel) - (math.pi * 0.5)
 		end
@@ -272,9 +276,20 @@ function Boom._generateBoom(game, owner, x, y, delay_frames)
 		p.transparency = 0
 		p:wait(delay_frames + (i - 1)  * 4)
 		p:change{duration = 0, transparency = 255}
-		p:change{duration = 60, x = x_dest1, y = y_func1, rotation = rotation_func1}
-		p:change{duration = 30, x = x_dest2, y = y_func2, rotation = rotation_func2,
-			transparency = 0, remove = true}
+		p:change{
+			duration = 60,
+			x = x_dest1,
+			y = y_func1,
+			rotation = rotation_func1,
+		}
+		p:change{
+			duration = 30,
+			x = x_dest2,
+			y = y_func2,
+			rotation = rotation_func2,
+			transparency = 0,
+			remove = true,
+		}
 	end
 end
 
@@ -406,7 +421,13 @@ function Heath:beforeMatch()
 		local top_gem = gem.row == grid:getFirstEmptyRow(gem.column, true) + 1
 		if self.player_num == gem.owner and gem.is_in_a_horizontal_match and top_gem then
 			self.pending_fires[gem.column] = self.FIRE_EXIST_TURNS
-			self.fx.boom.generate(game, self, gem.row, gem.column, game.GEM_EXPLODE_FRAMES)
+			self.fx.boom.generate(
+				game,
+				self,
+				gem.row,
+				gem.column,
+				game.GEM_EXPLODE_FRAMES
+			)
 		end
 	end
 end
@@ -420,9 +441,7 @@ function Heath:afterMatch()
 	local fire_sound = false
 	for i in grid:cols() do
 		if self.pending_fires[i] > 0 and not self.is_supering then
-			print("pending fire in column " .. i)
 			if self:_columnHasParticle(i) then
-				print("overwriting old fire")
 				-- when a new fire overwrites an old fire, overwrite the image
 				-- by immediately updating turns_remaining instead of at cleanup
 				local particle = self:_getParticle(i)
@@ -498,19 +517,24 @@ end
 
 -- We only need to store fire duration. Column is provided by the position
 function Heath:serializeSpecials()
-	ret = ""
+	local ret = ""
 	for i in self.game.grid:cols() do ret = ret .. self.ready_fires[i] end
 	return ret
 end
 
 function Heath:deserializeSpecials(str)
-	print("string received: " .. str)
 	for i = 1, #str do
 		local col = i
 		local turns_remaining = tonumber(str:sub(i, i))
 		self.ready_fires[col] = turns_remaining
 		if turns_remaining > 0 then
-			self.fx.smallFire.generateSmallFire(self.game, self, col, nil, turns_remaining)
+			self.fx.smallFire.generateSmallFire(
+				self.game,
+				self,
+				col,
+				nil,
+				turns_remaining
+			)
 		end
 	end
 end

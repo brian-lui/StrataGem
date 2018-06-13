@@ -99,7 +99,7 @@ function FoamDroplet:remove()
 	self.manager.allParticles.CharEffects[self.ID] = nil
 end
 
-function FoamDroplet.generate(game, owner, col)
+function FoamDroplet.generate(game, owner, col, delay_frames)
 	local grid = game.grid
 	local image_table = {1, 1, 1, 1, 1, 1, 1, 2, 2, 3}
 	local image_index = image_table[math.random(#image_table)]
@@ -126,8 +126,12 @@ function FoamDroplet.generate(game, owner, col)
 	local gravity = image.GEM_HEIGHT * 12
 	local x_dest1 = x + 1 * x_vel
 	local x_dest2 = x + 1.5 * x_vel
-	local y_func1 = function() return y + p.t * y_vel + p.t^2 * gravity end
-	local y_func2 = function() return y + (p.t + 1) * y_vel + (p.t + 1)^2 * gravity end
+	local y_func1 = function()
+		return y + p.t * y_vel + p.t^2 * gravity
+	end
+	local y_func2 = function()
+		return y + (p.t + 1) * y_vel + (p.t + 1)^2 * gravity
+	end
 	local rotation_func1 = function()
 		return math.atan2(y_vel + p.t * 2 * gravity, x_vel) - (math.pi * 0.5)
 	end
@@ -141,8 +145,19 @@ function FoamDroplet.generate(game, owner, col)
 		p:change{duration = 0, transparency = 255}
 	end
 
-	p:change{duration = 45, x = x_dest1, y = y_func1, rotation = rotation_func1}
-	p:change{duration = 15, x = x_dest2, y = y_func2, rotation = rotation_func2, remove = true}
+	p:change{
+		duration = 45,
+		x = x_dest1,
+		y = y_func1,
+		rotation = rotation_func1,
+	}
+	p:change{
+		duration = 15,
+		x = x_dest2,
+		y = y_func2,
+		rotation = rotation_func2,
+		remove = true,
+	}
 end
 FoamDroplet = common.class("FoamDroplet", FoamDroplet, Pic)
 
@@ -260,7 +275,7 @@ function Splatter:remove()
 	self.manager.allParticles.CharEffects[self.ID] = nil
 end
 
-function Splatter.generate(game, owner, x, y, img)
+function Splatter.generate(game, owner, x, y, img, delay_frames)
 	local stage = game.stage
 	local params = {
 		x = x,
@@ -269,7 +284,7 @@ function Splatter.generate(game, owner, x, y, img)
 		owner = owner,
 		player_num = owner.player_num,
 	}
-	for i = 1, math.random(2, 4) do
+	for _ = 1, math.random(2, 4) do
 		local p = common.instance(Splatter, game.particles, params)
 
 		local x_vel = stage.gem_width * (math.random() - 0.5) * 4
@@ -277,8 +292,12 @@ function Splatter.generate(game, owner, x, y, img)
 		local gravity = stage.gem_height * 2.5
 		local x_dest1 = x + 1 * x_vel
 		local x_dest2 = x + 1.5 * x_vel
-		local y_func1 = function() return y + p.t * y_vel + p.t^2 * gravity end
-		local y_func2 = function() return y + (p.t + 1) * y_vel + (p.t + 1)^2 * gravity end
+		local y_func1 = function()
+			return y + p.t * y_vel + p.t^2 * gravity
+		end
+		local y_func2 = function()
+			return y + (p.t + 1) * y_vel + (p.t + 1)^2 * gravity
+		end
 		local rotation_func1 = function()
 			return math.atan2(y_vel + p.t * 2 * gravity, x_vel) - (math.pi * 0.5)
 		end
@@ -292,9 +311,20 @@ function Splatter.generate(game, owner, x, y, img)
 			p:change{duration = 0, transparency = 255}
 		end
 
-		p:change{duration = 30, x = x_dest1, y = y_func1, rotation = rotation_func1}
-		p:change{duration = 15, x = x_dest2, y = y_func2, rotation = rotation_func2,
-			transparency = 0, remove = true}
+		p:change{
+			duration = 30,
+			x = x_dest1,
+			y = y_func1,
+			rotation = rotation_func1,
+		}
+		p:change{
+			duration = 15,
+			x = x_dest2,
+			y = y_func2,
+			rotation = rotation_func2,
+			transparency = 0,
+			remove = true,
+		}
 	end
 end
 
@@ -366,17 +396,15 @@ end
 
 function HealingCloud.generate(game, owner, col)
 	local grid = game.grid
-	local stage = game.stage
 
 	local y = grid.y[owner.CLOUD_ROW]
 	local x = grid.x[col]
-	local sign = owner.player_num == 2 and 1 or -1
 	local img = owner.special_images.cloud
 	local duration = owner.CLOUD_SLIDE_DURATION
 	local img_width = img:getWidth()
 	local img_height = img:getHeight()
 	local draw_order = col % 2 == 0 and 2 or 3
-	
+
 	local params = {
 		x = x,
 		y = y,
@@ -405,28 +433,35 @@ function HealingCloud.generate(game, owner, col)
 	-- blue dust vortexing
 	local DUST_FADE_IN_DURATION = 10
 	local dust_tween_duration = duration - DUST_FADE_IN_DURATION
-	for i = 1, 96 do
+	for _ = 1, 96 do
 		local dust_distance = img_width * (math.random() + 1)
 		local dust_rotation = math.random() < 0.5 and 30 or -30
 		local dust_p_type = math.random() < 0.5 and "Dust" or "OverDust"
 		local dust_image = image.lookup.smalldust("blue", false)
- 		local angle = math.random() * math.pi * 2
- 		local x_start = dust_distance * math.cos(angle) + x
- 		local y_start = dust_distance * math.sin(angle) + y
- 		local x_dest = img_width * 0.7 * (math.random() - 0.5) + x
- 		local y_dest = img_height * 0.5 * (math.random() - 0.5) + y
+		local angle = math.random() * math.pi * 2
+		local x_start = dust_distance * math.cos(angle) + x
+		local y_start = dust_distance * math.sin(angle) + y
+		local x_dest = img_width * 0.7 * (math.random() - 0.5) + x
+		local y_dest = img_height * 0.5 * (math.random() - 0.5) + y
 
- 		local p = common.instance(game.particles.dust, game.particles, x_start, y_start, dust_image, dust_p_type)
- 		p.transparency = 0
- 		p:change{duration = DUST_FADE_IN_DURATION, transparency = 255}
- 		p:change{
- 			duration = dust_tween_duration,
- 			rotation = dust_rotation,
- 			x = x_dest,
- 			y = y_dest,
- 			easing = "inQuart",
- 			remove = true,
- 		}
+		local dust = common.instance(
+			game.particles.dust,
+			game.particles,
+			x_start,
+			y_start,
+			dust_image,
+			dust_p_type
+		)
+		dust.transparency = 0
+		dust:change{duration = DUST_FADE_IN_DURATION, transparency = 255}
+		dust:change{
+			duration = dust_tween_duration,
+			rotation = dust_rotation,
+			x = x_dest,
+			y = y_dest,
+			easing = "inQuart",
+			remove = true,
+		}
 	end
 end
 
@@ -437,7 +472,9 @@ function HealingCloud:update(dt)
 	if self.elapsed_frames >= self.frames_between_droplets then
 		local destination_y = grid.y[grid:getFirstEmptyRow(self.col, true)] + 0.5 * image.GEM_WIDTH
 		local droplet_loc = table.remove(self.droplet_x, math.random(#self.droplet_x))
-		if #self.droplet_x == 0 then self.droplet_x = {-1.5, -0.5, 0.5, 1.5} end
+		if #self.droplet_x == 0 then
+			self.droplet_x = {-1.5, -0.5, 0.5, 1.5}
+		end
 		local x = self.x + self.width * 0.75 * ((droplet_loc + (math.random() - 0.5)) * 0.25)
 		Droplet.generate(self.game, self.owner, x, self.y, destination_y)
 		self.elapsed_frames = 0
@@ -525,7 +562,13 @@ function MatchDust.generate(game, owner, match_list)
 			}
 
 			local p = common.instance(MatchDust, game.particles, params)
-			p:change{duration = 120, x = x_dest, y = y_dest, easing = "inCubic", remove = true}
+			p:change{
+				duration = 120,
+				x = x_dest,
+				y = y_dest,
+				easing = "inCubic",
+				remove = true,
+			}
 		end
 	end
 
@@ -544,14 +587,19 @@ Walter.fx = {
 -------------------------------------------------------------------------------
 
 function Walter:_makeCloud(column, delay)
-	self.game.queue:add(delay, self.fx.healingCloud.generate, self.game, self, column)
+	self.game.queue:add(
+		delay,
+		self.fx.healingCloud.generate,
+		self.game,
+		self,
+		column
+	)
 end
 
 function Walter:_activateSuper()
 	local game = self.game
 	local grid = game.grid
 
-	local delay = 0
 	local explode_delay, particle_delay = 0, 0
 
 	-- find highest column
@@ -563,7 +611,8 @@ function Walter:_activateSuper()
 
 	if col ~= -1 then
 		for row = grid.BOTTOM_ROW, start_row, -1 do
-			delay = (grid.BOTTOM_ROW - row) * self.SPOUT_SPEED + self.FOAM_APPEAR_DURATION - game.GEM_EXPLODE_FRAMES
+			local delay = (grid.BOTTOM_ROW - row) * self.SPOUT_SPEED +
+				self.FOAM_APPEAR_DURATION - game.GEM_EXPLODE_FRAMES
 			local gem = grid[row][col].gem
 			gem:setOwner(self.player_num)
 			local current_explode_delay, current_particle_delay = grid:destroyGem{
@@ -574,7 +623,6 @@ function Walter:_activateSuper()
 			}
 			explode_delay = math.max(explode_delay, current_explode_delay)
 			particle_delay = math.max(particle_delay, current_particle_delay)
-			print("total walter delay for this gem:", explode_delay + particle_delay)
 		end
 
 		self.fx.foam.generate(self.game, self, col)
@@ -627,11 +675,8 @@ function Walter:beforeGravity()
 end
 
 function Walter:beforeTween()
-	local game = self.game
-	local grid = game.grid
-
 	self.is_supering = false
-	game:brightenScreen(self.player_num)
+	self.game:brightenScreen(self.player_num)
 end
 
 function Walter:beforeMatch()
@@ -660,14 +705,14 @@ function Walter:beforeMatch()
 
 	-- get which columns already have clouds
 	local cloud_in_col = {}
-	for cloud in self.game.particles:getInstances("CharEffects", self.player_num, "WalterCloud") do
+	for cloud in game.particles:getInstances("CharEffects", self.player_num, "WalterCloud") do
 		cloud_in_col[cloud.col] = true
 	end
 
 	-- make new cloud animations
-	for col in self.game.grid:cols() do
+	for col in game.grid:cols() do
 		if self.pending_clouds[col] and not cloud_in_col[col] and
-			not self.this_turn_already_created_cloud[col] then
+		not self.this_turn_already_created_cloud[col] then
 			self:_makeCloud(col, frames_until_cloud_forms)
 			self.this_turn_already_created_cloud[col] = true
 		end

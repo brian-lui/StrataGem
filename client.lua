@@ -25,7 +25,11 @@ function Client:connect()
 		print("Connected to server, sending user data")
 		self.connected = true
 		self.client_socket:settimeout(0)
-		local blob = {type = "connect", version = self.game.VERSION, name = settings.player.name}
+		local blob = {
+			type = "connect",
+			version = self.game.VERSION,
+			name = settings.player.name,
+		}
 		self:send(blob)
 	else
 		print("Server not found lol. Error code:")
@@ -259,10 +263,6 @@ function Client:sendStateConfirmation()
 end
 
 function Client:receiveStateConfirmation(recv)
-	--[[
-	assert(self.game.current_phase == "NetplayWaitForConfirmation",
-		"Received state confirmation in wrong phase " .. self.game.current_phase .. "!")
-	--]]
 	assert(self.our_state == recv.state, "Received state confirmation doesn't match!")
 	self.state_confirmed = true
 end

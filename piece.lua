@@ -245,8 +245,11 @@ function Piece:getColumns(shift)
 		for i = 1, self.size do
 			ret[i] = false
 			for j = 1, grid.COLUMNS do
-				local in_this_column = pointIsInRect(self.gems[i].x + shift, self.gems[i].y,
-					table.unpack(grid.active_rect[j]))
+				local in_this_column = pointIsInRect(
+					self.gems[i].x + shift,
+					self.gems[i].y,
+					table.unpack(grid.active_rect[j])
+				)
 				if in_this_column then ret[i] = j end
 			end
 		end
@@ -254,8 +257,11 @@ function Piece:getColumns(shift)
 	elseif not self.is_horizontal then
 		for i = 1, self.size do ret[i] = false	end -- set array length
 		for j = 1, grid.COLUMNS do
-			local in_this_column = pointIsInRect(self.gems[1].x + shift, self.gems[1].y,
-				table.unpack(grid.active_rect[j]))
+			local in_this_column = pointIsInRect(
+				self.gems[1].x + shift,
+				self.gems[1].y,
+				table.unpack(grid.active_rect[j])
+			)
 			if in_this_column then
 				for k = 1, #ret do ret[k] = j end
 			end
@@ -364,12 +370,13 @@ end
 
 -- Generates dust when playing is holding the piece.
 function Piece:generateDust()
-	if self.game.frame % 12 == 0 then
+	local game = self.game
+	if game.frame % 12 == 0 then
 		for i = 1, self.size do
 			local gem = self.gems[i]
 			local x_drift = (math.random() - 0.5) * gem.width
 			local y_drift = (math.random() - 0.5) * gem.height
-			self.game.particles.dust.generateFalling(self.game, gem, x_drift, y_drift)
+			game.particles.dust.generateFalling(game, gem, x_drift, y_drift)
 		end
 	end
 end
@@ -381,7 +388,7 @@ function Piece:select()
 	self:resolve()
 	for i = 1, self.size do -- generate some particles!
 		local x, y, color = self.gems[i].x, self.gems[i].y, self.gems[i].color
-		game.particles.dust.generateFountain(self.game, x, y, color, math.random(2, 6))
+		game.particles.dust.generateFountain(game, x, y, color, math.random(2, 6))
 	end
 end
 

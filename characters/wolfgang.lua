@@ -587,7 +587,14 @@ function Wolfgang:beforeMatch()
 
 	-- create the colorwords
 	for color, pos in pairs(create_words) do
-		self.fx.colorWord.generate(self.game, self, pos.x, pos.y, color, self.game.GEM_EXPLODE_FRAMES)
+		self.fx.colorWord.generate(
+			self.game,
+			self,
+			pos.x,
+			pos.y,
+			color,
+			self.game.GEM_EXPLODE_FRAMES
+		)
 	end
 
 	return delay

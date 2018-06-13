@@ -44,7 +44,14 @@ function Pic:init(game, tbl)
 
 	self.width = self.image:getWidth()
 	self.height = self.image:getHeight()
-	self.quad = love.graphics.newQuad(0, 0, self.width, self.height, self.width, self.height)
+	self.quad = love.graphics.newQuad(
+		0,
+		0,
+		self.width,
+		self.height,
+		self.width,
+		self.height
+	)
 	self.quad_data = {}
 end
 
@@ -56,19 +63,20 @@ function Pic:create(params)
 	if params.container then
 		assert(params.name or params.counter, "Container specified without name or counter!")
 	end
-	
+
 	return common.instance(self, params.game, params)
 end
 
 --[[ Takes the following optional table arguments:
-		h_flip: whether to draw the image flipped around the horizontal axis
-		v_flip: whether to draw the image flipped around the vertical axis
-		x, y: x or y position to draw the image at
-		rotation: rotation number to draw
-		scale: scaling to draw
-		RGBTable: colors to draw, given as {red, green, blue, alpha}
-		image: image to draw
-		darkened: draw darker (when a pop-up menu is onscreen). Overridden by force_max_alpha boolean
+	h_flip: whether to draw the image flipped around the horizontal axis
+	v_flip: whether to draw the image flipped around the vertical axis
+	x, y: x or y position to draw the image at
+	rotation: rotation number to draw
+	scale: scaling to draw
+	RGBTable: colors to draw, given as {red, green, blue, alpha}
+	image: image to draw
+	darkened: draw darker (when pop-up menu is active).
+		Overridden by force_max_alpha boolean
 --]]
 function Pic:draw(params)
 	if self.transparency == 0 then return end
@@ -81,7 +89,11 @@ function Pic:draw(params)
 		rgbt[4] = self.transparency or 255
 
 		if params.darkened and not self.force_max_alpha then
-			love.graphics.setColor(params.darkened * 255, params.darkened * 255, params.darkened * 255)
+			love.graphics.setColor(
+				params.darkened * 255,
+				params.darkened * 255,
+				params.darkened * 255
+			)
 		elseif params.RGBTable then
 			love.graphics.setColor(params.RGBTable)
 		elseif self.transparency then
@@ -138,7 +150,11 @@ function Pic:remove()
 end
 
 function Pic:getRect()
-	return self.x - (self.width / 2), self.y - (self.height / 2), self.width, self.height
+	return
+		self.x - (self.width / 2),
+		self.y - (self.height / 2),
+		self.width,
+		self.height
 end
 
 -- Instantly swaps current image
@@ -146,7 +162,14 @@ function Pic:newImage(img)
 	self.image = img
 	self.width = img:getWidth()
 	self.height = img:getHeight()
-	self.quad = love.graphics.newQuad(0, 0, self.width, self.height, self.width, self.height)
+	self.quad = love.graphics.newQuad(
+		0,
+		0,
+		self.width,
+		self.height,
+		self.width,
+		self.height
+	)
 end
 
 -- fades in a new image over the previous one, with optional delay time.
@@ -210,7 +233,15 @@ end
 -- create the move_func that's updated each pic:update()
 local function createMoveFunc(self, target)
 	-- convert numbers into function equivalents
-	local functionize = {"x", "y", "rotation", "transparency", "scaling", "x_scaling", "y_scaling"}
+	local functionize = {
+		"x",
+		"y",
+		"rotation",
+		"transparency",
+		"scaling",
+		"x_scaling",
+		"y_scaling",
+	}
 	for i = 1, #functionize do
 		local item = functionize[i]
 		if target[item] then
@@ -232,7 +263,12 @@ local function createMoveFunc(self, target)
 	self.remove_on_exit = target.remove
 	self.exit_func = target.exit_func
 	self.t = 0
-	self.tweening = tween.new(target.duration, self, target.tween_target, target.easing)
+	self.tweening = tween.new(
+		target.duration,
+		self,
+		target.tween_target,
+		target.easing
+	)
 	if target.debug then print("duration:", target.duration) end
 
 	-- set the x/y function depending on if it's a bezier or not
@@ -251,7 +287,7 @@ local function createMoveFunc(self, target)
 		local start_y_pct = self.quad_data.y_pct or (target.quad.y and 0 or 1)
 		local end_y_pct = target.quad.y_percentage or 1
 
-		quad_func = function(_self, dt)
+		quad_func = function(_self)
 			local cur_x_pct = (end_x_pct - start_x_pct) * _self.t + start_x_pct
 			local cur_width = cur_x_pct * _self.width
 			local cur_x = target.quad.x and target.quad.x_anchor * (1-_self.t) * _self.width * end_x_pct or 0

@@ -192,7 +192,8 @@ function Character:canPlacePiece()
 end
 
 function Character:canUseSuper()
-	return (self.mp >= self.SUPER_COST) and (self.CAN_SUPER_AND_PLAY_PIECE or not self.dropped_piece)
+	return (self.mp >= self.SUPER_COST) and
+		(self.CAN_SUPER_AND_PLAY_PIECE or not self.dropped_piece)
 end
 
 return common.class("Character", Character)

@@ -26,7 +26,13 @@ end
 function title:init()
 	local stage = self.stage
 	self.timeStep, self.timeBucket = 1/60, 0
-	title.ui = {clickable = {}, static = {}, fades = {}, popup_clickable = {}, popup_static = {}}
+	title.ui = {
+		clickable = {},
+		static = {},
+		fades = {},
+		popup_clickable = {},
+		popup_static = {},
+	}
 	self:_createSettingsMenu(title)
 
 	title.createButton(self, {
@@ -79,11 +85,14 @@ function title:enter()
 	self.settings_menu_open = false
 	if self.sound:getCurrentBGM() ~= "bgm_menu" then
 		self.sound:stopBGM()
-		title.ui.static.logo:change{duration = 45, exit_func = function()
+		title.ui.static.logo:change{
+			duration = 45,
+			exit_func = function()
 				if self.sound:getCurrentBGM() ~= "bgm_menu" then
 					self.sound:newBGM("bgm_menu", true)
 				end
-			end}
+			end,
+		}
 	end
 	title.current_background = common.instance(self.background.checkmate, self)
 
@@ -97,7 +106,7 @@ function title:enter()
 		end_transparency = 0,
 		easing = "linear",
 		remove = true,
-	})		
+	})
 end
 
 function title:openSettingsMenu()

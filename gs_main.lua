@@ -7,7 +7,13 @@ local gs_main = {name = "gs_main"}
 
 function gs_main:init()
 	self.camera = common.instance(require "camera")
-	gs_main.ui = {clickable = {}, static = {}, fades = {}, popup_clickable = {}, popup_static = {}}
+	gs_main.ui = {
+		clickable = {},
+		static = {},
+		fades = {},
+		popup_clickable = {},
+		popup_static = {},
+	}
 	gs_main.ui.static.burst = {update = function() end}
 end
 
@@ -114,9 +120,10 @@ end
 
 -- draw all the non-gem screen elements: super bar, sprite
 function gs_main:drawScreenElements(params)
+	local particles = self.particles
 	-- under-platform trails
-	for _, v in pairs(self.particles.allParticles.PlatformTinyStar) do v:draw(params) end
-	for _, v in pairs(self.particles.allParticles.PlatformStar) do v:draw(params) end
+	for _, v in pairs(particles.allParticles.PlatformTinyStar) do v:draw(params) end
+	for _, v in pairs(particles.allParticles.PlatformStar) do v:draw(params) end
 	gs_main.ui.static.basin:draw(params)
 	self.uielements.timer:draw(params)	-- timer bar
 

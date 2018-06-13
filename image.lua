@@ -204,25 +204,49 @@ function image.lookup.smalldust(color, big_possible)
 		return image.lookup.stardust(color)
 	else
 		if color == "red" then
-			local tbl = {image.particles_dust_red1, image.particles_dust_red2, image.particles_dust_red3}
+			local tbl = {
+				image.particles_dust_red1,
+				image.particles_dust_red2,
+				image.particles_dust_red3,
+			}
 			return tbl[math.random(#tbl)]
 		elseif color == "blue" then
-			local tbl = {image.particles_dust_blue1, image.particles_dust_blue2, image.particles_dust_blue3}
+			local tbl = {
+				image.particles_dust_blue1,
+				image.particles_dust_blue2,
+				image.particles_dust_blue3,
+			}
 			return tbl[math.random(#tbl)]
 		elseif color == "green" then
-			local tbl = {image.particles_dust_green1, image.particles_dust_green2, image.particles_dust_green3}
+			local tbl = {
+				image.particles_dust_green1,
+				image.particles_dust_green2,
+				image.particles_dust_green3,
+			}
 			return tbl[math.random(#tbl)]
 		elseif color == "yellow" then
-			local tbl = {image.particles_dust_yellow1, image.particles_dust_yellow2, image.particles_dust_yellow3}
+			local tbl = {
+				image.particles_dust_yellow1,
+				image.particles_dust_yellow2,
+				image.particles_dust_yellow3,
+			}
 			return tbl[math.random(#tbl)]
 		elseif color == "none" then
 			return image.dummy
 		elseif color == "wild" then
 			local tbl = {
-				image.particles_dust_red1, image.particles_dust_red2, image.particles_dust_red3,
-				image.particles_dust_blue1, image.particles_dust_blue2, image.particles_dust_blue3,
-				image.particles_dust_green1, image.particles_dust_green2, image.particles_dust_green3,
-				image.particles_dust_yellow1, image.particles_dust_yellow2, image.particles_dust_yellow3,
+				image.particles_dust_red1,
+				image.particles_dust_red2,
+				image.particles_dust_red3,
+				image.particles_dust_blue1,
+				image.particles_dust_blue2,
+				image.particles_dust_blue3,
+				image.particles_dust_green1,
+				image.particles_dust_green2,
+				image.particles_dust_green3,
+				image.particles_dust_yellow1,
+				image.particles_dust_yellow2,
+				image.particles_dust_yellow3,
 			}
 			return tbl[math.random(#tbl)]
 		else

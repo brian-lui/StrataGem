@@ -1,5 +1,3 @@
-local love = _G.love
-
 local image = require 'image'
 local common = require 'class.commons'
 local Pic = require 'pic'
@@ -40,12 +38,14 @@ function Timer:init(game)
 end
 
 function Timer:update(dt)
+	local game = self.game
+	local phase = game.phase
 	-- set percentage of timer to show
-	local w = (self.game.phase.time_to_next / self.game.phase.INIT_TIME_TO_NEXT) * self.timerbar.width
+	local w = (phase.time_to_next / phase.INIT_TIME_TO_NEXT) * self.timerbar.width
 	local x_offset = (self.timerbar.width - w) * 0.5
 	self.timerbar:setQuad(x_offset, 0, w, self.timerbar.height)
 
-	if self.game.phase.time_to_next == 0 then -- fade out
+	if phase.time_to_next == 0 then -- fade out
 		self.timerbar.transparency = math.max(self.timerbar.transparency - self.FADE_SPEED, 0)
 	else -- fade in
 		self.timerbar.transparency = math.min(self.timerbar.transparency + self.FADE_SPEED, 255)
@@ -54,7 +54,7 @@ function Timer:update(dt)
 
 	-- update the timer text (3/2/1 countdown)
 	local previous_time_remaining_int = self.time_remaining_int
-	local time_remaining = (self.game.phase.time_to_next * self.game.timeStep)
+	local time_remaining = (phase.time_to_next * game.timeStep)
 	self.time_remaining_int = math.ceil(time_remaining * self.text_multiplier)
 
 	if time_remaining <= (3 / self.text_multiplier) and time_remaining > 0 then
@@ -63,7 +63,7 @@ function Timer:update(dt)
 		self.timertext.transparency = self.text_transparency(t)
 		if self.time_remaining_int < previous_time_remaining_int then
 			self.timertext:newImage(image["ui_timer_" .. self.time_remaining_int])
-			self.game.sound:newSFX("countdown"..self.time_remaining_int)
+			game.sound:newSFX("countdown"..self.time_remaining_int)
 		end
 	else
 		self.timertext.transparency = 0
@@ -209,7 +209,13 @@ function Super:_generateSingleTwinkle()
 		disappear_rotation = disappear_rotation * -1
 	end
 
-	local p = Pic:create{game = self.game, x = x, y = y, rotation = init_rotation, image = img}
+	local p = Pic:create{
+		game = self.game,
+		x = x,
+		y = y,
+		rotation = init_rotation,
+		image = img,
+	}
 	p:change{duration = 0, scaling = 0}
 	p:change{duration = 30, scaling = 1, rotation = appear_rotation}
 	p:change{duration = 30, scaling = 0, rotation = disappear_rotation, remove = true}
@@ -273,8 +279,17 @@ function Super:action()
 		local word = self.super_word
 		local is_supering = character:toggleSuper() -- state
 		if is_supering then
-			word:change{duration = 0, transparency = 128, scaling = 2}
-			word:change{duration = 15, transparency = 255, scaling = 1, easing = "inCubic"}
+			word:change{
+				duration = 0,
+				transparency = 128,
+				scaling = 2,
+			}
+			word:change{
+				duration = 15,
+				transparency = 255,
+				scaling = 1,
+				easing = "inCubic",
+			}
 		else
 			word:change{duration = 0, transparency = 0, scaling = 1}
 		end
@@ -299,8 +314,13 @@ function Super:update(dt)
 	local displayed_mp = math.min(character.MAX_MP, character.mp - onscreen_mp)
 	local fill_percent = 0.12 + 0.76 * displayed_mp / character.MAX_MP
 
-	self.t = self.t % self.GLOW_PERIOD + 1 
-	meter:setQuad(0, meter.height * (1 - fill_percent), meter.width, meter.height * fill_percent)
+	self.t = self.t % self.GLOW_PERIOD + 1
+	meter:setQuad(
+		0,
+		meter.height * (1 - fill_percent),
+		meter.width,
+		meter.height * fill_percent
+	)
 
 	if character.is_supering then
 		glow.transparency = 255
@@ -357,7 +377,11 @@ local function drawUnderGemShadow(self, piece)
 	for i = 1, piece.size do
 		local gem_shadow_x = piece.gems[i].x + 0.1 * stage.gem_width
 		local gem_shadow_y = piece.gems[i].y + 0.1 * stage.gem_height
-		piece.gems[i]:draw{pivot_x = gem_shadow_x, pivot_y = gem_shadow_y, RGBTable = {0, 0, 0, 24}}
+		piece.gems[i]:draw{
+			pivot_x = gem_shadow_x,
+			pivot_y = gem_shadow_y,
+			RGBTable = {0, 0, 0, 24},
+		}
 	end
 end
 
@@ -382,7 +406,11 @@ local function drawPlacementShadow(self, piece, shift)
 			show[i].y = grid.y[i + row_adj]
 		end
 		if show[i].x and show[i].y then
-			piece.gems[i]:draw{pivot_x = show[i].x, pivot_y = show[i].y, RGBTable = {0, 0, 0, 128}}
+			piece.gems[i]:draw{
+				pivot_x = show[i].x,
+				pivot_y = show[i].y,
+				RGBTable = {0, 0, 0, 128},
+			}
 		end
 	end
 end
@@ -402,7 +430,10 @@ local function drawDestinationShadow(self, piece, shift, account_for_doublecast)
 			-- this is bad code sorry
 			local shift_needed = first_empty_row - (5 - 1)
 			local row = gem.row + shift_needed
-			gem:draw{RGBTable = {255, 255, 255, 160}, displace_y = self.game.grid.y[row] - gem.y}
+			gem:draw{
+				RGBTable = {255, 255, 255, 160},
+				displace_y = self.game.grid.y[row] - gem.y,
+			}
 		end
 	end
 
@@ -411,7 +442,11 @@ local function drawDestinationShadow(self, piece, shift, account_for_doublecast)
 		toshow[i].x = grid.x[ drop_locs[i][1] ] -- basin c column
 		toshow[i].y = grid.y[ drop_locs[i][2] ] -- basin r row
 		if toshow[i].x and toshow[i].y then
-			piece.gems[i]:draw{pivot_x = toshow[i].x, pivot_y = toshow[i].y, RGBTable = {255, 255, 255, 160}}
+			piece.gems[i]:draw{
+				pivot_x = toshow[i].x,
+				pivot_y = toshow[i].y,
+				RGBTable = {255, 255, 255, 160},
+			}
 		end
 	end
 end
@@ -464,16 +499,24 @@ local function pieceLandedInStagingArea(game, gems, place_type)
 		game.sound:newSFX("doublecast")
 		game.sound:newSFX("fountaindoublecast")
 		for i = 1, #gems do
-			particles.dust.generateStarFountain{game = game, color = gems[i].color,
-				x = game.stage.width * (0.5 - sign * 0.1), y = y}
+			particles.dust.generateStarFountain{
+				game = game,
+				color = gems[i].color,
+				x = game.stage.width * (0.5 - sign * 0.1),
+				y = y,
+			}
 		end
 	elseif place_type == "rush" then
 		particles.words.generateRush(game, player_num)
 		game.sound:newSFX("rush")
 		game.sound:newSFX("fountainrush")
 		for i = 1, #gems do
-			particles.dust.generateStarFountain{game = game, color = gems[i].color,
-				x = game.stage.width * (0.5 + sign * 0.2), y = y}
+			particles.dust.generateStarFountain{
+				game = game,
+				color = gems[i].color,
+				x = game.stage.width * (0.5 + sign * 0.2),
+				y = y,
+			}
 		end
 	end
 end
@@ -493,7 +536,12 @@ function uielements:putPendingAtTop(delay)
 			local gem = player_gems[i]
 			local target_y = gem.y
 			gem.y = game.stage.height * -0.1
-			gem:change{y = target_y, duration = game.TWEEN_TO_LANDING_ZONE_DURATION, easing = "outQuart", remove = true}
+			gem:change{
+				duration = game.TWEEN_TO_LANDING_ZONE_DURATION,
+				y = target_y,
+				easing = "outQuart",
+				remove = true,
+			}
 
 			if gem.place_type == "double" then
 				doubles[#doubles+1] = gem
@@ -503,13 +551,35 @@ function uielements:putPendingAtTop(delay)
 		end
 		if #doubles == 2 then
 			local is_horizontal = doubles[1].row == doubles[2].row
-			game.particles.wordEffects.generateDoublecastCloud(game, doubles[1], doubles[2], is_horizontal)
-			game.queue:add(game.TWEEN_TO_LANDING_ZONE_DURATION + delay, pieceLandedInStagingArea, game, doubles, "double")
+			game.particles.wordEffects.generateDoublecastCloud(
+				game,
+				doubles[1],
+				doubles[2],
+				is_horizontal
+			)
+			game.queue:add(
+				game.TWEEN_TO_LANDING_ZONE_DURATION + delay,
+				pieceLandedInStagingArea,
+				game,
+				doubles,
+				"double"
+			)
 		end
 		if #rushes == 2 then
 			local is_horizontal = rushes[1].row == rushes[2].row
-			game.particles.wordEffects.generateRushCloud(game, rushes[1], rushes[2], is_horizontal)
-			game.queue:add(game.TWEEN_TO_LANDING_ZONE_DURATION + delay, pieceLandedInStagingArea, game, rushes, "rush")
+			game.particles.wordEffects.generateRushCloud(
+				game,
+				rushes[1],
+				rushes[2],
+				is_horizontal
+			)
+			game.queue:add(
+				game.TWEEN_TO_LANDING_ZONE_DURATION + delay,
+				pieceLandedInStagingArea,
+				game,
+				rushes,
+				"rush"
+			)
 		end
 	end
 end

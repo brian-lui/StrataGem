@@ -114,8 +114,18 @@ function Particles:reset()
 		SuperFreezeEffects = {},
 	}
 	self.count = {
-		created = {MP = {0, 0}, Damage = {0, 0}, Healing = {0, 0}, Garbage = {0, 0}},
-		destroyed = {MP = {0, 0}, Damage = {0, 0}, Healing = {0, 0}, Garbage = {0, 0}},
+		created = {
+			MP = {0, 0},
+			Damage = {0, 0},
+			Healing = {0, 0},
+			Garbage = {0, 0},
+		},
+		destroyed = {
+			MP = {0, 0},
+			Damage = {0, 0},
+			Healing = {0, 0},
+			Garbage = {0, 0},
+		},
 	}
 
 	--check to see if no_rush is being animated. 0 no animation, 1 currently being animated, 2 mouse hovering over.
@@ -140,7 +150,11 @@ function DamageParticle:init(manager, gem)
 	if not img then
 		img = image.lookup.particle_freq(randomStandardColor())
 	end
-	Pic.init(self, manager.game, {x = gem.x, y = gem.y, image = img, transparency = 0, thanks = "thanks"})
+	Pic.init(
+		self,
+		manager.game,
+		{x = gem.x, y = gem.y, image = img, transparency = 0}
+	)
 	self.owner = gem.owner
 	manager.allParticles.Damage[ID.particle] = self
 	self.manager = manager
@@ -201,8 +215,19 @@ function DamageParticle.generate(game, gem, delay_frames, force_max_alpha)
 			p:change{duration = duration, rotation = rotation, curve = curve,
 				exit_func = exit_2, remove = true}
 		else
-			p:change{duration = duration, rotation = rotation, curve = curve, exit_func = exit_1}
-			p:change{duration = drop_duration, x = drop_x, y = drop_y, exit_func = exit_2, remove = true}
+			p:change{
+				duration = duration,
+				rotation = rotation,
+				curve = curve,
+				exit_func = exit_1,
+			}
+			p:change{
+				duration = drop_duration,
+				x = drop_x,
+				y = drop_y,
+				exit_func = exit_2,
+				remove = true,
+			}
 		end
 
 		-- create damage trails
@@ -218,7 +243,12 @@ function DamageParticle.generate(game, gem, delay_frames, force_max_alpha)
 				trail.drop_duration, trail.drop_x, trail.drop_y = drop_duration, drop_x, drop_y
 			end
 
-			game.particles._damageTrail.generate(game, trail, delay_frames + i * 2, force_max_alpha)
+			game.particles._damageTrail.generate(
+				game,
+				trail,
+				delay_frames + i * 2,
+				force_max_alpha
+			)
 		end
 
 		game.particles:incrementCount("created", "Damage", gem.owner)
@@ -262,12 +292,24 @@ function DamageTrailParticle.generate(game, trail, delay_frames, force_max_alpha
 	 end
 
 	if trail.drop_duration then
-		p:change{duration = trail.duration, rotation = trail.rotation, curve = trail.curve}
-		p:change{duration = trail.drop_duration, x = trail.drop_x, y = trail.drop_y,
-			remove = true}
+		p:change{
+			duration = trail.duration,
+			rotation = trail.rotation,
+			curve = trail.curve,
+		}
+		p:change{
+			duration = trail.drop_duration,
+			x = trail.drop_x,
+			y = trail.drop_y,
+			remove = true,
+		}
 	else
-		p:change{duration = trail.duration, rotation = trail.rotation,
-			curve = trail.curve, remove = true}
+		p:change{
+			duration = trail.duration,
+			rotation = trail.rotation,
+			curve = trail.curve,
+			remove = true,
+		}
 	end
 end
 
@@ -311,8 +353,15 @@ function SuperParticle.generate(game, gem, num_particles, delay_frames, force_ma
 			img = image["particles_super_" .. randomStandardColor()]
 		end
 
-		local p = common.instance(SuperParticle, game.particles, gem.x, gem.y,
-			img, gem.owner, gem.color)
+		local p = common.instance(
+			SuperParticle,
+			game.particles,
+			gem.x,
+			gem.y,
+			img,
+			gem.owner,
+			gem.color
+		)
 		game.particles:incrementCount("created", "MP", gem.owner)
 
 		p.force_max_alpha = force_max_alpha
@@ -325,7 +374,12 @@ function SuperParticle.generate(game, gem, num_particles, delay_frames, force_ma
 
 		-- move particle
 		local duration = (0.9 + 0.2 * math.random()) * 90
-		p:change{duration = duration, curve = curve, easing = "inQuad", remove = true}
+		p:change{
+			duration = duration,
+			curve = curve,
+			easing = "inQuad",
+			remove = true,
+		}
 	end
 end
 
@@ -376,7 +430,15 @@ function HealingParticle.generate(params)
 		local curve = love.math.newBezierCurve(x, y, x2, y2, x3, y3, x4, y4)
 
 		-- create healing particle
-		local p = common.instance(HealingParticle, game.particles, x, y, img, owner, "Healing")
+		local p = common.instance(
+			HealingParticle,
+			game.particles,
+			x,
+			y,
+			img,
+			owner,
+			"Healing"
+		)
 		local duration = game.DAMAGE_PARTICLE_TO_PLATFORM_FRAMES * 1.5 + math.random() * 12
 		local rotation = math.random() * 5
 		local exit_func = function()
@@ -388,10 +450,22 @@ function HealingParticle.generate(params)
 			p:wait(delay)
 			p:change{duration = 0, transparency = 255}
 		end
-		p:change{duration = duration, rotation = rotation, curve = curve,
-			exit_func = exit_func, remove = true}
-		HealingParticle.generateTrail{game = game, x = x, y = y, owner = owner,
-			delay = delay, curve = curve, duration = duration}
+		p:change{
+			duration = duration,
+			rotation = rotation,
+			curve = curve,
+			exit_func = exit_func,
+			remove = true,
+		}
+		HealingParticle.generateTrail{
+			game = game,
+			x = x,
+			y = y,
+			owner = owner,
+			delay = delay,
+			curve = curve,
+			duration = duration,
+		}
 		game.particles:incrementCount("created", "Healing", owner.player_num)
 	end
 
@@ -410,8 +484,15 @@ function HealingParticle.generateTrail(params)
 
 	for i = 1, 3 do
 		local trail_image = image.particles_trail_healing
-		local trail = common.instance(HealingParticle, game.particles, x, y,
-			trail_image, owner, "HealingTrail")
+		local trail = common.instance(
+			HealingParticle,
+			game.particles,
+			x,
+			y,
+			trail_image,
+			owner,
+			"HealingTrail"
+		)
 		trail.scaling = 1.25 - 0.25 * i
 		trail:change{transparency = 0}
 		trail:wait(delay + i * 2)
@@ -431,8 +512,16 @@ function HealingParticle.generateTwinkle(game, platform, delay_frames)
 		local y_change = platform.height * 1.5 * (math.random() - 0.5)
 		local x = platform.owner.hand[platform.hand_idx].x + x_change
 		local y = platform.owner.hand[platform.hand_idx].y + y_change
-		local p = common.instance(HealingParticle, game.particles, x, y,
-			img, platform.owner, "HealingTrail")
+
+		local p = common.instance(
+			HealingParticle,
+			game.particles,
+			x,
+			y,
+			img,
+			platform.owner,
+			"HealingTrail"
+		)
 		p.scaling, p.transparency = 0, 0
 		p:wait(delay_frames + (i - 1) * 12)
 		p:change{duration = 0, transparency = 255}
@@ -442,7 +531,6 @@ function HealingParticle.generateTwinkle(game, platform, delay_frames)
 end
 
 HealingParticle = common.class("HealingParticle", HealingParticle, Pic)
-
 
 -------------------------------------------------------------------------------
 -- Garbage particles generated when a piece falls off a platform
@@ -487,7 +575,12 @@ function GarbageParticles.generate(game, gem, delay_frames)
 			p:wait(delay_frames)
 			p:change{duration = 0, transparency = 255}
 		end
-		p:change{duration = duration, rotation = rotation, curve = curve, remove = true}
+		p:change{
+			duration = duration,
+			rotation = rotation,
+			curve = curve,
+			remove = true,
+		}
 
 		-- create damage trails
 		for j = 1, 3 do
@@ -499,7 +592,11 @@ function GarbageParticles.generate(game, gem, delay_frames)
 				scaling = 1.25 - 0.25 * j
 			}
 
-			game.particles._damageTrail.generate(game, trail, delay_frames + j * 2)
+			game.particles._damageTrail.generate(
+				game,
+				trail,
+				delay_frames + j * 2
+			)
 		end
 		game.particles:incrementCount("created", "Garbage", gem.owner)
 	end
@@ -514,7 +611,11 @@ GarbageParticles = common.class("GarbageParticles", GarbageParticles, Pic)
 local PopParticles = {}
 function PopParticles:init(params)
 	local manager = params.manager
-	Pic.init(self, manager.game, {x = params.x, y = params.y, image = params.image})
+	Pic.init(
+		self,
+		manager.game,
+		{x = params.x, y = params.y, image = params.image}
+	)
 	manager.allParticles.PopParticles[ID.particle] = self
 	self.manager = manager
 end
@@ -542,7 +643,10 @@ function PopParticles.generate(params)
 
 	local duration = params.duration or 30
 
-	local p = common.instance(PopParticles, {manager = manager, x = x, y = y, image = img})
+	local p = common.instance(
+		PopParticles,
+		{manager = manager, x = x, y = y, image = img}
+	)
 
 	p.force_max_alpha = params.force_max_alpha
 
@@ -564,8 +668,10 @@ end
 --]]
 function PopParticles.generateReversePop(params)
 	local manager = params.game.particles
-	local p = common.instance(PopParticles, {manager = manager, x = params.x,
-		y = params.y, image = params.image})
+	local p = common.instance(
+		PopParticles,
+		{manager = manager, x = params.x, y = params.y, image = params.image}
+	)
 
 	p:change{duration = 0, transparency = 0, scaling = 4}
 	if params.delay_frames then p:wait(params.delay_frames) end
@@ -603,7 +709,11 @@ function ExplodingGem:init(params)
 		x, y, img, transparency = params.x, params.y, params.image, params.transparency
 	end
 
-	Pic.init(self, manager.game, {x = x, y = y, image = img, transparency = transparency})
+	Pic.init(
+		self,
+		manager.game,
+		{x = x, y = y, image = img, transparency = transparency}
+	)
 	manager.allParticles.ExplodingGem[ID.particle] = self
 	self.manager = manager
 end
@@ -633,7 +743,12 @@ function ExplodingGem.generate(params)
 	if params.delay_frames then p:wait(params.delay_frames) end
 
 	if params.shake then
-		p:change{duration = explode_frames, scaling = 2, easing = "inBounce", transparency = 255}
+		p:change{
+			duration = explode_frames,
+			scaling = 2,
+			easing = "inBounce",
+			transparency = 255,
+		}
 	else
 		p:change{duration = explode_frames, transparency = 255}
 	end
@@ -643,8 +758,12 @@ function ExplodingGem.generate(params)
 	if gem.owner == 3 then
 		p:change{duration = fade_frames, remove = true}
 	else
-		p:change{duration = fade_frames, transparency = 0, scaling = 2,
-			remove = true}
+		p:change{
+			duration = fade_frames,
+			transparency = 0,
+			scaling = 2,
+			remove = true,
+		}
 	end
 end
 
@@ -656,8 +775,10 @@ function ExplodingGem.generateReverseExplode(params)
 	local x, y, img = params.x, params.y, params.image
 	local duration = params.duration or game.GEM_EXPLODE_FRAMES
 
-	local p = common.instance(ExplodingGem, {manager = game.particles, x = x,
-		y = y, image = img, transparency = 255})
+	local p = common.instance(
+		ExplodingGem,
+		{manager = game.particles, x = x, y = y, image = img, transparency = 255}
+	)
 
 	if params.delay_frames then
 		p:change{transparency = 0}
@@ -698,7 +819,13 @@ function ExplodingPlatform.generate(game, platform, delay_frames)
 
 	for i = 1, 4 do
 		local todraw = image["ui_starpiece" .. i]
-		local p = common.instance(ExplodingPlatform, game.particles, x, y, todraw)
+		local p = common.instance(
+			ExplodingPlatform,
+			game.particles,
+			x,
+			y,
+			todraw
+		)
 		p.transparency = 510
 
 		if delay_frames then
@@ -759,27 +886,81 @@ function PlatformStar.generate(game, star_type)
 	-- bezier curve for bottom half movement
 	local curve_right_min = math.max(right_min * stage.width, x)
 	local curve_right = math.random(curve_right_min, right_max * stage.width)
-	local curve = love.math.newBezierCurve(x, y, curve_right, y * 0.75, curve_right, stage.y_mid)
-	local p = common.instance(PlatformStar, game.particles, x, y, todraw, "Platform" .. star_type)
-	--move functions
-	p:change{duration = duration * 0.5, curve = curve, rotation = rotation * 0.5}
-	p:change{duration = duration * 0.2, y = stage.height * 0.3, rotation = rotation * 0.7}
-	p:change{duration = duration * 0.15, y = stage.height * 0.15, rotation = rotation * 0.85,
-		transparency = 0, remove = true}
+	local curve = love.math.newBezierCurve(
+		x,
+		y,
+		curve_right,
+		y * 0.75,
+		curve_right,
+		stage.y_mid
+	)
+
+	local p = common.instance(
+		PlatformStar,
+		game.particles,
+		x,
+		y,
+		todraw,
+		"Platform" .. star_type
+	)
+	p:change{
+		duration = duration * 0.5,
+		curve = curve,
+		rotation = rotation * 0.5,
+	}
+	p:change{
+		duration = duration * 0.2,
+		y = stage.height * 0.3,
+		rotation = rotation * 0.7,
+	}
+	p:change{
+		duration = duration * 0.15,
+		y = stage.height * 0.15,
+		rotation = rotation * 0.85,
+		transparency = 0,
+		remove = true,
+	}
 
 	-- p2 star
-	local todraw = image.lookup.platform_star(2, star_type == "TinyStar")
+	--[[local]] todraw = image.lookup.platform_star(2, star_type == "TinyStar")
 	x = math.random((1-left) * stage.width, (1-right_max) * stage.width)
 	-- bezier curve for bottom half movement
 	curve_right_min = math.min((1-right_min) * stage.width, x)
 	curve_right = math.random((1-right_max) * stage.width, curve_right_min)
-	curve = love.math.newBezierCurve(x, y, curve_right, y * 0.75, curve_right, stage.y_mid)
-	p = common.instance(PlatformStar, game.particles, x, y, todraw, "Platform" .. star_type)
-	--move functions
-	p:change{duration = duration * 0.5, curve = curve, rotation = -rotation * 0.5}
-	p:change{duration = duration * 0.2, y = stage.height * 0.3, rotation = -rotation * 0.7}
-	p:change{duration = duration * 0.15, y = stage.height * 0.15, rotation = -rotation * 0.85,
-		transparency = 0, remove = true}
+	curve = love.math.newBezierCurve(
+		x,
+		y,
+		curve_right,
+		y * 0.75,
+		curve_right,
+		stage.y_mid
+	)
+
+	--[[local]] p = common.instance(
+		PlatformStar,
+		game.particles,
+		x,
+		y,
+		todraw,
+		"Platform" .. star_type
+	)
+	p:change{
+		duration = duration * 0.5,
+		curve = curve,
+		rotation = -rotation * 0.5,
+	}
+	p:change{
+		duration = duration * 0.2,
+		y = stage.height * 0.3,
+		rotation = -rotation * 0.7,
+	}
+	p:change{
+		duration = duration * 0.15,
+		y = stage.height * 0.15,
+		rotation = -rotation * 0.85,
+		transparency = 0,
+		remove = true,
+	}
 end
 
 PlatformStar = common.class("PlatformStar", PlatformStar, Pic)
@@ -808,16 +989,30 @@ function Dust.generateStarburst(game, gem, n)
 		local y_vel = (math.random() - 0.5) * 0.015 * game.stage.height
 
 		for j = 1, math.random(1, 3) do
-			local p = common.instance(Dust, game.particles, gem.x, gem.y, todraw, "OverDust")
+			local p = common.instance(
+				Dust,
+				game.particles,
+				gem.x,
+				gem.y,
+				todraw,
+				"OverDust"
+			)
 			p.RGB = {128, 128, 128}
 			local x_func = function() return x + p.t * x_vel * j end
-			--local x_func2 = function() return x + x_vel * (1 + p.t * 0.2)end
 			local y_func = function() return y + p.t * y_vel * j end
-			--local y_func2 = function() return y + y_vel * (1 + p.t * 0.2) + acc * (1 + p.t * 0.2)^2 end
 
-			p:change{duration = duration, rotation = rotation, x = x_func,
-				y = y_func, scaling = 1 + j * 0.2}
-			p:change{duration = duration * 3, transparency = 0, remove = true}
+			p:change{
+				duration = duration,
+				rotation = rotation,
+				x = x_func,
+				y = y_func,
+				scaling = 1 + j * 0.2,
+			}
+			p:change{
+				duration = duration * 3,
+				transparency = 0,
+				remove = true,
+			}
 		end
 	end
 end
@@ -830,9 +1025,21 @@ function Dust.generateYoshi(game, gem)
 	for _, sign in pairs(yoshi) do
 		local p = common.instance(Dust, game.particles, x, y, img, "OverDust")
 		p.scaling = 0.5
-		p:change{x = x + game.stage.width * 0.05 * sign, y = y - game.stage.height * 0.02,
-			duration = 30, rotation = sign, scaling = 0.8, easing = "outQuart"}
-		p:change{duration = 30, scaling = 1, transparency = 0, rotation = 1.25 * sign, remove = true}
+		p:change{
+			duration = 30,
+			x = x + game.stage.width * 0.05 * sign,
+			y = y - game.stage.height * 0.02,
+			rotation = sign,
+			scaling = 0.8,
+			easing = "outQuart",
+		}
+		p:change{
+			duration = 30,
+			scaling = 1,
+			transparency = 0,
+			rotation = 1.25 * sign,
+			remove = true,
+		}
 	end
 end
 
@@ -850,12 +1057,27 @@ function Dust.generateFountain(game, x, y, color, n)
 		local p = common.instance(Dust, game.particles, x, y, todraw, p_type)
 		local x1 = x + x_vel
 		local x2 = x + x_vel * 1.2
-		local y_func = function() return y + p.t * y_vel + p.t^2 * acc end
-		local y_func2 = function() return y + y_vel * (1 + p.t * 0.2) + acc * (1 + p.t * 0.2)^2 end
+		local y_func = function()
+			return y + p.t * y_vel + p.t^2 * acc
+		end
+		local y_func2 = function()
+			return y + y_vel * (1 + p.t * 0.2) + acc * (1 + p.t * 0.2)^2
+		end
 
-		p:change{duration = duration, rotation = rotation, x = x1, y = y_func}
-		p:change{duration = duration * 0.2, rotation = rotation * 1.2, x = x2,
-			y = y_func2, transparency = 0, remove = true}
+		p:change{
+			duration = duration,
+			rotation = rotation,
+			x = x1,
+			y = y_func,
+		}
+		p:change{
+			duration = duration * 0.2,
+			rotation = rotation * 1.2,
+			x = x2,
+			y = y_func2,
+			transparency = 0,
+			remove = true,
+		}
 	end
 end
 
@@ -884,8 +1106,12 @@ function Dust.generateBigFountain(params)
 		local p = common.instance(Dust, game.particles, x, y, img, p_type)
 		local x1 = x + x_vel
 		local x2 = x + x_vel * 1.2
-		local y_func = function() return y + p.t * y_vel + p.t^2 * acc end
-		local y_func2 = function() return y + y_vel * (1 + p.t * 0.5) + acc * (1 + p.t * 0.5)^2 end
+		local y_func = function()
+			return y + p.t * y_vel + p.t^2 * acc
+		end
+		local y_func2 = function()
+			return y + y_vel * (1 + p.t * 0.5) + acc * (1 + p.t * 0.5)^2
+		end
 
 		p.force_max_alpha = params.force_max_alpha
 
@@ -895,9 +1121,20 @@ function Dust.generateBigFountain(params)
 			p:change{duration = 0, transparency = 255}
 		end
 
-		p:change{duration = duration, rotation = rotation, x = x1, y = y_func}
-		p:change{duration = duration * 0.5, rotation = rotation * 1.5, x = x2,
-			y = y_func2, transparency = 0, remove = true}
+		p:change{
+			duration = duration,
+			rotation = rotation,
+			x = x1,
+			y = y_func,
+		}
+		p:change{
+			duration = duration * 0.5,
+			rotation = rotation * 1.5,
+			x = x2,
+			y = y_func2,
+			transparency = 0,
+			remove = true,
+		}
 	end
 end
 
@@ -940,7 +1177,13 @@ function Dust.generateStarFountain(params)
 			p:change{duration = 0, transparency = 255}
 		end
 
-		p:change{duration = duration, rotation = rotation, x = x1, y = y_func, remove = true}
+		p:change{
+			duration = duration,
+			rotation = rotation,
+			x = x1,
+			y = y_func,
+			remove = true,
+		}
 
 		-- create trails
 		for frames = 1, 3 do
@@ -952,7 +1195,9 @@ function Dust.generateStarFountain(params)
 			end
 
 			local trail = common.instance(Dust, game.particles, x, y, trail_image, p_type)
-			local trail_y = function() return y + trail.t * y_vel + trail.t^2 * acc end
+			local trail_y = function()
+				return y + trail.t * y_vel + trail.t^2 * acc
+			end
 			trail.scaling = 1.25 - (frames * 0.25)
 			if delay then
 				trail:change{transparency = 0}
@@ -960,7 +1205,13 @@ function Dust.generateStarFountain(params)
 				trail:change{duration = 0, transparency = 255}
 			end
 			trail:wait(frames * 2)
-			trail:change{duration = duration, rotation = rotation, x = x1, y = trail_y, remove = true}
+			trail:change{
+				duration = duration,
+				rotation = rotation,
+				x = x1,
+				y = trail_y,
+				remove = true,
+			}
 		end
 	end
 end
@@ -974,9 +1225,18 @@ function Dust.generateFalling(game, gem, x_drift, y_drift)
 	local p_type = (math.random(1, 2) == 2) and "Dust" or "OverDust"
 
 	local p = common.instance(Dust, game.particles, x, y, todraw, p_type)
-	p:change{duration = duration, rotation = rotation, y = y + 0.13 * game.stage.height}
-	p:change{duration = duration * 0.3, rotation = rotation * 1.3, transparency = 0,
-		y = y + 1.3 * (0.13 * game.stage.height), remove = true}
+	p:change{
+		duration = duration,
+		rotation = rotation,
+		y = y + 0.13 * game.stage.height,
+	}
+	p:change{
+		duration = duration * 0.3,
+		rotation = rotation * 1.3,
+		transparency = 0,
+		y = y + 1.3 * (0.13 * game.stage.height),
+		remove = true,
+	}
 end
 
 -- generate the spinning dust from platforms
@@ -994,7 +1254,14 @@ function Dust.generatePlatformSpin(game, x, y, speed)
 	local function y_func()
 		return y + p.t * y_vel + p.t^2 * acc
 	end
-	p:change{duration = duration, rotation = rotation, x = x + x_vel, y = y_func, transparency = 0, remove = true}
+	p:change{
+		duration = duration,
+		rotation = rotation,
+		x = x + x_vel,
+		y = y_func,
+		transparency = 0,
+		remove = true,
+	}
 end
 
 --[[ The circular particles on garbage creation
@@ -1018,12 +1285,28 @@ function Dust.generateGarbageCircle(params)
 		local x_start = distance * math.cos(angle) + x_dest
 		local y_start = distance * math.sin(angle) + y_dest
 
-		local p = common.instance(Dust, game.particles, x_start, y_start, img, p_type)
+		local p = common.instance(
+			Dust,
+			game.particles,
+			x_start,
+			y_start,
+			img,
+			p_type
+		)
 		p.transparency = 0
 		if params.delay_frames then p:wait(params.delay_frames) end
-		p:change{duration = fade_in_duration, transparency = 255}
-		p:change{duration = duration, rotation = rotation, x = x_dest,
-			y = y_dest, easing = "inCubic", remove = true}
+		p:change{
+			duration = fade_in_duration,
+			transparency = 255,
+		}
+		p:change{
+			duration = duration,
+			rotation = rotation,
+			x = x_dest,
+			y = y_dest,
+			easing = "inCubic",
+			remove = true,
+		}
 	end
 end
 Dust = common.class("Dust", Dust, Pic)
@@ -1043,7 +1326,12 @@ end
 
 function UpGem.generate(game, gem)
 	local p = common.instance(UpGem, game.particles, gem)
-	p:change{y = p.y - game.stage.height, duration = 60, easing = "inQuad", remove = true}
+	p:change{
+		duration = 60,
+		y = p.y - game.stage.height,
+		easing = "inQuad",
+		remove = true,
+	}
 end
 
 -- Remove all gems at end of turn, whether they finished tweening or not
@@ -1058,7 +1346,11 @@ UpGem = common.class("UpGem", UpGem, Pic)
 -- to show where you placed it.
 local PlacedGem = {}
 function PlacedGem:init(manager, gem, y, row, place_type)
-	Pic.init(self, manager.game, {x = gem.x, y = y, image = gem.image, transparency = 192})
+	Pic.init(
+		self,
+		manager.game,
+		{x = gem.x, y = y, image = gem.image, transparency = 192}
+	)
 	manager.allParticles.PlacedGem[ID.particle] = self
 	self.manager = manager
 	self.owner = gem.owner
@@ -1153,7 +1445,12 @@ function GemImage.generate(params)
 	end
 
 	if params.shake then
-		p:change{duration = params.duration, scaling = 2, easing = "inBounce", remove = true}
+		p:change{
+			duration = params.duration,
+			scaling = 2,
+			easing = "inBounce",
+			remove = true,
+		}
 	else
 		p:change{duration = params.duration, remove = true}
 	end
@@ -1183,7 +1480,13 @@ end
 -- called from anims.putPendingOnTop, and from anims.update
 function WordEffects.generateDoublecastCloud(game, gem1, gem2, is_horizontal)
 	local todraw = is_horizontal and image.words_doublecastcloudh or image.words_doublecastcloudv
-	local p = common.instance(WordEffects, game.particles, (gem1.x + gem2.x) * 0.5, (gem1.y + gem2.y) * 0.5, todraw)
+	local p = common.instance(
+		WordEffects,
+		game.particles,
+		(gem1.x + gem2.x) * 0.5,
+		(gem1.y + gem2.y) * 0.5,
+		todraw
+	)
 	p.transparency = 0
 	p:change{duration = 20, transparency = 255, easing = "inCubic"}
 	p.update = function(_self, dt)
@@ -1197,10 +1500,31 @@ end
 -- called from anims.putPendingOnTop, and from anims.update
 function WordEffects.generateRushCloud(game, gem1, gem2, is_horizontal)
 	local todraw = is_horizontal and image.words_rushcloudh or image.words_rushcloudv
-	local p = common.instance(WordEffects, game.particles, (gem1.x + gem2.x) * 0.5, (gem1.y + gem2.y) * 0.5, todraw)
+	local p = common.instance(
+		WordEffects,
+		game.particles,
+		(gem1.x + gem2.x) * 0.5,
+		(gem1.y + gem2.y) * 0.5,
+		todraw
+	)
 	p.transparency = 0
-	p:change{duration = 20, transparency = 255, easing = "inCubic"}
-	p:change{duration = 600, during = {8, 0, WordEffects.generateRushParticle, game, gem1, gem2, is_horizontal}}
+	p:change{
+		duration = 20,
+		transparency = 255,
+		easing = "inCubic",
+	}
+	p:change{
+		duration = 600,
+		during = {
+			8,
+			0,
+			WordEffects.generateRushParticle,
+			game,
+			gem1,
+			gem2,
+			is_horizontal,
+		}
+	}
 	p.update = function(_self, dt)
 		Pic.update(_self, dt)
 		_self.x, _self.y = (gem1.x + gem2.x) * 0.5, (gem1.y + gem2.y) * 0.5
@@ -1223,7 +1547,13 @@ function WordEffects.generateRushParticle(game, gem1, gem2)
 		y_adj = -image.GEM_HEIGHT
 	end
 
-	local p = common.instance(WordEffects, game.particles, x + x_drift, y + y_adj, todraw)
+	local p = common.instance(
+		WordEffects,
+		game.particles,
+		x + x_drift,
+		y + y_adj,
+		todraw
+	)
 	p.rotation = (x_drift / image.GEM_WIDTH) / (math.pi * 2)
 	p:change{duration = 18, scaling = 0.7, remove = true}
 end
@@ -1232,14 +1562,24 @@ end
 function WordEffects.generateReadyParticle(game, size, x, y)
 	local todraw = image.lookup.words_ready(size)
 	local p = common.instance(WordEffects, game.particles, x, y, todraw)
-	local y_func = function() return y + (p.t*3)^2 * 0.15 * game.stage.height end
+	local y_func = function()
+		return y + (p.t*3)^2 * 0.15 * game.stage.height
+	end
 	p:change{duration = 120, y = y_func, remove = true}
 end
 
 -- large gold star accompanying Go at start of match. Called from Words.Go
 function WordEffects.generateGoStar(game, x, y, x_vel, y_vel, delay)
-	local p = common.instance(WordEffects, game.particles, x, y, image.words_gostar)
-	local y_func = function() return y + p.t * y_vel + (p.t)^2 * 3 * game.stage.height end
+	local p = common.instance(
+		WordEffects,
+		game.particles,
+		x,
+		y,
+		image.words_gostar
+	)
+	local y_func = function()
+		return y + p.t * y_vel + (p.t)^2 * 3 * game.stage.height
+	end
 	if delay then
 		p:change{transparency = 0}
 		p:wait(delay)
@@ -1293,8 +1633,19 @@ function Words.generateRush(game, player_num)
 	local todraw = image.words_rush
 	local p = common.instance(Words, game.particles, x, y, todraw)
 	p.rotation = 0.25
-	p:change{duration = 60, x = game.stage.width * (0.5 + sign * 0.2), rotation = 0, easing = "outBounce"}
-	p:change{duration = 60, x = game.stage.width * (0.5 + sign * 0.9), rotation = 0.5, easing = "inBack", remove = true}
+	p:change{
+		duration = 60,
+		x = game.stage.width * (0.5 + sign * 0.2),
+		rotation = 0,
+		easing = "outBounce",
+	}
+	p:change{
+		duration = 60,
+		x = game.stage.width * (0.5 + sign * 0.9),
+		rotation = 0.5,
+		easing = "inBack",
+		remove = true,
+	}
 end
 
 function Words.generateReady(game, delay)
@@ -1306,12 +1657,20 @@ function Words.generateReady(game, delay)
 	local h, w = todraw:getHeight(), todraw:getWidth()
 	local p = common.instance(Words, particles, x, y, todraw)
 	local generate_big = function()
-		particles.wordEffects.generateReadyParticle(game, "large",
-				p.x + (math.random()-0.5)*w, stage.height*0.3 + (math.random()-0.5)*h)
+		particles.wordEffects.generateReadyParticle(
+			game,
+			"large",
+			p.x + (math.random() - 0.5) * w,
+			stage.height * 0.3 + (math.random() - 0.5) * h
+		)
 	end
 	local generate_small = function()
-		particles.wordEffects.generateReadyParticle(game, "small",
-			p.x + (math.random()-0.5)*w, stage.height*0.3 + (math.random()-0.5)*h)
+		particles.wordEffects.generateReadyParticle(
+			game,
+			"small",
+			p.x + (math.random() - 0.5) * w,
+			stage.height * 0.3 + (math.random() - 0.5) * h
+		)
 	end
 
 	if delay then
@@ -1320,10 +1679,21 @@ function Words.generateReady(game, delay)
 		p:change{duration = 0, transparency = 255}
 	end
 
-	p:change{duration = 60, x = 0.5 * stage.width, transparency = 510,
-		during = {{5, 0, generate_big}, {2, 0, generate_small}}, easing = "outElastic"}
-	p:change{duration = 30, x = 1.4 * stage.width, transparency = 0,
-		during = {{5, 0, generate_big}, {2, 0, generate_small}}, easing = "inQuad", remove = true}
+	p:change{
+		duration = 60,
+		x = 0.5 * stage.width,
+		transparency = 510,
+		during = {{5, 0, generate_big}, {2, 0, generate_small}},
+		easing = "outElastic",
+	}
+	p:change{
+		duration = 30,
+		x = 1.4 * stage.width,
+		transparency = 0,
+		during = {{5, 0, generate_big}, {2, 0, generate_small}},
+		easing = "inQuad",
+		remove = true,
+	}
 end
 
 function Words.generateGo(game, delay)
@@ -1346,10 +1716,38 @@ function Words.generateGo(game, delay)
 	p:wait(10)
 	p:change{duration = 18, transparency = 0, easing = "linear", remove = true}
 
-	particles.wordEffects.generateGoStar(game, x, y, stage.width * 0.25, stage.height * -0.4, delay)
-	particles.wordEffects.generateGoStar(game, x, y, stage.width * 0.25, stage.height * -1.2, delay)
-	particles.wordEffects.generateGoStar(game, x, y, stage.width * -0.25, stage.height * -0.4, delay)
-	particles.wordEffects.generateGoStar(game, x, y, stage.width * -0.25, stage.height * -1.2, delay)
+	particles.wordEffects.generateGoStar(
+		game,
+		x,
+		y,
+		stage.width * 0.25,
+		stage.height * -0.4,
+		delay
+	)
+	particles.wordEffects.generateGoStar(
+		game,
+		x,
+		y,
+		stage.width * 0.25,
+		stage.height * -1.2,
+		delay
+	)
+	particles.wordEffects.generateGoStar(
+		game,
+		x,
+		y,
+		stage.width * -0.25,
+		stage.height * -0.4,
+		delay
+	)
+	particles.wordEffects.generateGoStar(
+		game,
+		x,
+		y,
+		stage.width * -0.25,
+		stage.height * -1.2,
+		delay
+	)
 	particles.dust.generateStarFountain{
 		game = game,
 		x = x,
@@ -1372,7 +1770,10 @@ function Words.generateNoRush(game, column)
 		local y = (grid.y[grid.RUSH_ROW] + grid.y[grid.RUSH_ROW+1]) / 2
 		local todraw = image.words_norushonecolumn
 		local p = common.instance(Words, game.particles, x, y, todraw)
-		p:change{duration = 20, quad = {x = true, x_percentage = 1, x_anchor = 0.5}}
+		p:change{
+			duration = 20,
+			quad = {x = true, x_percentage = 1, x_anchor = 0.5},
+		}
 		p:change{duration = 40}
 		local blink = 0
 		local blinkCheck
@@ -1383,15 +1784,35 @@ function Words.generateNoRush(game, column)
 				game.particles.no_rush_check[column] = 1
 			end
 			if blink ~= 3 then
-				p:change{duration = 15, transparency = 0}
-				p:change{duration = 15, transparency = 255, exit_func = {blinkCheck, blink}}
+				p:change{
+					duration = 15,
+					transparency = 0,
+				}
+				p:change{
+					duration = 15,
+					transparency = 255,
+					exit_func = {blinkCheck, blink},
+				}
 			else
-				p:change{duration = 15, transparency = 0, remove = true,
-					exit_func = function() game.particles.no_rush_check[column] = 0 end}
+				p:change{
+					duration = 15,
+					transparency = 0,
+					remove = true,
+					exit_func = function()
+						game.particles.no_rush_check[column] = 0
+					end,
+				}
 			end
 		end
-		p:change{duration = 15, transparency = 0}
-		p:change{duration = 15, transparency = 255, exit_func = {blinkCheck, blink}}
+		p:change{
+			duration = 15,
+			transparency = 0,
+		}
+		p:change{
+			duration = 15,
+			transparency = 255,
+			exit_func = {blinkCheck, blink},
+		}
 	end
 end
 
@@ -1456,7 +1877,11 @@ function SuperFreezeEffects.generate(game, player, shadow_image, action_image, f
 		shadow:wait(delay_frames)
 		shadow:change{duration = 0, transparency = 255}
 	end
-	shadow:change{duration = 30, x = stage.width * (0.5 + 0.025 * sign), easing = "outQuart"}
+	shadow:change{
+		duration = 30,
+		x = stage.width * (0.5 + 0.025 * sign),
+		easing = "outQuart",
+	}
 	shadow:wait(25)
 	shadow:change{duration = 5, transparency = 0, remove = true}
 
@@ -1473,7 +1898,11 @@ function SuperFreezeEffects.generate(game, player, shadow_image, action_image, f
 		portrait:wait(delay_frames)
 		portrait:change{duration = 0, transparency = 255}
 	end
-	portrait:change{duration = 30, x = stage.width * (0.5 + 0.025 * sign), easing = "outQuart"}
+	portrait:change{
+		duration = 30,
+		x = stage.width * (0.5 + 0.025 * sign),
+		easing = "outQuart",
+	}
 	portrait:wait(25)
 	portrait:change{duration = 5, transparency = 0, remove = true}
 

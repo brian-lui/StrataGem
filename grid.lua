@@ -39,7 +39,12 @@ function Grid:init(game)
 
 	for i = 0, self.COLUMNS + 1 do
 		self.x[i] = stage.x_mid + (i - (self.COLUMNS / 2) - 0.5) * stage.gem_width
-		self.active_rect[i] = {self.x[i] - 0.5 * stage.gem_width, 0, stage.gem_width, stage.height}
+		self.active_rect[i] = {
+			self.x[i] - 0.5 * stage.gem_width,
+			0,
+			stage.gem_width,
+			stage.height,
+		}
 	end
 
 	-- pending gem positions
@@ -195,7 +200,12 @@ function Grid:_getRawMatches(min_length)
 						getColor(r, c+match_len) ~= color and getColor(r, c+match_len) ~= "wild"
 				end
 				if match_len >= min_length then
-					ret[#ret+1] = {length = match_len, row = r, column = c, is_a_horizontal_match = true}
+					ret[#ret+1] = {
+						length = match_len,
+						row = r,
+						column = c,
+						is_a_horizontal_match = true,
+					}
 				end
 
 				-- VERTICAL MATCHES
@@ -208,7 +218,12 @@ function Grid:_getRawMatches(min_length)
 						getColor(r+match_len, c) ~= color and getColor(r+match_len, c) ~= "wild"
 				end
 				if match_len >= min_length then
-					ret[#ret+1] = {length = match_len, row = r, column = c, is_a_vertical_match = true}
+					ret[#ret+1] = {
+						length = match_len,
+						row = r,
+						column = c,
+						is_a_vertical_match = true,
+					}
 				end
 			end
 		end
@@ -433,8 +448,8 @@ function Grid:getFirstEmptyRow(column, ignore_pending)
 end
 
 -- Returns a piece's landing locations as a table of {{column, row}, {c,r}}.
--- optional_shift is +1/-1, used if the gem is over midline and column needs to be
--- corrected.
+-- optional_shift is +1/-1, used if the gem is over midline and column needs
+-- to be corrected.
 function Grid:getDropLocations(piece, optional_shift)
 	local column = piece:getColumns(optional_shift)
 	local row, ret = {}, {}
@@ -491,7 +506,9 @@ end
 -- move a gem from a spot on the grid to another spot
 -- state only, doesn't change the gem x and gem y, use moveGemAnim for that
 function Grid:moveGem(gem, new_row, new_column)
-	if self[new_row][new_column].gem then print("Warning: attempt to move gem to location with existing gem") end
+	if self[new_row][new_column].gem then
+		print("Warning: attempt to move gem to location with existing gem")
+	end
 	self[new_row][new_column].gem = gem
 	self[gem.row][gem.column].gem = false
 	gem.row, gem.column = new_row, new_column
@@ -502,23 +519,22 @@ end
 function Grid:moveGemAnim(gem, row, column)
 	local target_x, target_y = self.x[column], self.y[row]
 	local dist = ((target_x - gem.x) ^ 2 + (target_y - gem.y) ^ 2) ^ 0.5
-	--local angle = math.atan2(target_y - gem.y, target_x - gem.x)
 	local speed = self.DROP_SPEED + self.DROP_MULTIPLE_SPEED * self.game.scoring_combo
 	local duration = math.abs(dist / speed)
 	local exit_func = target_y > gem.y and {gem.landedInGrid, gem} or nil
+	-- only call landing function if it was moving downwards
 
 	gem:change{
 		x = target_x,
 		y = target_y,
 		duration = duration,
 		exit_func = exit_func,
-		-- only call landing function if it was moving downwards
 	}
 	return duration
 end
 
-function Grid:moveAllUp(player, rows_to_add)
 -- Moves all gems in the player's half up by rows_to_add.
+function Grid:moveAllUp(player, rows_to_add)
 	local last_row = self.ROWS - rows_to_add
 	local max_anim_duration = 0
 	for r = 1, last_row do
@@ -540,9 +556,8 @@ function Grid:moveAllUp(player, rows_to_add)
 	return max_anim_duration
 end
 
---[[ Returns a list of gem colors generated. List is in the order for
-	{col 1, 2, 3, 4} for player 1, {col 8, 7, 6, 5} for player 2
---]]
+-- Returns a list of gem colors generated. List is in the order for
+-- {col 1, 2, 3, 4} for player 1, {col 8, 7, 6, 5} for player 2
 function Grid:addBottomRow(player, skip_animation)
 	local game = self.game
 	local grid = game.grid
@@ -571,14 +586,32 @@ function Grid:addBottomRow(player, skip_animation)
 			local pop_image = image["gems_pop_" .. gem_color]
 			local explode_image = image["gems_explode_"..gem_color]
 
-			particles.dust.generateGarbageCircle{game = game, x = x, y = y,
-				color = gem_color}
-			particles.popParticles.generateReversePop{game = game, x = x,
-				y = y, image = pop_image}
+			particles.dust.generateGarbageCircle{
+				game = game,
+				x = x,
+				y = y,
+				color = gem_color,
+			}
+			particles.popParticles.generateReversePop{
+				game = game,
+				x = x,
+				y = y,
+				image = pop_image,
+			}
 			local explode_time = particles.explodingGem.generateReverseExplode{
-				game = game, x = x, y = y, image = explode_image, shake = true}
-			particles.dust.generateBigFountain{game = game, x = x, y = y,
-				color = gem_color, delay_frames = explode_time}
+				game = game,
+				x = x,
+				y = y,
+				image = explode_image,
+				shake = true,
+			}
+			particles.dust.generateBigFountain{
+				game = game,
+				x = x,
+				y = y,
+				color = gem_color,
+				delay_frames = explode_time,
+			}
 		end
 	end
 
@@ -829,22 +862,48 @@ function Grid:destroyGem(params)
 			assert(player.meter_gain[gem.color], "Nil value found when looking up super meter gain!")
 			player:addSuper(player.meter_gain[gem.color])
 		end
-		game.queue:add(delay_until_explode, game.uielements.screenshake, game.uielements, 1)
+		game.queue:add(
+			delay_until_explode,
+			game.uielements.screenshake,
+			game.uielements,
+			1
+		)
 
 		-- animations
 		local soundfile_name = "gembreak" .. math.min(5, game.scoring_combo + 1)
-		game.queue:add(delay_until_explode, game.sound.newSFX, game.sound, soundfile_name)
+		game.queue:add(
+			delay_until_explode,
+			game.sound.newSFX,
+			game.sound,
+			soundfile_name
+		)
 
 		if params.super_meter ~= false then
 			local num = player.is_supering and 0 or player.meter_gain[gem.color]
-			particles.superParticles.generate(game, gem, num, delay_until_explode, params.force_max_alpha)
+			particles.superParticles.generate(
+				game,
+				gem,
+				num,
+				delay_until_explode,
+				params.force_max_alpha
+			)
 		end
 
 		if params.damage ~= false then
-			local dmg_duration = particles.damage.generate(game, gem, delay_until_explode, params.force_max_alpha)
+			local dmg_duration = particles.damage.generate(
+				game,
+				gem,
+				delay_until_explode,
+				params.force_max_alpha
+			)
 			damage_particle_duration = math.max(damage_particle_duration, dmg_duration)
 			for _ = 1, extra_damage do
-				particles.damage.generate(game, gem, delay_until_explode, params.force_max_alpha)
+				particles.damage.generate(
+					game,
+					gem,
+					delay_until_explode,
+					params.force_max_alpha
+				)
 				damage_particle_duration = math.max(damage_particle_duration, dmg_duration)
 			end
 		end
@@ -969,8 +1028,14 @@ function Grid:animateGameOver(loser_num)
 					img = gem.grey_exploding_gem_image
 					assert(img, "No grey gem image found for grey_exploding_gem_image")
 				end
-				particles.gemImage.generate{game = game, x = gem.x, y = gem.y, image = img,
-					duration = duration, delay_frames = delay}
+				particles.gemImage.generate{
+					game = game,
+					x = gem.x,
+					y = gem.y,
+					image = img,
+					duration = duration,
+					delay_frames = delay,
+				}
 			end
 		end
 	end

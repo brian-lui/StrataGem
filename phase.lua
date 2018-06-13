@@ -261,7 +261,6 @@ function Phase:getMatchedGems(dt)
 		self:setPause(delay)
 		self:activatePause("DestroyMatchedGems")
 	else
-		print("previous damage particle duration: ", self.damage_particle_duration)
 		self:setPause(delay + self.damage_particle_duration)
 		self.damage_particle_duration = 0
 		self:activatePause("ResolvedMatches")
@@ -281,12 +280,8 @@ function Phase:destroyMatchedGems(dt)
 		local player_delay = player:duringMatch()
 		delay = math.max(delay, player_delay or 0)
 	end
-	--local total_delay = game.GEM_EXPLODE_FRAMES + delay
 	local total_delay = math.max(delay, explode_delay + particle_duration)
 	self:setPause(total_delay)
-
-	print("setting a delay of: " .. particle_duration .. " particle duration, " .. explode_delay .. " explode delay, " .. total_delay .. " gem explode delay: total " .. total_delay .. " frames delay")
-	print("expected particles to arrived on frame: " .. game.frame + particle_duration + explode_delay )
 	self:activatePause("ResolvingMatches")
 	self.damage_particle_duration = total_delay
 end

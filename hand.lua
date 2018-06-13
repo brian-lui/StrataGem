@@ -51,7 +51,11 @@ function Hand:makeInitialPieces(gem_freq_table, gem_replace_table)
 		self:movePiece(i, i-5)
 	end
 	for i = 6, 10 do
-		self[i].platform = GemPlatform:create{game = self.game, owner = self.owner, hand_idx = i}
+		self[i].platform = GemPlatform:create{
+			game = self.game,
+			owner = self.owner,
+			hand_idx = i,
+		}
 		self:movePlatform(i, i-5)
 	end
 	self[1].platform:setSpin(0.02)
@@ -176,7 +180,11 @@ function Hand:createNewTurnPieces(mandatory)
 			gem_freq_table = freq,
 			gem_replace_table = replace,
 		}
-		self[i].platform = GemPlatform:create{game = self.game, owner = self.owner, hand_idx = i}
+		self[i].platform = GemPlatform:create{
+			game = self.game,
+			owner = self.owner,
+			hand_idx = i,
+		}
 	end
 	for i = 1, 10 do -- move up all the pieces
 		local end_pos = math.max(i - pieces_to_get, 0)
@@ -206,15 +214,41 @@ function Hand:createGarbageAnimation(pos, delay_frames)
 		local gem = self[pos].piece.gems[i]
 		gem.owner = self.owner.player_num
 
-		particles.explodingGem.generate{game = game, gem = gem,	shake = true,
+		particles.explodingGem.generate{
+			game = game,
+			gem = gem,
+			shake = true,
 			explode_frames = game.PLATFORM_FALL_EXPLODE_FRAMES,
-			fade_frames = fade_frames, delay_frames = delay_frames}
-		particles.gemImage.generate{game = game, gem = gem, shake = true,
-			duration = explode_frames}
-		particles.popParticles.generate{game = game, gem = gem, delay_frames = explode_frames}
-		particles.dust.generateBigFountain{game = game, gem = gem, delay_frames = explode_frames}
-		arrival_frame = particles.garbageParticles.generate(game, gem, explode_frames)
-		game.queue:add(explode_frames, game.uielements.screenshake, game.uielements, 2)
+			fade_frames = fade_frames,
+			delay_frames = delay_frames,
+		}
+		particles.gemImage.generate{
+			game = game,
+			gem = gem,
+			shake = true,
+			duration = explode_frames,
+		}
+		particles.popParticles.generate{
+			game = game,
+			gem = gem,
+			delay_frames = explode_frames,
+		}
+		particles.dust.generateBigFountain{
+			game = game,
+			gem = gem,
+			delay_frames = explode_frames,
+		}
+		arrival_frame = particles.garbageParticles.generate(
+			game,
+			gem,
+			explode_frames
+		)
+		game.queue:add(
+			explode_frames,
+			game.uielements.screenshake,
+			game.uielements,
+			2
+		)
 	end
 
 	self[pos].piece:breakUp()
@@ -229,8 +263,17 @@ function Hand:destroyPlatform(pos, skip_animations, delay_frames)
 
 	if not skip_animations then
 		if self[pos].platform then
-			game.queue:add(delay_frames, game.sound.newSFX, game.sound, "starbreak")
-			game.particles.explodingPlatform.generate(game, self[pos].platform.pic, delay_frames)
+			game.queue:add(
+				delay_frames,
+				game.sound.newSFX,
+				game.sound,
+				"starbreak"
+			)
+			game.particles.explodingPlatform.generate(
+				game,
+				self[pos].platform.pic,
+				delay_frames
+			)
 			if self[pos].piece then
 				self:updatePieceGems()
 				garbage_arrival_frame = self:createGarbageAnimation(pos, garbage_delay)
@@ -252,8 +295,14 @@ function Hand:destroyDamagedPlatforms(force_minimum_1_piece)
 
 	local garbage_arrival_frames = {}
 	for i = 1, to_destroy do
-		local frame = self:destroyPlatform(i, false, (i - 1) * self.CONSECUTIVE_PLATFORM_DESTROY_DELAY)
-		if frame then garbage_arrival_frames[#garbage_arrival_frames+1] = frame end
+		local frame = self:destroyPlatform(
+			i,
+			false,
+			(i - 1) * self.CONSECUTIVE_PLATFORM_DESTROY_DELAY
+		)
+		if frame then
+			garbage_arrival_frames[#garbage_arrival_frames+1] = frame
+		end
 	end
 	return garbage_arrival_frames, to_destroy
 end
@@ -301,11 +350,8 @@ function Hand:update(dt)
 
 	-- move garbage gems
 	local garbage = self.garbage
-	for i = #garbage, 1, -1 do
-		-- remove garbage gems if arrived at top
-		if garbage[i].y == self[0].y then
-			table.remove(garbage, i) -- later split this into a function for destroy top piece particle effects
-		end
+	for i = #garbage, 1, -1 do -- remove garbage gems if arrived at top
+		if garbage[i].y == self[0].y then table.remove(garbage, i) end
 	end
 end
 

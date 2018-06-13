@@ -135,9 +135,9 @@ function Game:writeReplayHeader()
 	print("Character 2", self.p2.character_id)
 	print("background", self.current_background_name)
 	local player_side = 0
-	if self.me_player == p1 then
+	if self.me_player == self.p1 then
 		player_side = 1
-	elseif self.me_player == p2 then
+	elseif self.me_player == self.p2 then
 		player_side = 0
 	end
 	print("Player side", player_side)

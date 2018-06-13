@@ -96,13 +96,29 @@ end
 function DebugConsole:_drawGemInfo()
 	local grid = self.grid
 	for gem in grid:gems() do
-		love.graphics.print("ROW:" .. gem.row, gem.x - gem.width * 0.4, gem.y - gem.height * 0.2)
-		love.graphics.print("COL:" .. gem.column, gem.x - gem.width * 0.4, gem.y)
+		love.graphics.print(
+			"ROW:" .. gem.row,
+			gem.x - gem.width * 0.4,
+			gem.y - gem.height * 0.2
+		)
+		love.graphics.print(
+			"COL:" .. gem.column,
+			gem.x - gem.width * 0.4,
+			gem.y
+		)
 		if gem.is_in_a_horizontal_match then
-			love.graphics.print("H", gem.x - gem.width * 0.2, gem.y + gem.height * 0.2)
+			love.graphics.print(
+				"H",
+				gem.x - gem.width * 0.2,
+				gem.y + gem.height * 0.2
+			)
 		end
 		if gem.is_in_a_vertical_match then
-			love.graphics.print("V", gem.x + gem.width * 0.2, gem.y + gem.height * 0.2)
+			love.graphics.print(
+				"V",
+				gem.x + gem.width * 0.2,
+				gem.y + gem.height * 0.2
+			)
 		end
 	end
 end
@@ -114,13 +130,31 @@ function DebugConsole:_drawGemOwners()
 			local y_start, height = gem.y - gem.height * 0.5, gem.height
 			if gem.owner == 1 then
 				love.graphics.setColor(100, 0, 200, 160)
-				love.graphics.rectangle("fill", gem.x - gem.width * 0.5, y_start, gem.width * 0.5, height)
+				love.graphics.rectangle(
+					"fill",
+					gem.x - gem.width * 0.5,
+					y_start,
+					gem.width * 0.5,
+					height
+				)
 			elseif gem.owner == 2 then
 				love.graphics.setColor(255, 153, 51, 230)
-				love.graphics.rectangle("fill", gem.x, y_start, gem.width * 0.5, height)
+				love.graphics.rectangle(
+					"fill",
+					gem.x,
+					y_start,
+					gem.width * 0.5,
+					height
+				)
 			elseif gem.owner == 3 then
 				love.graphics.setColor(160, 160, 160, 255)
-				love.graphics.rectangle("fill", gem.x - gem.width * 0.5, y_start, gem.width, height * 0.5)
+				love.graphics.rectangle(
+					"fill",
+					gem.x - gem.width * 0.5,
+					y_start,
+					gem.width,
+					height * 0.5
+				)
 			end
 			if gem.flag_match_originator then
 				if gem.owner == 1 then
@@ -188,7 +222,13 @@ function DebugConsole:_drawTurnNumber()
 	local stage = self.stage
 	love.graphics.push("all")
 		love.graphics.setFont(FONT.SLIGHTLY_BIGGER)
-		love.graphics.printf(toprint, stage.width * 0.01, stage.height * 0.965, stage.width, "left")
+		love.graphics.printf(
+			toprint,
+			stage.width * 0.01,
+			stage.height * 0.965,
+			stage.width,
+			"left"
+		)
 	love.graphics.pop()
 end
 
@@ -197,7 +237,13 @@ function DebugConsole:_drawGameFrame()
 	local stage = self.stage
 	love.graphics.push("all")
 		love.graphics.setFont(FONT.SLIGHTLY_BIGGER)
-		love.graphics.printf(toprint, 0, stage.height * 0.965, stage.width * 0.99, "right")
+		love.graphics.printf(
+			toprint,
+			0,
+			stage.height * 0.965,
+			stage.width * 0.99,
+			"right"
+		)
 	love.graphics.pop()
 end
 
@@ -205,9 +251,26 @@ function DebugConsole:_drawOverlays()
 	local stage = self.stage
 	love.graphics.push("all")
 		love.graphics.setFont(FONT.SLIGHTLY_BIGGER)
-		love.graphics.printf(self.overlay_left_function(), stage.width * 0.01, stage.height * 0.93, stage.width, "left")
-		love.graphics.printf(self.overlay_middle_function(), 0, stage.height * 0.965, stage.width, "center")
-		love.graphics.printf(self.overlay_right_function(), 0, stage.height * 0.93, stage.width * 0.99, "right")
+		love.graphics.printf(
+			self.overlay_left_function(),
+			stage.width * 0.01,
+			stage.height * 0.93,
+			stage.width, "left"
+		)
+		love.graphics.printf(
+			self.overlay_middle_function(),
+			0,
+			stage.height * 0.965,
+			stage.width,
+			"center"
+		)
+		love.graphics.printf(
+			self.overlay_right_function(),
+			0,
+			stage.height * 0.93,
+			stage.width * 0.99,
+			"right"
+		)
 	love.graphics.pop()
 end
 

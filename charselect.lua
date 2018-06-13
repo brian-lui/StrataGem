@@ -90,7 +90,13 @@ function Charselect:init(game, gamestate)
 	self.gamestate = gamestate
 	self.selectable_chars = {"heath", "walter", "gail", "holly",
 		"wolfgang", "hailey", "buzz", "ivy", "joy", "mort", "diggory", "damon"}
-	self.gamestate.ui = {clickable = {}, static = {}, fades = {}, popup_clickable = {}, popup_static = {}}
+	self.gamestate.ui = {
+		clickable = {},
+		static = {},
+		fades = {},
+		popup_clickable = {},
+		popup_static = {},
+	}
 
 	if gamestate.name == "Multiplayer" then
 		self.lobby = common.instance(Lobby, game, self)
@@ -288,7 +294,6 @@ end
 -- creates the unclickable UI display images
 function Charselect:_createUIImages()
 	local game = self.game
-	local gamestate = self.gamestate
 	local stage = game.stage
 
 	-- large portrait shadow
@@ -302,8 +307,17 @@ function Charselect:_createUIImages()
 	}
 
 	self.displayed_character_shadow.reset = function(c)
-		c:change{duration = 0, x = stage.width * 0.275, transparency = 60}
-		c:change{duration = 6, x = stage.width * 0.325, transparency = 255, easing = "outQuart"}
+		c:change{
+			duration = 0,
+			x = stage.width * 0.275,
+			transparency = 60,
+		}
+		c:change{
+			duration = 6,
+			x = stage.width * 0.325,
+			transparency = 255,
+			easing = "outQuart",
+		}
 	end
 	self.displayed_character_shadow:reset()
 
@@ -318,8 +332,17 @@ function Charselect:_createUIImages()
 	}
 
 	self.displayed_character.reset = function(c)
-		c:change{duration = 0, x = stage.width * 0.25, transparency = 60}
-		c:change{duration = 6, x = stage.width * 0.3, transparency = 255, easing = "outQuart"}
+		c:change{
+			duration = 0,
+			x = stage.width * 0.25,
+			transparency = 60,
+		}
+		c:change{
+			duration = 6,
+			x = stage.width * 0.3,
+			transparency = 255,
+			easing = "outQuart",
+		}
 	end
 	self.displayed_character:reset()
 
@@ -333,8 +356,17 @@ function Charselect:_createUIImages()
 		transparency = 60,
 	}
 	self.displayed_character_text.reset = function(c)
-		c:change{duration = 0, y = stage.height * 0.7, transparency = 60}
-		c:change{duration = 6, y = stage.height * 0.65, transparency = 255, easing = "outQuart"}
+		c:change{
+			duration = 0,
+			y = stage.height * 0.7,
+			transparency = 60,
+		}
+		c:change{
+			duration = 6,
+			y = stage.height * 0.65,
+			transparency = 255,
+			easing = "outQuart",
+		}
 	end
 	self.displayed_character_text:reset()
 
@@ -406,7 +438,6 @@ function Charselect:closeSettingsMenu()
 end
 
 function Charselect:update(dt)
-	local game = self.game
 	local gamestate = self.gamestate
 	self.current_background:update(dt)
 	for _, tbl in pairs(gamestate.ui) do
@@ -420,7 +451,7 @@ end
 function Charselect:draw()
 	local game = self.game
 	local gamestate = self.gamestate
-	
+
 	local darkened = game:isScreenDark()
 	self.current_background:draw{darkened = darkened}
 	for _, v in spairs(gamestate.ui.static) do v:draw{darkened = darkened} end

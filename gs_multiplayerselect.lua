@@ -4,7 +4,7 @@ local Multiplayer = {name = "Multiplayer", gametype = "Netplay"}
 function Multiplayer:init()
 	self.charselect = common.instance(require 'charselect', self, Multiplayer)
 	self.charselect:init(self, Multiplayer)
-end	
+end
 
 function Multiplayer:enter()
 	self.charselect:enter()
