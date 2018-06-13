@@ -52,7 +52,6 @@ function gs_main:enter()
 
 	for player in self:players() do
 		gs_main.ui.static.burst[player.player_num] = self.uielements.components.burst.create(self, player)
-		player.super_button = self.uielements.components.super.create(self, player, player.player_num)
 	end
 
 	gs_main.createImage(self, {

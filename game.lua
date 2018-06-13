@@ -459,7 +459,7 @@ function Game:deserializeState(state_string)
 	for s in (state_string.."_"):gmatch("(.-)_") do table.insert(state, s) end
 	assert(#state == 23, "Malformed state string " .. #state)
 
-	local p1char, p2char = state[1]:lower(), state[2]:lower()
+	local p1char, p2char = state[1], state[2]
 	local p1burst, p1super, p1damage = tonumber(state[3]), tonumber(state[4]), tonumber(state[5])
 	local p2burst, p2super, p2damage = tonumber(state[6]), tonumber(state[7]), tonumber(state[8])
 	local grid_str = state[9]
@@ -469,12 +469,18 @@ function Game:deserializeState(state_string)
 	local p1_special_str, p2_special_str = state[21], state[22]
 
 	-- if p1.character_id or p2.character_id not match, replace them
-	-- TODO: This doesn't work at the moment
-	--self.p1 = common.instance(require("characters." .. p1char), 1, self)
-	--self.p2 = common.instance(require("characters." .. p2char), 2, self)
+	if p1char ~= self.p1.character_id then
+		print("p1char, id", p1char, self.p1.character_id)
+		self.p1 = common.instance(require("characters." .. p1char), 1, self)
+	end
+	if p2char ~= self.p2.character_id then
+		print("p2char, id", p2char, self.p2.character_id)
+		self.p2 = common.instance(require("characters." .. p2char), 2, self)
+	end
 	self.p1.enemy = self.p2
 	self.p2.enemy = self.p1
 	local p1, p2 = self.p1, self.p2
+	self.me_player, self.them_player = self.p1, self.p2
 
 	-- overwrite burst, super, damage for both players
 	p1.cur_burst = p1burst
