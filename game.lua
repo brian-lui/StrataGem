@@ -114,6 +114,45 @@ function Game:start(gametype, char1, char2, bkground, seed, side)
 	self.statemanager:switch(require "gs_main")
 end
 
+function Game:setSaveFileLocation()
+	function lpad (s) return string.rep("0", 8 - #s) .. s end
+	local index = 1
+	local padded_index = lpad(tostring(index))
+	local filename = os.date("%Y%m%d") .. padded_index .. ".txt"
+	while love.filesystem.exists(filename) do
+		index = index + 1
+		padded_index = lpad(tostring(index))
+		filename = os.date("%Y%m%d") .. padded_index .. ".txt"
+	end
+	self.replay_save_location = filename
+	print("set save location to " .. filename)
+end
+
+function Game:writeReplayHeader()
+	print("Game version", self.VERSION)
+	print("Game type", self.type)
+	print("Character 1", self.p1.character_id)
+	print("Character 2", self.p2.character_id)
+	print("background", self.current_background_name)
+	local player_side = 0
+	if self.me_player == p1 then
+		player_side = 1
+	elseif self.me_player == p2 then
+		player_side = 0
+	end
+	print("Player side", player_side)
+
+	--[[
+		game version
+		game type
+		char 1
+		char 2
+		background
+		seed
+		player side
+	-- ]]
+end
+
 function Game:playReplay(replay_string)
 	-- need to change all of this
 	self:reset()
