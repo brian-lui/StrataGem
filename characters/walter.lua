@@ -676,9 +676,6 @@ function Walter:beforeMatch()
 	return delay
 end
 
-function Walter:afterMatch()
-end
-
 function Walter:beforeCleanup()
 	local delay = 0
 
@@ -714,15 +711,11 @@ function Walter:serializeSpecials()
 	return table.concat(self.cloud_turns_remaining)
 end
 
--- "C" is 67
 function Walter:deserializeSpecials(str)
-	for i = 1, #str do
-		local col = i 
-
-		self.cloud_turns_remaining[col] = tonumber(str:sub(i, i))
+	for col = 1, #str do
+		self.cloud_turns_remaining[col] = tonumber(str:sub(col, col))
 		if self.cloud_turns_remaining[col] ~= 0 then
 			self.fx.healingCloud.generate(self.game, self, col)
-			print("set column " .. col .. " to cloud turns remaining " .. self.cloud_turns_remaining[col])
 		end
 	end
 
