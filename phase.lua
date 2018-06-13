@@ -61,15 +61,18 @@ end
 
 function Phase:intro(dt)
 	local game = self.game
-	if game.frame == 30 then
-		game.particles.words.generateReady(self.game)
-	end
-	if game.frame == 120 then
-		game.sound:newBGM(game.p1.sounds.bgm, true)
-		game.particles.words.generateGo(self.game)
-		game.sound:newSFX("fountaingo")
-		self:setPhase("Action")
-	end
+	local ready_delay = 30
+	local delay = 120
+
+	game:setSaveFileLocation()
+	game:writeReplayHeader()
+	game.particles.words.generateReady(game, ready_delay)
+	game.particles.words.generateGo(game, delay)
+	game.queue:add(delay, game.sound.newBGM, game.sound, game.p1.sounds.bgm, true)
+	game.queue:add(delay, game.sound.newSFX, game.sound, "fountaingo")
+
+	self:setPause(delay)
+	self:activatePause("Action")
 end
 
 function Phase:action(dt)
