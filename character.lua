@@ -64,6 +64,7 @@ function Character:init(player_num, game)
 	self.current_double_cost = self.DOUBLE_COST
 	self.played_pieces = {}
 	self:setup()
+	self.super_button = game.uielements.components.super.create(game, self, player_num)
 end
 
 function Character:addSuper(amt)
