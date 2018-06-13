@@ -115,8 +115,8 @@ function Wolfgang:init(...)
 	self.FULL_BARK_DOG_ADDS = 2
 	self.BAD_DOG_DURATION = 3
 	self.SUPER_DOG_CREATION_DELAY = 45 -- in frames
-	self.GOOD_DOG_CYCLE = 13.5 -- calling a good dog animation cycle
-	self.BAD_DOG_CYCLE = 3 -- calling a bad dog animation cycle
+	self.GOOD_DOG_CYCLE = 135 -- calling a good dog animation cycle
+	self.BAD_DOG_CYCLE = 30 -- calling a bad dog animation cycle
 	self.good_dog_frames, self.bad_dog_frames = 0, 0
 	self.this_turn_matched_colors = {}
 	self.good_dogs = {} -- set of {dog-gems = true}
