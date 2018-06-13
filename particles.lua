@@ -909,6 +909,7 @@ end
 	num: number of particles to generate. Default is 24
 	x, y, color override gem if they are provided
 	fast: if true, particles are faster. defaults to false
+	delay: frames to delay the animation
 --]]
 function Dust.generateStarFountain(params)
 	local game, gem, num = params.game, params.gem, params.num or 24
@@ -919,6 +920,7 @@ function Dust.generateStarFountain(params)
 	local rotation = 0.5
 	local x_speed_mult = params.fast and 2 or 1
 	local y_speed_mult = params.fast and 1.5 or 1
+	local delay = params.delay
 
 	for i = 1, num do
 		local todraw = image.lookup.particle_freq(color)
@@ -931,6 +933,13 @@ function Dust.generateStarFountain(params)
 		local p = common.instance(Dust, game.particles, x, y, todraw, p_type)
 		local x1 = x + x_vel
 		local y_func = function() return y + p.t * y_vel + p.t^2 * acc end
+
+		if delay then
+			p:change{transparency = 0}
+			p:wait(delay)
+			p:change{duration = 0, transparency = 255}
+		end
+
 		p:change{duration = duration, rotation = rotation, x = x1, y = y_func, remove = true}
 
 		-- create trails
@@ -945,6 +954,11 @@ function Dust.generateStarFountain(params)
 			local trail = common.instance(Dust, game.particles, x, y, trail_image, p_type)
 			local trail_y = function() return y + trail.t * y_vel + trail.t^2 * acc end
 			trail.scaling = 1.25 - (frames * 0.25)
+			if delay then
+				trail:change{transparency = 0}
+				trail:wait(delay)
+				trail:change{duration = 0, transparency = 255}
+			end
 			trail:wait(frames * 2)
 			trail:change{duration = duration, rotation = rotation, x = x1, y = trail_y, remove = true}
 		end
@@ -1223,9 +1237,14 @@ function WordEffects.generateReadyParticle(game, size, x, y)
 end
 
 -- large gold star accompanying Go at start of match. Called from Words.Go
-function WordEffects.generateGoStar(game, x, y, x_vel, y_vel)
+function WordEffects.generateGoStar(game, x, y, x_vel, y_vel, delay)
 	local p = common.instance(WordEffects, game.particles, x, y, image.words_gostar)
 	local y_func = function() return y + p.t * y_vel + (p.t)^2 * 3 * game.stage.height end
+	if delay then
+		p:change{transparency = 0}
+		p:wait(delay)
+		p:change{duration = 0, transparency = 255}
+	end
 	p:change{duration = 120, x = x + x_vel, y = y_func, remove = true}
 end
 
@@ -1278,7 +1297,7 @@ function Words.generateRush(game, player_num)
 	p:change{duration = 60, x = game.stage.width * (0.5 + sign * 0.9), rotation = 0.5, easing = "inBack", remove = true}
 end
 
-function Words.generateReady(game)
+function Words.generateReady(game, delay)
 	local stage = game.stage
 	local particles = game.particles
 	local x = stage.width * -0.2
@@ -1294,32 +1313,52 @@ function Words.generateReady(game)
 		particles.wordEffects.generateReadyParticle(game, "small",
 			p.x + (math.random()-0.5)*w, stage.height*0.3 + (math.random()-0.5)*h)
 	end
+
+	if delay then
+		p:change{transparency = 0}
+		p:wait(delay)
+		p:change{duration = 0, transparency = 255}
+	end
+
 	p:change{duration = 60, x = 0.5 * stage.width, transparency = 510,
 		during = {{5, 0, generate_big}, {2, 0, generate_small}}, easing = "outElastic"}
 	p:change{duration = 30, x = 1.4 * stage.width, transparency = 0,
 		during = {{5, 0, generate_big}, {2, 0, generate_small}}, easing = "inQuad", remove = true}
 end
 
-function Words.generateGo(game)
+function Words.generateGo(game, delay)
 	local stage = game.stage
+	local particles = game.particles
+
 	local x = stage.width * 0.5
 	local y = stage.height * 0.3
 	local todraw = image.words_go
+
 	local p = common.instance(Words, game.particles, x, y, todraw)
+	if delay then
+		p:change{transparency = 0}
+		p:wait(delay)
+		p:change{duration = 0, transparency = 255}
+	end
+
 	p.scaling = 0.1
 	p:change{duration = 20, scaling = 1, easing = "outQuart"}
 	p:wait(10)
 	p:change{duration = 18, transparency = 0, easing = "linear", remove = true}
 
-	local particles = game.particles
-	particles.wordEffects.generateGoStar(game, x, y, stage.width * 0.25, stage.height * -0.4)
-	particles.wordEffects.generateGoStar(game, x, y, stage.width * 0.25, stage.height * -1.2)
-	particles.wordEffects.generateGoStar(game, x, y, stage.width * -0.25, stage.height * -0.4)
-	particles.wordEffects.generateGoStar(game, x, y, stage.width * -0.25, stage.height * -1.2)
-	for i = 1, 51, 10 do
-		game.queue:add(i, particles.dust.generateStarFountain, {game = game, x = x,
-			y = y, color = "yellow", num = 48, fast = true})
-	end
+	particles.wordEffects.generateGoStar(game, x, y, stage.width * 0.25, stage.height * -0.4, delay)
+	particles.wordEffects.generateGoStar(game, x, y, stage.width * 0.25, stage.height * -1.2, delay)
+	particles.wordEffects.generateGoStar(game, x, y, stage.width * -0.25, stage.height * -0.4, delay)
+	particles.wordEffects.generateGoStar(game, x, y, stage.width * -0.25, stage.height * -1.2, delay)
+	particles.dust.generateStarFountain{
+		game = game,
+		x = x,
+		y = y,
+		color = "yellow",
+		num = 48,
+		fast = true,
+		delay = delay,
+	}
 end
 
 --[[ "no rush!" image that appears between 6th and 7th rows whenever a gem ends up in the
