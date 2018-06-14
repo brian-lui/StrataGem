@@ -1,7 +1,7 @@
 local love = _G.love
 local socket = require 'socket'
 local json = require 'dkjson'
-local settings = require 'settings'
+--local settings = require 'settings'
 local common = require "class.commons"
 
 local Client = {}
@@ -28,7 +28,7 @@ function Client:connect()
 		local blob = {
 			type = "connect",
 			version = self.game.VERSION,
-			name = settings.player.name,
+			name = self.game.settings.player.name,
 		}
 		self:send(blob)
 	else
