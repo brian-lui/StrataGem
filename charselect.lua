@@ -176,12 +176,14 @@ function Charselect:_createUIButtons()
 	if gamestate.name == "Singleplayer" then
 		start_action = function()
 			if self.my_character then
-				local gametype = gamestate.gametype
-				local char1 = self.my_character
-				local char2 = self.opponent_character
-				local bkground = game.background:idx_to_str(self.game_background)
 				self.my_character = nil
-				game:start(gametype, char1, char2, bkground, nil, 1)
+				game:start{
+					gametype = gamestate.gametype,
+					char1 = self.my_character,
+					char2 = self.opponent_character,
+					background = game.background:idx_to_str(self.game_background),
+					side = 1,
+				}
 			end
 		end
 	elseif gamestate.name == "Multiplayer" then

@@ -273,7 +273,13 @@ local function shuffleHands(game)
 end
 
 local function resetGame(game)
-	game:start("Singleplayer", "wolfgang", "walter", "checkmate", nil, 1)
+	game:start{
+		gametype = "Singleplayer",
+		char1 = "wolfgang",
+		char2 = "heath",
+		background = "checkmate",
+		side = 1,
+	}
 end
 
 local function displayNoRush(game)
@@ -475,6 +481,10 @@ local function wolfgangGemSpeedToggle(game)
 	end
 end
 
+local function getPlayerName(game)
+	print(game.settings.player.name)
+end
+
 local Unittests = {
 	f1 = saveGamestate,
 	f2 = loadGamestate,
@@ -490,7 +500,7 @@ local Unittests = {
 	o = tweenPlacedGemDown,
 	p = tweenPlacedGemUp,
 	a = wolfgangGemSpeedToggle,
-	--s = ,
+	s = getPlayerName,
 	d = toggleScreencaps,
 	f = skipToTurnEnd,
 	g = addDamageP1,

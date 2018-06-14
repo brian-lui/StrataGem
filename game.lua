@@ -77,30 +77,45 @@ function Game:init()
 	self:reset()
 end
 
-function Game:start(gametype, char1, char2, bkground, seed, side)
-	self:reset()
-	if seed then self.rng:setSeed(seed)	end
+--[[ Mandatory parameters:
+	gametype - Netplay or Singleplayer
+	char1 - string for the character in p1
+	char2 - string for the character in p2
+	playername1 - name of the player in p1
+	playername2 - name of the player in p1
+	background - string for the background
 
-	self.p1 = common.instance(require("characters." .. char1), 1, self)
-	self.p2 = common.instance(require("characters." .. char2), 2, self)
+	Optional parameters:
+	side - player's side, defaults to 1
+	seed - number to use as the RNG seed
+--]]
+
+function Game:start(params)
+	self:reset()
+	if params.seed then self.rng:setSeed(params.seed) end
+
+	self.p1 = common.instance(require("characters." .. params.char1), 1, self)
+	self.p2 = common.instance(require("characters." .. params.char2), 2, self)
 	self.p1.enemy = self.p2
 	self.p2.enemy = self.p1
 
-	side = side or 1
+	local side = params.side or 1
+	assert(side == 1 or side == 2, "Invalid side provided")
 	if side == 1 then
 		self.me_player, self.them_player = self.p1, self.p2
 		print("You are PLAYER 1. This will be graphicalized soon")
 	elseif side == 2 then
 		self.me_player, self.them_player = self.p2, self.p1
 		print("You are PLAYER 2. This will be graphicalized soon")
-	else
-		print("Sh*t")
 	end
 
+	self.p1.player_name = params.playername1
+	self.p2.player_name = params.playername2
+
 	-- Spawn the appropriate ai to handle opponent (net input or actual AI)
-	if gametype == "Netplay" then
+	if params.gametype == "Netplay" then
 		self.ai = common.instance(require("ai_netplay"), self, self.them_player)
-	elseif gametype == "Singleplayer" then
+	elseif params.gametype == "Singleplayer" then
 		self.ai = common.instance(require("ai_singleplayer"), self, self.them_player)
 	else
 		error("Invalid gametype provided")
@@ -108,9 +123,9 @@ function Game:start(gametype, char1, char2, bkground, seed, side)
 
 	for player in self:players() do player:cleanup() end
 
-	self.type = gametype
+	self.type = params.gametype
 
-	self.current_background_name = bkground
+	self.current_background_name = params.background
 	self.statemanager:switch(require "gs_main")
 end
 

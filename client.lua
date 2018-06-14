@@ -81,7 +81,14 @@ function Client:startMatch(recv)
 	self.queuing = false
 	self.playing = true
 
-	self.game:start("Netplay", p1_char, p2_char, p2_background, recv.seed, recv.side)
+	self.game:start{
+		gametype = "Netplay",
+		char1 = p1_char,
+		char2 = p2_char,
+		background = p2_background,
+		side = recv.side,
+		seed = recv.seed,
+	}
 end
 
 function Client:connectionAccepted(recv)
