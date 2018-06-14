@@ -497,12 +497,14 @@ function Wolfgang:beforeGravity()
 			gem.color = "none"
 			gem.image = gem.bad_dog_image
 			self.bad_dogs[gem] = self.BAD_DOG_DURATION
+			self.good_dogs[gem] = nil
 		end
 	end
 
 	-- Add good dogs to table too
 	for _, gem in ipairs(pending_my_gems) do
 		if gem.owner == self.player_num and gem.color == "wild" then
+			self.bad_dogs[gem] = nil
 			self.good_dogs[gem] = true
 		end
 	end
