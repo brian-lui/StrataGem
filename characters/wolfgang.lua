@@ -682,6 +682,26 @@ function Wolfgang:serializeSpecials()
 	for piece in self.hand:pieces() do
 		for gem, location in piece:getGems() do
 			if self.good_dogs[gem] then
+				if piece.size == 1 then
+					ret[#ret+1] = piece.hand_idx .. 1
+				elseif piece.size == 2 then
+					-- If it is in rotation_index 2 or 3, the gem table was reversed
+					-- This is because of bad coding from before. Haha
+					if piece.rotation_index == 2 or piece.rotation_index == 3 then
+						if location == 1 then
+							ret[#ret+1] = piece.hand_idx .. 2
+						elseif location == 2 then
+							ret[#ret+1] = piece.hand_idx .. 1
+						else
+							error("Invalid location provided for Wolfgang")
+						end
+					else
+						ret[#ret+1] = piece.hand_idx .. location
+					end
+				else
+					error("Piece size is not 1 or 2")
+				end
+
 				ret[#ret+1] = piece.hand_idx .. location
 			end
 		end

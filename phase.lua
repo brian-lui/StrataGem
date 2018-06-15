@@ -490,7 +490,7 @@ function Phase:netplayWaitForState(dt)
 	local client = game.client
 
 	if client.their_state then
-		assert(client.our_state == client.their_state, "States don't match! Ours:\n "
+		assert(client.our_state == client.their_state, "States don't match! Ours:\n"
 			.. client.our_state .. "\nTheirs:\n" .. client.their_state)
 		self:setPhase("NetplayNewTurn")
 	end
