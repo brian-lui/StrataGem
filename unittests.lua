@@ -19,8 +19,8 @@ local colorAliases = {
 -------------------------------------------------------------------------------
 
 -- rows is from 8 at the top to 1 at the bottom
-local function n(self, row, column, color, owner)
-	owner = owner or 0
+local function n(self, row, column, color, owner_num)
+	owner_num = owner_num or 0
 	color = colorAliases[color:lower()] or "red"
 	if type(row) ~= "number" or type(column) ~= "number" then
 		print("row or column not a number!")
@@ -48,7 +48,7 @@ local function n(self, row, column, color, owner)
 		color = color,
 	}
 
-	if owner > 0 then self.grid[row][column].gem:addOwner(owner) end
+	if owner_num > 0 then self.grid[row][column].gem:addOwner(owner_num) end
 end
 
 local function ndel(game, row, column)

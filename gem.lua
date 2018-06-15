@@ -161,58 +161,43 @@ function Gem:draw(params)
 	love.graphics.pop()
 end
 
--- these can take either the player object or the number
 -- respects cannot_remove_owners
-function Gem:setOwner(player, set_due_to_match)
-	if type(player) == "table" then player = player.player_num end
-	if not (player == 0 or player == 1 or player == 2 or player == 3) then
-		print("Error: tried to set invalid gem owner as player:", player)
-		return
-	end
+function Gem:setOwner(player_num, set_due_to_match)
+	assert(player_num >= 0 and player_num <= 3, "Invalid player_num provided")
 
 	if self.cannot_remove_owners then
-		self:addOwner(player)
+		self:addOwner(player_num)
 	else
-		self.player_num = player
+		self.player_num = player_num
 	end
-	if set_due_to_match then
-		self.set_due_to_match = true
-	end
+	if set_due_to_match then self.set_due_to_match = true end
 end
 
-function Gem:addOwner(player)
-	if type(player) == "table" then player = player.player_num end
-	if not (player == 1 or player == 2 or player == 3) then
-		print("Error: tried to add invalid gem owner as player:", player)
-		return
-	end
+function Gem:addOwner(player_num)
+	assert(player_num >= 1 and player_num <= 3, "Invalid player_num provided")
 
 	if self.player_num == 0 then
-		self.player_num = player
+		self.player_num = player_num
 	elseif self.player_num == 1 then
-		if player == 2 or player == 3 then self.player_num = 3 end
+		if player_num == 2 or player_num == 3 then self.player_num = 3 end
 	elseif self.player_num == 2 then
-		if player == 1 or player == 3 then self.player_num = 3 end
+		if player_num == 1 or player_num == 3 then self.player_num = 3 end
 	end
 end
 
-function Gem:removeOwner(player)
-	if type(player) == "table" then player = player.player_num end
-	if not (player == 1 or player == 2 or player == 3) then
-		print("Error: tried to remove invalid gem owner as player:", player)
-		return
-	end
+function Gem:removeOwner(player_num)
+	assert(player_num >= 1 and player_num <= 3, "Invalid player_num provided")
 
 	if not self.cannot_remove_owners then
-		if player == 1 then
-			if self.player_num== 1 or self.player_num== 3 then
-				self.player_num= self.player_num- 1
+		if player_num == 1 then
+			if self.player_num == 1 or self.player_num == 3 then
+				self.player_num = self.player_num - 1
 			end
-		elseif player == 2 then
-			if self.player_num== 2 or self.player_num== 3 then
-				self.player_num= self.player_num- 2
+		elseif player_num == 2 then
+			if self.player_num == 2 or self.player_num == 3 then
+				self.player_num = self.player_num - 2
 			end
-		elseif player == 3 then
+		elseif player_num == 3 then
 			self.player_num= 0
 		end
 	end

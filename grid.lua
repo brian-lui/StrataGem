@@ -423,8 +423,8 @@ function Grid:getScore(matching_number)
 	return #self:getMatchedGems(matching_number or 3)
 end
 
-function Grid:removeAllGemOwners(player)
-	for gem in self:gems() do gem:removeOwner(player) end
+function Grid:removeAllGemOwners(player_num)
+	for gem in self:gems() do gem:removeOwner(player_num) end
 end
 
 function Grid:setAllGemOwners(flag_num)
