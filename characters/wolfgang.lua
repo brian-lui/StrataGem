@@ -492,7 +492,7 @@ function Wolfgang:beforeGravity()
 
 	-- Change good dogs to bad dogs if they are in rush column
 	for _, gem in ipairs(pending_rush_gems) do
-		if gem.owner == self.player_num and gem.color == "wild" then
+		if gem.player_num == self.player_num and gem.color == "wild" then
 			gem.indestructible = true
 			gem.color = "none"
 			gem.image = gem.bad_dog_image
@@ -503,7 +503,7 @@ function Wolfgang:beforeGravity()
 
 	-- Add good dogs to table too
 	for _, gem in ipairs(pending_my_gems) do
-		if gem.owner == self.player_num and gem.color == "wild" then
+		if gem.player_num == self.player_num and gem.color == "wild" then
 			self.bad_dogs[gem] = nil
 			self.good_dogs[gem] = true
 		end
@@ -548,7 +548,7 @@ function Wolfgang:beforeMatch()
 		-- check that this match is ours
 		local owned_by_me = false
 		for _, gem in ipairs(list) do
-			if gem.owner == self.player_num then owned_by_me = true end
+			if gem.player_num == self.player_num then owned_by_me = true end
 		end
 
 		if owned_by_me then

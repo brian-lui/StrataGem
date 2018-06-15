@@ -155,19 +155,19 @@ function DamageParticle:init(manager, gem)
 		manager.game,
 		{x = gem.x, y = gem.y, image = img, transparency = 0}
 	)
-	self.owner = gem.owner
+	self.player_num = gem.player_num
 	manager.allParticles.Damage[ID.particle] = self
 	self.manager = manager
 end
 
 function DamageParticle:remove()
-	self.manager:incrementCount("destroyed", "Damage", self.owner)
+	self.manager:incrementCount("destroyed", "Damage", self.player_num)
 	self.manager.allParticles.Damage[self.ID] = nil
 end
 
 -- player.hand.damage is the damage before this round's match(es) is scored
 function DamageParticle.generate(game, gem, delay_frames, force_max_alpha)
-	local gem_creator = game:playerByIndex(gem.owner)
+	local gem_creator = game:playerByIndex(gem.player_num)
 	local player = gem_creator.enemy
 	local frames_taken = 0
 
@@ -178,7 +178,7 @@ function DamageParticle.generate(game, gem, delay_frames, force_max_alpha)
 	local x3, y3 = 0.5 * (x1 + x4), 0.5 * (y1 + y4)
 
 	for _ = 1, 3 do
-		local created_particles = game.particles:getCount("created", "Damage", gem.owner)
+		local created_particles = game.particles:getCount("created", "Damage", gem.player_num)
 		local final_loc = (player.hand.turn_start_damage + created_particles/3)/4 + 1
 		local angle = math.random() * math.pi * 2
 		local x2 = x1 + math.cos(angle) * dist * 0.5
@@ -251,7 +251,7 @@ function DamageParticle.generate(game, gem, delay_frames, force_max_alpha)
 			)
 		end
 
-		game.particles:incrementCount("created", "Damage", gem.owner)
+		game.particles:incrementCount("created", "Damage", gem.player_num)
 
 		frames_taken = math.max(frames_taken, game.DAMAGE_PARTICLE_TO_PLATFORM_FRAMES + 9 + drop_duration)
 	end
@@ -318,9 +318,9 @@ DamageTrailParticle = common.class("DamageTrailParticle", DamageTrailParticle, P
 -------------------------------------------------------------------------------
 -- particles for super meter generated when a gem is matched
 local SuperParticle = {}
-function SuperParticle:init(manager, x, y, img, owner, color)
+function SuperParticle:init(manager, x, y, img, player_num, color)
 	Pic.init(self, manager.game, {x = x, y = y, image = img})
-	self.player_num = owner
+	self.player_num = player_num
 	self.color = color
 	manager.allParticles.SuperParticles[ID.particle] = self
 	self.manager = manager
@@ -336,7 +336,7 @@ function SuperParticle.generate(game, gem, num_particles, delay_frames, force_ma
 	for _ = 1, num_particles do
 		-- create bezier curve
 		local x1, y1 = gem.x, gem.y -- start
-		local x4, y4 = game.stage.super[gem.owner].x, game.stage.super[gem.owner].y -- end
+		local x4, y4 = game.stage.super[gem.player_num].x, game.stage.super[gem.player_num].y -- end
 		-- dist and angle vary the second point within a circle around the origin
 		local dist = ((x4 - x1) ^ 2 + (y4 - y1) ^ 2) ^ 0.5
 		local angle = math.random() * math.pi * 2
@@ -359,10 +359,10 @@ function SuperParticle.generate(game, gem, num_particles, delay_frames, force_ma
 			gem.x,
 			gem.y,
 			img,
-			gem.owner,
+			gem.player_num,
 			gem.color
 		)
-		game.particles:incrementCount("created", "MP", gem.owner)
+		game.particles:incrementCount("created", "MP", gem.player_num)
 
 		p.force_max_alpha = force_max_alpha
 
@@ -538,20 +538,20 @@ local GarbageParticles = {}
 function GarbageParticles:init(manager, gem)
 	local img = image.lookup.particle_freq(gem.color)
 	Pic.init(self, manager.game, {x = gem.x, y = gem.y, image = img})
-	self.owner = gem.owner
+	self.player_num = gem.player_num
 	manager.allParticles.GarbageParticles[ID.particle] = self
 	self.manager = manager
 end
 
 function GarbageParticles:remove()
-	self.manager:incrementCount("destroyed", "Garbage", self.owner)
+	self.manager:incrementCount("destroyed", "Garbage", self.player_num)
 	self.manager.allParticles.GarbageParticles[self.ID] = nil
 end
 
 -- player.hand.damage is the damage before this round's match(es) is scored
 function GarbageParticles.generate(game, gem, delay_frames)
 	local grid = game.grid
-	local player = game:playerByIndex(gem.owner)
+	local player = game:playerByIndex(gem.player_num)
 
 	local duration = 54 + game.particles:getNumber("GarbageParticles")
 	-- calculate bezier curve
@@ -598,7 +598,7 @@ function GarbageParticles.generate(game, gem, delay_frames)
 				delay_frames + j * 2
 			)
 		end
-		game.particles:incrementCount("created", "Garbage", gem.owner)
+		game.particles:incrementCount("created", "Garbage", gem.player_num)
 	end
 
 	delay_frames = delay_frames or 0
@@ -689,7 +689,7 @@ function ExplodingGem:init(params)
 	local x, y, img, transparency
 
 	if gem then
-		if gem.owner == 3 then
+		if gem.player_num == 3 then
 			if isStandardColor(gem.color) then
 				img = image["gems_grey_" .. gem.color]
 			else
@@ -755,7 +755,7 @@ function ExplodingGem.generate(params)
 
 	if params.glow_duration then p:wait(params.glow_duration) end
 
-	if gem.owner == 3 then
+	if gem.player_num == 3 then
 		p:change{duration = fade_frames, remove = true}
 	else
 		p:change{
@@ -1353,7 +1353,7 @@ function PlacedGem:init(manager, gem, y, row, place_type)
 	)
 	manager.allParticles.PlacedGem[ID.particle] = self
 	self.manager = manager
-	self.owner = gem.owner
+	self.player_num = gem.player_num
 	self.row = row
 	self.place_type = place_type
 	self.tweened_down = false

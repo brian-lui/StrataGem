@@ -307,11 +307,11 @@ function Grid:flagMatchedGems()
 				local row = match.row
 				local column = match.column + i - 1
 				local gem = self[row][column].gem
-				if gem.owner == 1 then
+				if gem.player_num == 1 then
 					this_match_p1 = true
-				elseif gem.owner == 2 then
+				elseif gem.player_num == 2 then
 					this_match_p2 = true
-				elseif gem.owner == 3 then
+				elseif gem.player_num == 3 then
 					this_match_p1, this_match_p2 = true, true
 				end
 				gem.is_in_a_horizontal_match = true
@@ -325,11 +325,11 @@ function Grid:flagMatchedGems()
 
 				-- special case: chain combos ignore flags from non-original gems, if opponent made a match last turn
 				if self.game.scoring_combo == 0 then
-					if gem.owner == 1 then
+					if gem.player_num == 1 then
 						this_match_p1 = true
-					elseif gem.owner == 2 then
+					elseif gem.player_num == 2 then
 						this_match_p2 = true
-					elseif gem.owner == 3 then
+					elseif gem.player_num == 3 then
 						this_match_p1, this_match_p2 = true, true
 					end
 				else
@@ -351,16 +351,16 @@ function Grid:flagMatchedGems()
 						local ignore_p1 = not self.game.phase.matched_this_round[1]
 						local ignore_p2 = not self.game.phase.matched_this_round[2]
 						if ignore_p1 and not ignore_p2 then
-							if gem.owner == 2 or gem.owner == 3 then this_match_p2 = true end
+							if gem.player_num == 2 or gem.player_num == 3 then this_match_p2 = true end
 						elseif ignore_p2 and not ignore_p1 then
-							if gem.owner == 1 or gem.owner == 3 then this_match_p1 = true end
+							if gem.player_num == 1 or gem.player_num == 3 then this_match_p1 = true end
 						end
 						--]]
-						if gem.owner == 1 then
+						if gem.player_num == 1 then
 							this_match_p1 = true
-						elseif gem.owner == 2 then
+						elseif gem.player_num == 2 then
 							this_match_p2 = true
-						elseif gem.owner == 3 then
+						elseif gem.player_num == 3 then
 							this_match_p1, this_match_p2 = true, true
 						end
 					end
@@ -411,7 +411,7 @@ end
 	round.
 --]]
 function Grid:assignGemOriginators()
-	for gem in self:pendingGems() do gem.flag_match_originator = gem.owner end
+	for gem in self:pendingGems() do gem.flag_match_originator = gem.player_num end
 end
 
 function Grid:removeGemOriginators()
@@ -798,16 +798,16 @@ function Grid:destroyMatchedGems(combo_bonus)
 
 	for _, gem in pairs(self:getMatchedGems()) do
 		local extra_damage = 0
-		if p1_remaining_damage > 0 and gem.owner == 1 then
+		if p1_remaining_damage > 0 and gem.player_num == 1 then
 			extra_damage = 1
 			p1_remaining_damage = p1_remaining_damage - 1
-		elseif p2_remaining_damage > 0 and gem.owner == 2 then
+		elseif p2_remaining_damage > 0 and gem.player_num == 2 then
 			p2_remaining_damage = p2_remaining_damage - 1
 			extra_damage = 1
 		end
 
 		local gain_super = nil
-		local owner = self.game:playerByIndex(gem.owner)
+		local owner = self.game:playerByIndex(gem.player_num)
 		if owner then gain_super = owner.gain_super_meter end
 
 		local delay_explode, damage_duration = self:destroyGem{
@@ -849,7 +849,7 @@ function Grid:destroyGem(params)
 	if gem.is_destroyed or gem.indestructible then return 0, 0 end
 	if params.credit_to then gem:setOwner(params.credit_to) end
 
-	local player = game:playerByIndex(gem.owner)
+	local player = game:playerByIndex(gem.player_num)
 	if player == nil then -- grey gem
 		local sfx = game.sound:newSFX("gembreakgrey")
 		sfx:setPosition((gem.column - 4.5) * 0.02, 0, 0)
@@ -945,7 +945,7 @@ function Grid:destroyGem(params)
 			if current_gem then
 				 -- skip propagation if this gem was part of (another) match
 				if not current_gem.set_due_to_match then
-					current_gem:setOwner(gem.owner)
+					current_gem:setOwner(gem.player_num)
 				end
 			end
 		end
@@ -972,7 +972,7 @@ function Grid:calculateScore()
 	local gem_table = self:getMatchedGems()
 	local dmg, super = {0, 0}, {0, 0}
 	for i = 1, #gem_table do
-		if gem_table[i].owner ~= 3 then
+		if gem_table[i].player_num ~= 3 then
 			local gem, own_idx = gem_table[i], gem_table[i].owner
 			local owner = self.game:playerByIndex(own_idx)
 			dmg[own_idx] = dmg[own_idx] + 1

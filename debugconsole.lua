@@ -128,7 +128,7 @@ function DebugConsole:_drawGemOwners()
 	for gem in grid:gems() do
 		love.graphics.push("all")
 			local y_start, height = gem.y - gem.height * 0.5, gem.height
-			if gem.owner == 1 then
+			if gem.player_num == 1 then
 				love.graphics.setColor(100, 0, 200, 160)
 				love.graphics.rectangle(
 					"fill",
@@ -137,7 +137,7 @@ function DebugConsole:_drawGemOwners()
 					gem.width * 0.5,
 					height
 				)
-			elseif gem.owner == 2 then
+			elseif gem.player_num == 2 then
 				love.graphics.setColor(255, 153, 51, 230)
 				love.graphics.rectangle(
 					"fill",
@@ -146,7 +146,7 @@ function DebugConsole:_drawGemOwners()
 					gem.width * 0.5,
 					height
 				)
-			elseif gem.owner == 3 then
+			elseif gem.player_num == 3 then
 				love.graphics.setColor(160, 160, 160, 255)
 				love.graphics.rectangle(
 					"fill",
@@ -157,9 +157,9 @@ function DebugConsole:_drawGemOwners()
 				)
 			end
 			if gem.flag_match_originator then
-				if gem.owner == 1 then
+				if gem.player_num == 1 then
 					love.graphics.setColor(255, 0, 255, 255)
-				elseif gem.owner == 2 then
+				elseif gem.player_num == 2 then
 					love.graphics.setColor(255, 255, 0, 255)
 				end
 				love.graphics.circle("fill", gem.x, gem.y, 10)

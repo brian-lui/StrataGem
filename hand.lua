@@ -212,7 +212,7 @@ function Hand:createGarbageAnimation(pos, delay_frames)
 
 	for i = 1, #self[pos].piece.gems do
 		local gem = self[pos].piece.gems[i]
-		gem.owner = self.owner.player_num
+		gem.player_num = self.owner.player_num
 
 		particles.explodingGem.generate{
 			game = game,

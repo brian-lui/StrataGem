@@ -419,7 +419,7 @@ function Heath:beforeMatch()
 	-- store horizontal fire locations, used in aftermatch phase
 	for _, gem in pairs(gem_table) do
 		local top_gem = gem.row == grid:getFirstEmptyRow(gem.column, true) + 1
-		if self.player_num == gem.owner and gem.is_in_a_horizontal_match and top_gem then
+		if self.player_num == gem.player_num and gem.is_in_a_horizontal_match and top_gem then
 			self.pending_fires[gem.column] = self.FIRE_EXIST_TURNS
 			self.fx.boom.generate(
 				game,

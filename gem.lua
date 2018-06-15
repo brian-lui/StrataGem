@@ -33,7 +33,7 @@ function Gem:init(params)
 	self.ID = ID.gem
 	self.row = -1
 	self.column = -1
-	self.owner = 0 -- 0 = none, 1 = p1, 2 = p2, 3 = both
+	self.player_num = 0 -- 0 = none, 1 = p1, 2 = p2, 3 = both
 	self.garbage = params.is_garbage
 	self.pending = false -- piece that's been placed in basin but not activated
 	self.exploding_gem_image = params.exploding_gem_image
@@ -173,7 +173,7 @@ function Gem:setOwner(player, set_due_to_match)
 	if self.cannot_remove_owners then
 		self:addOwner(player)
 	else
-		self.owner = player
+		self.player_num = player
 	end
 	if set_due_to_match then
 		self.set_due_to_match = true
@@ -187,12 +187,12 @@ function Gem:addOwner(player)
 		return
 	end
 
-	if self.owner == 0 then
-		self.owner = player
-	elseif self.owner == 1 then
-		if player == 2 or player == 3 then self.owner = 3 end
-	elseif self.owner == 2 then
-		if player == 1 or player == 3 then self.owner = 3 end
+	if self.player_num == 0 then
+		self.player_num = player
+	elseif self.player_num == 1 then
+		if player == 2 or player == 3 then self.player_num = 3 end
+	elseif self.player_num == 2 then
+		if player == 1 or player == 3 then self.player_num = 3 end
 	end
 end
 
@@ -205,15 +205,15 @@ function Gem:removeOwner(player)
 
 	if not self.cannot_remove_owners then
 		if player == 1 then
-			if self.owner == 1 or self.owner == 3 then
-				self.owner = self.owner - 1
+			if self.player_num== 1 or self.player_num== 3 then
+				self.player_num= self.player_num- 1
 			end
 		elseif player == 2 then
-			if self.owner == 2 or self.owner == 3 then
-				self.owner = self.owner - 2
+			if self.player_num== 2 or self.player_num== 3 then
+				self.player_num= self.player_num- 2
 			end
 		elseif player == 3 then
-			self.owner = 0
+			self.player_num= 0
 		end
 	end
 end
