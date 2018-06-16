@@ -133,7 +133,7 @@ function Hand:movePieceToGrid(grid, piece, locations)
 	for i = 1, #piece.gems do
 		-- gamestate
 		local gem, r, c = piece.gems[i], locations[i][1], locations[i][2]
-		gem:setOwner(self.owner) -- set ownership
+		gem:setOwner(self.owner.player_num) -- set ownership
 		if grid[r][c].gem then -- check if gem exists in destination
 			print("warning: existing gem in destination (row " .. r .. ", column " .. c .. ")")
 		end
