@@ -939,7 +939,7 @@ function Grid:destroyGem(params)
 	}
 
 	-- flag above gems
-	if params.propagate_flags_up ~= false then
+	if params.propagate_flags_up ~= false and gem.player_num ~= 3 then
 		for i = gem.row - 1, 1, -1 do
 			local current_gem = self[i][gem.column].gem
 			if current_gem then
