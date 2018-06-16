@@ -50,6 +50,7 @@ function DebugConsole:setDefaultDisplayParams()
 	local params = {
 		display_all = true,
 		display_prints = true,
+		display_player_names = true,
 		display_gem_info = false,
 		display_gem_owners = true,
 		display_particle_destinations = true,
@@ -77,6 +78,32 @@ function DebugConsole:setDefaultDisplayParams()
 		is_pause_mode_on = false,
 	}
 	self:setDisplay(params)
+end
+
+function DebugConsole:_drawPlayerNames()
+	local game = self.game
+	local stage = self.stage
+
+	local p1_name, p2_name = game.p1.player_name, game.p2.player_name
+
+	love.graphics.push("all")
+		love.graphics.setFont(FONT.SLIGHTLY_BIGGER)
+		love.graphics.printf(
+			p1_name,
+			stage.width * 0.02,
+			stage.height * 0.02,
+			stage.width * 0.3,
+			"left"
+		)
+		love.graphics.printf(
+			p2_name,
+			stage.width * 0.7,
+			stage.height * 0.02,
+			stage.width * 0.28,
+			"right"
+		)
+	love.graphics.pop()
+
 end
 
 function DebugConsole:_drawGrid()
@@ -302,6 +329,7 @@ function DebugConsole:draw()
 			love.graphics.setFont(FONT.REGULAR)
 			if self.display_grid then self:_drawGrid() end
 			if self.display_overlays then self:_drawOverlays() end
+			if self.display_player_names then self:_drawPlayerNames() end
 			if self.display_gem_info then self:_drawGemInfo() end
 			if self.display_gem_owners then self:_drawGemOwners() end
 			if self.display_particle_destinations then self:_drawParticleDestinations() end
