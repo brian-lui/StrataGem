@@ -391,7 +391,7 @@ function Grid:flagMatchedGems()
 				elseif gem_flags[gem] == 2 then
 					if player_num == 1 or player_num == 3 then gem_flags[gem] = 3 end
 				else
-					print("This shouldn't happen either")
+					print("This shouldn't happen either:", gem_flags[gem])
 				end
 			else
 				gem_flags[gem] = player_num

@@ -422,7 +422,7 @@ function Piece:dropIntoBasin(coords, received_from_opponent)
 
 	-- not received_from_opponent means it's our piece placing, so we need to send it to them
 	if game.type == "Singleplayer" and not received_from_opponent then
-		-- tbc
+		game.ai:writePlayerDelta(self, coords)
 	elseif game.type == "Netplay" and not received_from_opponent then
 		game.client:writeDeltaPiece(self, coords)
 	end

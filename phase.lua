@@ -64,6 +64,7 @@ function Phase:intro(dt)
 	local ready_delay = 30
 	local delay = 120
 
+	if game.type == "Singleplayer" then game.ai:clearDeltas() end
 	game:setSaveFileLocation()
 	game:writeReplayHeader()
 	game.particles.words.generateReady(game, ready_delay)
@@ -96,6 +97,7 @@ function Phase:action(dt)
 			self:setPhase("NetplaySendDelta")
 		elseif game.type == "Singleplayer" then
 			ai:performQueuedAction()
+			if game.me_player.is_supering then ai:writePlayerSuper() end
 			self:setPhase("Resolve")
 		elseif game.type == "Replay" then
 			print("reply performs queued actions for both players here")
@@ -470,6 +472,8 @@ function Phase:cleanup(dt)
 	grid:setAllGemReadOnlyFlags(false)
 
 	for player in game:players() do player.hand:endOfTurnUpdate() end
+
+	if game.type == "Singleplayer" then game.ai:clearDeltas() end
 
 	if grid:getLoser() then
 		self:activatePause("GameOver")

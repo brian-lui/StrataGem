@@ -61,12 +61,14 @@ local function placePiece(self, piece, coords, place_type)
 	local player = piece.owner
 	place_type = place_type or "normal"
 	player.place_type = place_type
-	self:queueAction(piece.dropIntoBasin, {piece, coords})
+	self:queueAction(piece.dropIntoBasin, {piece, coords, true})
+	self.ai_delta = self.game:serializeDelta(self.ai_delta, piece, coords)
 end
 
 local function playSuper(self, super_params)
 	super_params = super_params or {}
 	self:queueAction(function() self.player.is_supering = true end, super_params)
+	self.ai_delta = self.game:serializeSuper(self.ai_delta)
 end
 
 -- returns a scoring for all possible pieces and their placements
@@ -104,14 +106,16 @@ end
 
 -- this currently always plays the highest possible scoring match, but doesn't discriminate further
 function ai_singleplayer:evaluateActions()
+	local game = self.game
 	local player = self.player
+
 	-- play super if available, using params
 	if player:canUseSuper() then
 		local super_params = nil -- TODO
 		playSuper(self, super_params)
 	else
 		-- Get a set of moves that yield the highest score
-		local matrices = generateScoreMatrices(self.game.grid, player)
+		local matrices = generateScoreMatrices(game.grid, player)
 		local maximum_score = 0
 		local possible_moves = {}
 		for rot = 1, 4 do
@@ -139,7 +143,7 @@ function ai_singleplayer:evaluateActions()
 
 			placePiece(self, piece, getCoords(piece, selected.column))
 		elseif player.cur_burst >= player.RUSH_COST and
-		self.game.grid:getFirstEmptyRow(1) >= self.game.grid.RUSH_ROW then
+		game.grid:getFirstEmptyRow(1) >= game.grid.RUSH_ROW then
 			local piece = selectRandomPiece(player)
 			if piece.is_horizontal then	-- Always do vertical rushes.
 				piece:rotate()
@@ -155,6 +159,19 @@ function ai_singleplayer:evaluateActions()
 		end
 	end
 	self.finished = true
+end
+
+-- for replays
+function ai_singleplayer:clearDeltas()
+	self.ai_delta, self.player_delta = "N_", "N_"
+end
+
+function ai_singleplayer:writePlayerDelta(piece, coords)
+	self.player_delta = self.game:serializeDelta(self.player_delta, piece, coords)
+end
+
+function ai_singleplayer:writePlayerSuper()
+	self.player_delta = self.game:serializeSuper(self.player_delta)
 end
 
 return common.class("AI_Singleplayer", ai_singleplayer, require "ai")

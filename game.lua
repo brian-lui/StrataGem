@@ -176,14 +176,14 @@ function Game:writeDeltas()
 	local text
 	if self.type == "Netplay" then
 		if self.me_player.player_num == 1 then
-			text = client.our_delta .. ":" .. client.their_delta .. ":"
+			text = client.our_delta .. ":" .. client.their_delta .. ":\n"
 		elseif self.me_player.player_num == 2 then
-			text = client.their_delta .. ":" .. client.our_delta .. ":"
+			text = client.their_delta .. ":" .. client.our_delta .. ":\n"
 		else
 			error("invalid me_player.player_num")
 		end
 	elseif self.type == "Singleplayer" then
-		print("tbd")
+		text = self.ai.player_delta .. ":" .. self.ai.ai_delta .. ":\n"
 	end
 
 	love.filesystem.append(self.replay_save_location, text)
@@ -348,7 +348,6 @@ end
 -- returns the delta from playing a super
 function Game:serializeSuper(current_delta)
 	local player = self.me_player
-	assert(player.is_supering, "Received super instruction, but player is not supering")
 	assert(current_delta == "N_", "Received super instruction, but player has action")
 	local serial = player:serializeSuperDeltaParams()
 
@@ -402,6 +401,7 @@ function Game:deserializeDelta(delta_string, player)
 			piece:dropIntoBasin(coords, true)
 
 		elseif v == "S" then
+			assert(player.mp >= player.SUPER_COST, "Insufficient meter for super")
 			player.is_supering = true
 			player.super_params = delta[i+1]
 		end
