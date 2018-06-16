@@ -467,6 +467,10 @@ local function isGamestateSame(game)
 	end
 end
 
+local function printGamestate(game)
+	print(game:serializeState())
+end
+
 local function wolfgangGemSpeedToggle(game)
 	for player in game:players() do
 		if player.character_id == "Wolfgang" then
@@ -489,6 +493,7 @@ local Unittests = {
 	f1 = saveGamestate,
 	f2 = loadGamestate,
 	f3 = isGamestateSame,
+	f4 = printGamestate,
 	q = p1Serialize,
 	w = wolfgangLightUp,
 	e = charselectScreenCPUCharToggle,

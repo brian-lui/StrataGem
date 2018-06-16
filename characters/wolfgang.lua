@@ -701,8 +701,6 @@ function Wolfgang:serializeSpecials()
 				else
 					error("Piece size is not 1 or 2")
 				end
-
-				ret[#ret+1] = piece.hand_idx .. location
 			end
 		end
 	end
