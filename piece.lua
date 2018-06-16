@@ -421,7 +421,9 @@ function Piece:dropIntoBasin(coords, received_from_opponent)
 	local game, grid, player, hand = self.game, self.game.grid, self.owner, self.owner.hand
 
 	-- not received_from_opponent means it's our piece placing, so we need to send it to them
-	if game.type == "Netplay" and not received_from_opponent then
+	if game.type == "Singleplayer" and not received_from_opponent then
+		-- tbc
+	elseif game.type == "Netplay" and not received_from_opponent then
 		game.client:writeDeltaPiece(self, coords)
 	end
 

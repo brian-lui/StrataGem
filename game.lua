@@ -172,9 +172,21 @@ function Game:writeReplayHeader()
 end
 
 function Game:writeDeltas()
-	for player in self:players() do
-		print("TODO: write delta for player " .. player.player_num)
+	local client = self.client
+	local text
+	if self.type == "Netplay" then
+		if self.me_player.player_num == 1 then
+			text = client.our_delta .. ":" .. client.their_delta .. ":"
+		elseif self.me_player.player_num == 2 then
+			text = client.their_delta .. ":" .. client.our_delta .. ":"
+		else
+			error("invalid me_player.player_num")
+		end
+	elseif self.type == "Singleplayer" then
+		print("tbd")
 	end
+
+	love.filesystem.append(self.replay_save_location, text)
 end
 
 function Game:playReplay(replay_string)
