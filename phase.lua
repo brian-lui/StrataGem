@@ -143,7 +143,9 @@ end
 
 function Phase:resolve(dt)
 	local game = self.game
-	if game.me_player.place_type == nil then print("PLACE TYPE BUG") end
+	assert(game.me_player.place_type, "PLACE TYPE BUG")
+
+	game:writeDeltas()
 	game.grid:updateRushPriority()
 	game.grid:assignGemOriginators()
 

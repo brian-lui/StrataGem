@@ -180,6 +180,8 @@ function Charselect:_createUIButtons()
 					gametype = gamestate.gametype,
 					char1 = self.my_character,
 					char2 = self.opponent_character,
+					playername1 = game.settings.player.name,
+					playername2 = "Sucky AI",
 					background = game.background:idx_to_str(self.game_background),
 					side = 1,
 				}

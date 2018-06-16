@@ -131,7 +131,7 @@ function Game:start(params)
 end
 
 function Game:setSaveFileLocation()
-	function lpad (s) return string.rep("0", 8 - #s) .. s end
+	local function lpad (s) return string.rep("0", 8 - #s) .. s end
 	local index = 1
 	local padded_index = lpad(tostring(index))
 	local filename = os.date("%Y%m%d") .. padded_index .. ".txt"
@@ -144,33 +144,42 @@ function Game:setSaveFileLocation()
 	print("set save location to " .. filename)
 end
 
+--[[
+	1	game version (string)
+	2	game type (string)
+	3	char 1 (string)
+	4	char 2 (string)
+	5	player 1 name (string)
+	6	player 2 name (string)
+	7	background (string)
+	8	seed (number)
+	9	active player side (number)
+-- ]]
 function Game:writeReplayHeader()
-	print("Game version", self.VERSION)
-	print("Game type", self.type)
-	print("Character 1", self.p1.character_id)
-	print("Character 2", self.p2.character_id)
-	print("background", self.current_background_name)
-	local player_side = 0
-	if self.me_player == self.p1 then
-		player_side = 1
-	elseif self.me_player == self.p2 then
-		player_side = 0
-	end
-	print("Player side", player_side)
+	local text = {}
+	text[#text+1] = self.VERSION .. ":"
+	text[#text+1] = self.type .. ":"
+	text[#text+1] = self.p1.character_id .. ":"
+	text[#text+1] = self.p2.character_id .. ":"
+	text[#text+1] = self.p1.player_name .. ":"
+	text[#text+1] = self.p2.player_name .. ":"
+	text[#text+1] = self.current_background_name .. ":"
+	text[#text+1] = self.rng:getSeed() .. ":"
+	text[#text+1] = self.me_player.player_num .. ":"
 
-	--[[
-		game version
-		game type
-		char 1
-		char 2
-		background
-		seed
-		player side
-	-- ]]
+	text = table.concat(text) .. "\n"
+	love.filesystem.append(self.replay_save_location, text)
+end
+
+function Game:writeDeltas()
+	for player in self:players() do
+		print("TODO: write delta for player " .. player.player_num)
+	end
 end
 
 function Game:playReplay(replay_string)
 	-- need to change all of this
+	--[[
 	self:reset()
 	self.rng:setSeed(seed)
 	self.p1 = common.instance(require("characters." .. char1), 1, self)
@@ -185,6 +194,7 @@ function Game:playReplay(replay_string)
 	self.type = "Replay"
 	self.current_background_name = bkground
 	self.statemanager:switch(require "gs_main")
+	--]]
 end
 
 function Game:reset()
@@ -202,7 +212,6 @@ function Game:reset()
 	self.screenshake_frames = 0
 	self.screenshake_vel = 0
 	self.rng:setSeed(os.time())	-- TODO: This probably causes desyncs
-	self.orig_rng_seed = self.rng:getSeed() -- for debugging
 	self.frame = 0
 	self.paused = false
 	self.settings_menu_open = false

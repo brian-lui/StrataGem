@@ -277,6 +277,8 @@ local function resetGame(game)
 		gametype = "Singleplayer",
 		char1 = "wolfgang",
 		char2 = "heath",
+		playername1 = game.settings.player.name,
+		playername2 = "Sucky AI",
 		background = "checkmate",
 		side = 1,
 	}

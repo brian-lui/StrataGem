@@ -85,6 +85,8 @@ function Client:startMatch(recv)
 		gametype = "Netplay",
 		char1 = p1_char,
 		char2 = p2_char,
+		playername1 = "Placeholder P1",
+		playername2 = "Placeholder P2",
 		background = p2_background,
 		side = recv.side,
 		seed = recv.seed,
