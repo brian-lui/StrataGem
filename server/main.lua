@@ -3,7 +3,7 @@
 require 'socket'
 local json = require 'dkjson'
 local server = {
-	VERSION = "70.0"
+	VERSION = "71.0"
 }
 local id_count = 1
 local dudes = {}
@@ -183,6 +183,8 @@ local function startMatch(dude1, dude2)
 		opponent_id = dude2.id,
 		p1_details = dude1.queue_details,
 		p2_details = dude2.queue_details,
+		p1_name = dude1.name,
+		p2_name = dude2.name,
 		seed = rng_seed,
 	}
 	local send2 = {
@@ -191,6 +193,8 @@ local function startMatch(dude1, dude2)
 		opponent_id = dude1.id,
 		p1_details = dude1.queue_details,
 		p2_details = dude2.queue_details,
+		p1_name = dude1.name,
+		p2_name = dude2.name,
 		seed = rng_seed,
 	}
 	local conn1, conn2 = getConnFromID(dude1.id), getConnFromID(dude2.id)

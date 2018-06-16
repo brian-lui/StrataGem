@@ -76,7 +76,7 @@ function Client:startMatch(recv)
 
 	local p1_details, p2_details = recv.p1_details, recv.p2_details
 	local p1_char, p2_char = p1_details.character, p2_details.character
-	local p1_background, p2_background = p1_details.background, p2_details.background
+	local background = recv.side == 1 and p1_details.background or p2_details.background
 
 	self.queuing = false
 	self.playing = true
@@ -85,9 +85,9 @@ function Client:startMatch(recv)
 		gametype = "Netplay",
 		char1 = p1_char,
 		char2 = p2_char,
-		playername1 = "Placeholder P1",
-		playername2 = "Placeholder P2",
-		background = p2_background,
+		playername1 = recv.p1_name,
+		playername2 = recv.p2_name,
+		background = background,
 		side = recv.side,
 		seed = recv.seed,
 	}
