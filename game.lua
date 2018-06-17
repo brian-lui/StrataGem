@@ -194,6 +194,12 @@ function Game:writeDeltas()
 	love.filesystem.append(self.replay_save_location, text)
 end
 
+-- Writes END to the replay so we know it's finished
+-- TODO: better handling
+function Game:writeGameEnd()
+	love.filesystem.append(self.replay_save_location, "END:END:\n")
+end
+
 function Game:playReplay(replay_string)
 	replay_string = replay_string or love.filesystem.read(self.replay_save_location)
 

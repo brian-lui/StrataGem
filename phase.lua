@@ -526,6 +526,7 @@ end
 function Phase:gameOver(dt)
 	local game = self.game
 	game.grid:animateGameOver(game.grid:getLoser())
+	game:writeGameEnd()
 	if game.type == "Netplay" then game.client:endMatch() end
 	self:setPause(self.GAMEOVER_DELAY)
 	self:activatePause("Leave")
