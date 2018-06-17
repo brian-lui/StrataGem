@@ -2,7 +2,9 @@
 local common = require "class.commons"
 local ai_replay = {}
 
-function ai_replay:loadReplay(replay_string)
+-- stores as a table of deltas[turn][player_num]
+function ai_replay:storeDeltas(deltas)
+	self.deltas = deltas
 end
 
 function ai_replay:evaluateActions()

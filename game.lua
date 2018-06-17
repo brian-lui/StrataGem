@@ -190,7 +190,54 @@ function Game:writeDeltas()
 end
 
 function Game:playReplay(replay_string)
-	-- need to change all of this
+	replay_string = replay_string or love.filesystem.read(self.replay_save_location)
+
+	-- convert replay string to table
+	local replay = {}
+	for s in (replay_string):gmatch("(.-)\n") do table.insert(replay, s) end
+
+	-- extract header from deltas, convert to table
+	local header_string = table.remove(replay, 1)
+	local header = {}
+	for s in (header_string):gmatch("(.-):") do table.insert(header, s) end
+
+	-- convert deltas to tables of deltas[turn][player_num]
+	local deltas = {}
+	for i = 1, #replay do
+		deltas[i] = {}
+		for s in (replay[i]):gmatch("(.-):") do table.insert(deltas[i], s) end
+	end	-- need to change all of this
+
+	-- get parameters
+	local version = header[1]
+	local gametype = header[2]
+	local char1 = header[3]
+	local char2 = header[4]
+	local playername1 = header[5]
+	local playername2 = header[6]
+	local background_string = header[7]
+	local rng_seed = header[8]
+
+	print("Version", version, self.VERSION)
+	print("Gametype", gametype)
+	print("Char 1/2", char1, char2)
+	print("Name 1/2", playername1, playername2)
+	print("background", background_string)
+	print("Seed", rng_seed)
+	
+--[[ Mandatory parameters:
+	gametype - Netplay or Singleplayer
+	char1 - string for the character in p1
+	char2 - string for the character in p2
+	playername1 - name of the player in p1
+	playername2 - name of the player in p1
+	background - string for the background
+
+	Optional parameters:
+	side - player's side, defaults to 1
+	seed - number to use as the RNG seed
+--]]
+
 	--[[
 	self:reset()
 	self.rng:setSeed(seed)
@@ -206,6 +253,8 @@ function Game:playReplay(replay_string)
 	self.type = "Replay"
 	self.current_background_name = bkground
 	self.statemanager:switch(require "gs_main")
+
+	self.ai:storeDeltas(deltas)
 	--]]
 end
 
@@ -353,7 +402,6 @@ function Game:serializeSuper(current_delta)
 
 	return "S_" .. serial .. "_"
 end
-
 
 -- takes a delta and plays it to the game
 function Game:deserializeDelta(delta_string, player)
@@ -684,6 +732,8 @@ function Game:deserializeState(state_string)
 	p1:deserializeSpecials(p1_special_str)
 	p2:deserializeSpecials(p2_special_str)
 end
+
+-------------------------------------------------------------------------------
 
 
 --[[ create a clickable object
