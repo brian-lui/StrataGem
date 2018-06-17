@@ -147,7 +147,7 @@ function Phase:resolve(dt)
 	local game = self.game
 	assert(game.me_player.place_type, "PLACE TYPE BUG")
 
-	game:writeDeltas()
+	if game.type ~= "Replay" then game:writeDeltas() end
 	game.grid:updateRushPriority()
 	game.grid:assignGemOriginators()
 
