@@ -506,6 +506,7 @@ local Unittests = {
 	f3 = isGamestateSame,
 	f4 = printGamestate,
 	f5 = playReplayTxt,
+	["1"] = playReplayTxt,
 	q = p1Serialize,
 	w = wolfgangLightUp,
 	e = charselectScreenCPUCharToggle,
