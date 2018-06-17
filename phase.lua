@@ -64,7 +64,7 @@ function Phase:intro(dt)
 	local ready_delay = 30
 	local delay = 120
 
-	if game.type == "Singleplayer" then game.ai:clearDeltas() end
+	if game.type == "Singleplayer" then	game.ai:clearDeltas() end
 	game:setSaveFileLocation()
 	game:writeReplayHeader()
 	game.particles.words.generateReady(game, ready_delay)
@@ -87,7 +87,7 @@ function Phase:action(dt)
 	if game.type == "Singleplayer" then
 		if not ai.finished then ai:evaluateActions(game.them_player) end
 	elseif game.type == "Replay" then
-		print("replay evaluates actions for both players here")
+		if not ai.finished then ai:evaluateActions() end
 	end
 
 	if self.time_to_next <= 0 then
@@ -100,7 +100,7 @@ function Phase:action(dt)
 			if game.me_player.is_supering then ai:writePlayerSuper() end
 			self:setPhase("Resolve")
 		elseif game.type == "Replay" then
-			print("reply performs queued actions for both players here")
+			ai:performQueuedAction()
 			self:setPhase("Resolve")
 		end
 
@@ -537,6 +537,9 @@ function Phase:leave(dt)
 		game.statemanager:switch(require "gs_multiplayerselect")
 	elseif game.type == "Singleplayer" then
 		game.statemanager:switch(require "gs_singleplayerselect")
+	elseif game.type == "Replay" then
+		game.statemanager:switch(require "gs_singleplayerselect")
+		-- TODO: Switch to a replay state
 	end
 end
 

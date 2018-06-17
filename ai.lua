@@ -26,12 +26,22 @@ function ai:queueAction(func, args)
 	self.queuedFunc, self.queuedArgs = func, args
 end
 
+-- for replays only. This is hacky lol
+function ai:queueSecondAction(func, args)
+	self.queuedSecondFunc, self.queuedSecondArgs = func, args
+end
+
 function ai:performQueuedAction()
 	if not self.queuedFunc then
 		error("ai tried to perform nonexistent queued action")
 	end
 	self.queuedFunc(table.unpack(self.queuedArgs))
 	self.queuedFunc, self.queuedArgs = nil, nil	-- Only run once.
+
+	if self.queuedSecondFunc then
+		self.queuedSecondFunc(table.unpack(self.queuedSecondArgs))
+		self.queuedSecondFunc, self.queuedSecondArgs = nil, nil
+	end
 end
 
 function ai:newTurn()
