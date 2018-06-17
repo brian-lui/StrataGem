@@ -85,6 +85,7 @@ end
 	playername1 - name of the player in p1
 	playername2 - name of the player in p1
 	background - string for the background
+	(for replays) deltas - table of deltas[turn][player_num]
 
 	Optional parameters:
 	side - player's side, defaults to 1
@@ -118,6 +119,10 @@ function Game:start(params)
 		self.ai = common.instance(require("ai_netplay"), self, self.them_player)
 	elseif params.gametype == "Singleplayer" then
 		self.ai = common.instance(require("ai_singleplayer"), self, self.them_player)
+	elseif params.gametype == "Replay" then
+		assert(params.deltas, "Deltas not provided for replay")
+		self.ai = common.instance(require("ai_replay"), self, self.them_player)
+		self.ai:storeDeltas(params.deltas)
 	else
 		error("Invalid gametype provided")
 	end
@@ -210,52 +215,24 @@ function Game:playReplay(replay_string)
 
 	-- get parameters
 	local version = header[1]
-	local gametype = header[2]
-	local char1 = header[3]
-	local char2 = header[4]
-	local playername1 = header[5]
-	local playername2 = header[6]
-	local background_string = header[7]
-	local rng_seed = header[8]
+	if version ~= self.VERSION then
+		print("Wrong game version for replay!")
+		print("Replay version: " .. version .. ", game version: " .. self.VERSION)
+		-- TODO: nicer handling
+		return
+	end
 
-	print("Version", version, self.VERSION)
-	print("Gametype", gametype)
-	print("Char 1/2", char1, char2)
-	print("Name 1/2", playername1, playername2)
-	print("background", background_string)
-	print("Seed", rng_seed)
-	
---[[ Mandatory parameters:
-	gametype - Netplay or Singleplayer
-	char1 - string for the character in p1
-	char2 - string for the character in p2
-	playername1 - name of the player in p1
-	playername2 - name of the player in p1
-	background - string for the background
-
-	Optional parameters:
-	side - player's side, defaults to 1
-	seed - number to use as the RNG seed
---]]
-
-	--[[
-	self:reset()
-	self.rng:setSeed(seed)
-	self.p1 = common.instance(require("characters." .. char1), 1, self)
-	self.p2 = common.instance(require("characters." .. char2), 2, self)
-	self.p1.enemy = self.p2
-	self.p2.enemy = self.p1
-
-	self.ai = common.instance(require("ai_replay"), self, self.p2)
-	self.ai:loadReplay("")
-
-	for player in self:players() do player:cleanup() end
-	self.type = "Replay"
-	self.current_background_name = bkground
-	self.statemanager:switch(require "gs_main")
-
-	self.ai:storeDeltas(deltas)
-	--]]
+	self:start{
+		gametype = "Replay",
+		char1 = header[3],
+		char2 = header[4],
+		playername1 = header[5],
+		playername2 = header[6],
+		background = header[7],
+		seed = header[8],
+		side = 1,
+		deltas = deltas,
+	}
 end
 
 function Game:reset()
