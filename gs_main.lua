@@ -30,7 +30,7 @@ function gs_main:enter()
 	local stage = self.stage
 
 	local settings_image
-	if self.type == "Singleplayer" then
+	if self.type == "Singleplayer" or self.type == "Replay" then
 		settings_image = image.buttons_pause
 	elseif self.type == "Netplay" then
 		settings_image = image.buttons_stop
@@ -74,12 +74,16 @@ function gs_main:enter()
 end
 
 function gs_main:openSettingsMenu()
-	if self.type == "Singleplayer" then self.paused = true end
+	if self.type == "Singleplayer" or self.type == "Replay" then
+		self.paused = true
+	end
 	self:_openSettingsMenu(gs_main)
 end
 
 function gs_main:closeSettingsMenu()
-	if self.type == "Singleplayer" then self.paused = false end
+	if self.type == "Singleplayer" or self.type == "Replay" then
+		self.paused = false
+	end
 	self:_closeSettingsMenu(gs_main)
 end
 

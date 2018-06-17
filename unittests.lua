@@ -473,8 +473,14 @@ local function printGamestate(game)
 	print(game:serializeState())
 end
 
-local function printReplay(game)
-	game:playReplay()
+-- plays a file called replay.txt
+local function playReplayTxt(game)
+	if love.filesystem.exists("replay.txt") then
+		local replay_string = love.filesystem.read("replay.txt")
+		game:playReplay(replay_string)
+	else
+		print("no replay.txt file found!")
+	end
 end
 local function wolfgangGemSpeedToggle(game)
 	for player in game:players() do
@@ -499,7 +505,7 @@ local Unittests = {
 	f2 = loadGamestate,
 	f3 = isGamestateSame,
 	f4 = printGamestate,
-	f5 = printReplay,
+	f5 = playReplayTxt,
 	q = p1Serialize,
 	w = wolfgangLightUp,
 	e = charselectScreenCPUCharToggle,
