@@ -1,20 +1,5 @@
-local love = _G.love
-local TLfres = require "tlfres"
 
--- For compatibility; Lua 5.3 moved unpack to table.unpack
-_G.table.unpack = _G.table.unpack or _G.unpack
 
-print(love.filesystem.getSaveDirectory())
-
-local DRAWSPACE_WIDTH = 1920
-local DRAWSPACE_HEIGHT = 1080
-
-drawspace = {
-	width = DRAWSPACE_WIDTH,
-	height = DRAWSPACE_HEIGHT,
-	scale = TLfres.getScale(DRAWSPACE_WIDTH, DRAWSPACE_HEIGHT),
-	tlfres = TLfres,
-}
 
 ID = {
 	reset = function(self)
@@ -25,11 +10,4 @@ ID = {
 		self.character_select = 0
 	end
 }
-
-FONT = {
-	REGULAR = love.graphics.newFont('/fonts/anonymous.ttf', 20),
-	MEDIUM = love.graphics.newFont('/fonts/anonymous.ttf', 30),
-	SLIGHTLY_BIGGER = love.graphics.newFont('/fonts/anonymous.ttf', 40),
-}
-
 ID:reset()

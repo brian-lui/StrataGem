@@ -55,6 +55,7 @@ Game.TWEEN_TO_LANDING_ZONE_DURATION = 24
 Game.VERSION = "71.0"
 
 function Game:init()
+	self.inits = require "initsactually"
 	self.settings = require "settings"
 	self.rng = love.math.newRandomGenerator()
 	self.unittests = common.instance(require "unittests", self)

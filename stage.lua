@@ -6,12 +6,11 @@ local image = require 'image'
 
 local stage = {}
 
-local HALF_SUPER_WIDTH = 0.07 * drawspace.width
-local HALF_SUPER_HEIGHT = 0.09 * drawspace.height
-
 function stage:init(game)
-	self.width = drawspace.width
-	self.height = drawspace.height
+	local HALF_SUPER_WIDTH = 0.07 * game.inits.drawspace.width
+	local HALF_SUPER_HEIGHT = 0.09 * game.inits.drawspace.height
+	self.width = game.inits.drawspace.width
+	self.height = game.inits.drawspace.height
 	self.gem_width = image.gems_red:getWidth()
 	self.gem_height = image.gems_red:getHeight()
 	self.x_mid = self.width / 2

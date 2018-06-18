@@ -4,12 +4,10 @@ local Piece = require 'piece'
 local GemPlatform = require 'gemplatform'
 
 local Hand = {}
-Hand.PLATFORM_SPEED = drawspace.height / 192 -- pixels per second for pieces to shuffle
 
 function Hand:init(params)
 	self.game = params.game
 	local stage = self.game.stage
-
 	self.owner = params.player
 	self.player_num = self.owner.player_num
 
@@ -25,6 +23,9 @@ function Hand:init(params)
 	self.damage = 4 -- each 4 damage is one more platform movement
 	self.turn_start_damage = 4	-- damage at start of turn, for particles calcs
 	self.CONSECUTIVE_PLATFORM_DESTROY_DELAY = 10
+
+	-- pixels per second for pieces to shuffle
+	self.PLATFORM_SPEED = self.game.inits.drawspace.height / 192
 end
 
 function Hand:create(params)
@@ -77,7 +78,7 @@ function Hand:movePiece(start_pos, end_pos)
 
 	-- anims
 	local dist = self.game.stage.height * 0.1375 * (end_pos - start_pos)
-	local duration = math.abs(dist / Hand.PLATFORM_SPEED)
+	local duration = math.abs(dist / self.PLATFORM_SPEED)
 	local to_move = self[start_pos].piece
 	to_move.hand_idx = end_pos
 	to_move:resolve()
@@ -104,7 +105,7 @@ function Hand:movePlatform(start_pos, end_pos)
 
 	-- anims
 	local dist = self.game.stage.height * 0.1375 * (end_pos - start_pos)
-	local duration = math.abs(dist / Hand.PLATFORM_SPEED)
+	local duration = math.abs(dist / self.PLATFORM_SPEED)
 
 	self[start_pos].platform.pic:change{
 		x = function() return self:getx(self[end_pos].platform.pic.y) end,

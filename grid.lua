@@ -6,9 +6,6 @@ local deepcpy = require "utilities".deepcpy
 
 local Grid = {}
 
-Grid.DROP_SPEED = drawspace.height / 50 -- pixels per frame for gems to drop
-Grid.DROP_MULTIPLE_SPEED = drawspace.height / 180 -- multiplier for scoring_combo
-
 --[[
 Rows 1-2: doublecast gem pending position.
 Rows 3-4: rush gem pending position.
@@ -20,6 +17,9 @@ Rows 13-20: basin. Row 13 is at top, 20 at bottom.
 Row 21: bottom grid row where trash gems tween from. (now it's just a sentinel)
 --]]
 function Grid:init(game)
+	self.DROP_SPEED = game.inits.drawspace.height / 50 -- pixels per frame
+	self.DROP_MULTIPLE_SPEED = game.inits.drawspace.height / 180 -- multiplier for scoring_combo
+
 	self.COLUMNS = 8
 	self.ROWS = 20
 	self.LOSE_ROW = 12 -- game over if a gem ends the turn in this row or above

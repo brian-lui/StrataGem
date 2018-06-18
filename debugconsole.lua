@@ -1,5 +1,4 @@
 local love = _G.love
-local FONT = _G.FONT
 local common = require "class.commons" -- class support
 local pointIsInRect = require "utilities".pointIsInRect
 local image = require "image"
@@ -87,7 +86,7 @@ function DebugConsole:_drawPlayerNames()
 	local p1_name, p2_name = game.p1.player_name, game.p2.player_name
 
 	love.graphics.push("all")
-		love.graphics.setFont(FONT.SLIGHTLY_BIGGER)
+		love.graphics.setFont(game.inits.FONT.SLIGHTLY_BIGGER)
 		love.graphics.printf(
 			p1_name,
 			stage.width * 0.02,
@@ -109,7 +108,7 @@ end
 function DebugConsole:_drawGrid()
 	local grid = self.grid
 	love.graphics.push("all")
-		love.graphics.setFont(FONT.MEDIUM)
+		love.graphics.setFont(self.game.inits.FONT.MEDIUM)
 		love.graphics.setColor(0, 255, 0)
 		for r = 1, grid.ROWS + 1 do
 			love.graphics.print(r, 200, grid.y[r])
@@ -205,7 +204,7 @@ end
 function DebugConsole:_drawGamestate()
 	local grid = self.grid
 	love.graphics.push("all")
-		love.graphics.setFont(FONT.MEDIUM)
+		love.graphics.setFont(self.game.inits.FONT.MEDIUM)
 		local toprint = {}
 		local i = 1
 		local colors = {red = "R", blue = "B", green = "G", yellow = "Y"}
@@ -238,17 +237,18 @@ function DebugConsole:_drawDamage()
 		local p1print = "Actual damage " .. p1hand.damage .. "\nShown damage " .. p1_displayed_damage
 		local p2print = "Actual damage " .. p2hand.damage .. "\nShown damage " .. p2_displayed_damage
 
-		love.graphics.setFont(FONT.SLIGHTLY_BIGGER)
+		love.graphics.setFont(game.inits.FONT.SLIGHTLY_BIGGER)
 		love.graphics.print(p1print, p1hand[2].x - 200, 900)
 		love.graphics.print(p2print, p2hand[2].x - 100, 900)
 	love.graphics.pop()
 end
 
 function DebugConsole:_drawTurnNumber()
-	local toprint = "Turn: " .. self.game.turn
+	local game = self.game
+	local toprint = "Turn: " .. game.turn
 	local stage = self.stage
 	love.graphics.push("all")
-		love.graphics.setFont(FONT.SLIGHTLY_BIGGER)
+		love.graphics.setFont(game.inits.FONT.SLIGHTLY_BIGGER)
 		love.graphics.printf(
 			toprint,
 			stage.width * 0.01,
@@ -260,10 +260,11 @@ function DebugConsole:_drawTurnNumber()
 end
 
 function DebugConsole:_drawGameFrame()
-	local toprint = "Frame: " .. self.game.frame
+	local game = self.game
+	local toprint = "Frame: " .. game.frame
 	local stage = self.stage
 	love.graphics.push("all")
-		love.graphics.setFont(FONT.SLIGHTLY_BIGGER)
+		love.graphics.setFont(game.inits.FONT.SLIGHTLY_BIGGER)
 		love.graphics.printf(
 			toprint,
 			0,
@@ -277,7 +278,7 @@ end
 function DebugConsole:_drawOverlays()
 	local stage = self.stage
 	love.graphics.push("all")
-		love.graphics.setFont(FONT.SLIGHTLY_BIGGER)
+		love.graphics.setFont(self.game.inits.FONT.SLIGHTLY_BIGGER)
 		love.graphics.printf(
 			self.overlay_left_function(),
 			stage.width * 0.01,
@@ -306,7 +307,7 @@ function DebugConsole:_drawPrints()
 	local y = 30
 	local Y_STEP = 30
 	love.graphics.push("all")
-		love.graphics.setFont(FONT.MEDIUM)
+		love.graphics.setFont(game.inits.FONT.MEDIUM)
 		for i = #self.prints, 1, -1 do
 			local frame_diff = game.frame - self.prints[i][1]
 			local frame_percentage = frame_diff / self.PRINT_DURATION
@@ -326,7 +327,7 @@ function DebugConsole:draw()
 	if self.display_all then
 		love.graphics.push("all")
 			love.graphics.setColor(0, 0, 0)
-			love.graphics.setFont(FONT.REGULAR)
+			love.graphics.setFont(self.game.inits.FONT.REGULAR)
 			if self.display_grid then self:_drawGrid() end
 			if self.display_overlays then self:_drawOverlays() end
 			if self.display_player_names then self:_drawPlayerNames() end
