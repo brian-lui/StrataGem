@@ -6,10 +6,17 @@ local Pic = require 'pic'
 
 local Gail = {}
 
-Gail.full_size_image = love.graphics.newImage('images/portraits/gail.png')
+Gail.large_image = love.graphics.newImage('images/portraits/gail.png')
 Gail.small_image = love.graphics.newImage('images/portraits/gailsmall.png')
 Gail.character_id = "Gail"
-Gail.meter_gain = {red = 4, blue = 4, green = 4, yellow = 8, none = 4, wild = 4}
+Gail.meter_gain = {
+	red = 4,
+	blue = 4,
+	green = 4,
+	yellow = 8,
+	none = 4,
+	wild = 4,
+}
 Gail.super_images = {
 	word = image.ui_super_text_yellow,
 	empty = image.ui_super_empty_yellow,

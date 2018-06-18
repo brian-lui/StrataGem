@@ -8,7 +8,7 @@ function Phase:init(game)
 	self.INIT_TIME_TO_NEXT = 430 -- frames in each action phase
 	self.PLATFORM_SPIN_DELAY = 30 -- frames to animate platforms exploding
 	self.GAMEOVER_DELAY = 180 -- how long to stay on gameover screen
-	self.NETPLAY_DELTA_WAIT = 360 -- how many frames to wait for delta before lost connection
+	self.NETPLAY_DELTA_WAIT = 360 -- frames to wait for delta before lost connection
 end
 
 function Phase:reset()
@@ -21,7 +21,7 @@ function Phase:reset()
 	self.garbage_this_round = 0
 	self.force_minimum_1_piece = true -- get at least 1 piece per turn
 	self.update_gravity_during_pause = false
-	self.damage_particle_duration = 0 -- for ResolvedMatches phase. I couldn't find better place to put it
+	self.damage_particle_duration = 0 -- for ResolvedMatches phase
 end
 
 -------------------------------------------------------------------------------
@@ -43,7 +43,9 @@ end
 function Phase:_pause(dt)
 	if self.frames_until_next_phase > 0 then
 		self.frames_until_next_phase = self.frames_until_next_phase - 1
-		if self.update_gravity_during_pause then self.game.grid:updateGravity(dt) end
+		if self.update_gravity_during_pause then
+			self.game.grid:updateGravity(dt)
+		end
 	else
 		self.game.current_phase = self.next_phase
 		self.update_gravity_during_pause = nil
@@ -244,7 +246,7 @@ end
 function Phase:getMatchedGems(dt)
 	local game = self.game
 	local grid = game.grid
-	local _, matches = grid:getMatchedGems() -- sets is_a_horizontal/vertical_match flags for matches
+	local _, matches = grid:getMatchedGems() -- also sets is_a_horizontal/vertical_match flags for matches
 	if matches > 0 then grid:flagMatchedGems() end
 
 	local delay = 0
@@ -328,7 +330,9 @@ function Phase:resolvedMatches(dt)
 			platforms_get_destroyed = player.hand:damagedPlatformsExist()
 		end
 	end
-	if platforms_get_destroyed then delay = delay + self.PLATFORM_SPIN_DELAY end
+	if platforms_get_destroyed then
+		delay = delay + self.PLATFORM_SPIN_DELAY
+	end
 
 	self:setPause(delay)
 
@@ -375,7 +379,7 @@ function Phase:garbageRowCreation(dt)
 	local game = self.game
 	local grid = game.grid
 
-	game.particles:clearCount()	-- clear here so the platforms display redness/spin correctly
+	game.particles:clearCount()	-- clear here so platforms show correct redness/spin
 	grid:updateGravity(dt)
 
 	if game.particles:getNumber("GarbageParticles") == 0 then
@@ -577,15 +581,16 @@ Phase.lookup = {
 }
 
 function Phase:run(...)
-	if not self.game.paused then
-		local todo = Phase.lookup[self.game.current_phase]
-		assert(todo, "You did a typo for the current phase idiot - " .. self.game.current_phase)
-		for player in self.game:players() do
+	local game = self.game
+	if not game.paused then
+		local todo = Phase.lookup[game.current_phase]
+		assert(todo, "You did a typo for the current phase - " .. game.current_phase)
+		for player in game:players() do
 			player.hand:update(...)
 			player:update(...)
 		end
 		todo(self, ...)
-		self.game.queue:update()
+		game.queue:update()
 	end
 end
 

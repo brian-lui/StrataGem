@@ -3,26 +3,69 @@ local common = require "class.commons"
 local stringEndsWith = require "utilities".stringEndsWith
 
 local soundfiles = {
-	bgm_buzz = {filename = "music/buzz.ogg", loop_from = 70.235, loop_to = 1.058},
-	bgm_diggory = {filename = "music/diggory.ogg", loop_from = 76.307, loop_to = 8.000},
-	bgm_gail = {filename = "music/gail.ogg", loop_from = 61.714, loop_to = 6.857},
-	bgm_hailey = {filename = "music/hailey.ogg", loop_from = 72.000, loop_to = 2.666},
-	bgm_heath = {filename = "music/heath.ogg", loop_from = 79.666, loop_to = 3.666},
-	bgm_holly = {filename = "music/holly.ogg", loop_from = 82.000, loop_to = 2.000},
-	bgm_ivy = {filename = "music/ivy.ogg", loop_from = 65.142, loop_to = 3.428},
-	bgm_menu = {filename = "music/menu.ogg", loop_from = 34.758, loop_to = 1.655},
-	bgm_mort = {filename = "music/mort.ogg", loop_from = 135.400, loop_to = 67.200},
-	bgm_walter = {filename = "music/walter.ogg", loop_from = 72.923, loop_to = 1.846},
-	bgm_wolfgang = {filename = "music/wolfgang.ogg", loop_from = 132.727, loop_to = 20.909},
+	bgm_buzz = {
+		filename = "music/buzz.ogg",
+		loop_from = 70.235,
+		loop_to = 1.058,
+	},
+	bgm_diggory = {
+		filename = "music/diggory.ogg",
+		loop_from = 76.307,
+		loop_to = 8.000,
+	},
+	bgm_gail = {
+		filename = "music/gail.ogg",
+		loop_from = 61.714,
+		loop_to = 6.857,
+	},
+	bgm_hailey = {
+		filename = "music/hailey.ogg",
+		loop_from = 72.000,
+		loop_to = 2.666,
+	},
+	bgm_heath = {
+		filename = "music/heath.ogg",
+		loop_from = 79.666,
+		loop_to = 3.666,
+	},
+	bgm_holly = {
+		filename = "music/holly.ogg",
+		loop_from = 82.000,
+		loop_to = 2.000,
+	},
+	bgm_ivy = {
+		filename = "music/ivy.ogg",
+		loop_from = 65.142,
+		loop_to = 3.428,
+	},
+	bgm_menu = {
+		filename = "music/menu.ogg",
+		loop_from = 34.758,
+		loop_to = 1.655,
+	},
+	bgm_mort = {
+		filename = "music/mort.ogg",
+		loop_from = 135.400,
+		loop_to = 67.200,
+	},
+	bgm_walter = {
+		filename = "music/walter.ogg",
+		loop_from = 72.923,
+		loop_to = 1.846,
+	},
+	bgm_wolfgang = {
+		filename = "music/wolfgang.ogg",
+		loop_from = 132.727,
+		loop_to = 20.909,
+	},
 }
 
-local sfx_files = {"dummy", "button", "buttonback", "buttonsuper", "buttonbacksuper",
-	"buttoncharacter", "gembreak1", "gembreak2", "gembreak3", "gembreak4",
-	"gembreak5", "gembreakgrey", "gemrotate", "gemdrop", "rush", "doublecast",
-	"fountaingo", "fountainrush", "fountaindoublecast", "superactivate", "starbreak",
-	"trashrow", "countdown3", "countdown2", "countdown1", "healing",
-
-	--"heathpassive",
+local sfx_files = {"dummy", "button", "buttonback", "buttonsuper",
+	"buttonbacksuper", "buttoncharacter", "gembreak1", "gembreak2",
+	"gembreak3", "gembreak4", "gembreak5", "gembreakgrey", "gemrotate",
+	"gemdrop", "rush", "doublecast", "fountaingo", "fountainrush",
+	"fountaindoublecast", "superactivate", "starbreak", "trashrow",
+	"countdown3", "countdown2", "countdown1", "healing",
 }
 for _, v in pairs(sfx_files) do
 	soundfiles[v] = {filename = "sound/" .. v .. ".ogg"}
@@ -48,21 +91,22 @@ function SoundObject:remove()
 	self.manager.active_sounds[self.sound_name][self.start_frame] = nil
 end
 
--- no_repeats is an optional trigger. If true, then it won't replay it 2 frames later,
+-- no_repeats is optional. If true, then it won't replay it 2 frames later,
 -- instead it will just not create any sound effect
 function SoundObject.generate(game, sound_name, is_bgm, no_repeats)
+	local sound = game.sound
 	local s = soundfiles[sound_name]
 
 	if stringEndsWith(sound_name, ".ogg") then
 		s = {filename = sound_name}
 		-- register it too
-		game.sound.active_sounds[sound_name] = game.sound.active_sounds[sound_name] or {}
-		game.sound.last_played_frame[sound_name] = game.sound.last_played_frame[sound_name] or -1
+		sound.active_sounds[sound_name] = sound.active_sounds[sound_name] or {}
+		sound.last_played_frame[sound_name] = sound.last_played_frame[sound_name] or -1
 	end
 
 	if s then
 		local start_frame = game.frame
-		local previous_play = game.sound.last_played_frame[sound_name]
+		local previous_play = sound.last_played_frame[sound_name]
 		if start_frame <= (previous_play + 1) then -- delay by 2 frames
 			if no_repeats then return end
 			start_frame = previous_play + 2
@@ -77,8 +121,8 @@ function SoundObject.generate(game, sound_name, is_bgm, no_repeats)
 			loop_to = s.loop_to or -1,
 		}
 
-		local object = common.instance(SoundObject, game.sound, params)
-		game.sound.last_played_frame[sound_name] = start_frame
+		local object = common.instance(SoundObject, sound, params)
+		sound.last_played_frame[sound_name] = start_frame
 		return object
 	else
 		print("invalid sound requested ", sound_name)
@@ -122,7 +166,8 @@ function SoundObject:setPosition(x, y, z)
 end
 
 -- sets volume to fade in from 0
--- frames is optional. volume_mult is optional, stated as a multiple of the default volume
+-- frames is optional, defaults to 30
+-- volume_mult is optional, stated as a multiple of the default volume
 function SoundObject:fadeIn(frames_taken, volume_mult)
 	print("fading in")
 	frames_taken = frames_taken or 30
@@ -138,10 +183,12 @@ end
 
 -- sets volume to fade out from current volume to 0
 -- frames is optional
+-- Not implemented yet
 function SoundObject:fadeOut(frames)
 end
 
--- will loop if set to true. optional for time to loop from, and time to loop to
+-- will loop if set to true.
+-- optional for time to loop from, and time to loop to
 function SoundObject:setLooping(is_looping, loop_from, loop_to)
 	self.loop_from = loop_from or self.loop_from
 	self.loop_to = loop_to or self.loop_to
@@ -165,7 +212,9 @@ function Sound:update()
 	local frame = self.game.frame
 	for _, sound_name in pairs(self.active_sounds) do
 		for start_frame, instance in pairs(sound_name) do
-			if instance:isStopped() and frame > start_frame then instance:remove() end
+			if instance:isStopped() and frame > start_frame then
+				instance:remove()
+			end
 
 			if instance.fade_in then
 				local cur_volume = instance:getVolume()

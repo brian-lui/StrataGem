@@ -6,10 +6,17 @@ local image = require 'image'
 
 local Diggory = {}
 
-Diggory.full_size_image = love.graphics.newImage('images/portraits/diggory.png')
+Diggory.large_image = love.graphics.newImage('images/portraits/diggory.png')
 Diggory.small_image = love.graphics.newImage('images/portraits/diggorysmall.png')
 Diggory.character_id = "Diggory"
-Diggory.meter_gain = {red = 4, blue = 4, green = 4, yellow = 8, none = 4, wild = 4}
+Diggory.meter_gain = {
+	red = 4,
+	blue = 4,
+	green = 4,
+	yellow = 8,
+	none = 4,
+	wild = 4,
+}
 Diggory.super_images = {
 	word = image.ui_super_text_yellow,
 	empty = image.ui_super_empty_yellow,

@@ -3,9 +3,10 @@ local lily = require 'lily'
 
 local buttons = {
 	"vscpu", "vscpupush", "netplay", "netplaypush", "back", "backpush",
-	"details", "detailspush", "start", "startpush", "backgroundleft", "backgroundright",
-	"lobbycreatenew", "lobbyqueueranked", "lobbycancelsearch", "pause", "stop",
-	"settings", "settingspush", "yes", "yespush", "no", "nopush", "quit", "quitpush",
+	"details", "detailspush", "start", "startpush", "backgroundleft",
+	"backgroundright", "lobbycreatenew", "lobbyqueueranked",
+	"lobbycancelsearch", "pause", "stop", "settings", "settingspush", "yes",
+	"yespush", "no", "nopush", "quit", "quitpush",
 }
 
 local unclickables = {
@@ -141,7 +142,9 @@ local fallback = {
 	__index = function(t, k)
 		print("loading image as fallback " .. k)
 		local img
-		local success = pcall(function() img = love.graphics.newImage(image_names[k]) end)
+		local success = pcall(
+			function() img = love.graphics.newImage(image_names[k]) end
+		)
 		assert(success, "Failed to load " .. k)
 		t[k] = img
 		return img
@@ -178,9 +181,13 @@ function image.lookup.particle_freq(color)
 	local image_num_freq = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 3}
 	local image_num = image_num_freq[math.random(#image_num_freq)]
 	local image_color = color
-	if color == "wild" then image_color = gem_colors[math.random(#gem_colors)] end
+	if color == "wild" then
+		image_color = gem_colors[math.random(#gem_colors)]
+	end
 	local image_name = "particles_large_" .. image_color .. image_num
-	if color == "none" then image_name = "dummy" end
+	if color == "none" then
+		image_name = "dummy"
+	end
 	return image[image_name]
 end
 

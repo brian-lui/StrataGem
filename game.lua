@@ -57,10 +57,10 @@ Game.VERSION = "71.0"
 function Game:init()
 	self.settings = require "settings"
 	self.rng = love.math.newRandomGenerator()
-	self.unittests = common.instance(require "unittests", self) -- debug testing
+	self.unittests = common.instance(require "unittests", self)
 	self.phase = common.instance(require "phase", self)
 	self.sound = common.instance(require "sound", self)
-	self.stage = common.instance(require "stage", self)	-- playing field area and grid
+	self.stage = common.instance(require "stage", self)	-- playing field
 	self.grid = common.instance(require "grid", self)
 	self.uielements = common.instance(require "uielements", self)
 	self.p1 = common.instance(require "character", 1, self)	-- Dummies
@@ -223,7 +223,8 @@ function Game:playReplay(replay_string)
 	local version = header[1]
 	if version ~= self.VERSION then
 		print("Wrong game version for replay!")
-		print("Replay version: " .. version .. ", game version: " .. self.VERSION)
+		print("Replay version: " .. version)
+		print("Game version: " .. self.VERSION)
 		-- TODO: nicer handling
 		return
 	end
@@ -255,7 +256,7 @@ function Game:reset()
 	self.grid_wait = 0
 	self.screenshake_frames = 0
 	self.screenshake_vel = 0
-	self.rng:setSeed(os.time())	-- TODO: This probably causes desyncs
+	self.rng:setSeed(os.time())
 	self.frame = 0
 	self.paused = false
 	self.settings_menu_open = false
@@ -432,7 +433,7 @@ function Game:deserializeDelta(delta_string, player)
 			piece:dropIntoBasin(coords, true)
 
 		elseif v == "S" then
-			assert(player.mp >= player.SUPER_COST, "Insufficient meter for super")
+			assert(player.mp >= player.SUPER_COST, "Not enough meter to super")
 			player.is_supering = true
 			player.super_params = delta[i+1]
 		end
@@ -461,7 +462,7 @@ Encoding:
 		e.g. 4_35_4_
 	3) [p2 burst meter]_[p2 super]_[p2 damage]_
 		e.g. 5_23_6_
-	4) 64 byte string, 8 rows, from top left across to bottom right. [color] or 0_
+	4) 64 byte string, 8x8, from top left across to bottom right. [color] or 0_
 		e.g. 000000000000000000000000000000000000000000000000RRYBG000RYRBGGYB_
 	5) P1 pieces from 1-5, [color][color]_
 		e.g. RY_YY____
@@ -567,8 +568,12 @@ function Game:deserializeState(state_string)
 	assert(#state == 23, "Malformed state string " .. #state)
 
 	local p1char, p2char = state[1], state[2]
-	local p1burst, p1super, p1damage = tonumber(state[3]), tonumber(state[4]), tonumber(state[5])
-	local p2burst, p2super, p2damage = tonumber(state[6]), tonumber(state[7]), tonumber(state[8])
+	local p1burst = tonumber(state[3])
+	local p1super = tonumber(state[4])
+	local p1damage = tonumber(state[5])
+	local p2burst = tonumber(state[6])
+	local p2super = tonumber(state[7])
+	local p2damage = tonumber(state[8])
 	local grid_str = state[9]
 	local p1_hand = {state[10], state[11], state[12], state[13], state[14]}
 	local p2_hand = {state[15], state[16], state[17], state[18], state[19]}
@@ -607,7 +612,7 @@ function Game:deserializeState(state_string)
 		z = "empty",
 	}
 	-- overwrite grid
-	local function writeGridString(row, col, color) -- get string representation of grid
+	local function writeGridString(row, col, color)
 		local loc = self.grid[row][col]
 		loc.gem = false
 
@@ -728,7 +733,9 @@ end
 function Game:_createButton(gamestate, params)
 	params = params or {}
 	if params.name == nil then print("No object name received!") end
-	if params.image_pushed == nil then print("No push image received for " .. params.name .. "!") end
+	if params.image_pushed == nil then
+		print("Caution: no push image received for " .. params.name .. "!")
+	end
 
 	local button = Pic:create{
 		game = self,
@@ -741,15 +748,22 @@ function Game:_createButton(gamestate, params)
 		force_max_alpha = params.force_max_alpha,
 	}
 
-	button:change{duration = params.duration, x = params.end_x, y = params.end_y,
+	button:change{
+		duration = params.duration,
+		x = params.end_x,
+		y = params.end_y,
 		transparency = params.end_transparency or 255,
-		easing = params.easing or "linear", exit_func = params.exit_func}
+		easing = params.easing or "linear",
+		exit_func = params.exit_func,
+	}
 	button.pushed = params.pushed or function(_self)
 		_self.game.sound:newSFX(params.pushed_sfx or "button")
 		_self:newImage(params.image_pushed)
 	end
 	button.released = params.released or function(_self)
-		if params.released_sfx then _self.game.sound:newSFX(params.released_sfx) end
+		if params.released_sfx then
+			_self.game.sound:newSFX(params.released_sfx)
+		end
 		_self:newImage(params.image)
 	end
 	button.action = params.action
@@ -776,9 +790,15 @@ function Game:_createImage(gamestate, params)
 		force_max_alpha = params.force_max_alpha,
 	}
 
-	button:change{duration = params.duration, x = params.end_x, y = params.end_y,
-		transparency = params.end_transparency or 255, easing = params.easing,
-		remove = params.remove, exit_func = params.exit_func}
+	button:change{
+		duration = params.duration,
+		x = params.end_x,
+		y = params.end_y,
+		transparency = params.end_transparency or 255,
+		easing = params.easing,
+		remove = params.remove,
+		exit_func = params.exit_func,
+	}
 	return button
 end
 
@@ -789,12 +809,30 @@ function Game:_openSettingsMenu(gamestate)
 	local static = gamestate.ui.popup_static
 	self.settings_menu_open = true
 	self:darkenScreen()
-	static.settings_text:change{duration = 15, transparency = 255}
-	static.settingsframe:change{duration = 15, transparency = 255}
-	clickable.open_quit_menu:change{duration = 0, x = stage.settings_locations.quit_button.x}
-	clickable.open_quit_menu:change{duration = 15, transparency = 255}
-	clickable.close_settings_menu:change{duration = 0, x = stage.settings_locations.close_menu_button.x}
-	clickable.close_settings_menu:change{duration = 15, transparency = 255}
+	static.settings_text:change{
+		duration = 15,
+		transparency = 255,
+	}
+	static.settingsframe:change{
+		duration = 15,
+		transparency = 255,
+	}
+	clickable.open_quit_menu:change{
+		duration = 0,
+		x = stage.settings_locations.quit_button.x,
+	}
+	clickable.open_quit_menu:change{
+		duration = 15,
+		transparency = 255
+	}
+	clickable.close_settings_menu:change{
+		duration = 0,
+		x = stage.settings_locations.close_menu_button.x,
+	}
+	clickable.close_settings_menu:change{
+		duration = 15,
+		transparency = 255,
+	}
 end
 
 -- change to the quitconfirm menu
@@ -805,14 +843,40 @@ function Game:_openQuitConfirmMenu(gamestate)
 	self.settings_menu_open = true
 	self:darkenScreen()
 
-	clickable.confirm_quit:change{duration = 0, x = stage.settings_locations.confirm_quit_button.x}
-	clickable.confirm_quit:change{duration = 15, transparency = 255}
-	clickable.close_quit_menu:change{duration = 0, x = stage.settings_locations.cancel_quit_button.x}
-	clickable.close_quit_menu:change{duration = 15, transparency = 255}
-	static.settings_text:change{duration = 10, transparency = 0}
-	static.sure_to_quit:change{duration = 15, transparency = 255}
-	clickable.open_quit_menu:change{duration = 0, x = -stage.width, transparency = 0}
-	clickable.close_settings_menu:change{duration = 0, x = -stage.width, transparency = 0}
+	clickable.confirm_quit:change{
+		duration = 0,
+		x = stage.settings_locations.confirm_quit_button.x,
+	}
+	clickable.confirm_quit:change{
+		duration = 15,
+		transparency = 255,
+	}
+	clickable.close_quit_menu:change{
+		duration = 0,
+		x = stage.settings_locations.cancel_quit_button.x,
+	}
+	clickable.close_quit_menu:change{
+		duration = 15,
+		transparency = 255,
+	}
+	static.settings_text:change{
+		duration = 10,
+		transparency = 0,
+	}
+	static.sure_to_quit:change{
+		duration = 15,
+		transparency = 255,
+	}
+	clickable.open_quit_menu:change{
+		duration = 0,
+		x = -stage.width,
+		transparency = 0,
+	}
+	clickable.close_settings_menu:change{
+		duration = 0,
+		x = -stage.width,
+		transparency = 0,
+	}
 end
 
 -- change back to the settings menu
@@ -823,14 +887,40 @@ function Game:_closeQuitConfirmMenu(gamestate)
 	self.settings_menu_open = true
 	self:darkenScreen()
 
-	clickable.confirm_quit:change{duration = 0, x = -stage.width, transparency = 0}
-	clickable.close_quit_menu:change{duration = 0, x = -stage.width, transparency = 0}
-	static.settings_text:change{duration = 15, transparency = 255}
-	static.sure_to_quit:change{duration = 10, transparency = 0}
-	clickable.open_quit_menu:change{duration = 0, x = stage.settings_locations.quit_button.x}
-	clickable.open_quit_menu:change{duration = 15, transparency = 255}
-	clickable.close_settings_menu:change{duration = 0, x = stage.settings_locations.close_menu_button.x}
-	clickable.close_settings_menu:change{duration = 15, transparency = 255}
+	clickable.confirm_quit:change{
+		duration = 0,
+		x = -stage.width,
+		transparency = 0,
+	}
+	clickable.close_quit_menu:change{
+		duration = 0,
+		x = -stage.width,
+		transparency = 0,
+	}
+	static.settings_text:change{
+		duration = 15,
+		transparency = 255,
+	}
+	static.sure_to_quit:change{
+		duration = 10,
+		transparency = 0,
+	}
+	clickable.open_quit_menu:change{
+		duration = 0,
+		x = stage.settings_locations.quit_button.x,
+	}
+	clickable.open_quit_menu:change{
+		duration = 15,
+		transparency = 255,
+	}
+	clickable.close_settings_menu:change{
+		duration = 0,
+		x = stage.settings_locations.close_menu_button.x,
+	}
+	clickable.close_settings_menu:change{
+		duration = 15,
+		transparency = 255,
+	}
 end
 
 function Game:_closeSettingsMenu(gamestate)
@@ -840,13 +930,38 @@ function Game:_closeSettingsMenu(gamestate)
 	self.settings_menu_open = false
 	self:brightenScreen()
 
-	clickable.confirm_quit:change{duration = 0, x = -stage.width, transparency = 0}
-	clickable.close_quit_menu:change{duration = 0, x = -stage.width, transparency = 0}
-	static.settings_text:change{duration = 10, transparency = 0}
-	static.sure_to_quit:change{duration = 10, transparency = 0}
-	static.settingsframe:change{duration = 10, transparency = 0}
-	clickable.open_quit_menu:change{duration = 0, x = -stage.width, transparency = 0}
-	clickable.close_settings_menu:change{duration = 0, x = -stage.width, transparency = 0}
+	clickable.confirm_quit:change{
+		duration = 0,
+		x = -stage.width,
+		transparency = 0,
+	}
+	clickable.close_quit_menu:change{
+		duration = 0,
+		x = -stage.width,
+		transparency = 0,
+	}
+	static.settings_text:change{
+		duration = 10,
+		transparency = 0,
+	}
+	static.sure_to_quit:change{
+		duration = 10,
+		transparency = 0,
+	}
+	static.settingsframe:change{
+		duration = 10,
+		transparency = 0,
+	}
+	clickable.open_quit_menu:change{
+		duration = 0,
+		x = -stage.width,
+		transparency = 0,
+	}
+	clickable.close_settings_menu:change{
+		duration = 0,
+		x = -stage.width,
+		transparency = 0,
+	}
 end
 
 --[[	optional arguments:
@@ -870,7 +985,9 @@ function Game:_createSettingsMenu(gamestate, params)
 		end_x = params.x or stage.settings_button[gamestate.name].x,
 		end_y = params.y or stage.settings_button[gamestate.name].y,
 		action = function()
-			if not self.settings_menu_open then gamestate.openSettingsMenu(self) end
+			if not self.settings_menu_open then
+				gamestate.openSettingsMenu(self)
+			end
 		end,
 	})
 	self:_createImage(gamestate, {
@@ -890,7 +1007,9 @@ function Game:_createSettingsMenu(gamestate, params)
 		end_x = stage.settings_locations.quit_button.x,
 		end_y = stage.settings_locations.quit_button.y,
 		action = function()
-			if self.settings_menu_open then self:_openQuitConfirmMenu(gamestate) end
+			if self.settings_menu_open then
+				self:_openQuitConfirmMenu(gamestate)
+			end
 		end,
 		force_max_alpha = true,
 	})
@@ -903,7 +1022,9 @@ function Game:_createSettingsMenu(gamestate, params)
 		end_y = stage.settings_locations.close_menu_button.y,
 		pushed_sfx = "buttonback",
 		action = function()
-			if self.settings_menu_open then gamestate.closeSettingsMenu(self) end
+			if self.settings_menu_open then
+				gamestate.closeSettingsMenu(self)
+			end
 		end,
 		force_max_alpha = true,
 	})
@@ -935,7 +1056,9 @@ function Game:_createSettingsMenu(gamestate, params)
 		end_transparency = 0,
 		pushed_sfx = "buttonback",
 		action = function()
-			if self.settings_menu_open then self:_closeQuitConfirmMenu(gamestate) end
+			if self.settings_menu_open then
+				self:_closeQuitConfirmMenu(gamestate)
+			end
 		end,
 		force_max_alpha = true,
 	})

@@ -6,7 +6,7 @@ local deepcpy = require "utilities".deepcpy
 
 local Grid = {}
 
-Grid.DROP_SPEED = drawspace.height / 50 -- pixels per frame for loose gems to drop
+Grid.DROP_SPEED = drawspace.height / 50 -- pixels per frame for gems to drop
 Grid.DROP_MULTIPLE_SPEED = drawspace.height / 180 -- multiplier for scoring_combo
 
 --[[
@@ -400,7 +400,9 @@ function Grid:flagMatchedGems()
 	end
 
 	-- apply the flags
-	for gem, player_num in pairs(gem_flags) do gem:setOwner(player_num, true) end
+	for gem, player_num in pairs(gem_flags) do
+		gem:setOwner(player_num, true)
+	end
 end
 
 --[[ Any gems placed in the action phase will be considered an "original" gem.
@@ -411,7 +413,9 @@ end
 	round.
 --]]
 function Grid:assignGemOriginators()
-	for gem in self:pendingGems() do gem.flag_match_originator = gem.player_num end
+	for gem in self:pendingGems() do
+		gem.flag_match_originator = gem.player_num
+	end
 end
 
 function Grid:removeGemOriginators()
@@ -482,7 +486,11 @@ end
 -- Returns a string representing the color of the gem generated
 function Grid:generate1by1(column, banned_color1, banned_color2)
 	local row = self.BOTTOM_ROW
-	local avail_colors = self:getPermittedColors(column, banned_color1, banned_color2)
+	local avail_colors = self:getPermittedColors(
+		column,
+		banned_color1,
+		banned_color2
+	)
 	local legal_gems = {}
 	for _, color in ipairs(avail_colors) do legal_gems[color] = 1 end
 	local make_color = Gem.random(self.game, legal_gems)
@@ -769,8 +777,12 @@ function Grid:updateRushPriority()
 		end
 
 		-- place them back in grid
-		for _, gem in ipairs(normal_gems) do self[gem.row][gem.column].gem = gem end
-		for _, gem in ipairs(rush_gems) do self[gem.row][gem.column].gem = gem end
+		for _, gem in ipairs(normal_gems) do
+			self[gem.row][gem.column].gem = gem
+		end
+		for _, gem in ipairs(rush_gems) do
+			self[gem.row][gem.column].gem = gem
+		end
 	end
 
 end
@@ -859,7 +871,7 @@ function Grid:destroyGem(params)
 			player.enemy:addDamage(1 + extra_damage, delay_until_explode)
 		end
 		if params.super_meter ~= false then
-			assert(player.meter_gain[gem.color], "Nil value found when looking up super meter gain!")
+			assert(player.meter_gain[gem.color], "Nil super meter gain value!")
 			player:addSuper(player.meter_gain[gem.color])
 		end
 		game.queue:add(

@@ -128,7 +128,8 @@ function Particles:reset()
 		},
 	}
 
-	--check to see if no_rush is being animated. 0 no animation, 1 currently being animated, 2 mouse hovering over.
+	-- check to see if no_rush is being animated
+	-- 0 no animation, 1 currently being animated, 2 mouse hovering over
 	self.no_rush_check = {}
 	for i = 1, self.game.grid.COLUMNS do self.no_rush_check[i] = 0 end
 	self.next_tinystar_frame, self.next_star_frame = 0, 0
@@ -212,8 +213,13 @@ function DamageParticle.generate(game, gem, delay_frames, force_max_alpha)
 		end
 
 		if drop_duration == 0 then
-			p:change{duration = duration, rotation = rotation, curve = curve,
-				exit_func = exit_2, remove = true}
+			p:change{
+				duration = duration,
+				rotation = rotation,
+				curve = curve,
+				exit_func = exit_2,
+				remove = true,
+			}
 		else
 			p:change{
 				duration = duration,
@@ -240,7 +246,9 @@ function DamageParticle.generate(game, gem, delay_frames, force_max_alpha)
 				scaling = 1.25 - 0.25 * i
 			}
 			if drop_duration > 0 then
-				trail.drop_duration, trail.drop_x, trail.drop_y = drop_duration, drop_x, drop_y
+				trail.drop_duration = drop_duration
+				trail.drop_x = drop_x
+				trail.drop_y = drop_y
 			end
 
 			game.particles._damageTrail.generate(
@@ -255,6 +263,7 @@ function DamageParticle.generate(game, gem, delay_frames, force_max_alpha)
 
 		frames_taken = math.max(frames_taken, game.DAMAGE_PARTICLE_TO_PLATFORM_FRAMES + 9 + drop_duration)
 	end
+
 	return frames_taken
 end
 
@@ -442,7 +451,9 @@ function HealingParticle.generate(params)
 		local duration = game.DAMAGE_PARTICLE_TO_PLATFORM_FRAMES * 1.5 + math.random() * 12
 		local rotation = math.random() * 5
 		local exit_func = function()
-			if owner.hand[i].platform then owner.hand[i].platform:healingGlow() end
+			if owner.hand[i].platform then
+				owner.hand[i].platform:healingGlow()
+			end
 		end
 
 		if delay then
@@ -722,12 +733,13 @@ function ExplodingGem:remove()
 	self.manager.allParticles.ExplodingGem[self.ID] = nil
 end
 
---[[ game and gem are mandatory
-	explode_frames: optional duration of exploding part. Defaults to game.GEM_EXPLODE_FRAMES
-	glow_duration: optional duration of after-explosion part. Default 0
-	fade_frames: optional duration of fade part. Defaults to game.GEM_FADE_FRAMES
-	shake: boolean for whether to bounce the gam. Used by garbage gem. Defaults to false.
-	delay_frames: optional amount of time to delay the start of animation.
+--[[ Mandatory: game, gem
+	Optional:
+	explode_frames - duration of exploding part, default game.GEM_EXPLODE_FRAMES
+	glow_duration - duration of after-explosion part, default 0
+	fade_frames - duration of fade part, default game.GEM_FADE_FRAMES
+	shake: boolean for whether to bounce gem, used by garbage gem, default false
+	delay_frames - amount of time to delay the start of animation
 --]]
 function ExplodingGem.generate(params)
 	local game = params.game
@@ -873,7 +885,9 @@ end
 function PlatformStar.generate(game, star_type)
 	local stage = game.stage
 	local left, right_min, right_max = 0.05, 0.2, 0.29 -- % of screen width for TinyStar
-	if star_type == "Star" then left, right_min, right_max = 0.05, 0.21, 0.22 end
+	if star_type == "Star" then
+		left, right_min, right_max = 0.05, 0.21, 0.22
+	end
 
 	local y = stage.height
 	local duration = 360
@@ -1194,7 +1208,14 @@ function Dust.generateStarFountain(params)
 				trail_image = image["particles_trail_" .. randomStandardColor()]
 			end
 
-			local trail = common.instance(Dust, game.particles, x, y, trail_image, p_type)
+			local trail = common.instance(
+				Dust,
+				game.particles,
+				x,
+				y,
+				trail_image,
+				p_type
+			)
 			local trail_y = function()
 				return y + trail.t * y_vel + trail.t^2 * acc
 			end
@@ -1367,13 +1388,16 @@ end
 function PlacedGem.generate(game, gem)
 	-- We calculate the placedgem location based on the gem row
 	local row, y, place_type
-	if gem.row == 1 or gem.row == 2 then -- doublecast gem, goes in rows 7-8
+	if gem.row == 1 or gem.row == 2 then
+	-- doublecast gem, goes in rows 7-8
 		row = gem.row + 6
 		place_type = "doublecast"
-	elseif gem.row == 3 or gem.row == 4 then -- rush gem, goes in rows 9-10
+	elseif gem.row == 3 or gem.row == 4 then
+	-- rush gem, goes in rows 9-10
 		row = gem.row + 6
 		place_type = "rush"
-	elseif gem.row == 5 or gem.row == 6 then -- normal gem, goes in rows 7-8 (gets pushed to 11-12)
+	elseif gem.row == 5 or gem.row == 6 then
+	-- normal gem, goes in rows 7-8 (gets pushed to 11-12)
 		row = gem.row + 2
 		place_type = "normal"
 	else
@@ -1432,7 +1456,9 @@ end
 function GemImage.generate(params)
 	local game = params.game
 	local x, y, img = params.x, params.y, params.image
-	if params.gem then x, y, img = params.gem.x, params.gem.y, params.gem.image end
+	if params.gem then
+		x, y, img = params.gem.x, params.gem.y, params.gem.image
+	end
 
 	local p = common.instance(GemImage, game.particles, x, y, img)
 
@@ -1759,8 +1785,9 @@ function Words.generateGo(game, delay)
 	}
 end
 
---[[ "no rush!" image that appears between 6th and 7th rows whenever a gem ends up in the
-	6th row of a column (either by dropping or by being raised to that level from garbage)
+--[[ "no rush!" image that appears between 6th and 7th rows whenever a gem ends
+	up in the 6th row of a column (either by dropping or by being raised to
+	that level from garbage)
 	takes the column it should be displayed in as an argument --]]
 function Words.generateNoRush(game, column)
 	if game.particles.no_rush_check[column] == 0 then

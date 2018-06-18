@@ -15,17 +15,23 @@ local common = require "class.commons"
 local Character = require "character"
 local image = require 'image'
 local Pic = require 'pic'
-local Piece = require 'piece'
 local Wolfgang = {}
 
-Wolfgang.full_size_image = love.graphics.newImage('images/portraits/wolfgang.png')
+Wolfgang.large_image = love.graphics.newImage('images/portraits/wolfgang.png')
 Wolfgang.small_image = love.graphics.newImage('images/portraits/wolfgangsmall.png')
 Wolfgang.action_image = love.graphics.newImage('images/portraits/action_wolfgang.png')
 Wolfgang.shadow_image = love.graphics.newImage('images/portraits/shadow_wolfgang.png')
 Wolfgang.super_fuzz_image = love.graphics.newImage('images/ui/superfuzzred.png')
 
 Wolfgang.character_id = "Wolfgang"
-Wolfgang.meter_gain = {red = 8, blue = 4, green = 4, yellow = 4, none = 4, wild = 4}
+Wolfgang.meter_gain = {
+	red = 8,
+	blue = 4,
+	green = 4,
+	yellow = 4,
+	none = 4,
+	wild = 4,
+}
 
 Wolfgang.super_images = {
 	word = image.ui_super_text_red,
@@ -218,7 +224,11 @@ function ColorWord.generate(game, owner, x, y, color, delay)
 		p:wait(delay)
 		p:change{duration = 0, transparency = 255}
 	end
-	p:change{duration = 60, y = y - game.stage.height * 0.072, easing = "outCubic"}
+	p:change{
+		duration = 60,
+		y = y - game.stage.height * 0.072,
+		easing = "outCubic",
+	}
 	p:wait(30)
 	p:change{duration = 45, transparency = 0, remove = true}
 end
@@ -557,7 +567,11 @@ function Wolfgang:beforeMatch()
 			local total_x, total_y = 0, 0 -- for calculating average
 			for _, gem in ipairs(list) do
 				if gem.column ~= list[1].column then is_vertical = false end
-				if gem.color == "red" or gem.color == "blue" or gem.color == "green" or gem.color == "yellow" then
+
+				if gem.color == "red"
+				or gem.color == "blue"
+				or gem.color == "green"
+				or gem.color == "yellow" then
 					color = gem.color
 				end
 				total_x = total_x + gem.x
@@ -576,11 +590,17 @@ function Wolfgang:beforeMatch()
 				end
 			elseif not self.letters[color].lighted then
 				local overwrite = true
-				if is_vertical and create_words[color] and (not create_words[color].is_vertical) then
+				if is_vertical
+				and create_words[color]
+				and (not create_words[color].is_vertical) then
 					overwrite = false
 				end
 				if overwrite then
-					create_words[color] = {x = mid_x, y = mid_y, is_vertical = is_vertical}
+					create_words[color] = {
+						x = mid_x,
+						y = mid_y,
+						is_vertical = is_vertical,
+					}
 					self.this_turn_matched_colors[color] = true
 				end
 			end

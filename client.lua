@@ -99,7 +99,8 @@ end
 
 function Client:connectionRejected(recv)
 	if recv.message == "Version" then
-		print("Incorrect version, please update. Server " .. recv.version .. ", client " .. self.game.VERSION)
+		print("Incorrect version, please update.")
+		print(" Server " .. recv.version .. ", client " .. self.game.VERSION)
 	elseif recv.message == "Nope" then
 		print("You were already connected")
 	else
@@ -155,9 +156,9 @@ function Client:clear()
 	self.synced = true
 end
 
--- On a new turn, clear the flags for having sent and received state information
+-- At new turn, clear the flags for having sent and received state information
 function Client:newTurn()
-	assert(self.delta_confirmed, "Opponent didn't confirm delta by end of turn!")
+	assert(self.delta_confirmed, "Opponent didn't confirm delta by end of turn")
 
 	self.our_delta = "N_"
 	self.their_delta = nil

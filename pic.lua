@@ -249,9 +249,13 @@ local function createMoveFunc(self, target)
 				local original = self[item] or 1
 				local diff = target[item] - original
 				target[item] = function() return original + diff * self.t end
-				if target.debug then print("converting number into function for " .. item) end
+				if target.debug then
+					print("converting number into function for " .. item)
+				end
 			else
-				if target.debug then print("using provided function for " .. item) end
+				if target.debug then
+					print("using provided function for " .. item)
+				end
 			end
 		else
 			target[item] = function() return self[item] end
@@ -303,7 +307,8 @@ local function createMoveFunc(self, target)
 		_self.t = _self.t + dt / target.duration
 		local complete = _self.tweening:update(dt)
 		_self.x, _self.y = xy_func(_self)
-		_self.rotation, _self.transparency = target.rotation(), target.transparency()
+		_self.rotation = target.rotation()
+		_self.transparency = target.transparency()
 		_self.scaling = target.scaling()
 		_self.x_scaling = target.x_scaling()
 		_self.y_scaling = target.y_scaling()
@@ -324,23 +329,37 @@ local function createMoveFunc(self, target)
 end
 
 --[[ Tell the pic how to move.
-	Takes the following table arguments:
-		duration: amount of time for movement, in frames. If not provided, instantly moves there
-		x: target x location, or function, e.g. x = function() return self.y^2 end
+	Takes the following table parameters:
+		duration: amount of time for movement, in frames
+			If not provided, instantly moves there
+		x: target x location, or function
+			e.g. x = function() return self.y^2 end
 		y: target y location, or function
 		rotation: target rotation, or function
 		scaling: target scaling, or function
-		x_scaling, y_scaling: target scaling in one axis, takes precedence over scaling
+		x_scaling, y_scaling: target scaling in one axis
+			takes precedence over "scaling" parameter
 		transparency: target transparency, or function
 		easing: easing, default is "linear"
 		tween_target: variables to tween, default is {t = 1}
 		curve: bezier curve, provided as a love.math.newBezierCurve() object
-		queue: if true, will queue this move after the previous one is finished. default is true
-		here: if true, will instantly move from current position; false to move from end of previous position. only if queue is false
-		during: {frame_step, frame_start, func, args}, if any, to execute every dt_step while tweening.
-		remove: execute when the move finishes. Can be: 1) "true" to delete, 2) func, 3) {func, args},  4) {{f1, a1}, {f2, a2}, ...}
-		exit_func: execute when the move finishes. Can be 1) func, 2) {func, args}, 3) {{f1, a1}, {f2, a2}, ...}
-		quad: {x = bool, y = bool, x_percentage = 0-1, y_percentage = 0-1, x_anchor = 0-1, y_anchor = 0-1} to tween a quad
+		queue: queue this move after the previous one is finished. default true
+		here: if true, will instantly move from current position
+			false to move from end of previous position
+			only used if queue is false
+		during: optionally provided as {frame_step, frame_start, func, args}
+			executes this every dt_step while tweening
+		remove: set to true to delete when the move finishes
+		exit_func: execute when the move finishes.
+			Can be 1) func, 2) {func, args}, 3) {{f1, a1}, {f2, a2}, ...}
+		quad: Tween a quad, with parameters of {
+			x = bool,
+			y = bool,
+			x_percentage = 0-1,
+			y_percentage = 0-1,
+			x_anchor = 0-1,
+			y_anchor = 0-1
+		}
 		debug: print some unhelpful debug info
 	Junk created: self.t, move_func, tweening, curve, exit, during. during_frame
 	Cleans up after itself when movement or tweening finished during Pic:update()
@@ -350,7 +369,7 @@ function Pic:change(target)
 	target.tween_target = target.tween_target or {t = 1}
 	if target.queue ~= false then target.queue = true end
 	if target.debug then print("New move instruction received")	end
-	if target.duration == 0 then target.duration = 0.0078125 end -- let me know if this hack causes problems
+	if target.duration == 0 then target.duration = 0.0078125 end
 
 	if not target.duration then -- apply instantly, interrupting all moves
 		clearMove(self)

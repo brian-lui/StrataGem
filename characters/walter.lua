@@ -13,10 +13,17 @@ local Character = require "character"
 
 local Walter = {}
 Walter.character_id = "Walter"
-Walter.meter_gain = {red = 4, blue = 8, green = 4, yellow = 4, none = 4, wild = 4}
+Walter.meter_gain = {
+	red = 4,
+	blue = 8,
+	green = 4,
+	yellow = 4,
+	none = 4,
+	wild = 4,
+}
 Walter.primary_colors = {"blue"}
 
-Walter.full_size_image = love.graphics.newImage('images/portraits/walter.png')
+Walter.large_image = love.graphics.newImage('images/portraits/walter.png')
 Walter.small_image = love.graphics.newImage('images/portraits/waltersmall.png')
 Walter.action_image = love.graphics.newImage('images/portraits/action_walter.png')
 Walter.shadow_image = love.graphics.newImage('images/portraits/shadow_walter.png')
@@ -66,22 +73,22 @@ function Walter:init(...)
 	Character.init(self, ...)
 
 	self.FOAM_APPEAR_DURATION = 30 -- how long it takes for foam to appear
-	self.FOAM_FRAMES_BETWEEN_DROPLETS = 3 -- how many frames before making new foam-droplet
-	self.SPOUT_SPEED = 8 -- how many frames it takes for the spout to move one gem_height
-	self.SPOUT_STAY_FRAMES = 90 -- how many frames spout stays on screen after full height
+	self.FOAM_FRAMES_BETWEEN_DROPLETS = 3 -- frames before new foam-droplet
+	self.SPOUT_SPEED = 8 -- frames for the spout to move one gem_height
+	self.SPOUT_STAY_FRAMES = 90 -- frames for spout to remain after full height
 	self.SPOUT_FADE_FRAMES = 30 -- how long for fade-out of spout
 	self.CLOUD_SLIDE_DURATION = 36 -- how long for the cloud incoming tween
 	self.CLOUD_ROW = 11 -- which row for clouds to appear on
 	self.CLOUD_EXIST_TURNS = 2 -- how many turns a cloud exists for
-	self.CLOUD_INIT_DROPLET_FRAMES = { -- frames between droplets, by turns remaining
+	self.DROPLET_FRAMES = { -- frames between droplets, by turns left
 		[0] = math.huge,
 		[1] = 20,
 		[2] = 5,
 		[3] = 5,
-	} 
+	}
 
-	self.pending_clouds = {} -- booleans, clouds for vertical matches generates at t0
-	self.cloud_turns_remaining = {0, 0, 0, 0, 0, 0, 0, 0} -- keep track of the state
+	self.pending_clouds = {} -- booleans, clouds for matches generated at t0
+	self.cloud_turns_remaining = {0, 0, 0, 0, 0, 0, 0, 0} -- state tracker
 	self.this_turn_column_healed = {} -- booleans
 	self.this_turn_already_created_cloud = {} -- booleans
 end
@@ -103,8 +110,8 @@ function FoamDroplet.generate(game, owner, col, delay_frames)
 	local grid = game.grid
 	local image_table = {1, 1, 1, 1, 1, 1, 1, 2, 2, 3}
 	local image_index = image_table[math.random(#image_table)]
-	local droplet_or_splatter = math.random() < 0.5 and "drop" or "splatter"
-	local droplet_image = owner.special_images[droplet_or_splatter][image_index]
+	local drop_or_splatter = math.random() < 0.5 and "drop" or "splatter"
+	local droplet_image = owner.special_images[drop_or_splatter][image_index]
 
 	local x = grid.x[col]
 	local y = grid.y[grid.BASIN_END_ROW] + image.GEM_HEIGHT * (2 * math.random() - 0.5)
@@ -202,7 +209,11 @@ function Foam.generate(game, owner, col)
 	p:change{duration = owner.FOAM_APPEAR_DURATION * (1/3), scaling = 1.05}
 	p:change{duration = owner.FOAM_APPEAR_DURATION * (2/3), scaling = 0.95}
 	p:wait(owner.SPOUT_SPEED * 8 + owner.SPOUT_STAY_FRAMES)
-	p:change{duration = owner.SPOUT_FADE_FRAMES, transparency = 0, remove = true}
+	p:change{
+		duration = owner.SPOUT_FADE_FRAMES,
+		transparency = 0,
+		remove = true,
+	}
 end
 Foam = common.class("Foam", Foam, Pic)
 
@@ -243,11 +254,17 @@ function Spout.generate(game, owner, col)
 	p:change{duration = 0, transparency = 255}
 
 	local dest_y = grid.y[grid.BASIN_START_ROW] - image.GEM_HEIGHT * 0.5 + spout_height * 0.5
-	local quad_change = {y = true, y_percentage = 1, y_anchor = 0}
-	p:change{duration = owner.SPOUT_SPEED * 8, y = dest_y, quad = quad_change}
-
+	p:change{
+		duration = owner.SPOUT_SPEED * 8,
+		y = dest_y,
+		quad = {y = true, y_percentage = 1, y_anchor = 0},
+	}
 	p:wait(owner.SPOUT_STAY_FRAMES)
-	p:change{duration = owner.SPOUT_FADE_FRAMES, transparency = 0, remove = true}
+	p:change{
+		duration = owner.SPOUT_FADE_FRAMES,
+		transparency = 0,
+		remove = true,
+	}
 end
 
 function Spout:update(dt)
@@ -342,7 +359,6 @@ function Droplet:remove()
 end
 
 function Droplet.generate(game, owner, x, y, dest_y)
-	local grid = game.grid
 	local SPEED = game.stage.height * 0.011
 	local image_table = {1, 1, 1, 1, 1, 1, 1, 2, 2, 3}
 	local image_index = image_table[math.random(#image_table)]
@@ -359,7 +375,14 @@ function Droplet.generate(game, owner, x, y, dest_y)
 		name = "WalterDroplet",
 	}
 
-	local exit_func = {Splatter.generate, game, owner, x, dest_y, splatter_image}
+	local exit_func = {
+		Splatter.generate,
+		game,
+		owner,
+		x,
+		dest_y,
+		splatter_image,
+	}
 	local p = common.instance(Droplet, game.particles, params)
 	p:change{duration = duration, y = dest_y, easing = "inQuad",
 		remove = true, exit_func = exit_func}
@@ -380,18 +403,17 @@ function HealingCloud:remove()
 end
 
 function HealingCloud:updateDropletFrequency()
-	local droplet_lookup = {}
-	local turns_remaining = self.owner.cloud_turns_remaining[self.col] 
-	self.frames_between_droplets = self.owner.CLOUD_INIT_DROPLET_FRAMES[turns_remaining]
+	local turns_remaining = self.owner.cloud_turns_remaining[self.col]
+	self.frames_between_droplets = self.owner.DROPLET_FRAMES[turns_remaining]
 
-	if turns_remaining == 0 then 
+	if turns_remaining == 0 then
 		self:wait(60)
 		self:change{duration = 32, transparency = 0, remove = true}
 	end
 end
 
 function HealingCloud:renewCloud()
-	self.frames_between_droplets = self.owner.CLOUD_INIT_DROPLET_FRAMES[self.owner.CLOUD_EXIST_TURNS]
+	self.frames_between_droplets = self.owner.DROPLET_FRAMES[self.owner.CLOUD_EXIST_TURNS]
 end
 
 function HealingCloud.generate(game, owner, col)
@@ -411,9 +433,9 @@ function HealingCloud.generate(game, owner, col)
 		image = img,
 		scaling = 3,
 		transparency = 0,
-		frames_between_droplets = owner.CLOUD_INIT_DROPLET_FRAMES[owner.CLOUD_EXIST_TURNS],
+		frames_between_droplets = owner.DROPLET_FRAMES[owner.CLOUD_EXIST_TURNS],
 		elapsed_frames = -duration, -- only create droplets after finished move
-		droplet_x = {-1.5, -0.5, 0.5, 1.5}, -- possible columns for droplets to appear in
+		droplet_x = {-1.5, -0.5, 0.5, 1.5}, -- possible columns for droplets
 		col = col,
 		owner = owner,
 		draw_order = draw_order,
@@ -470,13 +492,14 @@ function HealingCloud:update(dt)
 	local grid = self.game.grid
 	self.elapsed_frames = self.elapsed_frames + 1
 	if self.elapsed_frames >= self.frames_between_droplets then
-		local destination_y = grid.y[grid:getFirstEmptyRow(self.col, true)] + 0.5 * image.GEM_WIDTH
+		local target_row = grid:getFirstEmptyRow(self.col, true)
+		local dest_y = grid.y[target_row] + 0.5 * image.GEM_WIDTH
 		local droplet_loc = table.remove(self.droplet_x, math.random(#self.droplet_x))
 		if #self.droplet_x == 0 then
 			self.droplet_x = {-1.5, -0.5, 0.5, 1.5}
 		end
 		local x = self.x + self.width * 0.75 * ((droplet_loc + (math.random() - 0.5)) * 0.25)
-		Droplet.generate(self.game, self.owner, x, self.y, destination_y)
+		Droplet.generate(self.game, self.owner, x, self.y, dest_y)
 		self.elapsed_frames = 0
 	end
 end
@@ -615,14 +638,14 @@ function Walter:_activateSuper()
 				self.FOAM_APPEAR_DURATION - game.GEM_EXPLODE_FRAMES
 			local gem = grid[row][col].gem
 			gem:setOwner(self.player_num)
-			local current_explode_delay, current_particle_delay = grid:destroyGem{
+			local cur_explode_delay, cur_particle_delay = grid:destroyGem{
 				gem = gem,
 				super_meter = false,
 				glow_delay = delay,
 				force_max_alpha = true,
 			}
-			explode_delay = math.max(explode_delay, current_explode_delay)
-			particle_delay = math.max(particle_delay, current_particle_delay)
+			explode_delay = math.max(explode_delay, cur_explode_delay)
+			particle_delay = math.max(particle_delay, cur_particle_delay)
 		end
 
 		self.fx.foam.generate(self.game, self, col)

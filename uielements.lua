@@ -12,10 +12,14 @@ function Timer:init(game)
 	local stage = game.stage
 	self.game = game
 
-	self.text_scaling = function(t) return math.max(1 / (t * 2 + 0.4), 1) end
-	self.text_transparency = function(t) return math.min(255 * 2.5 * t, 255) end
+	self.text_scaling = function(t)
+		return math.max(1 / (t * 2 + 0.4), 1)
+	end
+	self.text_transparency = function(t)
+		return math.min(255 * 2.5 * t, 255)
+	end
 	self.time_remaining_int = 0
-	self.text_multiplier = 2 -- how much to speed it up relative to an actual second
+	self.text_multiplier = 2 -- how much to speed up relative to a real second
 	self.FADE_SPEED = 15 -- transparency/frame to fade out at timer end
 	self.timerbase = Pic:create{
 		game = game,
@@ -217,8 +221,17 @@ function Super:_generateSingleTwinkle()
 		image = img,
 	}
 	p:change{duration = 0, scaling = 0}
-	p:change{duration = 30, scaling = 1, rotation = appear_rotation}
-	p:change{duration = 30, scaling = 0, rotation = disappear_rotation, remove = true}
+	p:change{
+		duration = 30,
+		scaling = 1,
+		rotation = appear_rotation,
+	}
+	p:change{
+		duration = 30,
+		scaling = 0,
+		rotation = disappear_rotation,
+		remove = true,
+	}
 
 	self.twinkles[#self.twinkles+1] = p
 end
@@ -267,7 +280,11 @@ end
 
 function Super:getRect()
 	local img = self.super_frame
-	return img.x - (img.width / 2), img.y - (img.height / 2), img.width, img.height
+	return
+		img.x - (img.width / 2),
+		img.y - (img.height / 2),
+		img.width,
+		img.height
 end
 
 function Super:released()
@@ -301,7 +318,7 @@ function Super.create(game, character, player_num)
 end
 
 -- updates the super drawables for player based on player MP
--- shown super meter is less than the actual super meter when super particles are on screen
+-- shown super meter is less than actual meter when super particles are on screen
 -- as particles disappear, they visually go into the super meter
 function Super:update(dt)
 	local game = self.game
@@ -371,7 +388,8 @@ function uielements:init(game)
 	self.components = components
 end
 
--- draws the shadow underneath the player's gem piece, called if gem is picked up
+-- draws the shadow underneath the player's gem piece
+-- called if gem is picked up
 local function drawUnderGemShadow(self, piece)
 	local stage = self.game.stage
 	for i = 1, piece.size do
@@ -385,7 +403,7 @@ local function drawUnderGemShadow(self, piece)
 	end
 end
 
--- Show the shadow at the top that indicates where the piece will be placed upon mouse release.
+-- Show the top shadow that indicates where piece will be placed upon release
 local function drawPlacementShadow(self, piece, shift)
 	local grid = self.game.grid
 	local _, place_type = piece:isDropValid(shift)
@@ -611,11 +629,21 @@ function uielements:update(dt)
 				--TODO: support variable number of gems
 				local gem1, gem2 = active_piece.gems[1], active_piece.gems[2]
 				local h = active_piece.is_horizontal
-				game.particles.wordEffects.generateDoublecastCloud(game, gem1, gem2, h)
+				game.particles.wordEffects.generateDoublecastCloud(
+					game,
+					gem1,
+					gem2,
+					h
+				)
 			elseif valid and place_type == "rush" then
-				local gem1, gem2 = game.active_piece.gems[1], active_piece.gems[2]
+				local gem1, gem2 = active_piece.gems[1], active_piece.gems[2]
 				local h = active_piece.is_horizontal
-				game.particles.wordEffects.generateRushCloud(game, gem1, gem2, h)
+				game.particles.wordEffects.generateRushCloud(
+					game,
+					gem1,
+					gem2,
+					h
+				)
 			end
 		elseif not valid or place_type == "normal" then
 			game.particles.wordEffects.clear(game.particles)
@@ -626,9 +654,13 @@ function uielements:update(dt)
 
 	-- tween the placedgem particles, if it's a doublecast
 	if #pending_gems == 2 and valid then
-		for _, v in pairs(game.particles.allParticles.PlacedGem) do v:tweenDown() end
+		for _, v in pairs(game.particles.allParticles.PlacedGem) do
+			v:tweenDown()
+		end
 	else
-		for _, v in pairs(game.particles.allParticles.PlacedGem) do v:tweenUp() end
+		for _, v in pairs(game.particles.allParticles.PlacedGem) do
+			v:tweenUp()
+		end
 	end
 end
 

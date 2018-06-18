@@ -6,10 +6,17 @@ local image = require 'image'
 
 local Ivy = {}
 
-Ivy.full_size_image = love.graphics.newImage('images/portraits/ivy.png')
+Ivy.large_image = love.graphics.newImage('images/portraits/ivy.png')
 Ivy.small_image = love.graphics.newImage('images/portraits/ivysmall.png')
 Ivy.character_id = "Ivy"
-Ivy.meter_gain = {red = 4, blue = 4, green = 8, yellow = 4, none = 4, wild = 4}
+Ivy.meter_gain = {
+	red = 4,
+	blue = 4,
+	green = 8,
+	yellow = 4,
+	none = 4,
+	wild = 4,
+}
 
 Ivy.super_images = {
 	word = image.ui_super_text_green,

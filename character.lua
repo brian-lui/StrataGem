@@ -6,14 +6,21 @@ local Pic = require 'pic'
 local Hand = require 'hand'
 
 local Character = {}
-Character.full_size_image = love.graphics.newImage('images/portraits/heath.png')
+Character.large_image = love.graphics.newImage('images/portraits/heath.png')
 Character.small_image = love.graphics.newImage('images/portraits/heathsmall.png')
 Character.action_image = love.graphics.newImage('images/portraits/action_heath.png')
 Character.shadow_image = love.graphics.newImage('images/portraits/shadow_heath.png')
 Character.super_fuzz_image = love.graphics.newImage('images/ui/superfuzzred.png')
 
 Character.character_id = "Lamer"
-Character.meter_gain = {red = 4, blue = 4, green = 4, yellow = 4, none = 4, wild = 4}
+Character.meter_gain = {
+	red = 4,
+	blue = 4,
+	green = 4,
+	yellow = 4,
+	none = 4,
+	wild = 4,
+}
 Character.primary_colors = {"red"}
 
 Character.super_images = {
@@ -47,7 +54,7 @@ Character.dropped_piece = nil
 Character.is_supering = false
 Character.super_params = {}
 Character.place_type = "none"
-Character.gain_super_meter = nil -- set to 'false' if don't wanna gain meter from matches
+Character.gain_super_meter = nil -- set 'false' to gain no meter from matches
 Character.CAN_SUPER_AND_PLAY_PIECE = false -- this is always false now
 
 function Character:init(player_num, game)
@@ -61,10 +68,14 @@ function Character:init(player_num, game)
 		love.errhand("Invalid player_num " .. tostring(player_num))
 	end
 	self.current_rush_cost = self.RUSH_COST
-	self.current_double_cost = self.DOUBLE_COST
+	self.cur_double_cost = self.DOUBLE_COST
 	self.played_pieces = {}
 	self:setup()
-	self.super_button = game.uielements.components.super.create(game, self, player_num)
+	self.super_button = game.uielements.components.super.create(
+		game,
+		self,
+		player_num
+	)
 end
 
 function Character:addSuper(amt)
@@ -80,7 +91,10 @@ end
 
 function Character:healDamage(damage, delay)
 	delay = delay or 0
-	self.game.queue:add(delay, function() self.hand.damage = self.hand.damage - damage end)
+	self.game.queue:add(
+		delay,
+		function() self.hand.damage = self.hand.damage - damage end
+	)
 end
 
 -- do those things to set up the character. Called at start of match
@@ -143,8 +157,9 @@ function Character:cleanup()
 	self.game:brightenScreen(self.player_num)
 end
 function Character:customGemTable() -- custom gem frequency and gem replacement
-	-- first arg is frequency: {red = 1, blue = 2, green = 3, ...} or function
-	-- second arg is replacement: {{color = "red", image = dog.png}, ...} or function
+	-- first arg is frequency: {red = 1, blue = 2, green = 3, ...}
+	-- second arg is replacement: {{color = "red", image = dog.png}, ...}
+	-- accepts functions that return the tables too
 	local gem_freq_table, gem_replace_table = nil, nil
 	return gem_freq_table, gem_replace_table
 end
@@ -157,10 +172,10 @@ function Character:toggleSuper()
 
 	if self.is_supering then
 		self.is_supering = false
-		self.game.sound:newSFX("buttonbacksuper")
-	elseif self.mp >= self.SUPER_COST and self.game.current_phase == "Action" then
+		game.sound:newSFX("buttonbacksuper")
+	elseif self.mp >= self.SUPER_COST and game.current_phase == "Action" then
 		self.is_supering = true
-		self.game.sound:newSFX("buttonsuper")
+		game.sound:newSFX("buttonsuper")
 	end
 	return self.is_supering
 end
@@ -172,13 +187,19 @@ function Character:pieceDroppedOK(piece, shift)
 	elseif place_type == "rush" then
 		return self.cur_burst >= self.current_rush_cost
 	elseif place_type == "double" then
-		return self.cur_burst >= self.current_double_cost
+		return self.cur_burst >= self.cur_double_cost
 	end
 end
 
 function Character:superSlideInAnim(delay_frames)
-	local delay = self.game.particles.superFreezeEffects.generate(self.game, self,
-		self.shadow_image, self.action_image, self.super_fuzz_image, delay_frames)
+	local delay = self.game.particles.superFreezeEffects.generate(
+		self.game,
+		self,
+		self.shadow_image,
+		self.action_image,
+		self.super_fuzz_image,
+		delay_frames
+	)
 	return delay
 end
 
@@ -187,7 +208,7 @@ function Character:canPlacePiece()
 	return not (
 		(self.is_supering and not self.CAN_SUPER_AND_PLAY_PIECE) or
 		(self.dropped_piece == "rushed" or self.dropped_piece == "doubled") or
-		(self.dropped_piece == "normal" and self.cur_burst < self.current_double_cost)
+		(self.dropped_piece == "normal" and self.cur_burst < self.cur_double_cost)
 	)
 end
 

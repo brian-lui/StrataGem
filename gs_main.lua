@@ -126,8 +126,12 @@ end
 function gs_main:drawScreenElements(params)
 	local particles = self.particles
 	-- under-platform trails
-	for _, v in pairs(particles.allParticles.PlatformTinyStar) do v:draw(params) end
-	for _, v in pairs(particles.allParticles.PlatformStar) do v:draw(params) end
+	for _, v in pairs(particles.allParticles.PlatformTinyStar) do
+		v:draw(params)
+	end
+	for _, v in pairs(particles.allParticles.PlatformStar) do
+		v:draw(params)
+	end
 	gs_main.ui.static.basin:draw(params)
 	self.uielements.timer:draw(params)	-- timer bar
 
@@ -169,9 +173,9 @@ function gs_main:drawGems(params)
 	end
 
 	-- under-gem particles
-	for _, instance in pairs(allParticles.WordEffects) do instance:draw(params) end
-	for _, instance in pairs(allParticles.Dust) do instance:draw(params) end
-	for _, instance in pairs(allParticles.PopParticles) do instance:draw(params) end
+	for _, v in pairs(allParticles.WordEffects) do v:draw(params) end
+	for _, v in pairs(allParticles.Dust) do v:draw(params) end
+	for _, v in pairs(allParticles.PopParticles) do v:draw(params) end
 	for i = -4, 0 do
 		local char_effects = char_effect_draws[i]
 		for j = 1, char_effects.n do char_effects[j]:draw() end
@@ -180,10 +184,9 @@ function gs_main:drawGems(params)
 	-- hand gems and pending-garbage gems
 	for player in self:players() do
 		for i = 1, player.hand_size do
-			if player.hand[i].piece and player.hand[i].piece ~= self.active_piece then
-				for _ = 1, player.hand[i].piece.size do
-					player.hand[i].piece:draw(params)
-				end
+			local pc = player.hand[i].piece
+			if pc and pc ~= self.active_piece then
+				for _ = 1, pc.size do pc:draw(params) end
 			end
 		end
 		for i = 1, #player.hand.garbage do
@@ -301,7 +304,9 @@ function gs_main:mousepressed(x, y)
 
 	if self.type ~= "Replay" then
 		local my_super = self.me_player.super_button
-		if pointIsInRect(x, y, my_super:getRect()) then gs_main.clicked = my_super end
+		if pointIsInRect(x, y, my_super:getRect()) then
+			gs_main.clicked = my_super
+		end
 	end
 end
 

@@ -6,10 +6,17 @@ local image = require 'image'
 
 local Joy = {}
 
-Joy.full_size_image = love.graphics.newImage('images/portraits/joy.png')
+Joy.large_image = love.graphics.newImage('images/portraits/joy.png')
 Joy.small_image = love.graphics.newImage('images/portraits/joysmall.png')
 Joy.character_id = "Joy"
-Joy.meter_gain = {red = 8, blue = 4, green = 4, yellow = 4, none = 4, wild = 4}
+Joy.meter_gain = {
+	red = 8,
+	blue = 4,
+	green = 4,
+	yellow = 4,
+	none = 4,
+	wild = 4,
+}
 Joy.super_images = {
 	word = image.ui_super_text_red,
 	empty = image.ui_super_empty_red,
@@ -22,6 +29,5 @@ Joy.burst_images = {
 	full = image.ui_burst_full_red,
 	glow = {image.ui_burst_partglow_red, image.ui_burst_fullglow_red}
 }
-
 
 return common.class("Joy", Joy, Character)

@@ -273,7 +273,7 @@ function Piece:getColumns(shift)
 	return ret
 end
 
--- Checks that all gems are within columns 1-8 of the basin, and not overlapping midline.
+-- Checks that all gems are within columns 1-8 and not overlapping midline.
 -- accepts optional boolean to test for midline-shifted piece
 function Piece:isDropLegal(test_shifted_piece)
 	local shift = nil
@@ -293,9 +293,9 @@ function Piece:isDropLegal(test_shifted_piece)
 	return gems_in_my_basin == self.size or gems_in_my_basin == 0
 end
 
--- Checks if the drop location is a legal drop location, and also that the player
--- has the meter to play it. If gem is over midline, this function takes shift
--- in order to force the drop to a legal position.
+-- Checks that the drop location is legal, and also that the player has the
+-- meter to play it. If gem is over midline, this function takes shift in order
+-- to force the drop to a legal position.
 function Piece:isDropValid(shift)
 	local player = self.owner
 	local place_type
@@ -317,7 +317,7 @@ function Piece:isDropValid(shift)
 		else
 			return false
 		end
-	elseif gems_in_my_basin == self.size and player.cur_burst >= player.current_double_cost
+	elseif gems_in_my_basin == self.size and player.cur_burst >= player.cur_double_cost
 		and player.dropped_piece == "normal" then
 			place_type = "double"
 	else
@@ -332,9 +332,13 @@ function Piece:isOnMidline()
 	local cols = self:getColumns()
 	local my_col, enemy_col = false, false
 	for i = 1, self.size do
-		if cols[i] and cols[i] >= player.start_col and cols[i] <= player.end_col then
+		if cols[i]
+		and cols[i] >= player.start_col
+		and cols[i] <= player.end_col then
 			my_col = true
-		elseif cols[i] and cols[i] >= player.enemy.start_col and cols[i] <= player.enemy.end_col then
+		elseif cols[i]
+		and cols[i] >= player.enemy.start_col
+		and cols[i] <= player.enemy.end_col then
 			enemy_col = true
 		end
 	end
@@ -388,7 +392,13 @@ function Piece:select()
 	self:resolve()
 	for i = 1, self.size do -- generate some particles!
 		local x, y, color = self.gems[i].x, self.gems[i].y, self.gems[i].color
-		game.particles.dust.generateFountain(game, x, y, color, math.random(2, 6))
+		game.particles.dust.generateFountain(
+			game,
+			x,
+			y,
+			color,
+			math.random(2, 6)
+		)
 	end
 end
 
@@ -404,13 +414,19 @@ function Piece:deselect()
 	local cols = self:getColumns(shift)
 	local go_ahead = (place_type == "normal") or
 		(place_type == "rush" and self:isValidRush()) or
-		(place_type == "double" and player.cur_burst >= player.current_double_cost)
+		(place_type == "double" and player.cur_burst >= player.cur_double_cost)
 	local char_ability_ok = player:pieceDroppedOK(self, shift)
-	if valid and not self.game.inputs_frozen and go_ahead and char_ability_ok and self.game.current_phase == "Action" then
+
+	if valid
+	and not self.game.inputs_frozen
+	and go_ahead
+	and char_ability_ok
+	and self.game.current_phase == "Action" then
 		player.place_type = place_type
 		self:dropIntoBasin(cols)
-	else -- snap back to original place. Can't use change because it interferes with rotate tween
-		self.x, self.y = player.hand[self.hand_idx].x, player.hand[self.hand_idx].y
+	else -- snap back to original place. Pic.change interferes with rotate tween
+		self.x = player.hand[self.hand_idx].x
+		self.y = player.hand[self.hand_idx].y
 		self:updateGems()
 	end
 end
@@ -418,9 +434,13 @@ end
 -- Transfers piece from player's hand into basin.
 -- No error checking, assumes this is a valid move! Be careful please.
 function Piece:dropIntoBasin(coords, received_from_opponent)
-	local game, grid, player, hand = self.game, self.game.grid, self.owner, self.owner.hand
+	local game = self.game
+	local grid = game.grid
+	local player = self.owner
+	local hand = player.hand
 
-	-- not received_from_opponent means it's our piece placing, so we need to send it to them
+	-- not received_from_opponent means it's our piece being placed
+	-- therefore, so we need to send it to them
 	if game.type == "Singleplayer" and not received_from_opponent then
 		game.ai:writePlayerDelta(self, coords)
 	elseif game.type == "Netplay" and not received_from_opponent then
@@ -440,7 +460,7 @@ function Piece:dropIntoBasin(coords, received_from_opponent)
 		for i = 1, #self.gems do self.gems[i].place_type = "rush" end
 	elseif player.place_type == "double" then
 		row_adj = 0
-		player.cur_burst = player.cur_burst - player.current_double_cost
+		player.cur_burst = player.cur_burst - player.cur_double_cost
 		player.dropped_piece = "doubled"
 		for i = 1, #self.gems do self.gems[i].place_type = "double" end
 	else

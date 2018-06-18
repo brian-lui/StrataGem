@@ -210,7 +210,11 @@ function Clouds:_newCloud(size, starting_x)
 		container = container,
 		counter = "background_particle"
 	}
-	cloud:change{duration = duration, x = stage.width + cloud.width, remove = true}
+	cloud:change{
+		duration = duration,
+		x = stage.width + cloud.width,
+		remove = true,
+	}
 end
 
 function Clouds:_initClouds()
@@ -306,7 +310,13 @@ function Starfall:_generateStar()
 		container = self.stars,
 		counter = "background_particle",
 	}
-	star:change{duration = duration, x = end_x, y = end_y, rotation = rotation, remove = true}
+	star:change{
+		duration = duration,
+		x = end_x,
+		y = end_y,
+		rotation = rotation,
+		remove = true,
+	}
 end
 
 function Starfall:update(dt)

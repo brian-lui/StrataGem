@@ -37,7 +37,8 @@ local function selectRandomPiece(player)
 	return pieces[ret_idx]
 end
 
--- return a random column from player's valid columns, accounts for horizontal pieces
+-- return a random column from player's valid columns
+-- accounts for horizontal pieces
 local function selectRandomColumn(piece, player)
 	local start_col = player.start_col
 	local end_col = player.end_col
@@ -45,7 +46,7 @@ local function selectRandomColumn(piece, player)
 	return math.random(start_col, end_col)
 end
 
--- takes a column index, and returns table of argument column and the next column
+-- takes a column index, and returns table of given column and the next column
 local function getCoords(piece, column)
 	local ret = {}
 	if piece.is_horizontal then
@@ -67,7 +68,10 @@ end
 
 local function playSuper(self, super_params)
 	super_params = super_params or {}
-	self:queueAction(function() self.player.is_supering = true end, super_params)
+	self:queueAction(
+		function() self.player.is_supering = true end,
+		super_params
+	)
 	self.ai_delta = self.game:serializeSuper(self.ai_delta)
 end
 
@@ -104,7 +108,8 @@ local function generateScoreMatrices(grid, player)
 	return {v1, h1, v2, h2}
 end
 
--- this currently always plays the highest possible scoring match, but doesn't discriminate further
+-- this currently always plays the highest possible scoring match
+-- doesn't discriminate further
 function ai_singleplayer:evaluateActions()
 	local game = self.game
 	local player = self.player
@@ -123,11 +128,19 @@ function ai_singleplayer:evaluateActions()
 			for pc = 1, #matrices[rot] do
 				for col = player.start_col, player.end_col - h_adj do
 					local score = matrices[rot][pc][col]
-					if score > maximum_score then	-- Make a fresh table
+					if score > maximum_score then -- Make a fresh table
 						maximum_score = score
-						possible_moves = {{rotation = rot, piece_idx = pc, column = col}}
-					elseif score == maximum_score then	-- Add to the current table
-						possible_moves[#possible_moves+1] = {rotation = rot, piece_idx = pc, column = col}
+						possible_moves = {{
+							rotation = rot,
+							piece_idx = pc,
+							column = col,
+						}}
+					elseif score == maximum_score then	-- Add to current table
+						possible_moves[#possible_moves+1] = {
+							rotation = rot,
+							piece_idx = pc,
+							column = col,
+						}
 					end
 				end
 			end
@@ -135,27 +148,35 @@ function ai_singleplayer:evaluateActions()
 
 		if maximum_score > 0 then
 			local selected = possible_moves[math.random(#possible_moves)]
-			--local selected = possible_moves[1] -- for debug, always select first piece
 			local piece = enumeratePieces(player)[selected.piece_idx]
-			for _ = 1, selected.rotation do
-				piece:rotate()
-			end
+			for _ = 1, selected.rotation do piece:rotate() end
 
-			placePiece(self, piece, getCoords(piece, selected.column))
+			placePiece(
+				self,
+				piece,
+				getCoords(piece, selected.column)
+			)
 		elseif player.cur_burst >= player.RUSH_COST and
 		game.grid:getFirstEmptyRow(1) >= game.grid.RUSH_ROW then
 			local piece = selectRandomPiece(player)
-			if piece.is_horizontal then	-- Always do vertical rushes.
-				piece:rotate()
-			end
+			if piece.is_horizontal then piece:rotate() end -- Vertical rush
 
-			placePiece(self, piece, {player.enemy.start_col, player.enemy.start_col}, "rush")
+			placePiece(
+				self,
+				piece,
+				{player.enemy.start_col, player.enemy.start_col},
+				"rush"
+			)
 		else
 			-- random play
 			local piece = selectRandomPiece(player)
 			local coords = getCoords(piece, selectRandomColumn(piece, player))
 
-			placePiece(self, piece, coords)
+			placePiece(
+				self,
+				piece,
+				coords
+			)
 		end
 	end
 	self.finished = true

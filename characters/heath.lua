@@ -7,7 +7,7 @@ can come from either player). Heath owns the damage from the fire burn.
 Super: Clear the top gem in each friendly column.
  --]]
 
--- *This part is the setup part where we initialize the working variables and images
+-- *This part is where we initialize the working variables and images
 local love = _G.love
 local common = require "class.commons"
 local image = require "image"
@@ -16,10 +16,17 @@ local Character = require "character"
 
 local Heath = {}
 Heath.character_id = "Heath"
-Heath.meter_gain = {red = 8, blue = 4, green = 4, yellow = 4, none = 4, wild = 4}
+Heath.meter_gain = {
+	red = 8,
+	blue = 4,
+	green = 4,
+	yellow = 4,
+	none = 4,
+	wild = 4,
+}
 Heath.primary_colors = {"red"}
 
-Heath.full_size_image = love.graphics.newImage('images/portraits/heath.png')
+Heath.large_image = love.graphics.newImage('images/portraits/heath.png')
 Heath.small_image = love.graphics.newImage('images/portraits/heathsmall.png')
 Heath.action_image = love.graphics.newImage('images/portraits/action_heath.png')
 Heath.shadow_image = love.graphics.newImage('images/portraits/shadow_heath.png')
@@ -165,14 +172,12 @@ function SmallFire:update(dt)
 	end
 	if self.turns_remaining <= 0 and self:isStationary() and not self.fading_out then
 		self.owner.fx.smokes.generate(self.game, self.owner, self.x, self.y)
-		print("made smoke on frame" .. self.game.frame)
 		self:_fadeOut()
 	end
 end
 
 SmallFire = common.class("SmallFire", SmallFire, Pic)
 
--------------------------------------------------------------------------------
 -------------------------------------------------------------------------------
 -- these appear when a fire gets extinguished
 local Smokes = {}
@@ -189,8 +194,16 @@ end
 function Smokes.generate(game, owner, x, y)
 	local img = owner.special_images.smoke
 	local smokes = {
-		left = {sign = -1, flip_x = math.random() < 0.5, flip_y = math.random() < 0.5},
-		right = {sign = 1, flip_x = math.random() < 0.5, flip_y = math.random() < 0.5},
+		left = {
+			sign = -1,
+			flip_x = math.random() < 0.5,
+			flip_y = math.random() < 0.5,
+		},
+		right = {
+			sign = 1,
+			flip_x = math.random() < 0.5,
+			flip_y = math.random() < 0.5,
+		},
 	}
 
 	for _, smoke in pairs(smokes) do
@@ -315,7 +328,8 @@ Heath.fx = {
 
 function Heath:_getParticle(column)
 	for _, particle in pairs(self.game.particles.allParticles.CharEffects) do
-		if particle.player_num == self.player_num and particle.name == "HeathFire"
+		if particle.player_num == self.player_num
+		and particle.name == "HeathFire"
 		and (particle.col == column) then
 			return particle
 		end
@@ -325,7 +339,8 @@ end
 -- if column is provided, only updates the particle in that column
 function Heath:_updateParticleTimers(column)
 	for _, particle in pairs(self.game.particles.allParticles.CharEffects) do
-		if particle.player_num == self.player_num and particle.name == "HeathFire"
+		if particle.player_num == self.player_num
+		and particle.name == "HeathFire"
 		and (particle.col == column or not column) then
 			particle:updateTurnsRemaining()
 		end
@@ -334,7 +349,8 @@ end
 
 function Heath:_updateParticlePositions(delay, column)
 	for _, particle in pairs(self.game.particles.allParticles.CharEffects) do
-		if particle.player_num == self.player_num and particle.name == "HeathFire"
+		if particle.player_num == self.player_num
+		and particle.name == "HeathFire"
 		and (particle.col == column or not column) then
 			particle:updateYPos(delay)
 		end
@@ -344,7 +360,8 @@ end
 -- whether a column already has a fire particle
 function Heath:_columnHasParticle(column)
 	for _, particle in pairs(self.game.particles.allParticles.CharEffects) do
-		if particle.player_num == self.player_num and particle.name == "HeathFire"
+		if particle.player_num == self.player_num
+		and particle.name == "HeathFire"
 		and (particle.col == column) then
 			return true
 		end
@@ -374,7 +391,14 @@ function Heath:beforeGravity()
 					glow_delay = 30,
 					force_max_alpha = true,
 				}
-				self.fx.boom.generate(game, self, top_row, col, explode_delay, 12)
+				self.fx.boom.generate(
+					game,
+					self,
+					top_row,
+					col,
+					explode_delay,
+					12
+				)
 			end
 		end
 
@@ -385,7 +409,12 @@ function Heath:beforeGravity()
 				particle.turns_remaining = 0
 			end
 			self.pending_fires[i] = self.FIRE_EXIST_TURNS
-			self.fx.smallFire.generateSmallFire(self.game, self, i, explode_delay)
+			self.fx.smallFire.generateSmallFire(
+				self.game,
+				self,
+				i,
+				explode_delay
+			)
 		end
 
 		game.sound:newSFX(self.sounds.passive)
@@ -419,7 +448,9 @@ function Heath:beforeMatch()
 	-- store horizontal fire locations, used in aftermatch phase
 	for _, gem in pairs(gem_table) do
 		local top_gem = gem.row == grid:getFirstEmptyRow(gem.column, true) + 1
-		if self.player_num == gem.player_num and gem.is_in_a_horizontal_match and top_gem then
+		if self.player_num == gem.player_num
+		and gem.is_in_a_horizontal_match
+		and top_gem then
 			self.pending_fires[gem.column] = self.FIRE_EXIST_TURNS
 			self.fx.boom.generate(
 				game,
@@ -442,8 +473,8 @@ function Heath:afterMatch()
 	for i in grid:cols() do
 		if self.pending_fires[i] > 0 and not self.is_supering then
 			if self:_columnHasParticle(i) then
-				-- when a new fire overwrites an old fire, overwrite the image
-				-- by immediately updating turns_remaining instead of at cleanup
+			-- when a new fire overwrites an old fire, overwrite the image
+			-- by immediately updating turns_remaining instead of at cleanup
 				local particle = self:_getParticle(i)
 				particle.turns_remaining = self.pending_fires[i]
 				particle:_fadeOut()

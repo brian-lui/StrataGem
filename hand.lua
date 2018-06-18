@@ -23,8 +23,8 @@ function Hand:init(params)
 	self[0].y = stage.height * 0.125 -- discard place is higher up
 	self.garbage = {} -- pending-garbage gems
 	self.damage = 4 -- each 4 damage is one more platform movement
-	self.turn_start_damage = 4	-- damage at the start of the turn, used in particles calcs
-	self.CONSECUTIVE_PLATFORM_DESTROY_DELAY = 10 -- how many frames to wait before destroying additional plats
+	self.turn_start_damage = 4	-- damage at start of turn, for particles calcs
+	self.CONSECUTIVE_PLATFORM_DESTROY_DELAY = 10
 end
 
 function Hand:create(params)
@@ -315,7 +315,7 @@ end
 -- No need to check gem platforms, because hand[6] will always have a piece.
 -- Takes optional start_loc for which position to start checking from.
 function Hand:isSettled(start_loc)
-	start_loc = start_loc or 0 -- we may not always want to check if discard finished moving
+	start_loc = start_loc or 0 -- may not always want to check if discard finished moving
 	local all_unmoved = true
 	for i = start_loc, self.owner.hand_size + 1 do
 		if self[i].piece then
@@ -390,7 +390,7 @@ function Hand:canPlacePiece()
 		return false
 	elseif place_type == "rushed" or place_type == "doubled" then
 		return false
-	elseif place_type == "normal" and player.cur_burst < player.current_double_cost then
+	elseif place_type == "normal" and player.cur_burst < player.cur_double_cost then
 		return false
 	else
 		return true

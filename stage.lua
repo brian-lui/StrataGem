@@ -105,7 +105,7 @@ function stage:init(game)
 end
 
 function stage:isOnLeft()
-	return love.mouse.getX() < self.x_mid -- maybe we need to adjust this for stage resizing too haha
+	return love.mouse.getX() < self.x_mid
 end
 
 return common.class("Stage", stage)

@@ -1,7 +1,7 @@
 --[[
 	Note to coders and code readers!
 	You can't call title.createButton by doing title:createButton(...)
-	That will call it by passing in an instance of title, which doesn't work (?)
+	That will call it by passing in an instance of title, which doesn't work
 	You have to call it with title.createButton(self, ...)
 	That passes in an instance of self, which works (???)
 	Look I didn't code this I just know how to use it, ok
