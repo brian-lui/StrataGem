@@ -1,4 +1,4 @@
--- server for StrateGem!
+-- server for StrataGem!
 
 require 'socket'
 local json = require 'dkjson'
