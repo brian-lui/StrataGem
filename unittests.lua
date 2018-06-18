@@ -500,12 +500,17 @@ local function getPlayerName(game)
 	print(game.settings.player.name)
 end
 
+local function scanForGlobals(game)
+	for k, v in pairs(_G) do print(k, v) end
+end
+
 local Unittests = {
 	f1 = saveGamestate,
 	f2 = loadGamestate,
 	f3 = isGamestateSame,
 	f4 = printGamestate,
 	f5 = playReplayTxt,
+	f6 = scanForGlobals,
 	["1"] = playReplayTxt,
 	q = p1Serialize,
 	w = wolfgangLightUp,

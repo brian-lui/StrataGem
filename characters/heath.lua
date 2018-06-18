@@ -97,7 +97,8 @@ end
 local SmallFire = {}
 function SmallFire:init(manager, tbl)
 	Pic.init(self, manager.game, tbl)
-	manager.allParticles.CharEffects[ID.particle] = self
+	local counter = self.game.inits.ID.particle
+	manager.allParticles.CharEffects[counter] = self
 	self.manager = manager
 end
 
@@ -183,7 +184,8 @@ SmallFire = common.class("SmallFire", SmallFire, Pic)
 local Smokes = {}
 function Smokes:init(manager, tbl)
 	Pic.init(self, manager.game, tbl)
-	manager.allParticles.CharEffects[ID.particle] = self
+	local counter = self.game.inits.ID.particle
+	manager.allParticles.CharEffects[counter] = self
 	self.manager = manager
 end
 
@@ -242,7 +244,8 @@ Smokes = common.class("Smokes", Smokes, Pic)
 local Boom = {}
 function Boom:init(manager, tbl)
 	Pic.init(self, manager.game, tbl)
-	manager.allParticles.CharEffects[ID.particle] = self
+	local counter = self.game.inits.ID.particle
+	manager.allParticles.CharEffects[counter] = self
 	self.manager = manager
 end
 

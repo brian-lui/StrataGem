@@ -1,6 +1,4 @@
 local love = _G.love
-
-require 'inits' -- ID
 local common = require "class.commons"
 local tween = require 'tween'
 local Pic = require 'pic'
@@ -13,7 +11,7 @@ local Piece = {}
 function Piece:init(tbl)
 	self.game = tbl.game
 
-	ID.piece = ID.piece + 1
+	self.game.inits.ID.piece = self.game.inits.ID.piece + 1
 	local tocopy = {"x", "y", "owner", "player_num", "gem_table"}
 	for i = 1, #tocopy do
 		local item = tocopy[i]
@@ -22,7 +20,7 @@ function Piece:init(tbl)
 			print("No " .. item .. " received!")
 		end
 	end
-	self.ID = ID.piece
+	self.ID = self.game.inits.ID.piece
 	self.size = self.size or 2
 	self.rotation = 0
 	self.rotation_index = 0

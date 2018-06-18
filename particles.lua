@@ -157,7 +157,8 @@ function DamageParticle:init(manager, gem)
 		{x = gem.x, y = gem.y, image = img, transparency = 0}
 	)
 	self.player_num = gem.player_num
-	manager.allParticles.Damage[ID.particle] = self
+	local counter = self.game.inits.ID.particle
+	manager.allParticles.Damage[counter] = self
 	self.manager = manager
 end
 
@@ -280,7 +281,8 @@ function DamageTrailParticle:init(manager, gem)
 		img = image["particles_trail_" .. randomStandardColor()]
 	end
 	Pic.init(self, manager.game, {x = gem.x, y = gem.y, image = img})
-	manager.allParticles.DamageTrail[ID.particle] = self
+	local counter = self.game.inits.ID.particle
+	manager.allParticles.DamageTrail[counter] = self
 	self.manager = manager
 end
 
@@ -331,7 +333,8 @@ function SuperParticle:init(manager, x, y, img, player_num, color)
 	Pic.init(self, manager.game, {x = x, y = y, image = img})
 	self.player_num = player_num
 	self.color = color
-	manager.allParticles.SuperParticles[ID.particle] = self
+	local counter = self.game.inits.ID.particle
+	manager.allParticles.SuperParticles[counter] = self
 	self.manager = manager
 end
 
@@ -401,7 +404,8 @@ function HealingParticle:init(manager, x, y, img, owner, particle_type)
 	Pic.init(self, manager.game, {x = x, y = y, image = img})
 	self.particle_type = particle_type
 	self.owner = owner
-	manager.allParticles[particle_type][ID.particle] = self
+	local counter = self.game.inits.ID.particle
+	manager.allParticles[particle_type][counter] = self
 	self.manager = manager
 end
 
@@ -550,7 +554,8 @@ function GarbageParticles:init(manager, gem)
 	local img = image.lookup.particle_freq(gem.color)
 	Pic.init(self, manager.game, {x = gem.x, y = gem.y, image = img})
 	self.player_num = gem.player_num
-	manager.allParticles.GarbageParticles[ID.particle] = self
+	local counter = self.game.inits.ID.particle
+	manager.allParticles.GarbageParticles[counter] = self
 	self.manager = manager
 end
 
@@ -627,7 +632,8 @@ function PopParticles:init(params)
 		manager.game,
 		{x = params.x, y = params.y, image = params.image}
 	)
-	manager.allParticles.PopParticles[ID.particle] = self
+	local counter = self.game.inits.ID.particle
+	manager.allParticles.PopParticles[counter] = self
 	self.manager = manager
 end
 
@@ -725,7 +731,8 @@ function ExplodingGem:init(params)
 		manager.game,
 		{x = x, y = y, image = img, transparency = transparency}
 	)
-	manager.allParticles.ExplodingGem[ID.particle] = self
+	local counter = self.game.inits.ID.particle
+	manager.allParticles.ExplodingGem[counter] = self
 	self.manager = manager
 end
 
@@ -809,7 +816,8 @@ ExplodingGem = common.class("ExplodingGem", ExplodingGem, Pic)
 local ExplodingPlatform = {}
 function ExplodingPlatform:init(manager, x, y, _image)
 	Pic.init(self, manager.game, {x = x, y = y, image = _image})
-	manager.allParticles.ExplodingPlatform[ID.particle] = self
+	local counter = self.game.inits.ID.particle
+	manager.allParticles.ExplodingPlatform[counter] = self
 	self.manager = manager
 end
 
@@ -873,7 +881,8 @@ ExplodingPlatform = common.class("ExplodingPlatform", ExplodingPlatform, Pic)
 local PlatformStar = {}
 function PlatformStar:init(manager, x, y, _image, particle_type)
 	Pic.init(self, manager.game, {x = x, y = y, image = _image})
-	manager.allParticles[particle_type][ID.particle] = self
+	local counter = self.game.inits.ID.particle
+	manager.allParticles[particle_type][counter] = self
 	self.manager = manager
 	self.particle_type = particle_type
 end
@@ -983,7 +992,8 @@ PlatformStar = common.class("PlatformStar", PlatformStar, Pic)
 local Dust = {}
 function Dust:init(manager, x, y, _image, particle_type)
 	Pic.init(self, manager.game, {x = x, y = y, image = _image})
-	manager.allParticles[particle_type][ID.particle] = self
+	local counter = self.game.inits.ID.particle
+	manager.allParticles[particle_type][counter] = self
 	self.manager = manager
 	self.particle_type = particle_type
 end
@@ -1337,7 +1347,8 @@ Dust = common.class("Dust", Dust, Pic)
 local UpGem = {}
 function UpGem:init(manager, gem)
 	Pic.init(self, manager.game, {x = gem.x, y = gem.y, image = gem.image})
-	manager.allParticles.UpGem[ID.particle] = self
+	local counter = self.game.inits.ID.particle
+	manager.allParticles.UpGem[counter] = self
 	self.manager = manager
 end
 
@@ -1372,7 +1383,8 @@ function PlacedGem:init(manager, gem, y, row, place_type)
 		manager.game,
 		{x = gem.x, y = y, image = gem.image, transparency = 192}
 	)
-	manager.allParticles.PlacedGem[ID.particle] = self
+	local counter = self.game.inits.ID.particle
+	manager.allParticles.PlacedGem[counter] = self
 	self.manager = manager
 	self.player_num = gem.player_num
 	self.row = row
@@ -1439,7 +1451,8 @@ PlacedGem = common.class("PlacedGem", PlacedGem, Pic)
 local GemImage = {}
 function GemImage:init(manager, x, y, img)
 	Pic.init(self, manager.game, {x = x, y = y, image = img})
-	manager.allParticles.GemImage[ID.particle] = self
+	local counter = self.game.inits.ID.particle
+	manager.allParticles.GemImage[counter] = self
 	self.manager = manager
 end
 
@@ -1494,7 +1507,8 @@ GemImage = common.class("GemImage", GemImage, Pic)
 local WordEffects = {}
 function WordEffects:init(manager, x, y, todraw)
 	Pic.init(self, manager.game, {x = x, y = y, image = todraw})
-	manager.allParticles.WordEffects[ID.particle] = self
+	local counter = self.game.inits.ID.particle
+	manager.allParticles.WordEffects[counter] = self
 	self.manager = manager
 end
 
@@ -1634,7 +1648,8 @@ WordEffects = common.class("WordEffects", WordEffects, Pic)
 local Words = {}
 function Words:init(manager, x, y, todraw)
 	Pic.init(self, manager.game, {x = x, y = y, image = todraw})
-	manager.allParticles.Words[ID.particle] = self
+	local counter = self.game.inits.ID.particle
+	manager.allParticles.Words[counter] = self
 	self.manager = manager
 end
 
@@ -1862,7 +1877,8 @@ local CharEffects = {}
 --]]
 function CharEffects:init(manager, tbl)
 	Pic.init(self, manager.game, tbl)
-	manager.allParticles.CharEffects[ID.particle] = self
+	local counter = self.game.inits.ID.particle
+	manager.allParticles.CharEffects[counter] = self
 	self.manager = manager
 end
 
@@ -1879,7 +1895,8 @@ local SuperFreezeEffects = {}
 function SuperFreezeEffects:init(manager, tbl)
 	tbl.draw_order = tbl.draw_order or 1
 	Pic.init(self, manager.game, tbl)
-	manager.allParticles.SuperFreezeEffects[ID.particle] = self
+	local counter = self.game.inits.ID.particle
+	manager.allParticles.SuperFreezeEffects[counter] = self
 	self.manager = manager
 end
 

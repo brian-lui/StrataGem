@@ -138,7 +138,8 @@ end
 local ColorLetter = {}
 function ColorLetter:init(manager, tbl)
 	Pic.init(self, manager.game, tbl)
-	manager.allParticles.CharEffects[ID.particle] = self
+	local counter = self.game.inits.ID.particle
+	manager.allParticles.CharEffects[counter] = self
 	self.manager = manager
 	self.game = manager.game
 end
@@ -199,7 +200,8 @@ ColorLetter = common.class("ColorLetter", ColorLetter, Pic)
 local ColorWord = {}
 function ColorWord:init(manager, tbl)
 	Pic.init(self, manager.game, tbl)
-	manager.allParticles.CharEffects[ID.particle] = self
+	local counter = self.game.inits.ID.particle
+	manager.allParticles.CharEffects[counter] = self
 	self.manager = manager
 end
 

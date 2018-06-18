@@ -55,7 +55,7 @@ Game.TWEEN_TO_LANDING_ZONE_DURATION = 24
 Game.VERSION = "71.0"
 
 function Game:init()
-	self.inits = require "initsactually"
+	self.inits = require "inits"
 	self.settings = require "settings"
 	self.rng = love.math.newRandomGenerator()
 	self.unittests = common.instance(require "unittests", self)
@@ -262,7 +262,7 @@ function Game:reset()
 	self.paused = false
 	self.settings_menu_open = false
 	self.screen_dark = {false, false, false}
-	ID:reset()
+	self.inits.ID:reset()
 	self.sound:reset()
 	self.grid:reset()
 	self.particles:reset()

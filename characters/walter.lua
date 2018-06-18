@@ -98,7 +98,8 @@ end
 local FoamDroplet = {}
 function FoamDroplet:init(manager, tbl)
 	Pic.init(self, manager.game, tbl)
-	manager.allParticles.CharEffects[ID.particle] = self
+	local counter = self.game.inits.ID.particle
+	manager.allParticles.CharEffects[counter] = self
 	self.manager = manager
 end
 
@@ -172,7 +173,8 @@ FoamDroplet = common.class("FoamDroplet", FoamDroplet, Pic)
 local Foam = {}
 function Foam:init(manager, tbl)
 	Pic.init(self, manager.game, tbl)
-	manager.allParticles.CharEffects[ID.particle] = self
+	local counter = self.game.inits.ID.particle
+	manager.allParticles.CharEffects[counter] = self
 	self.manager = manager
 end
 
@@ -221,7 +223,8 @@ Foam = common.class("Foam", Foam, Pic)
 local Spout = {}
 function Spout:init(manager, tbl)
 	Pic.init(self, manager.game, tbl)
-	manager.allParticles.CharEffects[ID.particle] = self
+	local counter = self.game.inits.ID.particle
+	manager.allParticles.CharEffects[counter] = self
 	self.manager = manager
 end
 
@@ -284,7 +287,8 @@ Spout = common.class("Spout", Spout, Pic)
 local Splatter = {}
 function Splatter:init(manager, tbl)
 	Pic.init(self, manager.game, tbl)
-	manager.allParticles.CharEffects[ID.particle] = self
+	local counter = self.game.inits.ID.particle
+	manager.allParticles.CharEffects[counter] = self
 	self.manager = manager
 end
 
@@ -350,7 +354,8 @@ Splatter = common.class("Splatter", Splatter, Pic)
 local Droplet = {}
 function Droplet:init(manager, tbl)
 	Pic.init(self, manager.game, tbl)
-	manager.allParticles.CharEffects[ID.particle] = self
+	local counter = self.game.inits.ID.particle
+	manager.allParticles.CharEffects[counter] = self
 	self.manager = manager
 end
 
@@ -394,7 +399,8 @@ Droplet = common.class("Droplet", Droplet, Pic)
 local HealingCloud = {}
 function HealingCloud:init(manager, tbl)
 	Pic.init(self, manager.game, tbl)
-	manager.allParticles.CharEffects[ID.particle] = self
+	local counter = self.game.inits.ID.particle
+	manager.allParticles.CharEffects[counter] = self
 	self.manager = manager
 end
 
@@ -510,7 +516,8 @@ HealingCloud = common.class("HealingCloud", HealingCloud, Pic)
 local HealingColumnAura = {}
 function HealingColumnAura:init(manager, tbl)
 	Pic.init(self, manager.game, tbl)
-	manager.allParticles.CharEffects[ID.particle] = self
+	local counter = self.game.inits.ID.particle
+	manager.allParticles.CharEffects[counter] = self
 	self.manager = manager
 end
 
@@ -551,7 +558,8 @@ HealingColumnAura = common.class("HealingColumnAura", HealingColumnAura, Pic)
 local MatchDust = {}
 function MatchDust:init(manager, tbl)
 	Pic.init(self, manager.game, tbl)
-	manager.allParticles.CharEffects[ID.particle] = self
+	local counter = self.game.inits.ID.particle
+	manager.allParticles.CharEffects[counter] = self
 	self.manager = manager
 end
 

@@ -107,22 +107,28 @@ function Animations:create(tbl, player)
 		owner = player,
 		is_child = false,
 		children = {},
-		parent = {x = locations[player.ID].x, y = locations[player.ID].y, angle = 0, rotation = {angle = 0}}, -- put x y spin here lol
+		parent = { -- put x y spin here lol
+			x = locations[player.ID].x,
+			y = locations[player.ID].y,
+			angle = 0,
+			rotation = {angle = 0},
+		},
 		rotation = {pivot_x = 0, pivot_y = 0, angle = 0},
 		final = {x = 0, y = 0, angle = 0},
 		remove_func = function() end,
 		tweens = {},
 	}
 	-- apply user parameters
-	for k, v in pairs(tbl) do
-		object[k] = v
-	end
-	self.allAnimations[ID.particle] = common.instance(Animation, object, self)
+	for k, v in pairs(tbl) do object[k] = v end
+
+	local container = self.game.inits.ID.particle
+	self.allAnimations[container] = common.instance(Animation, object, self)
 	updatePriority()
 end
 
 function Animations:remove()
-	self.allAnimations[ID.particle] = nil
+	local container = self.game.inits.ID.particle
+	self.allAnimations[container] = nil
 	updatePriority()
 end
 

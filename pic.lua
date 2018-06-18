@@ -33,13 +33,13 @@ function Pic:init(game, tbl)
 			self.ID = tbl.name
 			self.container[tbl.name] = self
 		else
-			ID[tbl.counter] = ID[tbl.counter] + 1
-			self.ID = ID[tbl.counter]
+			game.inits.ID[tbl.counter] = game.inits.ID[tbl.counter] + 1
+			self.ID = game.inits.ID[tbl.counter]
 			self.container[self.ID] = self
 		end
 	else
-		ID.particle = ID.particle + 1
-		self.ID = ID.particle
+		game.inits.ID.particle = game.inits.ID.particle + 1
+		self.ID = game.inits.ID.particle
 	end
 
 	self.width = self.image:getWidth()

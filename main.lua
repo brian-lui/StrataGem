@@ -2,7 +2,6 @@
 _G.table.unpack = _G.table.unpack or _G.unpack
 
 local love = _G.love
-require "inits"
 require "classcommons"
 local common = require "class.commons"
 local game

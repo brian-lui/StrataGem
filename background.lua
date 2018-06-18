@@ -25,7 +25,8 @@ function RabbitInASnowstorm:init(game)
 		y = game.stage.y_mid,
 		image = love.graphics.newImage('images/backgrounds/rabbitsnowstorm/rabbitsnowstorm.png'),
 	}
-	ID.background_particle = 0
+
+	game.inits.ID.background_particle = 0
 end
 
 function RabbitInASnowstorm:update(dt)
@@ -58,7 +59,7 @@ function Checkmate:init(game)
 	self.NEXT_SWAP_TIME = 6.5 -- seconds until next picture swap
 	self.swap_time = self.NEXT_SWAP_TIME
 	self.images = {}
-	ID.background_particle = 0
+	game.inits.ID.background_particle = 0
 	self.background = Pic:create{
 		game = game,
 		x = self.IMAGE_WIDTH * 0.5,
@@ -174,7 +175,7 @@ function Clouds:init(game)
 		love.graphics.newImage('images/backgrounds/cloud/smallcloud5.png'),
 		love.graphics.newImage('images/backgrounds/cloud/smallcloud6.png'),
 	}
-	ID.background_particle = 0
+	game.inits.ID.background_particle = 0
 
 	self:_initClouds()
 end
@@ -279,7 +280,7 @@ function Starfall:init(game)
 	self.star_timer_func = function() return math.random(70, 100) end
 	self.star_timer = self.star_timer_func()
 	self.stars = {} -- container for stars
-	ID.background_particle = 0
+	game.inits.ID.background_particle = 0
 end
 
 function Starfall:_generateStar()
@@ -358,7 +359,7 @@ function Colors:init(game)
 		[1080] = love.graphics.newImage('images/backgrounds/colors/green.png'),
 		[1440] =  love.graphics.newImage('images/backgrounds/colors/yellow.png'),
 	}
-	ID.background_particle = 0
+	game.inits.ID.background_particle = 0
 end
 
 function Colors:_newColor(img)

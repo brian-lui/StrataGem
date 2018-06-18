@@ -1,6 +1,5 @@
 local love = _G.love
 require 'utilities'
-require 'inits'
 local common = require "class.commons"
 local image = require 'image'
 

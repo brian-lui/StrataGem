@@ -21,7 +21,7 @@ function Gem:init(params)
 		y = params.y,
 		image = params.image or gemImages[params.color:lower()],
 	})
-	ID.gem = ID.gem + 1
+	self.game.inits.ID.gem = self.game.inits.ID.gem + 1
 	self.is_in_a_horizontal_match = false -- for gem matches
 	self.is_in_a_vertical_match = false -- for gem matches
 	self.target_x = params.x
@@ -30,7 +30,7 @@ function Gem:init(params)
 	self.pivot_x = self.width * 0.5
 	self.pivot_y = self.height * 0.5
 	self.color = params.color
-	self.ID = ID.gem
+	self.ID = self.game.inits.ID.gem
 	self.row = -1
 	self.column = -1
 	self.player_num = 0 -- 0 = none, 1 = p1, 2 = p2, 3 = both

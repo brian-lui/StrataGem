@@ -43,7 +43,8 @@ Gail.sounds = {
 local TestPetal = {}
 function TestPetal:init(manager, tbl)
 	Pic.init(self, manager.game, tbl)
-	manager.allParticles.CharEffects[ID.particle] = self
+	local counter = self.game.inits.ID.particle
+	manager.allParticles.CharEffects[counter] = self
 	self.manager = manager
 end
 
@@ -52,7 +53,6 @@ function TestPetal:remove()
 end
 
 function TestPetal.generate(game, owner)
-	local grid = game.grid
 	local stage = game.stage
 	local params = {
 		x = stage.width * 0.5,
@@ -66,7 +66,7 @@ function TestPetal.generate(game, owner)
 
 	local p = common.instance(TestPetal, game.particles, params)
 	local the_next_image = Gail.special_images.petal2
-	for i = 1, 5 do
+	for _ = 1, 5 do
 		p:change{duration = 30, y_scaling = 0.01}
 		p:newImage(the_next_image, true)
 		if the_next_image == Gail.special_images.petal1 then
