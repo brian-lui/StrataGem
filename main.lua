@@ -14,6 +14,10 @@ function love.load()
 	-- default windowed resolution is half native
 	local desktopWidth, desktopHeight = love.window.getDesktopDimensions()
 	love.window.setMode(desktopWidth / 2, desktopHeight / 2, {resizable=true})
+
+	-- set icon
+	local icon = love.graphics.newImage("/images/unclickables/windowicon.png")
+	love.window.setIcon(icon:getData())
 end
 -- local sandbox = require 'animationsandbox'
 
