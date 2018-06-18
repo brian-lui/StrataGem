@@ -7,8 +7,8 @@ Super: Clear the tallest friendly vertical column. In case of a tie, clear the
 
 local love = _G.love
 local common = require "class.commons"
-local image = require 'image'
-local Pic = require 'pic'
+local image = require "image"
+local Pic = require "pic"
 local Character = require "character"
 
 local Walter = {}

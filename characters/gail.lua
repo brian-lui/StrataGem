@@ -1,8 +1,8 @@
 local love = _G.love
 local common = require "class.commons"
 local Character = require "character"
-local image = require 'image'
-local Pic = require 'pic'
+local image = require "image"
+local Pic = require "pic"
 
 local Gail = {}
 

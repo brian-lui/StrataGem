@@ -2,7 +2,7 @@ local common = require "class.commons"
 
 local Multiplayer = {name = "Multiplayer", gametype = "Netplay"}
 function Multiplayer:init()
-	self.charselect = common.instance(require 'charselect', self, Multiplayer)
+	self.charselect = common.instance(require "charselect", self, Multiplayer)
 	self.charselect:init(self, Multiplayer)
 end
 

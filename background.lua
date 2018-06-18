@@ -9,8 +9,8 @@ local love = _G.love
 --]]
 
 local common = require "class.commons"
-local Pic = require 'pic'
-local spairs = require "utilities".spairs
+local Pic = require "pic"
+local spairs = require "/helpers/utilities".spairs
 
 -------------------------------------------------------------------------------
 ---------------------------- RABBIT IN A SNOWSTORM ----------------------------

@@ -8,7 +8,7 @@
 --]]
 
 local common = require "class.commons"
-local image = require 'image'
+local image = require "image"
 
 local title = {name = "title"}
 

@@ -1,6 +1,6 @@
 local common = require "class.commons" -- class support
-local Piece = require 'piece'
-local GemPlatform = require 'gemplatform'
+local Piece = require "piece"
+local GemPlatform = require "gemplatform"
 
 local Hand = {}
 

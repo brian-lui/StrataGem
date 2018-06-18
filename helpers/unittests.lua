@@ -1,7 +1,7 @@
 -- You can make some patterns to test bugs
 local common = require "class.commons"
-local Gem = require 'gem'
-local Piece = require 'piece'
+local Gem = require "gem"
+local Piece = require "piece"
 
 local colorAliases = {
 	r = "red",

@@ -1,10 +1,10 @@
 local love = _G.love
 local common = require "class.commons"
-local tween = require '/libraries/tween'
-local Pic = require 'pic'
+local tween = require "/libraries/tween"
+local Pic = require "pic"
 local Gem = require "gem"
-local reverseTable = require "utilities".reverseTable
-local pointIsInRect = require "utilities".pointIsInRect
+local reverseTable = require "/helpers/utilities".reverseTable
+local pointIsInRect = require "/helpers/utilities".pointIsInRect
 
 local Piece = {}
 function Piece:init(tbl)

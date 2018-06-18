@@ -1,6 +1,6 @@
 local love = _G.love
 local common = require "class.commons" -- class support
-local pointIsInRect = require "utilities".pointIsInRect
+local pointIsInRect = require "/helpers/utilities".pointIsInRect
 local image = require "image"
 local Gem = require "gem"
 

@@ -1,7 +1,7 @@
 local common = require "class.commons"
-local image = require 'image'
-local pointIsInRect = require "utilities".pointIsInRect
-local spairs = require "utilities".spairs
+local image = require "image"
+local pointIsInRect = require "/helpers/utilities".pointIsInRect
+local spairs = require "/helpers/utilities".spairs
 
 local gs_main = {name = "gs_main"}
 

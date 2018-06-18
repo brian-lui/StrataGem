@@ -6,8 +6,8 @@ local love = _G.love
 --]]
 
 local common = require "class.commons"
-local Pic = require 'pic'
-local tween = require '/libraries/tween'
+local Pic = require "pic"
+local tween = require "/libraries/tween"
 
 -----------------------------------HELPERS-------------------------------------
 -- cartesian to polar

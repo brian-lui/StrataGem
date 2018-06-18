@@ -1,7 +1,7 @@
 local love = _G.love
-local common = require 'class.commons' -- class support
-local image = require 'image'
-local Pic = require 'pic'
+local common = require "class.commons" -- class support
+local image = require "image"
+local Pic = require "pic"
 
 local gemImages = {
 	red = image.gems_red,

@@ -1,8 +1,8 @@
 local love = _G.love
 local common = require "class.commons"
-local image = require 'image'
-local Pic = require 'pic'
-local Hand = require 'hand'
+local image = require "image"
+local Pic = require "pic"
+local Hand = require "hand"
 
 local Character = {}
 Character.large_image = love.graphics.newImage('images/portraits/heath.png')

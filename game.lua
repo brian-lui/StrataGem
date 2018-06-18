@@ -55,10 +55,10 @@ Game.TWEEN_TO_LANDING_ZONE_DURATION = 24
 Game.VERSION = "71.0"
 
 function Game:init()
-	self.inits = require "inits"
-	self.settings = require "settings"
+	self.inits = require "/helpers/inits"
+	self.settings = require "/helpers/settings"
 	self.rng = love.math.newRandomGenerator()
-	self.unittests = common.instance(require "unittests", self)
+	self.unittests = common.instance(require "/helpers/unittests", self)
 	self.phase = common.instance(require "phase", self)
 	self.sound = common.instance(require "sound", self)
 	self.stage = common.instance(require "stage", self)	-- playing field
@@ -71,9 +71,9 @@ function Game:init()
 	self.particles = common.instance(require "particles", self)
 	self.client = common.instance(require "client", self)
 	self.queue = common.instance(Queue, self)
-	self.statemanager = common.instance(require "statemanager", self)
+	self.statemanager = common.instance(require "/libraries/statemanager", self)
 	self.statemanager:switch(require "gs_title")
-	self.debugconsole = common.instance(require "debugconsole", self)
+	self.debugconsole = common.instance(require "/helpers/debugconsole", self)
 	self.debugconsole:setDefaultDisplayParams()
 	self.debugconsole:replacePrint()
 	self:reset()
@@ -1097,7 +1097,7 @@ function Game:_drawSettingsMenu(gamestate)
 	end
 end
 
-local pointIsInRect = require "utilities".pointIsInRect
+local pointIsInRect = require "/helpers/utilities".pointIsInRect
 
 --default mousepressed function if not specified by a sub-state
 function Game:_mousepressed(x, y, gamestate)

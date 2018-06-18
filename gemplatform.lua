@@ -1,6 +1,6 @@
-local image = require 'image'
+local image = require "image"
 local common = require "class.commons" -- class support
-local Pic = require 'pic'
+local Pic = require "pic"
 
 -- gem platforms are generated through the Hand class
 local GemPlatform = {}

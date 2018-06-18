@@ -1,5 +1,5 @@
 local love = _G.love
-local json = require '/libraries/dkjson'
+local json = require "/libraries/dkjson"
 
 local settings = {}
 settings.player = {name = "Card Gamer"}

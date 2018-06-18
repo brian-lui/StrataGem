@@ -1,7 +1,7 @@
 local love = _G.love
-local image = require 'image'
-local common = require 'class.commons'
-local Pic = require 'pic'
+local image = require "image"
+local common = require "class.commons"
+local Pic = require "pic"
 
 local Particles = {}
 

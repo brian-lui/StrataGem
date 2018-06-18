@@ -2,9 +2,9 @@
 -- singleplayer or netplay
 
 local common = require "class.commons"
-local image = require 'image'
-local Pic = require 'pic'
-local spairs = require "utilities".spairs
+local image = require "image"
+local Pic = require "pic"
+local spairs = require "/helpers/utilities".spairs
 
 -------------------------------------------------------------------------------
 ------------------------------- LOBBY CLASS -----------------------------------

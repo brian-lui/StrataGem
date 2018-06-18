@@ -1,6 +1,6 @@
 local love = _G.love
 local common = require "class.commons"
-local tween = require '/libraries/tween'
+local tween = require "/libraries/tween"
 
 local Pic = {}
 

@@ -1,6 +1,6 @@
 local love = _G.love
 local common = require "class.commons"
-local image = require 'image'
+local image = require "image"
 
 local stage = {}
 

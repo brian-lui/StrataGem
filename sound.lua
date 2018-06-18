@@ -1,6 +1,6 @@
 local love = _G.love
 local common = require "class.commons"
-local stringEndsWith = require "utilities".stringEndsWith
+local stringEndsWith = require "/helpers/utilities".stringEndsWith
 
 local soundfiles = {
 	bgm_buzz = {
