@@ -25,7 +25,7 @@ end
 -- So we put it in init(), not enter() like in the other states
 function title:init()
 	local stage = self.stage
-	self.timeStep, self.timeBucket = 1/60, 0
+	self.time_step, self.timeBucket = 1/60, 0
 	title.ui = {
 		clickable = {},
 		static = {},

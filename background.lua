@@ -54,7 +54,7 @@ function Checkmate:init(game)
 	self.IMAGE_HEIGHT = checkmate_images[0]:getHeight()
 	self.SCROLL_RATE = 220 -- pixels per second
 	self.OVERLAY_RATE = 220 -- pixels per second
-	self.OVERLAY_DURATION = (self.IMAGE_HEIGHT / self.OVERLAY_RATE) / game.timeStep
+	self.OVERLAY_DURATION = (self.IMAGE_HEIGHT / self.OVERLAY_RATE) / game.time_step
 	self.NEXT_SWAP_TIME = 6.5 -- seconds until next picture swap
 	self.swap_time = self.NEXT_SWAP_TIME
 	self.images = {}

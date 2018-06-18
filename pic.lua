@@ -438,7 +438,7 @@ function Pic:clear()
 end
 
 function Pic:update(dt)
-	dt = dt / self.game.timeStep  -- convert dt to frames
+	dt = dt / self.game.time_step  -- convert dt to frames
 	if self.move_func then
 		if self.during then -- takes {frame_step, frame_start, func, args}
 			self.during_frame = self.during_frame + 1

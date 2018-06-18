@@ -345,14 +345,14 @@ local function showDebugInfo(game)
 end
 
 local function toggleSlowdown(game)
-	if game.timeStep == 1/60 then
-		game.timeStep = 1/6
+	if game.time_step == 1/60 then
+		game.time_step = 1/6
 		game.debugconsole.is_pause_mode_on = true
-	elseif game.timeStep == 1/6 then
-		game.timeStep = 2
+	elseif game.time_step == 1/6 then
+		game.time_step = 2
 		game.debugconsole.is_pause_mode_on = true
 	else
-		game.timeStep = 1/60
+		game.time_step = 1/60
 		game.debugconsole.is_pause_mode_on = false
 	end
 end

@@ -58,7 +58,7 @@ function Timer:update(dt)
 
 	-- update the timer text (3/2/1 countdown)
 	local previous_time_remaining_int = self.time_remaining_int
-	local time_remaining = (phase.time_to_next * game.timeStep)
+	local time_remaining = (phase.time_to_next * game.time_step)
 	self.time_remaining_int = math.ceil(time_remaining * self.text_multiplier)
 
 	if time_remaining <= (3 / self.text_multiplier) and time_remaining > 0 then

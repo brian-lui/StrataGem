@@ -14,7 +14,7 @@ local common = require "class.commons"
 local ai = {
 	finished = false,
 	queuedFunc = nil,
-	queuedArgs = nil,
+	queued_args = nil,
 }
 
 function ai:init(game, player)
@@ -23,24 +23,24 @@ function ai:init(game, player)
 end
 
 function ai:queueAction(func, args)
-	self.queuedFunc, self.queuedArgs = func, args
+	self.queuedFunc, self.queued_args = func, args
 end
 
 -- for replays only. This is hacky lol
 function ai:queueSecondAction(func, args)
-	self.queuedSecondFunc, self.queuedSecondArgs = func, args
+	self.queuedSecondFunc, self.queued_second_args = func, args
 end
 
 function ai:performQueuedAction()
 	if not self.queuedFunc then
 		error("ai tried to perform nonexistent queued action")
 	end
-	self.queuedFunc(table.unpack(self.queuedArgs))
-	self.queuedFunc, self.queuedArgs = nil, nil	-- Only run once.
+	self.queuedFunc(table.unpack(self.queued_args))
+	self.queuedFunc, self.queued_args = nil, nil	-- Only run once.
 
 	if self.queuedSecondFunc then
-		self.queuedSecondFunc(table.unpack(self.queuedSecondArgs))
-		self.queuedSecondFunc, self.queuedSecondArgs = nil, nil
+		self.queuedSecondFunc(table.unpack(self.queued_second_args))
+		self.queuedSecondFunc, self.queued_second_args = nil, nil
 	end
 end
 
