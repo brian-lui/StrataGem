@@ -1,4 +1,3 @@
-require 'utilities' -- helper functions
 local common = require "class.commons" -- class support
 local Piece = require 'piece'
 local GemPlatform = require 'gemplatform'

@@ -1,5 +1,3 @@
-local love = _G.love
-require 'utilities' -- move
 local image = require 'image'
 local common = require "class.commons" -- class support
 local Pic = require 'pic'
