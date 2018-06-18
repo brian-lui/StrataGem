@@ -2,8 +2,9 @@
 _G.table.unpack = _G.table.unpack or _G.unpack
 
 local love = _G.love
-require "classcommons"
+require "/libraries/classcommons"
 local common = require "class.commons"
+local __NOP__ = function () end
 local game
 
 function love.load()
@@ -19,9 +20,7 @@ function love.load()
 	local icon = love.graphics.newImage("/images/unclickables/windowicon.png")
 	love.window.setIcon(icon:getData())
 end
--- local sandbox = require 'animationsandbox'
 
-local __NOP__ = function () end
 
 function love.quit()
 	local lily = require "lily"

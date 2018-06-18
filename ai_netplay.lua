@@ -1,5 +1,6 @@
 -- Subclass of normal AI that just relays player inputs from over the net.
 local common = require "class.commons"
+
 local ai_net = {}
 function ai_net:evaluateActions(them_player)
 	local game = self.game

@@ -15,6 +15,7 @@ local common = require "class.commons"
 local Character = require "character"
 local image = require 'image'
 local Pic = require 'pic'
+
 local Wolfgang = {}
 
 Wolfgang.large_image = love.graphics.newImage('images/portraits/wolfgang.png')

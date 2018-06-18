@@ -3,6 +3,7 @@ local common = require "class.commons" -- class support
 local pointIsInRect = require "utilities".pointIsInRect
 local image = require "image"
 local Gem = require "gem"
+
 local DebugConsole = {}
 
 function DebugConsole:init(game)

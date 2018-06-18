@@ -1,6 +1,6 @@
-local Pic = require "pic"
 local love = _G.love
-local common = require "classcommons"
+local Pic = require "pic"
+local common = require "/libraries/classcommons"
 local Gem = require "gem"
 local Piece = require "piece"
 local image = require "image"

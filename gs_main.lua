@@ -6,7 +6,7 @@ local spairs = require "utilities".spairs
 local gs_main = {name = "gs_main"}
 
 function gs_main:init()
-	self.camera = common.instance(require "camera")
+	self.camera = common.instance(require "/libraries/camera")
 	gs_main.ui = {
 		clickable = {},
 		static = {},

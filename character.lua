@@ -1,5 +1,4 @@
 local love = _G.love
-require 'inits'
 local common = require "class.commons"
 local image = require 'image'
 local Pic = require 'pic'

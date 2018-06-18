@@ -1,6 +1,7 @@
 -- handles the main game phases
 local love = _G.love
 local common = require "class.commons"
+
 local Phase = {}
 
 function Phase:init(game)

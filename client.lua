@@ -1,7 +1,6 @@
 local love = _G.love
 local socket = require 'socket'
-local json = require 'dkjson'
---local settings = require 'settings'
+local json = require '/libraries/dkjson'
 local common = require "class.commons"
 
 local Client = {}

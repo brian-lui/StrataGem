@@ -1,5 +1,5 @@
 local love = _G.love
-local TLfres = require "tlfres"
+local TLfres = require "/libraries/tlfres"
 
 local inits = {}
 

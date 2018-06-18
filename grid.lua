@@ -1,7 +1,6 @@
 local image = require 'image'
 local common = require "class.commons"
 local Gem = require "gem"
-
 local deepcpy = require "utilities".deepcpy
 
 local Grid = {}

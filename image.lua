@@ -1,5 +1,5 @@
 local love = _G.love
-local lily = require 'lily'
+local lily = require '/libraries/lily'
 
 local buttons = {
 	"vscpu", "vscpupush", "netplay", "netplaypush", "back", "backpush",

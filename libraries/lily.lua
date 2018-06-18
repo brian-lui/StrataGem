@@ -90,7 +90,7 @@ local function initThreads()
 		a.channel = love.thread.newChannel()
 		a.thread = love.thread.newThread(
 			lily_thread_script or
-			module_path:gsub("%.", "/").."lily_thread.lua"
+			module_path:gsub("%.", "/").."/libraries/lily_thread.lua"
 		)
 		a.thread:start(lily.modules, math.random(), a.channel, a.channel_info, errchannel)
 

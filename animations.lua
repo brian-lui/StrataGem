@@ -5,10 +5,8 @@ local love = _G.love
 	of the game field.
 --]]
 
-local common = require 'classcommons'
-local pairs = pairs
+local common = require 'class.commons'
 local Animation = require "animation"
-
 local spairs = require "utilities".spairs
 
 -----------------------------------HELPERS-------------------------------------

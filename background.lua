@@ -9,7 +9,6 @@ local love = _G.love
 --]]
 
 local common = require "class.commons"
-local image = require 'image'
 local Pic = require 'pic'
 local spairs = require "utilities".spairs
 
