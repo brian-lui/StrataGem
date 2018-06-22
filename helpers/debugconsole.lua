@@ -74,7 +74,7 @@ function DebugConsole:setDefaultDisplayParams()
 		overlay_left_function = function()
 			return "Damage particles: " .. game.particles:getNumber("Damage")
 		end,
-		save_screencaps = true,
+		save_screencaps = false,
 		is_pause_mode_on = false,
 	}
 	self:setDisplay(params)
