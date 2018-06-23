@@ -952,7 +952,8 @@ function Grid:destroyGem(params)
 	-- flag above gems
 	if params.propagate_flags_up ~= false and
 		gem.player_num ~= 3 and gem.player_num ~= 0 then
-		for i = gem.row - 1, 1, -1 do
+		-- go up to row 7 only, to not interfere with this turn's placed gems
+		for i = gem.row - 1, self.BASIN_START_ROW - 6, -1 do
 			local current_gem = self[i][gem.column].gem
 			if current_gem then
 				 -- skip propagation if this gem was part of (another) match

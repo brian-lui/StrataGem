@@ -390,7 +390,7 @@ end
 
 -- takes a delta and plays it to the game
 function Game:deserializeDelta(delta_string, player)
-	print("performing delta " .. delta_string)
+	print("performing delta " .. delta_string .. " for player " .. player.player_num)
 
 	local delta = {}
 	for s in (delta_string.."_"):gmatch("(.-)_") do table.insert(delta, s) end
@@ -439,6 +439,7 @@ function Game:deserializeDelta(delta_string, player)
 			player.super_params = delta[i+1]
 		end
 	end
+	print("Player " .. player.player_num .. " piece place type: " .. player.place_type)
 end
 
 -------------------------------------------------------------------------------
