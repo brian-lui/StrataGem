@@ -140,7 +140,7 @@ multilily:onLoaded(function(_, i, imagedata) processImage(i, imagedata) end)
 -- If an image isn't loaded yet but is called, immediately load it
 local fallback = {
 	__index = function(t, k)
-		print("loading image as fallback " .. k)
+		--print("loading image as fallback " .. k)
 		local img
 		local success = pcall(
 			function() img = love.graphics.newImage(image_names[k]) end

@@ -950,13 +950,14 @@ function Grid:destroyGem(params)
 	}
 
 	-- flag above gems
-	if params.propagate_flags_up ~= false and gem.player_num ~= 3 then
+	if params.propagate_flags_up ~= false and
+		gem.player_num ~= 3 and gem.player_num ~= 0 then
 		for i = gem.row - 1, 1, -1 do
 			local current_gem = self[i][gem.column].gem
 			if current_gem then
 				 -- skip propagation if this gem was part of (another) match
 				if not current_gem.set_due_to_match then
-					current_gem:setOwner(gem.player_num)
+					current_gem:addOwner(gem.player_num)
 				end
 			end
 		end
