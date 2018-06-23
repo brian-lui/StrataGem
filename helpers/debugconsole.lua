@@ -152,6 +152,8 @@ end
 
 function DebugConsole:_drawGemOwners()
 	local grid = self.grid
+	local particles = self.game.particles
+
 	for gem in grid:gems() do
 		love.graphics.push("all")
 			if gem.player_num == 1 then
@@ -187,6 +189,28 @@ function DebugConsole:_drawGemOwners()
 					love.graphics.setColor(255, 255, 0, 255)
 				end
 				love.graphics.circle("fill", gem.x, gem.y, 10)
+			end
+		love.graphics.pop()
+	end
+
+	for _, gem in pairs(particles.allParticles.GemImage) do
+		love.graphics.push("all")
+			if gem.player_num == 1 then
+				love.graphics.setColor(100, 0, 200, 220)
+				love.graphics.polygon(
+					"fill",
+					gem.x - gem.width * 0.5, gem.y - gem.height * 0.5,
+					gem.x - gem.width * 0.5, gem.y + gem.height * 0.5,
+					gem.x + gem.width * 0.3, gem.y
+				)
+			elseif gem.player_num == 2 then
+				love.graphics.setColor(255, 153, 51, 255)
+				love.graphics.polygon(
+					"fill",
+					gem.x + gem.width * 0.5, gem.y - gem.height * 0.5,
+					gem.x + gem.width * 0.5, gem.y + gem.height * 0.5,
+					gem.x - gem.width * 0.3, gem.y
+				)
 			end
 		love.graphics.pop()
 	end

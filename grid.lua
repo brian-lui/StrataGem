@@ -946,7 +946,7 @@ function Grid:destroyGem(params)
 		game = game,
 		gem = gem,
 		duration = delay_until_explode,
-		force_max_alpha = params.force_max_alpha
+		force_max_alpha = params.force_max_alpha,
 	}
 
 	-- flag above gems

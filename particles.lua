@@ -1474,6 +1474,7 @@ function GemImage.generate(params)
 	local p = common.instance(GemImage, game.particles, x, y, img)
 
 	p.force_max_alpha = params.force_max_alpha
+	if params.gem then p.player_num = params.gem.player_num end
 
 	if params.delay_frames then
 		p:change{transparency = 0}
