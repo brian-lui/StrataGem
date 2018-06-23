@@ -154,33 +154,30 @@ function DebugConsole:_drawGemOwners()
 	local grid = self.grid
 	for gem in grid:gems() do
 		love.graphics.push("all")
-			local y_start, height = gem.y - gem.height * 0.5, gem.height
 			if gem.player_num == 1 then
-				love.graphics.setColor(100, 0, 200, 160)
-				love.graphics.rectangle(
+				love.graphics.setColor(100, 0, 200, 220)
+				love.graphics.polygon(
 					"fill",
-					gem.x - gem.width * 0.5,
-					y_start,
-					gem.width * 0.5,
-					height
+					gem.x - gem.width * 0.5, gem.y - gem.height * 0.5,
+					gem.x - gem.width * 0.5, gem.y + gem.height * 0.5,
+					gem.x + gem.width * 0.3, gem.y
 				)
 			elseif gem.player_num == 2 then
-				love.graphics.setColor(255, 153, 51, 230)
-				love.graphics.rectangle(
+				love.graphics.setColor(255, 153, 51, 255)
+				love.graphics.polygon(
 					"fill",
-					gem.x,
-					y_start,
-					gem.width * 0.5,
-					height
+					gem.x + gem.width * 0.5, gem.y - gem.height * 0.5,
+					gem.x + gem.width * 0.5, gem.y + gem.height * 0.5,
+					gem.x - gem.width * 0.3, gem.y
 				)
 			elseif gem.player_num == 3 then
 				love.graphics.setColor(160, 160, 160, 255)
 				love.graphics.rectangle(
 					"fill",
 					gem.x - gem.width * 0.5,
-					y_start,
+					gem.y - gem.height * 0.5,
 					gem.width,
-					height * 0.5
+					gem.height * 0.5
 				)
 			end
 			if gem.flag_match_originator then
