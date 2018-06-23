@@ -473,13 +473,22 @@ local function printGamestate(game)
 	print(game:serializeState())
 end
 
--- plays a file called replay.txt
+-- plays a file called replay1.txt, then replay2.txt, etc.
+local replay_num = 1
 local function playReplayTxt(game)
-	if love.filesystem.exists("replay.txt") then
-		local replay_string = love.filesystem.read("replay.txt")
+	if not love.filesystem.exists("replay1.txt") then
+		print("no replay1.txt file found!")
+		return
+	end
+
+	local str ="replay" .. replay_num .. ".txt"
+	if love.filesystem.exists(str) then
+		local replay_string = love.filesystem.read(str)
+		replay_num = replay_num + 1
 		game:playReplay(replay_string)
 	else
-		print("no replay.txt file found!")
+		replay_num = 1
+		game:playReplay("replay1.txt")
 	end
 end
 local function wolfgangGemSpeedToggle(game)
