@@ -371,10 +371,28 @@ end
 Super = common.class("Super", Super)
 
 -------------------------------------------------------------------------------
+---------------------------- ON-PRESS TOUCH EFFECT ----------------------------
+-------------------------------------------------------------------------------
+local ScreenPress = {}
+
+
+ScreenPress = common.class("ScreenPress", ScreenPress)
+
+-------------------------------------------------------------------------------
+----------------------------- ON-MOVE DRAG EFFECT -----------------------------
+-------------------------------------------------------------------------------
+local ScreenDrag = {}
+
+
+ScreenDrag = common.class("ScreenDrag", ScreenDrag)
+
+-------------------------------------------------------------------------------
 local components = {
 	timer = Timer, -- TODO: this is not implemented yet, still in ui.timer
 	super = Super,
 	burst = Burst,
+	screen_press = ScreenPress,
+	screen_drag = ScreenDrag,
 }
 
 

@@ -94,6 +94,7 @@ function Charselect:init(game, gamestate)
 		clickable = {},
 		static = {},
 		fades = {},
+		touch_fx = {},
 		popup_clickable = {},
 		popup_static = {},
 	}
@@ -469,6 +470,7 @@ function Charselect:draw()
 		self.lobby:draw()
 	end
 	for _, v in pairs(gamestate.ui.fades) do v:draw{darkened = darkened} end
+	for _, v in pairs(gamestate.ui.touch_fx) do v:draw{darkened = darkened} end
 end
 
 function Charselect:mousepressed(x, y)

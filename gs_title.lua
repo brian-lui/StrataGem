@@ -30,6 +30,7 @@ function title:init()
 		clickable = {},
 		static = {},
 		fades = {},
+		touch_fx = {},
 		popup_clickable = {},
 		popup_static = {},
 	}
@@ -130,6 +131,7 @@ function title:draw()
 	for _, v in pairs(title.ui.static) do v:draw{darkened = darkened} end
 	for _, v in pairs(title.ui.clickable) do v:draw{darkened = darkened} end
 	for _, v in pairs(title.ui.fades) do v:draw{darkened = darkened} end
+	for _, v in pairs(title.ui.touch_fx) do v:draw{darkened = darkened} end
 	self:_drawSettingsMenu(title)
 end
 

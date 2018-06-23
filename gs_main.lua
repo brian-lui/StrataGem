@@ -11,6 +11,7 @@ function gs_main:init()
 		clickable = {},
 		static = {},
 		fades = {},
+		touch_fx = {},
 		popup_clickable = {},
 		popup_static = {},
 	}
@@ -275,6 +276,7 @@ function gs_main:draw()
 	gs_main.drawText(self, {darkened = darkened})
 	gs_main.drawButtons(self)
 	for _, v in pairs(gs_main.ui.fades) do v:draw{darkened = darkened} end
+	for _, v in pairs(gs_main.ui.touch_fx) do v:draw{darkened = darkened} end
 end
 
 function gs_main:mousepressed(x, y)
