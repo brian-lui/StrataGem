@@ -23,7 +23,7 @@ end
 
 
 function love.quit()
-	local lily = require "lily"
+	local lily = require "/libraries/lily"
 	lily.quit()
 end
 
