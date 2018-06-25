@@ -981,25 +981,6 @@ function Grid:setGarbageMatchFlags(diff)
 	end
 end
 
-function Grid:calculateScore()
-	local gem_table = self:getMatchedGems()
-	local dmg, super = {0, 0}, {0, 0}
-	for i = 1, #gem_table do
-		if gem_table[i].player_num ~= 3 then
-			local gem, own_idx = gem_table[i], gem_table[i].owner
-			local owner = self.game:playerByIndex(own_idx)
-			dmg[own_idx] = dmg[own_idx] + 1
-			super[own_idx] = super[own_idx] + owner.meter_gain[gem.color]
-		end
-	end
-	for player in self.game:players() do
-		local i = player.player_num
-		if dmg[i] > 0 then dmg[i] = dmg[i] + self.game.scoring_combo - 1 end
-		if player.is_supering then super[i] = 0 end
-	end
-	return dmg[1], dmg[2], super[1], super[2]
-end
-
 function Grid:getLoser()
 	local p1loss, p2loss = false, false
 	for i = 1, self.COLUMNS do
