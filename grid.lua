@@ -791,11 +791,11 @@ function Grid:checkMatchedThisTurn()
 	local gem_table = self:getMatchedGems()
 	local matched = {false, false}
 	for i = 1, #gem_table do
-		local owner = gem_table[i].owner
-		if owner == 1 or owner == 3 then
-			matched[1]  = true
+		local player_num = gem_table[i].player_num
+		if player_num == 1 or player_num == 3 then
+			matched[1] = true
 		end
-		if owner == 2 or owner == 3 then
+		if player_num == 2 or player_num == 3 then
 			matched[2] = true
 		end
 	end
