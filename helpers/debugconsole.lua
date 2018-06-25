@@ -51,7 +51,7 @@ function DebugConsole:setDefaultDisplayParams()
 		display_all = true,
 		display_prints = true,
 		display_player_names = true,
-		display_gem_info = false,
+		display_gem_info = true,
 		display_gem_owners = true,
 		display_particle_destinations = true,
 		display_gamestate = true,
@@ -126,25 +126,30 @@ function DebugConsole:_drawGemInfo()
 		love.graphics.print(
 			"ROW:" .. gem.row,
 			gem.x - gem.width * 0.4,
-			gem.y - gem.height * 0.2
+			gem.y - gem.height * 0.3
 		)
 		love.graphics.print(
 			"COL:" .. gem.column,
 			gem.x - gem.width * 0.4,
-			gem.y
+			gem.y - gem.height * 0.1
+		)
+		love.graphics.print(
+			"OWN:" .. gem.player_num,
+			gem.x - gem.width * 0.4,
+			gem.y + gem.height * 0.1
 		)
 		if gem.is_in_a_horizontal_match then
 			love.graphics.print(
 				"H",
 				gem.x - gem.width * 0.2,
-				gem.y + gem.height * 0.2
+				gem.y + gem.height * 0.3
 			)
 		end
 		if gem.is_in_a_vertical_match then
 			love.graphics.print(
 				"V",
 				gem.x + gem.width * 0.2,
-				gem.y + gem.height * 0.2
+				gem.y + gem.height * 0.3
 			)
 		end
 	end
@@ -353,8 +358,8 @@ function DebugConsole:draw()
 			if self.display_grid then self:_drawGrid() end
 			if self.display_overlays then self:_drawOverlays() end
 			if self.display_player_names then self:_drawPlayerNames() end
-			if self.display_gem_info then self:_drawGemInfo() end
 			if self.display_gem_owners then self:_drawGemOwners() end
+			if self.display_gem_info then self:_drawGemInfo() end
 			if self.display_particle_destinations then self:_drawParticleDestinations() end
 			if self.display_gamestate then self:_drawGamestate() end
 			if self.display_damage then self:_drawDamage() end
