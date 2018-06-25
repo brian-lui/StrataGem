@@ -374,7 +374,26 @@ Super = common.class("Super", Super)
 ---------------------------- ON-PRESS TOUCH EFFECT ----------------------------
 -------------------------------------------------------------------------------
 local ScreenPress = {}
+function ScreenPress:init(game)
+	self.game = game
+end
 
+function ScreenPress:generate(gamestate, color)
+	local end_x
+	local end_y
+	local image
+
+	local params = {
+		name = "screenpress",
+		container = gamestate.ui.touch_fx,
+		image = image,
+		end_x = end_x,
+		end_y = end_y,
+	}
+
+	local p = self.game:_createImage(gamestate, params)
+	p:change{}
+end
 
 ScreenPress = common.class("ScreenPress", ScreenPress)
 
