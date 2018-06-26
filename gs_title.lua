@@ -8,7 +8,7 @@
 --]]
 
 local common = require "class.commons"
-local image = require "image"
+local images = require "images"
 
 local title = {name = "title"}
 
@@ -38,8 +38,8 @@ function title:init()
 
 	title.createButton(self, {
 		name = "vscpu",
-		image = image.buttons_vscpu,
-		image_pushed = image.buttons_vscpupush,
+		image = images.buttons_vscpu,
+		image_pushed = images.buttons_vscpupush,
 		duration = 60,
 		end_x = stage.width * 0.35,
 		start_y = stage.height * 1.2,
@@ -52,8 +52,8 @@ function title:init()
 	})
 	title.createButton(self, {
 		name = "netplay",
-		image = image.buttons_netplay,
-		image_pushed = image.buttons_netplaypush,
+		image = images.buttons_netplay,
+		image_pushed = images.buttons_netplaypush,
 		duration = 60,
 		end_x = stage.width * 0.65,
 		start_y = stage.height * 1.2,
@@ -66,7 +66,7 @@ function title:init()
 	})
 	title.createImage(self, {
 		name = "logo",
-		image = image.unclickables_titlelogo,
+		image = images.unclickables_titlelogo,
 		duration = 45,
 		end_x = stage.width * 0.5,
 		start_y = 0,
@@ -100,7 +100,7 @@ function title:enter()
 	title.createImage(self, {
 		name = "fadein",
 		container = title.ui.fades,
-		image = image.unclickables_fadein,
+		image = images.unclickables_fadein,
 		duration = 30,
 		end_x = self.stage.width * 0.5,
 		end_y = self.stage.height * 0.5,

@@ -10,7 +10,7 @@ Super: Clear the top gem in each friendly column.
 -- *This part is where we initialize the working variables and images
 local love = _G.love
 local common = require "class.commons"
-local image = require "image"
+local images = require "images"
 local Pic = require "pic"
 local Character = require "character"
 
@@ -33,17 +33,17 @@ Heath.shadow_image = love.graphics.newImage('images/portraits/shadow_heath.png')
 Heath.super_fuzz_image = love.graphics.newImage('images/ui/superfuzzred.png')
 
 Heath.super_images = {
-	word = image.ui_super_text_red,
-	empty = image.ui_super_empty_red,
-	full = image.ui_super_full_red,
-	glow = image.ui_super_glow_red,
+	word = images.ui_super_text_red,
+	empty = images.ui_super_empty_red,
+	full = images.ui_super_full_red,
+	glow = images.ui_super_glow_red,
 	overlay = love.graphics.newImage('images/characters/heath/firelogo.png')
 }
 
 Heath.burst_images = {
-	partial = image.ui_burst_part_red,
-	full = image.ui_burst_full_red,
-	glow = {image.ui_burst_partglow_red, image.ui_burst_fullglow_red}
+	partial = images.ui_burst_part_red,
+	full = images.ui_burst_full_red,
+	glow = {images.ui_burst_partglow_red, images.ui_burst_fullglow_red}
 }
 
 Heath.special_images = {
@@ -167,8 +167,8 @@ function SmallFire:update(dt)
 		self.current_frame = self.SWAP_FRAMES
 		local fires = #self.owner.special_images.fire
 		self.image_index = self.image_index % fires + 1
-		local img_turns = math.max(self.turns_remaining, 1)
-		local new_image = self.owner.special_images.fire[img_turns][self.image_index]
+		local image_turns = math.max(self.turns_remaining, 1)
+		local new_image = self.owner.special_images.fire[image_turns][self.image_index]
 		self:newImageFadeIn(new_image, self.SWAP_FRAMES)
 	end
 	if self.turns_remaining <= 0 and self:isStationary() and not self.fading_out then
@@ -194,7 +194,7 @@ function Smokes:remove()
 end
 
 function Smokes.generate(game, owner, x, y)
-	local img = owner.special_images.smoke
+	local image = owner.special_images.smoke
 	local smokes = {
 		left = {
 			sign = -1,
@@ -212,7 +212,7 @@ function Smokes.generate(game, owner, x, y)
 		local p = common.instance(Smokes, game.particles, {
 			x = x,
 			y = y,
-			image = img,
+			image = image,
 			draw_order = 4,
 			h_flip = smoke.flip_x,
 			v_flip = smoke.flip_y,

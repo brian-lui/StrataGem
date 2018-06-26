@@ -157,10 +157,10 @@ function Pic:getRect()
 end
 
 -- Instantly swaps current image
-function Pic:newImage(img)
-	self.image = img
-	self.width = img:getWidth()
-	self.height = img:getHeight()
+function Pic:newImage(image)
+	self.image = image
+	self.width = image:getWidth()
+	self.height = image:getHeight()
 	self.quad = love.graphics.newQuad(
 		0,
 		0,
@@ -173,17 +173,17 @@ end
 
 -- fades in a new image over the previous one, with optional delay time.
 -- will queue a fade with queue_wait_time if something is already fading in.
-function Pic:newImageFadeIn(img, frames, delay)
+function Pic:newImageFadeIn(image, frames, delay)
 	if self.new_image then
 		self.new_image_queue = self.new_image_queue or {}
 		self.new_image_queue[#self.new_image_queue+1] = {
-			image = img,
+			image = image,
 			frames = frames,
 			delay = delay or 0,
 		}
 	else
 		self.new_image = {
-			image = img,
+			image = image,
 			transparency = 0,
 			opaque_speed = 255 / frames,
 			delay = delay or 0,
@@ -483,12 +483,12 @@ function Pic:update(dt)
 				self.new_image = nil
 				if self.new_image_queue then
 					if self.new_image_queue[1] then
-						local new_img = table.remove(self.new_image_queue, 1)
+						local new_image = table.remove(self.new_image_queue, 1)
 						self.new_image = {
-							image = new_img.image,
+							image = new_image.image,
 							transparency = 0,
-							opaque_speed = 255 / new_img.frames,
-							delay = new_img.delay,
+							opaque_speed = 255 / new_image.frames,
+							delay = new_image.delay,
 						}
 					else
 						self.new_image_queue = nil

@@ -1,4 +1,4 @@
-local image = require "image"
+local images = require "images"
 local common = require "class.commons"
 local Pic = require "pic"
 
@@ -25,19 +25,19 @@ function Timer:init(game)
 		game = game,
 		x = stage.timer.x,
 		y = stage.timer.y,
-		image = image.ui_timer_gauge,
+		image = images.ui_timer_gauge,
 	}
 	self.timerbar = Pic:create{
 		game = game,
 		x = stage.timer.x,
 		y = stage.timer.y,
-		image = image.ui_timer_bar,
+		image = images.ui_timer_bar,
 	}
 	self.timertext = Pic:create{
 		game = game,
 		x = stage.timertext.x,
 		y = stage.timertext.y,
-		image = image.dummy,
+		image = images.dummy,
 	}
 end
 
@@ -66,7 +66,7 @@ function Timer:update(dt)
 		self.timertext.scaling = self.text_scaling(t)
 		self.timertext.transparency = self.text_transparency(t)
 		if self.time_remaining_int < previous_time_remaining_int then
-			self.timertext:newImage(image["ui_timer_" .. self.time_remaining_int])
+			self.timertext:newImage(images["ui_timer_" .. self.time_remaining_int])
 			game.sound:newSFX("countdown"..self.time_remaining_int)
 		end
 	else
@@ -106,12 +106,12 @@ function Burst:init(game, character)
 		print("invalid player_num provided")
 	end
 
-	local frame_img = self.player_num == 1 and image.ui_burst_gauge_gold or image.ui_burst_gauge_silver
+	local frame_image = self.player_num == 1 and images.ui_burst_gauge_gold or images.ui_burst_gauge_silver
 	self.burst_frame = Pic:create{
 		game = self.game,
 		x = stage.burst[ID].frame.x,
 		y = stage.burst[ID].frame.y,
-		image = frame_img,
+		image = frame_image,
 	}
 	self.burst_block, self.burst_partial, self.burst_glow = {}, {}, {}
 
@@ -199,7 +199,7 @@ function Super:_generateSingleTwinkle()
 	local color_lookup = self.character.primary_colors
 	local idx = math.random(#color_lookup)
 	local image_color = color_lookup[idx]
-	local img = image.lookup.stardust(image_color)
+	local image = images.lookup.stardust(image_color)
 
 	local super_frame = self.super_frame
 	local x = super_frame.x + super_frame.width * (math.random() - 0.5)
@@ -218,7 +218,7 @@ function Super:_generateSingleTwinkle()
 		x = x,
 		y = y,
 		rotation = init_rotation,
-		image = img,
+		image = image,
 	}
 	p:change{duration = 0, scaling = 0}
 	p:change{
@@ -279,12 +279,12 @@ function Super:init(game, character, player_num)
 end
 
 function Super:getRect()
-	local img = self.super_frame
+	local image = self.super_frame
 	return
-		img.x - (img.width / 2),
-		img.y - (img.height / 2),
-		img.width,
-		img.height
+		image.x - (image.width / 2),
+		image.y - (image.height / 2),
+		image.width,
+		image.height
 end
 
 function Super:released()
@@ -421,7 +421,7 @@ function uielements:init(game)
 	self.game = game
 	self.timer = common.instance(Timer, game)
 	-- Red X shown on gems in invalid placement spots
-	self.redx = Pic:create{game = game, x = 0, y = 0, image = image.ui_redx}
+	self.redx = Pic:create{game = game, x = 0, y = 0, image = images.ui_redx}
 	self.components = components
 end
 

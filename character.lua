@@ -1,6 +1,6 @@
 local love = _G.love
 local common = require "class.commons"
-local image = require "image"
+local images = require "images"
 local Pic = require "pic"
 local Hand = require "hand"
 
@@ -23,16 +23,16 @@ Character.meter_gain = {
 Character.primary_colors = {"red"}
 
 Character.super_images = {
-	word = image.ui_super_text_red,
-	empty = image.ui_super_empty_red,
-	full = image.ui_super_full_red,
-	glow = image.ui_super_glow_red,
+	word = images.ui_super_text_red,
+	empty = images.ui_super_empty_red,
+	full = images.ui_super_full_red,
+	glow = images.ui_super_glow_red,
 	overlay = love.graphics.newImage('images/dummy.png'),
 }
 Character.burst_images = {
-	partial = image.ui_burst_part_red,
-	full = image.ui_burst_full_red,
-	glow = {image.ui_burst_partglow_red, image.ui_burst_fullglow_red}
+	partial = images.ui_burst_part_red,
+	full = images.ui_burst_full_red,
+	glow = {images.ui_burst_partglow_red, images.ui_burst_fullglow_red}
 }
 
 Character.sounds = {

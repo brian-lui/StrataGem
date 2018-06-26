@@ -1,5 +1,5 @@
 local love = _G.love
-local image = require "image"
+local images = require "images"
 local common = require "class.commons"
 local Pic = require "pic"
 
@@ -145,14 +145,14 @@ end
 -- Damage particles generated when a player makes a match
 local DamageParticle = {}
 function DamageParticle:init(manager, gem)
-	local img = image.lookup.particle_freq(gem.color)
-	if not img then
-		img = image.lookup.particle_freq(randomStandardColor())
+	local image = images.lookup.particle_freq(gem.color)
+	if not image then
+		image = images.lookup.particle_freq(randomStandardColor())
 	end
 	Pic.init(
 		self,
 		manager.game,
-		{x = gem.x, y = gem.y, image = img, transparency = 0}
+		{x = gem.x, y = gem.y, image = image, transparency = 0}
 	)
 	self.player_num = gem.player_num
 	local counter = self.game.inits.ID.particle
@@ -272,13 +272,13 @@ DamageParticle = common.class("DamageParticle", DamageParticle, Pic)
 
 local DamageTrailParticle = {}
 function DamageTrailParticle:init(manager, gem)
-	local img
+	local image
 	if isStandardColor(gem.color) then
-		img = image["particles_trail_" .. gem.color]
+		image = images["particles_trail_" .. gem.color]
 	else
-		img = image["particles_trail_" .. randomStandardColor()]
+		image = images["particles_trail_" .. randomStandardColor()]
 	end
-	Pic.init(self, manager.game, {x = gem.x, y = gem.y, image = img})
+	Pic.init(self, manager.game, {x = gem.x, y = gem.y, image = image})
 	local counter = self.game.inits.ID.particle
 	manager.allParticles.DamageTrail[counter] = self
 	self.manager = manager
@@ -327,8 +327,8 @@ DamageTrailParticle = common.class("DamageTrailParticle", DamageTrailParticle, P
 -------------------------------------------------------------------------------
 -- particles for super meter generated when a gem is matched
 local SuperParticle = {}
-function SuperParticle:init(manager, x, y, img, player_num, color)
-	Pic.init(self, manager.game, {x = x, y = y, image = img})
+function SuperParticle:init(manager, x, y, image, player_num, color)
+	Pic.init(self, manager.game, {x = x, y = y, image = image})
 	self.player_num = player_num
 	self.color = color
 	local counter = self.game.inits.ID.particle
@@ -355,12 +355,12 @@ function SuperParticle.generate(game, gem, num_particles, delay_frames, force_ma
 		local x3, y3 = 0.5 * (x1 + x4), 0.5 * (y1 + y4)
 		local curve = love.math.newBezierCurve(x1, y1, x2, y2, x3, y3, x4, y4)
 
-		local img
+		local image
 		-- create particle
 		if isStandardColor(gem.color) then
-			img = image["particles_super_" .. gem.color]
+			image = images["particles_super_" .. gem.color]
 		else
-			img = image["particles_super_" .. randomStandardColor()]
+			image = images["particles_super_" .. randomStandardColor()]
 		end
 
 		local p = common.instance(
@@ -368,7 +368,7 @@ function SuperParticle.generate(game, gem, num_particles, delay_frames, force_ma
 			game.particles,
 			gem.x,
 			gem.y,
-			img,
+			image,
 			gem.player_num,
 			gem.color
 		)
@@ -398,8 +398,8 @@ SuperParticle = common.class("SuperParticle", SuperParticle, Pic)
 -------------------------------------------------------------------------------
 -- Healing particles generated when a player makes a match
 local HealingParticle = {}
-function HealingParticle:init(manager, x, y, img, owner, particle_type)
-	Pic.init(self, manager.game, {x = x, y = y, image = img})
+function HealingParticle:init(manager, x, y, image, owner, particle_type)
+	Pic.init(self, manager.game, {x = x, y = y, image = image})
 	self.particle_type = particle_type
 	self.owner = owner
 	local counter = self.game.inits.ID.particle
@@ -431,7 +431,7 @@ function HealingParticle.generate(params)
 		if x_range then x = math.random(x + x_range, x - x_range) end
 		if y_range then y = math.random(y + y_range, y - y_range) end
 
-		local img = image.lookup.particle_freq("healing")
+		local image = images.lookup.particle_freq("healing")
 		local x4, y4 = owner.hand[i].x, owner.hand[i].y
 		local dist = ((x4 - x) ^ 2 + (y4 - y) ^ 2) ^ 0.5
 		local x3, y3 = 0.5 * (x + x4), 0.5 * (y + y4)
@@ -446,7 +446,7 @@ function HealingParticle.generate(params)
 			game.particles,
 			x,
 			y,
-			img,
+			image,
 			owner,
 			"Healing"
 		)
@@ -496,7 +496,7 @@ function HealingParticle.generateTrail(params)
 	local duration = params.duration
 
 	for i = 1, 3 do
-		local trail_image = image.particles_trail_healing
+		local trail_image = images.particles_trail_healing
 		local trail = common.instance(
 			HealingParticle,
 			game.particles,
@@ -520,7 +520,7 @@ function HealingParticle.generateTwinkle(game, platform, delay_frames)
 	delay_frames = delay_frames or 0
 	local stars_to_make = math.random(6, 9)
 	for i = 1, stars_to_make do
-		local img = image.lookup.particle_freq("healing")
+		local image = images.lookup.particle_freq("healing")
 		local x_change = platform.width * 1.5 * (math.random() - 0.5)
 		local y_change = platform.height * 1.5 * (math.random() - 0.5)
 		local x = platform.owner.hand[platform.hand_idx].x + x_change
@@ -531,7 +531,7 @@ function HealingParticle.generateTwinkle(game, platform, delay_frames)
 			game.particles,
 			x,
 			y,
-			img,
+			image,
 			platform.owner,
 			"HealingTrail"
 		)
@@ -549,8 +549,8 @@ HealingParticle = common.class("HealingParticle", HealingParticle, Pic)
 -- Garbage particles generated when a piece falls off a platform
 local GarbageParticles = {}
 function GarbageParticles:init(manager, gem)
-	local img = image.lookup.particle_freq(gem.color)
-	Pic.init(self, manager.game, {x = gem.x, y = gem.y, image = img})
+	local image = images.lookup.particle_freq(gem.color)
+	Pic.init(self, manager.game, {x = gem.x, y = gem.y, image = image})
 	self.player_num = gem.player_num
 	local counter = self.game.inits.ID.particle
 	manager.allParticles.GarbageParticles[counter] = self
@@ -647,12 +647,12 @@ function PopParticles.generate(params)
 	local manager = params.game.particles
 	local x = params.x or params.gem.x
 	local y = params.y or params.gem.y
-	local img = params.image
-	if not img then
+	local image = params.image
+	if not image then
 		if isStandardColor(params.gem.color) then
-			img = image["gems_pop_" .. params.gem.color]
+			image = images["gems_pop_" .. params.gem.color]
 		else
-			img = params.gem.pop_particle_image or image.dummy
+			image = params.gem.pop_particle_image or images.dummy
 		end
 	end
 
@@ -660,7 +660,7 @@ function PopParticles.generate(params)
 
 	local p = common.instance(
 		PopParticles,
-		{manager = manager, x = x, y = y, image = img}
+		{manager = manager, x = x, y = y, image = image}
 	)
 
 	p.force_max_alpha = params.force_max_alpha
@@ -701,33 +701,33 @@ local ExplodingGem = {}
 function ExplodingGem:init(params)
 	local manager = params.manager
 	local gem = params.gem
-	local x, y, img, transparency
+	local x, y, image, transparency
 
 	if gem then
 		if gem.player_num == 3 then
 			if isStandardColor(gem.color) then
-				img = image["gems_grey_" .. gem.color]
+				image = images["gems_grey_" .. gem.color]
 			else
-				img = gem.grey_exploding_gem_image
-				assert(img, "No grey_exploding_gem_image for custom gem")
+				image = gem.grey_exploding_gem_image
+				assert(image, "No grey_exploding_gem_image for custom gem")
 			end
 		else
 			if isStandardColor(gem.color) then
-				img = image["gems_explode_" .. gem.color]
+				image = images["gems_explode_" .. gem.color]
 			else
-				img = gem.exploding_gem_image
-				assert(img, "No exploding_gem_image for custom gem")
+				image = gem.exploding_gem_image
+				assert(image, "No exploding_gem_image for custom gem")
 			end
 		end
 		x, y, transparency = gem.x, gem.y, 0
 	else
-		x, y, img, transparency = params.x, params.y, params.image, params.transparency
+		x, y, image, transparency = params.x, params.y, params.image, params.transparency
 	end
 
 	Pic.init(
 		self,
 		manager.game,
-		{x = x, y = y, image = img, transparency = transparency}
+		{x = x, y = y, image = image, transparency = transparency}
 	)
 	local counter = self.game.inits.ID.particle
 	manager.allParticles.ExplodingGem[counter] = self
@@ -789,12 +789,12 @@ end
 	delay_frames, duration are optional. --]]
 function ExplodingGem.generateReverseExplode(params)
 	local game = params.game
-	local x, y, img = params.x, params.y, params.image
+	local x, y, image = params.x, params.y, params.image
 	local duration = params.duration or game.GEM_EXPLODE_FRAMES
 
 	local p = common.instance(
 		ExplodingGem,
-		{manager = game.particles, x = x, y = y, image = img, transparency = 255}
+		{manager = game.particles, x = x, y = y, image = image, transparency = 255}
 	)
 
 	if params.delay_frames then
@@ -836,7 +836,7 @@ function ExplodingPlatform.generate(game, platform, delay_frames)
 	}
 
 	for i = 1, 4 do
-		local todraw = image["ui_starpiece" .. i]
+		local todraw = images["ui_starpiece" .. i]
 		local p = common.instance(
 			ExplodingPlatform,
 			game.particles,
@@ -902,7 +902,7 @@ function PlatformStar.generate(game, star_type)
 	if star_type == "TinyStar" then rotation = 0.06 * duration end
 
 	-- p1 star
-	local todraw = image.lookup.platform_star(1, star_type == "TinyStar")
+	local todraw = images.lookup.platform_star(1, star_type == "TinyStar")
 	local x = math.random(left * stage.width, right_max * stage.width)
 	-- bezier curve for bottom half movement
 	local curve_right_min = math.max(right_min * stage.width, x)
@@ -943,7 +943,7 @@ function PlatformStar.generate(game, star_type)
 	}
 
 	-- p2 star
-	--[[local]] todraw = image.lookup.platform_star(2, star_type == "TinyStar")
+	--[[local]] todraw = images.lookup.platform_star(2, star_type == "TinyStar")
 	x = math.random((1-left) * stage.width, (1-right_max) * stage.width)
 	-- bezier curve for bottom half movement
 	curve_right_min = math.min((1-right_min) * stage.width, x)
@@ -1006,7 +1006,7 @@ function Dust.generateStarburst(game, gem, n)
 	local duration = 10
 	local rotation = 0.2
 	for _ = 1, n do
-		local todraw = image.lookup.smalldust(gem.color)
+		local todraw = images.lookup.smalldust(gem.color)
 		local x_vel = (math.random() - 0.5) * 0.02 * game.stage.width
 		local y_vel = (math.random() - 0.5) * 0.015 * game.stage.height
 
@@ -1042,10 +1042,10 @@ end
 -- yoshi-type star movement. generated when a gem lands
 function Dust.generateYoshi(game, gem)
 	local x, y = gem.x, gem.y + gem.height * 0.5
-	local img = image.lookup.stardust(gem.color)
+	local image = images.lookup.stardust(gem.color)
 	local yoshi = {left = -1, right = 1}
 	for _, sign in pairs(yoshi) do
-		local p = common.instance(Dust, game.particles, x, y, img, "OverDust")
+		local p = common.instance(Dust, game.particles, x, y, image, "OverDust")
 		p.scaling = 0.5
 		p:change{
 			duration = 30,
@@ -1070,7 +1070,7 @@ function Dust.generateFountain(game, x, y, color, n)
 	local duration = 60
 	local rotation = 1
 	for i = 1, n do
-		local todraw = image.lookup.smalldust(color)
+		local todraw = images.lookup.smalldust(color)
 		local p_type = (i % 2 == 1) and "Dust" or "OverDust"
 		local x_vel = (math.random() - 0.5) * 0.1 * game.stage.width
 		local y_vel = (math.random() + 1) * - 0.1 * game.stage.height
@@ -1113,19 +1113,19 @@ function Dust.generateBigFountain(params)
 	local x = params.x or params.gem.x
 	local y = params.y or params.gem.y
 	local color = params.color or params.gem.color
-	local img = image.lookup.smalldust(color)
+	local image = images.lookup.smalldust(color)
 	local duration = params.duration or 30
 	local rotation = duration / 60
 
 	for i = 1, num do
-		if color == "wild" then	img = image.lookup.smalldust(color) end
-		if color == "none" then img = image.dummy end
+		if color == "wild" then	image = images.lookup.smalldust(color) end
+		if color == "none" then image = images.dummy end
 		local p_type = (i % 2 == 1) and "Dust" or "OverDust"
 		local x_vel = (math.random() - 0.5) * 0.4 * game.stage.width
 		local y_vel = (math.random() - 0.75) * 0.52 * game.stage.height
 		local acc = 0.2 * game.stage.height
 
-		local p = common.instance(Dust, game.particles, x, y, img, p_type)
+		local p = common.instance(Dust, game.particles, x, y, image, p_type)
 		local x1 = x + x_vel
 		local x2 = x + x_vel * 1.2
 		local y_func = function()
@@ -1182,7 +1182,7 @@ function Dust.generateStarFountain(params)
 	local delay = params.delay
 
 	for i = 1, num do
-		local todraw = image.lookup.particle_freq(color)
+		local todraw = images.lookup.particle_freq(color)
 		local p_type = (i % 2 == 1) and "Dust" or "OverDust"
 		local x_vel = (math.random() - 0.5) * game.stage.width * x_speed_mult
 		local y_vel = (math.random() - 0.75) * 2 * game.stage.height * y_speed_mult
@@ -1211,9 +1211,9 @@ function Dust.generateStarFountain(params)
 		for frames = 1, 3 do
 			local trail_image
 			if isStandardColor(color) then
-				trail_image = image["particles_trail_" .. color]
+				trail_image = images["particles_trail_" .. color]
 			else
-				trail_image = image["particles_trail_" .. randomStandardColor()]
+				trail_image = images["particles_trail_" .. randomStandardColor()]
 			end
 
 			local trail = common.instance(
@@ -1248,7 +1248,7 @@ end
 -- constant speed falling with no x-movement
 function Dust.generateFalling(game, gem, x_drift, y_drift)
 	local x, y = gem.x + x_drift, gem.y + y_drift
-	local todraw = image.lookup.smalldust(gem.color, false)
+	local todraw = images.lookup.smalldust(gem.color, false)
 	local rotation = 6
 	local duration = 60
 	local p_type = (math.random(1, 2) == 2) and "Dust" or "OverDust"
@@ -1270,7 +1270,7 @@ end
 
 -- generate the spinning dust from platforms
 function Dust.generatePlatformSpin(game, x, y, speed)
-	local todraw = image.lookup.smalldust("red")
+	local todraw = images.lookup.smalldust("red")
 	local rotation = 6
 	local duration = 60
 
@@ -1302,7 +1302,7 @@ function Dust.generateGarbageCircle(params)
 	local num = params.num or 8
 	local x_dest = params.x or params.gem.x
 	local y_dest = params.y or params.gem.y
-	local img = image.lookup.stardust(params.color or params.gem.color)
+	local image = images.lookup.stardust(params.color or params.gem.color)
 	local distance = game.stage.gem_width * (math.random() + 1)
 	local fade_in_duration = 10
 	local duration = (params.duration or game.GEM_EXPLODE_FRAMES) - fade_in_duration
@@ -1319,7 +1319,7 @@ function Dust.generateGarbageCircle(params)
 			game.particles,
 			x_start,
 			y_start,
-			img,
+			image,
 			p_type
 		)
 		p.transparency = 0
@@ -1447,8 +1447,8 @@ PlacedGem = common.class("PlacedGem", PlacedGem, Pic)
 -- A temporary gem in the basin, shown when a gem has been removed from state
 -- but still needs to be shown in the basin for display.
 local GemImage = {}
-function GemImage:init(manager, x, y, img)
-	Pic.init(self, manager.game, {x = x, y = y, image = img})
+function GemImage:init(manager, x, y, image)
+	Pic.init(self, manager.game, {x = x, y = y, image = image})
 	local counter = self.game.inits.ID.particle
 	manager.allParticles.GemImage[counter] = self
 	self.manager = manager
@@ -1466,12 +1466,12 @@ end
 ]]
 function GemImage.generate(params)
 	local game = params.game
-	local x, y, img = params.x, params.y, params.image
+	local x, y, image = params.x, params.y, params.image
 	if params.gem then
-		x, y, img = params.gem.x, params.gem.y, params.gem.image
+		x, y, image = params.gem.x, params.gem.y, params.gem.image
 	end
 
-	local p = common.instance(GemImage, game.particles, x, y, img)
+	local p = common.instance(GemImage, game.particles, x, y, image)
 
 	p.force_max_alpha = params.force_max_alpha
 	if params.gem then p.player_num = params.gem.player_num end
@@ -1518,7 +1518,7 @@ end
 -- the glow cloud behind a doublecast piece.
 -- called from anims.putPendingOnTop, and from anims.update
 function WordEffects.generateDoublecastCloud(game, gem1, gem2, is_horizontal)
-	local todraw = is_horizontal and image.words_doublecastcloudh or image.words_doublecastcloudv
+	local todraw = is_horizontal and images.words_doublecastcloudh or images.words_doublecastcloudv
 	local p = common.instance(
 		WordEffects,
 		game.particles,
@@ -1538,7 +1538,7 @@ end
 -- the glow cloud behind a rush piece.
 -- called from anims.putPendingOnTop, and from anims.update
 function WordEffects.generateRushCloud(game, gem1, gem2, is_horizontal)
-	local todraw = is_horizontal and image.words_rushcloudh or image.words_rushcloudv
+	local todraw = is_horizontal and images.words_rushcloudh or images.words_rushcloudv
 	local p = common.instance(
 		WordEffects,
 		game.particles,
@@ -1575,15 +1575,15 @@ end
 -- called from WordEffects.generateRushCloud
 function WordEffects.generateRushParticle(game, gem1, gem2)
 	local is_horizontal = gem1.row == gem2.row
-	local todraw = image.words_rushparticle
+	local todraw = images.words_rushparticle
 	local x, y = (gem1.x + gem2.x) * 0.5, (gem1.y + gem2.y) * 0.5
 	local x_drift, y_adj
 	if is_horizontal then
-		x_drift = (math.random() - 0.5) * image.GEM_WIDTH * 2
-		y_adj = -image.GEM_HEIGHT * 0.5
+		x_drift = (math.random() - 0.5) * images.GEM_WIDTH * 2
+		y_adj = -images.GEM_HEIGHT * 0.5
 	else
-		x_drift = (math.random() - 0.5) * image.GEM_WIDTH
-		y_adj = -image.GEM_HEIGHT
+		x_drift = (math.random() - 0.5) * images.GEM_WIDTH
+		y_adj = -images.GEM_HEIGHT
 	end
 
 	local p = common.instance(
@@ -1593,13 +1593,13 @@ function WordEffects.generateRushParticle(game, gem1, gem2)
 		y + y_adj,
 		todraw
 	)
-	p.rotation = (x_drift / image.GEM_WIDTH) / (math.pi * 2)
+	p.rotation = (x_drift / images.GEM_WIDTH) / (math.pi * 2)
 	p:change{duration = 18, scaling = 0.7, remove = true}
 end
 
 -- falling stars accompanying Ready at start of match. Called from Words.Ready
 function WordEffects.generateReadyParticle(game, size, x, y)
-	local todraw = image.lookup.words_ready(size)
+	local todraw = images.lookup.words_ready(size)
 	local p = common.instance(WordEffects, game.particles, x, y, todraw)
 	local y_func = function()
 		return y + (p.t*3)^2 * 0.15 * game.stage.height
@@ -1614,7 +1614,7 @@ function WordEffects.generateGoStar(game, x, y, x_vel, y_vel, delay)
 		game.particles,
 		x,
 		y,
-		image.words_gostar
+		images.words_gostar
 	)
 	local y_func = function()
 		return y + p.t * y_vel + (p.t)^2 * 3 * game.stage.height
@@ -1659,7 +1659,7 @@ end
 function Words.generateDoublecast(game, player_num)
 	local x = player_num == 1 and game.stage.width * 0.4 or game.stage.width * 0.6
 	local y = game.stage.height * 0.3
-	local todraw = image.words_doublecast
+	local todraw = images.words_doublecast
 	local p = common.instance(Words, game.particles, x, y, todraw)
 	p.scaling = 5
 	p:change{duration = 60, scaling = 1, easing = "outQuart"}
@@ -1670,7 +1670,7 @@ function Words.generateRush(game, player_num)
 	local sign = player_num == 1 and 1 or -1
 	local x = game.stage.width * (0.5 - sign * 0.6)
 	local y = game.stage.height * 0.3
-	local todraw = image.words_rush
+	local todraw = images.words_rush
 	local p = common.instance(Words, game.particles, x, y, todraw)
 	p.rotation = 0.25
 	p:change{
@@ -1693,7 +1693,7 @@ function Words.generateReady(game, delay)
 	local particles = game.particles
 	local x = stage.width * -0.2
 	local y = stage.height * 0.3
-	local todraw = image.words_ready
+	local todraw = images.words_ready
 	local h, w = todraw:getHeight(), todraw:getWidth()
 	local p = common.instance(Words, particles, x, y, todraw)
 	local generate_big = function()
@@ -1742,7 +1742,7 @@ function Words.generateGo(game, delay)
 
 	local x = stage.width * 0.5
 	local y = stage.height * 0.3
-	local todraw = image.words_go
+	local todraw = images.words_go
 
 	local p = common.instance(Words, game.particles, x, y, todraw)
 	if delay then
@@ -1809,7 +1809,7 @@ function Words.generateNoRush(game, column)
 		local grid = game.grid
 		local x = grid.x[column]
 		local y = (grid.y[grid.RUSH_ROW] + grid.y[grid.RUSH_ROW+1]) / 2
-		local todraw = image.words_norushonecolumn
+		local todraw = images.words_norushonecolumn
 		local p = common.instance(Words, game.particles, x, y, todraw)
 		p:change{
 			duration = 20,
@@ -1860,7 +1860,7 @@ end
 function Words.generateGameOverThanks(game)
 	local x = game.stage.width * 0.5
 	local y = game.stage.height * 0.4
-	local todraw = image.words_gameoverthanks
+	local todraw = images.words_gameoverthanks
 	local p = common.instance(Words, game.particles, x, y, todraw)
 	p:change{duration = 600, remove = true}
 end

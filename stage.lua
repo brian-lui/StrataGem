@@ -1,6 +1,6 @@
 local love = _G.love
 local common = require "class.commons"
-local image = require "image"
+local images = require "images"
 
 local stage = {}
 
@@ -9,8 +9,8 @@ function stage:init(game)
 	local HALF_SUPER_HEIGHT = 0.09 * game.inits.drawspace.height
 	self.width = game.inits.drawspace.width
 	self.height = game.inits.drawspace.height
-	self.gem_width = image.gems_red:getWidth()
-	self.gem_height = image.gems_red:getHeight()
+	self.gem_width = images.gems_red:getWidth()
+	self.gem_height = images.gems_red:getHeight()
 	self.x_mid = self.width / 2
 	self.y_mid = self.height / 2
 	self.super_click = {
@@ -26,7 +26,7 @@ function stage:init(game)
 		x = self.x_mid + (9.5 * self.gem_width),
 		y = self.y_mid - 3 * self.gem_height,
 	}
-	local burst_width = image.ui_burst_part_red:getWidth()
+	local burst_width = images.ui_burst_part_red:getWidth()
 
 	for i = 1, 2 do
 		self.burst.P1[i] = {

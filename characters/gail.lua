@@ -1,7 +1,7 @@
 local love = _G.love
 local common = require "class.commons"
 local Character = require "character"
-local image = require "image"
+local images = require "images"
 local Pic = require "pic"
 
 local Gail = {}
@@ -18,16 +18,16 @@ Gail.meter_gain = {
 	wild = 4,
 }
 Gail.super_images = {
-	word = image.ui_super_text_yellow,
-	empty = image.ui_super_empty_yellow,
-	full = image.ui_super_full_yellow,
-	glow = image.ui_super_glow_yellow,
+	word = images.ui_super_text_yellow,
+	empty = images.ui_super_empty_yellow,
+	full = images.ui_super_full_yellow,
+	glow = images.ui_super_glow_yellow,
 	overlay = love.graphics.newImage('images/dummy.png'),
 }
 Gail.burst_images = {
-	partial = image.ui_burst_part_yellow,
-	full = image.ui_burst_full_yellow,
-	glow = {image.ui_burst_partglow_yellow, image.ui_burst_fullglow_yellow}
+	partial = images.ui_burst_part_yellow,
+	full = images.ui_burst_full_yellow,
+	glow = {images.ui_burst_partglow_yellow, images.ui_burst_fullglow_yellow}
 }
 
 Gail.special_images = {

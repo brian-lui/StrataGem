@@ -2,11 +2,11 @@ local love = _G.love
 
 --[[
 	HEY DUDES READ THIS
-	put images into the img table then call img.name
+	put images into the image table then call image.name
 
 	functions u can use:
 	dog:remove() -- delete dog
-	dog:swapImage(image) -- image should be in the form img.dog
+	dog:swapImage(image) -- image should be in the form image.dog
 	dog:pushToBottom() -- show on bottom
 	dog:pushToTop() -- show on top
 	dog:spin(angle, duration, easing) -- rotate by angle in-place around origin.
@@ -20,7 +20,7 @@ local love = _G.love
 	dog:fadeIn(fade_speed, duration, easing) -- not implemented yet lol!
 --]]
 
-local img = {
+local image = {
 	heathbody = love.graphics.newImage('images/heathpuppet/heathbody.png'),
 	heathhead = love.graphics.newImage('images/heathpuppet/heathhead.png'),
 	frontarm = love.graphics.newImage('images/heathpuppet/frontarmready.png'),
@@ -29,11 +29,11 @@ local img = {
 	heathblink = love.graphics.newImage('images/heathpuppet/heathblink.png')
 }
 local function press_g(self)
-	self.TestAnimation = self.animations:create({image = img.heathbody}, self.p1)
-	self.TestAnimation2 = self.animations:create({image = img.heathhead}, self.p1)
-	self.TestAnimation3 = self.animations:create({image = img.frontarm}, self.p1)
-	self.TestAnimation4 = self.animations:create({image = img.backarm}, self.p1)
-	self.TestAnimation5 = self.animations:create({image = img.wand}, self.p1)
+	self.TestAnimation = self.animations:create({image = image.heathbody}, self.p1)
+	self.TestAnimation2 = self.animations:create({image = image.heathhead}, self.p1)
+	self.TestAnimation3 = self.animations:create({image = image.frontarm}, self.p1)
+	self.TestAnimation4 = self.animations:create({image = image.backarm}, self.p1)
+	self.TestAnimation5 = self.animations:create({image = image.wand}, self.p1)
 	self.TestAnimation2:attach(self.self.TestAnimation, -6, -89)
 	self.TestAnimation3:attach(self.TestAnimation, 30, -21)
 	self.TestAnimation4:attach(self.TestAnimation, -43, -13)
@@ -57,8 +57,8 @@ local function press_b(self)
 	--[[
 	for i = 30, 360, 30 do
 		-- self.queue:add(frames, func, self, args)
-		self.queue:add(i, TestAnimation2.swapImage, TestAnimation2, img.heathblink)
-		self.queue:add(i + 10, TestAnimation2.swapImage, TestAnimation2, img.heathhead)
+		self.queue:add(i, TestAnimation2.swapImage, TestAnimation2, image.heathblink)
+		self.queue:add(i + 10, TestAnimation2.swapImage, TestAnimation2, image.heathhead)
 	end
 	--]]
 end

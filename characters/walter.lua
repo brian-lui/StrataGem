@@ -7,7 +7,7 @@ Super: Clear the tallest friendly vertical column. In case of a tie, clear the
 
 local love = _G.love
 local common = require "class.commons"
-local image = require "image"
+local images = require "images"
 local Pic = require "pic"
 local Character = require "character"
 
@@ -30,17 +30,17 @@ Walter.shadow_image = love.graphics.newImage('images/portraits/shadow_walter.png
 Walter.super_fuzz_image = love.graphics.newImage('images/ui/superfuzzblue.png')
 
 Walter.super_images = {
-	word = image.ui_super_text_blue,
-	empty = image.ui_super_empty_blue,
-	full = image.ui_super_full_blue,
-	glow = image.ui_super_glow_blue,
+	word = images.ui_super_text_blue,
+	empty = images.ui_super_empty_blue,
+	full = images.ui_super_full_blue,
+	glow = images.ui_super_glow_blue,
 	overlay = love.graphics.newImage('images/characters/walter/walterlogo.png'),
 }
 
 Walter.burst_images = {
-	partial = image.ui_burst_part_blue,
-	full = image.ui_burst_full_blue,
-	glow = {image.ui_burst_partglow_blue, image.ui_burst_fullglow_blue}
+	partial = images.ui_burst_part_blue,
+	full = images.ui_burst_full_blue,
+	glow = {images.ui_burst_partglow_blue, images.ui_burst_fullglow_blue}
 }
 
 Walter.special_images = {
@@ -115,7 +115,7 @@ function FoamDroplet.generate(game, owner, col, delay_frames)
 	local droplet_image = owner.special_images[drop_or_splatter][image_index]
 
 	local x = grid.x[col]
-	local y = grid.y[grid.BASIN_END_ROW] + image.GEM_HEIGHT * (2 * math.random() - 0.5)
+	local y = grid.y[grid.BASIN_END_ROW] + images.GEM_HEIGHT * (2 * math.random() - 0.5)
 	local params = {
 		x = x,
 		y = y,
@@ -129,9 +129,9 @@ function FoamDroplet.generate(game, owner, col, delay_frames)
 
 	local p = common.instance(FoamDroplet, game.particles, params)
 
-	local x_vel = image.GEM_WIDTH * (math.random() - 0.5) * 4
-	local y_vel = -image.GEM_HEIGHT * 20
-	local gravity = image.GEM_HEIGHT * 12
+	local x_vel = images.GEM_WIDTH * (math.random() - 0.5) * 4
+	local y_vel = -images.GEM_HEIGHT * 20
+	local gravity = images.GEM_HEIGHT * 12
 	local x_dest1 = x + 1 * x_vel
 	local x_dest2 = x + 1.5 * x_vel
 	local y_func1 = function()
@@ -196,7 +196,7 @@ function Foam.generate(game, owner, col)
 
 	local params = {
 		x = grid.x[col],
-		y = grid.y[grid.BASIN_END_ROW] + image.GEM_HEIGHT * 0.5,
+		y = grid.y[grid.BASIN_END_ROW] + images.GEM_HEIGHT * 0.5,
 		image = owner.special_images.foam,
 		col = col,
 		owner = owner,
@@ -238,7 +238,7 @@ function Spout.generate(game, owner, col)
 	local spout_height = owner.special_images.spout[1]:getHeight()
 	local params = {
 		x = grid.x[col],
-		y = grid.y[grid.BASIN_END_ROW] + image.GEM_HEIGHT * 0.5 + spout_height * 0.5,
+		y = grid.y[grid.BASIN_END_ROW] + images.GEM_HEIGHT * 0.5 + spout_height * 0.5,
 		image = owner.special_images.spout[1],
 		image_index = 1,
 		SWAP_FRAMES = 8,
@@ -256,7 +256,7 @@ function Spout.generate(game, owner, col)
 	p:wait(owner.FOAM_APPEAR_DURATION)
 	p:change{duration = 0, transparency = 255}
 
-	local dest_y = grid.y[grid.BASIN_START_ROW] - image.GEM_HEIGHT * 0.5 + spout_height * 0.5
+	local dest_y = grid.y[grid.BASIN_START_ROW] - images.GEM_HEIGHT * 0.5 + spout_height * 0.5
 	p:change{
 		duration = owner.SPOUT_SPEED * 8,
 		y = dest_y,
@@ -296,12 +296,12 @@ function Splatter:remove()
 	self.manager.allParticles.CharEffects[self.ID] = nil
 end
 
-function Splatter.generate(game, owner, x, y, img, delay_frames)
+function Splatter.generate(game, owner, x, y, image, delay_frames)
 	local stage = game.stage
 	local params = {
 		x = x,
 		y = y,
-		image = img,
+		image = image,
 		owner = owner,
 		player_num = owner.player_num,
 	}
@@ -427,16 +427,16 @@ function HealingCloud.generate(game, owner, col)
 
 	local y = grid.y[owner.CLOUD_ROW]
 	local x = grid.x[col]
-	local img = owner.special_images.cloud
+	local image = owner.special_images.cloud
 	local duration = owner.CLOUD_SLIDE_DURATION
-	local img_width = img:getWidth()
-	local img_height = img:getHeight()
+	local image_width = image:getWidth()
+	local image_height = image:getHeight()
 	local draw_order = col % 2 == 0 and 2 or 3
 
 	local params = {
 		x = x,
 		y = y,
-		image = img,
+		image = image,
 		scaling = 3,
 		transparency = 0,
 		frames_between_droplets = owner.DROPLET_FRAMES[owner.CLOUD_EXIST_TURNS],
@@ -462,15 +462,15 @@ function HealingCloud.generate(game, owner, col)
 	local DUST_FADE_IN_DURATION = 10
 	local dust_tween_duration = duration - DUST_FADE_IN_DURATION
 	for _ = 1, 96 do
-		local dust_distance = img_width * (math.random() + 1)
+		local dust_distance = image_width * (math.random() + 1)
 		local dust_rotation = math.random() < 0.5 and 30 or -30
 		local dust_p_type = math.random() < 0.5 and "Dust" or "OverDust"
-		local dust_image = image.lookup.smalldust("blue", false)
+		local dust_image = images.lookup.smalldust("blue", false)
 		local angle = math.random() * math.pi * 2
 		local x_start = dust_distance * math.cos(angle) + x
 		local y_start = dust_distance * math.sin(angle) + y
-		local x_dest = img_width * 0.7 * (math.random() - 0.5) + x
-		local y_dest = img_height * 0.5 * (math.random() - 0.5) + y
+		local x_dest = image_width * 0.7 * (math.random() - 0.5) + x
+		local y_dest = image_height * 0.5 * (math.random() - 0.5) + y
 
 		local dust = common.instance(
 			game.particles.dust,
@@ -499,7 +499,7 @@ function HealingCloud:update(dt)
 	self.elapsed_frames = self.elapsed_frames + 1
 	if self.elapsed_frames >= self.frames_between_droplets then
 		local target_row = grid:getFirstEmptyRow(self.col, true)
-		local dest_y = grid.y[target_row] + 0.5 * image.GEM_WIDTH
+		local dest_y = grid.y[target_row] + 0.5 * images.GEM_WIDTH
 		local droplet_loc = table.remove(self.droplet_x, math.random(#self.droplet_x))
 		if #self.droplet_x == 0 then
 			self.droplet_x = {-1.5, -0.5, 0.5, 1.5}
@@ -570,21 +570,21 @@ end
 function MatchDust.generate(game, owner, match_list)
 	local grid = game.grid
 	local dust_color = match_list[1].color
-	local img = image.lookup.smalldust(dust_color, false)
-	assert(img, "Invalid color specified for dust")
+	local image = images.lookup.smalldust(dust_color, false)
+	assert(image, "Invalid color specified for dust")
 
 	for i = 1, #match_list do
 		for _ = 1, 20 do
 			local row, col = match_list[i].row, match_list[i].column
-			local x_start = grid.x[col] + image.GEM_WIDTH * (math.random() - 0.5)
-			local y_start = grid.y[row] + image.GEM_HEIGHT * (math.random() - 0.5)
+			local x_start = grid.x[col] + images.GEM_WIDTH * (math.random() - 0.5)
+			local y_start = grid.y[row] + images.GEM_HEIGHT * (math.random() - 0.5)
 			local x_dest = grid.x[col]
 			local y_dest = grid.y[owner.CLOUD_ROW]
 
 			local params = {
 				x = x_start,
 				y = y_start,
-				image = img,
+				image = image,
 				col = col,
 				owner = owner,
 				draw_order = 1,
@@ -675,7 +675,7 @@ function Walter:_cloudHealingDamage(delay)
 		if self.cloud_turns_remaining[col] > 0 and not self.this_turn_column_healed[col] then
 			local x = grid.x[col]
 			local y = (grid.y[grid.BASIN_START_ROW] + grid.y[grid.BASIN_END_ROW]) * 0.5
-			local y_range = image.GEM_HEIGHT * 4
+			local y_range = images.GEM_HEIGHT * 4
 
 			additional_delay = game.particles.healing.generate{
 				game = game,

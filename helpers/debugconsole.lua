@@ -1,7 +1,7 @@
 local love = _G.love
 local common = require "class.commons" -- class support
 local pointIsInRect = require "/helpers/utilities".pointIsInRect
-local image = require "image"
+local images = require "images"
 local Gem = require "gem"
 
 local DebugConsole = {}
@@ -405,10 +405,10 @@ function DebugConsole:swapGridGem(x, y)
 					return
 				end
 			else
-				local start_x = grid.x[col] - 0.5 * image.GEM_WIDTH
-				local start_y = grid.y[row] - 0.5 * image.GEM_HEIGHT
-				local w = image.GEM_WIDTH
-				local h = image.GEM_HEIGHT
+				local start_x = grid.x[col] - 0.5 * images.GEM_WIDTH
+				local start_y = grid.y[row] - 0.5 * images.GEM_HEIGHT
+				local w = images.GEM_WIDTH
+				local h = images.GEM_HEIGHT
 				if pointIsInRect(x, y, start_x, start_y, w, h) then
 					grid[row][col].gem = Gem:create{
 						game = self.game,

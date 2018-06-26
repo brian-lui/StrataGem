@@ -1,4 +1,4 @@
-local image = require "image"
+local images = require "images"
 local common = require "class.commons"
 local Gem = require "gem"
 local deepcpy = require "/helpers/utilities".deepcpy
@@ -590,8 +590,8 @@ function Grid:addBottomRow(player, skip_animation)
 		if not skip_animation then
 			local x = grid.x[col]
 			local y = grid.y[grid.BOTTOM_ROW]
-			local pop_image = image["gems_pop_" .. gem_color]
-			local explode_image = image["gems_explode_"..gem_color]
+			local pop_image = images["gems_pop_" .. gem_color]
+			local explode_image = images["gems_explode_"..gem_color]
 
 			particles.dust.generateGarbageCircle{
 				game = game,
@@ -1014,19 +1014,19 @@ function Grid:animateGameOver(loser_num)
 		for col in game.grid:cols(loser_num) do
 			if self[row][col].gem then
 				local gem = self[row][col].gem
-				local img
+				local image
 				if gem.color == "red" or gem.color == "blue" or	gem.color == "green" or
 				gem.color == "yellow" then
-					img = image["gems_grey_" .. gem.color]
+					image = images["gems_grey_" .. gem.color]
 				else
-					img = gem.grey_exploding_gem_image
-					assert(img, "No grey gem image found for grey_exploding_gem_image")
+					image = gem.grey_exploding_gem_image
+					assert(image, "No grey gem image found for grey_exploding_gem_image")
 				end
 				particles.gemImage.generate{
 					game = game,
 					x = gem.x,
 					y = gem.y,
-					image = img,
+					image = image,
 					duration = duration,
 					delay_frames = delay,
 				}

@@ -13,7 +13,7 @@ friendly dogs.
 local love = _G.love
 local common = require "class.commons"
 local Character = require "character"
-local image = require "image"
+local images = require "images"
 local Pic = require "pic"
 
 local Wolfgang = {}
@@ -35,16 +35,16 @@ Wolfgang.meter_gain = {
 }
 
 Wolfgang.super_images = {
-	word = image.ui_super_text_red,
-	empty = image.ui_super_empty_red,
-	full = image.ui_super_full_red,
-	glow = image.ui_super_glow_red,
+	word = images.ui_super_text_red,
+	empty = images.ui_super_empty_red,
+	full = images.ui_super_full_red,
+	glow = images.ui_super_glow_red,
 	overlay = love.graphics.newImage('images/characters/wolfgang/wolfganglogo.png'),
 }
 Wolfgang.burst_images = {
-	partial = image.ui_burst_part_red,
-	full = image.ui_burst_full_red,
-	glow = {image.ui_burst_partglow_red, image.ui_burst_fullglow_red}
+	partial = images.ui_burst_part_red,
+	full = images.ui_burst_full_red,
+	glow = {images.ui_burst_partglow_red, images.ui_burst_fullglow_red}
 }
 
 Wolfgang.special_images = {
@@ -70,7 +70,7 @@ Wolfgang.special_images = {
 		love.graphics.newImage('images/characters/wolfgang/goldenlabexplode.png'),
 		love.graphics.newImage('images/characters/wolfgang/russelexplode.png'),
 	},
-	dog_grey = image.gems_grey_red,
+	dog_grey = images.gems_grey_red,
 	dog_pop = love.graphics.newImage('images/characters/wolfgang/dogpop.png'),
 	red = {
 		dark = love.graphics.newImage('images/characters/wolfgang/r.png'),

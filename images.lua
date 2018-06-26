@@ -104,7 +104,7 @@ local categories = {
 	charselect = charselect,
 }
 
-local image = {
+local images = {
 	lookup = {},
 	dummy = love.graphics.newImage('images/dummy.png'),
 }
@@ -131,7 +131,7 @@ end
 
 local function processImage(i, imagedata)
 	local handle = lily_table[i].handle
-	image[handle] = imagedata
+	images[handle] = imagedata
 end
 
 local multilily = lily.loadMulti(to_load)
@@ -141,35 +141,35 @@ multilily:onLoaded(function(_, i, imagedata) processImage(i, imagedata) end)
 local fallback = {
 	__index = function(t, k)
 		--print("loading image as fallback " .. k)
-		local img
+		local image
 		local success = pcall(
-			function() img = love.graphics.newImage(image_names[k]) end
+			function() image = love.graphics.newImage(image_names[k]) end
 		)
 		assert(success, "Failed to load " .. k)
-		t[k] = img
-		return img
+		t[k] = image
+		return image
 	end
 }
-setmetatable(image, fallback)
+setmetatable(images, fallback)
 
-image.GEM_WIDTH = image.gems_red:getWidth()
-image.GEM_HEIGHT = image.gems_red:getHeight()
+images.GEM_WIDTH = images.gems_red:getWidth()
+images.GEM_HEIGHT = images.gems_red:getHeight()
 
-function image.lookup.words_ready(size)
+function images.lookup.words_ready(size)
 	assert(size == "small" or size == "large", "invalid size")
 	local ret
 	if size == "small" then
 		local choice = {
-			image.particles_star_tiny_silver1,
-			image.particles_star_tiny_silver2,
-			image.particles_star_tiny_silver3,
+			images.particles_star_tiny_silver1,
+			images.particles_star_tiny_silver2,
+			images.particles_star_tiny_silver3,
 		}
 		ret = choice[math.random(#choice)]
 	else
 		local choice = {
-			image.particles_star_normal_silver1,
-			image.particles_star_normal_silver2,
-			image.particles_star_normal_silver3,
+			images.particles_star_normal_silver1,
+			images.particles_star_normal_silver2,
+			images.particles_star_normal_silver3,
 		}
 		ret = choice[math.random(#choice)]
 	end
@@ -177,7 +177,7 @@ function image.lookup.words_ready(size)
 end
 
 local gem_colors = {"red", "blue", "green", "yellow"}
-function image.lookup.particle_freq(color)
+function images.lookup.particle_freq(color)
 	local image_num_freq = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 3}
 	local image_num = image_num_freq[math.random(#image_num_freq)]
 	local image_color = color
@@ -188,10 +188,10 @@ function image.lookup.particle_freq(color)
 	if color == "none" then
 		image_name = "dummy"
 	end
-	return image[image_name]
+	return images[image_name]
 end
 
-function image.lookup.platform_star(player_num, is_tiny)
+function images.lookup.platform_star(player_num, is_tiny)
 	assert(player_num == 1 or player_num == 2, "invalid player_num provided")
 	local image_name
 	local image_num = math.random(3)
@@ -201,86 +201,86 @@ function image.lookup.platform_star(player_num, is_tiny)
 		image_name = is_tiny and "particles_star_tiny_silver" or "particles_star_normal_silver"
 	end
 
-	return image[image_name .. image_num]
+	return images[image_name .. image_num]
 end
 
-function image.lookup.smalldust(color, big_possible)
+function images.lookup.smalldust(color, big_possible)
 	if big_possible ~= false then big_possible = true end
 	local star_instead = big_possible and math.random() < 0.05
 	if star_instead then
-		return image.lookup.stardust(color)
+		return images.lookup.stardust(color)
 	else
 		if color == "red" then
 			local tbl = {
-				image.particles_dust_red1,
-				image.particles_dust_red2,
-				image.particles_dust_red3,
+				images.particles_dust_red1,
+				images.particles_dust_red2,
+				images.particles_dust_red3,
 			}
 			return tbl[math.random(#tbl)]
 		elseif color == "blue" then
 			local tbl = {
-				image.particles_dust_blue1,
-				image.particles_dust_blue2,
-				image.particles_dust_blue3,
+				images.particles_dust_blue1,
+				images.particles_dust_blue2,
+				images.particles_dust_blue3,
 			}
 			return tbl[math.random(#tbl)]
 		elseif color == "green" then
 			local tbl = {
-				image.particles_dust_green1,
-				image.particles_dust_green2,
-				image.particles_dust_green3,
+				images.particles_dust_green1,
+				images.particles_dust_green2,
+				images.particles_dust_green3,
 			}
 			return tbl[math.random(#tbl)]
 		elseif color == "yellow" then
 			local tbl = {
-				image.particles_dust_yellow1,
-				image.particles_dust_yellow2,
-				image.particles_dust_yellow3,
+				images.particles_dust_yellow1,
+				images.particles_dust_yellow2,
+				images.particles_dust_yellow3,
 			}
 			return tbl[math.random(#tbl)]
 		elseif color == "none" then
-			return image.dummy
+			return images.dummy
 		elseif color == "wild" then
 			local tbl = {
-				image.particles_dust_red1,
-				image.particles_dust_red2,
-				image.particles_dust_red3,
-				image.particles_dust_blue1,
-				image.particles_dust_blue2,
-				image.particles_dust_blue3,
-				image.particles_dust_green1,
-				image.particles_dust_green2,
-				image.particles_dust_green3,
-				image.particles_dust_yellow1,
-				image.particles_dust_yellow2,
-				image.particles_dust_yellow3,
+				images.particles_dust_red1,
+				images.particles_dust_red2,
+				images.particles_dust_red3,
+				images.particles_dust_blue1,
+				images.particles_dust_blue2,
+				images.particles_dust_blue3,
+				images.particles_dust_green1,
+				images.particles_dust_green2,
+				images.particles_dust_green3,
+				images.particles_dust_yellow1,
+				images.particles_dust_yellow2,
+				images.particles_dust_yellow3,
 			}
 			return tbl[math.random(#tbl)]
 		else
-			print("image.lookup.smalldust Sucka MC")
-			return image.particles_dust_red1
+			print("images.lookup.smalldust Sucka MC")
+			return images.particles_dust_red1
 		end
 	end
 end
 
-function image.lookup.stardust(color)
-	if color == "red" then return image.particles_large_red1
-	elseif color == "blue" then return image.particles_large_blue1
-	elseif color == "green" then return image.particles_large_green1
-	elseif color == "yellow" then return image.particles_large_yellow1
-	elseif color == "none" then return image.dummy
+function images.lookup.stardust(color)
+	if color == "red" then return images.particles_large_red1
+	elseif color == "blue" then return images.particles_large_blue1
+	elseif color == "green" then return images.particles_large_green1
+	elseif color == "yellow" then return images.particles_large_yellow1
+	elseif color == "none" then return images.dummy
 	elseif color == "wild" then
 		local tbl = {
-			image.particles_large_red1,
-			image.particles_large_blue1,
-			image.particles_large_green1,
-			image.particles_large_yellow1,
+			images.particles_large_red1,
+			images.particles_large_blue1,
+			images.particles_large_green1,
+			images.particles_large_yellow1,
 		}
 		return tbl[math.random(#tbl)]
 	else
-		print("image.lookup.stardust Sucka MC")
-		return image.particles_large_red1
+		print("images.lookup.stardust Sucka MC")
+		return images.particles_large_red1
 	end
 end
 
-return image
+return images

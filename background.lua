@@ -181,32 +181,32 @@ end
 
 function Clouds:_newCloud(size, starting_x)
 	local stage = self.game.stage
-	local img, y, container, duration
+	local image, y, container, duration
 	if size == "big" then
-		img = self.big_cloud_images[math.random(1, #self.big_cloud_images)]
+		image = self.big_cloud_images[math.random(1, #self.big_cloud_images)]
 		y = math.random(stage.height * 0.375, stage.height * 0.5)
 		container = self.big_clouds
 		duration = math.random(200, 280) * (starting_x and 1 - (starting_x / stage.width) or 1)
 	elseif size == "medium" then
-		img = self.medium_cloud_images[math.random(1, #self.medium_cloud_images)]
+		image = self.medium_cloud_images[math.random(1, #self.medium_cloud_images)]
 		y = math.random(stage.height * 0.25, stage.height * 0.375)
 		container = self.medium_clouds
 		duration = math.random(300, 420) * (starting_x and 1 - (starting_x / stage.width) or 1)
 	elseif size == "small" then
-		img = self.small_cloud_images[math.random(1, #self.small_cloud_images)]
+		image = self.small_cloud_images[math.random(1, #self.small_cloud_images)]
 		y = math.random(stage.height * 0.1, stage.height * 0.25)
 		container = self.small_clouds
 		duration = math.random(400, 560) * (starting_x and 1 - (starting_x / stage.width) or 1)
 	else
 		print("invalid cloud size specified")
 	end
-	local x = starting_x or -img:getWidth()
+	local x = starting_x or -image:getWidth()
 
 	local cloud = Pic:create{
 		game = self.game,
 		x = x,
 		y = y,
-		image = img,
+		image = image,
 		container = container,
 		counter = "background_particle"
 	}
@@ -292,8 +292,8 @@ function Starfall:_generateStar()
 		love.graphics.newImage('images/backgrounds/starfall/star4.png'),
 	}
 	local image_index = math.random(1, #image_table)
-	local img = image_table[image_index]
-	local height = img:getHeight()
+	local image = image_table[image_index]
+	local height = image:getHeight()
 
 	local duration = (stage.height / height) * 30
 	local rotation = (stage.height / height)
@@ -306,7 +306,7 @@ function Starfall:_generateStar()
 		game = self.game,
 		x = start_x,
 		y = start_y,
-		image = img,
+		image = image,
 		container = self.stars,
 		counter = "background_particle",
 	}
@@ -361,7 +361,7 @@ function Colors:init(game)
 	game.inits.ID.background_particle = 0
 end
 
-function Colors:_newColor(img)
+function Colors:_newColor(image)
 	local stage = self.game.stage
 	self.previous_color = self.current_color
 	self.previous_color:change{duration = 180, transparency = 0,
@@ -370,7 +370,7 @@ function Colors:_newColor(img)
 		game = self.game,
 		x = stage.x_mid,
 		y = stage.y_mid,
-		image = img,
+		image = image,
 		transparency = 0,
 	}
 	self.current_color:change{duration = 90, transparency = 255}

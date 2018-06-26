@@ -1,7 +1,7 @@
 local love = _G.love
 local common = require "class.commons"
 local Character = require "character"
-local image = require "image"
+local images = require "images"
 
 local Holly = {}
 
@@ -17,16 +17,16 @@ Holly.meter_gain = {
 	wild = 4,
 }
 Holly.super_images = {
-	word = image.ui_super_text_green,
-	empty = image.ui_super_empty_green,
-	full = image.ui_super_full_green,
-	glow = image.ui_super_glow_green,
+	word = images.ui_super_text_green,
+	empty = images.ui_super_empty_green,
+	full = images.ui_super_full_green,
+	glow = images.ui_super_glow_green,
 	overlay = love.graphics.newImage('images/dummy.png'),
 }
 Holly.burst_images = {
-	partial = image.ui_burst_part_green,
-	full = image.ui_burst_full_green,
-	glow = {image.ui_burst_partglow_green, image.ui_burst_fullglow_green}
+	partial = images.ui_burst_part_green,
+	full = images.ui_burst_full_green,
+	glow = {images.ui_burst_partglow_green, images.ui_burst_fullglow_green}
 }
 
 Holly.sounds = {

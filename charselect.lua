@@ -2,7 +2,7 @@
 -- singleplayer or netplay
 
 local common = require "class.commons"
-local image = require "image"
+local images = require "images"
 local Pic = require "pic"
 local spairs = require "/helpers/utilities".spairs
 
@@ -134,8 +134,8 @@ function Charselect:_createCharacterButtons()
 		end
 		self:_createButton{
 			name = char,
-			image = image["charselect_ring_"..char],
-			image_pushed = image["charselect_ring_"..char],
+			image = images["charselect_ring_"..char],
+			image_pushed = images["charselect_ring_"..char],
 			duration = 30,
 			start_x = -0.05 * i,
 			end_x = end_x,
@@ -147,9 +147,9 @@ function Charselect:_createCharacterButtons()
 			action = function()
 				if self.my_character ~= char then
 					self.my_character = char
-					self.displayed_character_shadow:newImage(image["portraits_shadow_"..char])
-					self.displayed_character:newImage(image["portraits_action_"..char])
-					self.displayed_character_text:newImage(image["charselect_name_"..char])
+					self.displayed_character_shadow:newImage(images["portraits_shadow_"..char])
+					self.displayed_character:newImage(images["portraits_action_"..char])
+					self.displayed_character_text:newImage(images["charselect_name_"..char])
 					self.displayed_character_shadow:reset()
 					self.displayed_character:reset()
 					self.displayed_character_text:reset()
@@ -197,10 +197,10 @@ function Charselect:_createUIButtons()
 					background = game.background:idx_to_str(self.game_background),
 				}
 				self.lobby:joinRankedQueue(queue_details)
-				gamestate.ui.clickable.start:newImage(image.buttons_lobbycancelsearch)
+				gamestate.ui.clickable.start:newImage(images.buttons_lobbycancelsearch)
 			elseif self.my_character and game.client.queuing then
 				self.lobby:cancelRankedQueue()
-				gamestate.ui.clickable.start:newImage(image.buttons_start)
+				gamestate.ui.clickable.start:newImage(images.buttons_start)
 				-- TODO: we should probably have a separate button object here
 			end
 		end
@@ -209,11 +209,11 @@ function Charselect:_createUIButtons()
 	-- start button
 	self:_createButton{
 		name = "start",
-		image = image.buttons_start,
-		image_pushed = image.buttons_startpush,
+		image = images.buttons_start,
+		image_pushed = images.buttons_startpush,
 		duration = 15,
 		end_x = stage.width * 0.15,
-		start_y = stage.height + image.buttons_start:getHeight(),
+		start_y = stage.height + images.buttons_start:getHeight(),
 		end_y = stage.height * 0.9,
 		easing = "outQuad",
 		action = start_action,
@@ -222,11 +222,11 @@ function Charselect:_createUIButtons()
 	-- details button
 	self:_createButton{
 		name = "details",
-		image = image.buttons_details,
-		image_pushed = image.buttons_detailspush,
+		image = images.buttons_details,
+		image_pushed = images.buttons_detailspush,
 		duration = 15,
-		end_x = stage.width * 0.155 + image.buttons_details:getWidth(),
-		start_y = stage.height + image.buttons_start:getHeight(),
+		end_x = stage.width * 0.155 + images.buttons_details:getWidth(),
+		start_y = stage.height + images.buttons_start:getHeight(),
 		end_y = stage.height * 0.9,
 		easing = "outQuad",
 		action = function()
@@ -250,8 +250,8 @@ function Charselect:_createUIButtons()
 	-- back button
 	self:_createButton{
 		name = "back",
-		image = image.buttons_back,
-		image_pushed = image.buttons_backpush,
+		image = images.buttons_back,
+		image_pushed = images.buttons_backpush,
 		duration = 15,
 		end_x = stage.width * 0.05,
 		end_y = stage.height * 0.09,
@@ -262,8 +262,8 @@ function Charselect:_createUIButtons()
 	-- left arrow for background select
 	self:_createButton{
 		name = "backgroundleft",
-		image = image.buttons_backgroundleft,
-		image_pushed = image.buttons_backgroundleft,
+		image = images.buttons_backgroundleft,
+		image_pushed = images.buttons_backgroundleft,
 		duration = 60,
 		end_x = stage.width * 0.6,
 		end_y = stage.height * 0.8,
@@ -272,7 +272,7 @@ function Charselect:_createUIButtons()
 		action = function()
 			self.game_background = (self.game_background - 2) % game.background.total + 1
 			local selected_background = game.background:idx_to_str(self.game_background)
-			local new_image = image["charselect_thumbnail_" .. selected_background]
+			local new_image = images["charselect_thumbnail_" .. selected_background]
 			self.game_background_image:newImage(new_image)
 		end,
 	}
@@ -280,8 +280,8 @@ function Charselect:_createUIButtons()
 	-- right arrow for background select
 	self:_createButton{
 		name = "backgroundright",
-		image = image.buttons_backgroundright,
-		image_pushed = image.buttons_backgroundright,
+		image = images.buttons_backgroundright,
+		image_pushed = images.buttons_backgroundright,
 		duration = 60,
 		end_x = stage.width * 0.9,
 		end_y = stage.height * 0.8,
@@ -290,7 +290,7 @@ function Charselect:_createUIButtons()
 		action = function()
 			self.game_background = self.game_background % game.background.total + 1
 			local selected_background = game.background:idx_to_str(self.game_background)
-			local new_image = image["charselect_thumbnail_" .. selected_background]
+			local new_image = images["charselect_thumbnail_" .. selected_background]
 			self.game_background_image:newImage(new_image)
 		end,
 	}
@@ -305,7 +305,7 @@ function Charselect:_createUIImages()
 	self.displayed_character_shadow = Pic:create{
 		game = game,
 		name = "maincharacter",
-		image = image.dummy,
+		image = images.dummy,
 		x = stage.width * 0.275,
 		y = stage.height * 0.45,
 		transparency = 60,
@@ -330,7 +330,7 @@ function Charselect:_createUIImages()
 	self.displayed_character = Pic:create{
 		game = game,
 		name = "maincharacter",
-		image = image.dummy,
+		image = images.dummy,
 		x = stage.width * 0.25,
 		y = stage.height * 0.45,
 		transparency = 60,
@@ -355,7 +355,7 @@ function Charselect:_createUIImages()
 	self.displayed_character_text = Pic:create{
 		game = game,
 		name = "maincharactertext",
-		image = image.dummy,
+		image = images.dummy,
 		x = stage.width * 0.272,
 		y = stage.height * 0.7,
 		transparency = 60,
@@ -378,7 +378,7 @@ function Charselect:_createUIImages()
 	-- background_image_frame
 	self:_createImage{
 		name = "backgroundframe",
-		image = image.unclickables_selectstageborder,
+		image = images.unclickables_selectstageborder,
 		duration = 60,
 		end_x = stage.width * 0.75,
 		end_y = stage.height * 0.8,
@@ -390,7 +390,7 @@ function Charselect:_createUIImages()
 	-- background_image
 	self.game_background_image = self:_createImage{
 		name = "backgroundimage",
-		image = image["charselect_thumbnail_" .. selected_background],
+		image = images["charselect_thumbnail_" .. selected_background],
 		duration = 60,
 		end_x = stage.width * 0.75,
 		end_y = stage.height * 0.8,
@@ -420,7 +420,7 @@ function Charselect:enter()
 	self:_createImage{
 		name = "fadein",
 		container = gamestate.ui.fades,
-		image = image.unclickables_fadein,
+		image = images.unclickables_fadein,
 		duration = 30,
 		end_x = stage.width * 0.5,
 		end_y = stage.height * 0.5,

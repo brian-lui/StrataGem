@@ -3,7 +3,7 @@ local Pic = require "pic"
 local common = require "/libraries/classcommons"
 local Gem = require "gem"
 local Piece = require "piece"
-local image = require "image"
+local images = require "images"
 
 --[==================[
 QUEUE COMPONENT
@@ -632,9 +632,9 @@ function Game:deserializeState(state_string)
 				x = self.grid.x[col],
 				y = self.grid.y[row],
 				color = color_table[color],
-				exploding_gem_image = image.dummy,
-				grey_exploding_gem_image = image.dummy,
-				pop_particle_image = image.dummy,
+				exploding_gem_image = images.dummy,
+				grey_exploding_gem_image = images.dummy,
+				pop_particle_image = images.dummy,
 			}
 		end
 	end
@@ -661,10 +661,10 @@ function Game:deserializeState(state_string)
 				elseif color == "wild" or color == "none" then
 					gem_replace_table[gem_idx] = {
 						color = color,
-						image = image.dummy,
-						exploding_gem_image = image.dummy,
-						grey_exploding_gem_image = image.dummy,
-						pop_particle_image = image.dummy,
+						image = images.dummy,
+						exploding_gem_image = images.dummy,
+						grey_exploding_gem_image = images.dummy,
+						pop_particle_image = images.dummy,
 					}
 				end
 			end
@@ -694,10 +694,10 @@ function Game:deserializeState(state_string)
 				elseif color == "wild" or color == "none" then
 					gem_replace_table[gem_idx] = {
 						color = color,
-						image = image.dummy,
-						exploding_gem_image = image.dummy,
-						grey_exploding_gem_image = image.dummy,
-						pop_particle_image = image.dummy,
+						image = images.dummy,
+						exploding_gem_image = images.dummy,
+						grey_exploding_gem_image = images.dummy,
+						pop_particle_image = images.dummy,
 					}
 				end
 			end
@@ -967,18 +967,18 @@ function Game:_closeSettingsMenu(gamestate)
 end
 
 --[[	optional arguments:
-	settings_icon: image for the settings icon (defaults to image.buttons_settings)
-	settings_iconpush: image for the pushed settings icon (defaults to image.buttons_settingspush)
-	settings_text: image for the text display (defaults to image.unclickables_pausetext)
+	settings_icon: image for the settings icon (defaults to images.buttons_settings)
+	settings_iconpush: image for the pushed settings icon (defaults to images.buttons_settingspush)
+	settings_text: image for the text display (defaults to images.unclickables_pausetext)
 	exitstate: state to exit upon confirm (e.g. "gs_title", "gs_gamestate", "gs_main", "gs_multiplayerselect")
 		Defaults to quitting the game if not provided
 --]]
 function Game:_createSettingsMenu(gamestate, params)
 	params = params or {}
 	local stage = self.stage
-	local settings_icon = params.settings_icon or image.buttons_settings
-	local settings_pushed_icon = params.settings_iconpush or image.buttons_settingspush
-	local settings_text = params.settings_text or image.unclickables_pausetext
+	local settings_icon = params.settings_icon or images.buttons_settings
+	local settings_pushed_icon = params.settings_iconpush or images.buttons_settingspush
+	local settings_text = params.settings_text or images.unclickables_pausetext
 
 	self:_createButton(gamestate, {
 		name = "settings",
@@ -1004,8 +1004,8 @@ function Game:_createSettingsMenu(gamestate, params)
 	self:_createButton(gamestate, {
 		name = "open_quit_menu",
 		container = gamestate.ui.popup_clickable,
-		image = image.buttons_quit,
-		image_pushed = image.buttons_quitpush,
+		image = images.buttons_quit,
+		image_pushed = images.buttons_quitpush,
 		end_x = stage.settings_locations.quit_button.x,
 		end_y = stage.settings_locations.quit_button.y,
 		action = function()
@@ -1018,8 +1018,8 @@ function Game:_createSettingsMenu(gamestate, params)
 	self:_createButton(gamestate, {
 		name = "close_settings_menu",
 		container = gamestate.ui.popup_clickable,
-		image = image.buttons_back,
-		image_pushed = image.buttons_backpush,
+		image = images.buttons_back,
+		image_pushed = images.buttons_backpush,
 		end_x = stage.settings_locations.close_menu_button.x,
 		end_y = stage.settings_locations.close_menu_button.y,
 		pushed_sfx = "buttonback",
@@ -1033,7 +1033,7 @@ function Game:_createSettingsMenu(gamestate, params)
 	self:_createImage(gamestate, {
 		name = "sure_to_quit",
 		container = gamestate.ui.popup_static,
-		image = image.unclickables_suretoquit,
+		image = images.unclickables_suretoquit,
 		end_x = stage.settings_locations.confirm_quit_text.x,
 		end_y = stage.settings_locations.confirm_quit_text.y,
 		end_transparency = 0,
@@ -1042,7 +1042,7 @@ function Game:_createSettingsMenu(gamestate, params)
 	self:_createImage(gamestate, {
 		name = "settingsframe",
 		container = gamestate.ui.popup_static,
-		image = image.unclickables_settingsframe,
+		image = images.unclickables_settingsframe,
 		end_x = stage.settings_locations.frame.x,
 		end_y = stage.settings_locations.frame.y,
 		end_transparency = 0,
@@ -1051,8 +1051,8 @@ function Game:_createSettingsMenu(gamestate, params)
 	self:_createButton(gamestate, {
 		name = "close_quit_menu",
 		container = gamestate.ui.popup_clickable,
-		image = image.buttons_no,
-		image_pushed = image.buttons_nopush,
+		image = images.buttons_no,
+		image_pushed = images.buttons_nopush,
 		end_x = stage.settings_locations.cancel_quit_button.x,
 		end_y = stage.settings_locations.cancel_quit_button.y,
 		end_transparency = 0,
@@ -1067,8 +1067,8 @@ function Game:_createSettingsMenu(gamestate, params)
 	self:_createButton(gamestate, {
 		name = "confirm_quit",
 		container = gamestate.ui.popup_clickable,
-		image = image.buttons_yes,
-		image_pushed = image.buttons_yespush,
+		image = images.buttons_yes,
+		image_pushed = images.buttons_yespush,
 		end_x = stage.settings_locations.confirm_quit_button.x,
 		end_y = stage.settings_locations.confirm_quit_button.y,
 		pushed_sfx = "buttonback",

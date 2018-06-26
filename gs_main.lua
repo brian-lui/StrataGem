@@ -1,5 +1,5 @@
 local common = require "class.commons"
-local image = require "image"
+local images = require "images"
 local pointIsInRect = require "/helpers/utilities".pointIsInRect
 local spairs = require "/helpers/utilities".spairs
 
@@ -32,9 +32,9 @@ function gs_main:enter()
 
 	local settings_image
 	if self.type == "Singleplayer" or self.type == "Replay" then
-		settings_image = image.buttons_pause
+		settings_image = images.buttons_pause
 	elseif self.type == "Netplay" then
-		settings_image = image.buttons_stop
+		settings_image = images.buttons_stop
 	else
 		print("invalid game type!")
 	end
@@ -52,7 +52,7 @@ function gs_main:enter()
 
 	gs_main.createImage(self, {
 		name = "basin",
-		image = image.ui_basin,
+		image = images.ui_basin,
 		end_x = stage.basin.x,
 		end_y = stage.basin.y,
 	})
@@ -64,7 +64,7 @@ function gs_main:enter()
 	gs_main.createImage(self, {
 		name = "fadein",
 		container = gs_main.ui.fades,
-		image = image.unclickables_fadein,
+		image = images.unclickables_fadein,
 		duration = 30,
 		end_x = self.stage.width * 0.5,
 		end_y = self.stage.height * 0.5,

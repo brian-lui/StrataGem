@@ -65,8 +65,8 @@ function Animation:init(object, manager)
 end
 
 -- replace current image with a new one
-function Animation:swapImage(img)
-	self.image = img
+function Animation:swapImage(image)
+	self.image = image
 	self.width = self.image:getWidth()
 	self.height = self.image:getHeight()
 	self.quad = love.graphics.newQuad(0, 0, self.width, self.height, self.width, self.height)
