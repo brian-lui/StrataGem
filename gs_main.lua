@@ -119,10 +119,6 @@ function gs_main:update(dt)
 	for _, tbl in pairs(gs_main.ui) do
 		for _, v in pairs(tbl) do v:update(dt) end
 	end
-
-	for _, tbl in pairs(self.global_ui) do
-		for _, v in pairs(tbl) do v:update(dt) end
-	end
 end
 
 -- draw all the non-gem screen elements: super bar, sprite

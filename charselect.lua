@@ -449,10 +449,6 @@ function Charselect:update(dt)
 	self.displayed_character_shadow:update(dt)
 	self.displayed_character:update(dt)
 	self.displayed_character_text:update(dt)
-
-	for _, tbl in pairs(self.game.global_ui) do
-		for _, v in pairs(tbl) do v:update(dt) end
-	end
 end
 
 function Charselect:draw()

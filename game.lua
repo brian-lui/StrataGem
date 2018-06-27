@@ -292,6 +292,9 @@ function Game:update(dt)
 	self.sound:update()
 	self.uielements:screenUIupdate(dt)
 	self:updateDarkenedScreenTracker(dt) -- haha
+	for _, tbl in pairs(self.global_ui) do
+		for _, v in pairs(tbl) do v:update(dt) end
+	end
 end
 
 function Game:playerByIndex(i)
