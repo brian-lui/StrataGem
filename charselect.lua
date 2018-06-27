@@ -70,7 +70,7 @@ function Lobby:goBack()
 			client.connected = false
 		end
 	end
-	self.game.statemanager:switch(require "gs_title")
+	self.game:switchState("gs_title")
 end
 
 function Lobby:draw()
@@ -93,8 +93,6 @@ function Charselect:init(game, gamestate)
 	self.gamestate.ui = {
 		clickable = {},
 		static = {},
-		fades = {},
-		touch_fx = {},
 		popup_clickable = {},
 		popup_static = {},
 	}
@@ -239,7 +237,7 @@ function Charselect:_createUIButtons()
 	local back_action
 	if gamestate.name == "Singleplayer" then
 		back_action = function()
-			game.statemanager:switch(require "gs_title")
+			game:switchState("gs_title")
 		end
 	elseif gamestate.name == "Multiplayer" then
 		back_action = function()
@@ -409,6 +407,7 @@ function Charselect:enter()
 		game.sound:newBGM("bgm_menu", true)
 	end
 
+	game.uielements:clearScreenUIColor()
 	self.current_background = common.instance(game.background.checkmate, game)
 	self.game_background = 1 -- what's chosen for the maingame background
 	self:_createCharacterButtons()
@@ -419,7 +418,7 @@ function Charselect:enter()
 
 	self:_createImage{
 		name = "fadein",
-		container = gamestate.ui.fades,
+		container = game.global_ui.fades,
 		image = images.unclickables_fadein,
 		duration = 30,
 		end_x = stage.width * 0.5,
@@ -429,9 +428,8 @@ function Charselect:enter()
 		remove = true,
 	}
 
-	if gamestate.name == "Multiplayer" then
-		self.lobby:connect()
-	end
+	if gamestate.name == "Multiplayer" then self.lobby:connect() end
+
 end
 
 function Charselect:openSettingsMenu()
@@ -451,6 +449,10 @@ function Charselect:update(dt)
 	self.displayed_character_shadow:update(dt)
 	self.displayed_character:update(dt)
 	self.displayed_character_text:update(dt)
+
+	for _, tbl in pairs(self.game.global_ui) do
+		for _, v in pairs(tbl) do v:update(dt) end
+	end
 end
 
 function Charselect:draw()
@@ -469,8 +471,8 @@ function Charselect:draw()
 	if gamestate.name == "Multiplayer" then
 		self.lobby:draw()
 	end
-	for _, v in pairs(gamestate.ui.fades) do v:draw{darkened = darkened} end
-	for _, v in pairs(gamestate.ui.touch_fx) do v:draw{darkened = darkened} end
+	for _, v in pairs(self.game.global_ui.fx) do v:draw{darkened = darkened} end
+	for _, v in pairs(self.game.global_ui.fades) do v:draw{darkened = darkened} end
 end
 
 function Charselect:mousepressed(x, y)

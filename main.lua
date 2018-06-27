@@ -47,17 +47,21 @@ function love.keypressed(key)
 end
 
 function love.mousepressed(x, y, button, istouch)
-	local drawspace = game.inits.drawspace
-	x, y = drawspace.tlfres.getMousePosition(drawspace.width, drawspace.height)
-	local f = game.mousepressed or __NOP__
-	f(game, x, y, button, istouch)
+	if button == 1 then
+		local drawspace = game.inits.drawspace
+		x, y = drawspace.tlfres.getMousePosition(drawspace.width, drawspace.height)
+		local f = game.mousepressed or __NOP__
+		f(game, x, y, button, istouch)
+	end
 end
 
 function love.mousereleased(x, y, button, istouch)
-	local drawspace = game.inits.drawspace
-	x, y = drawspace.tlfres.getMousePosition(drawspace.width, drawspace.height)
-	local f = game.mousereleased or __NOP__
-	f(game, x, y, button, istouch)
+	if button == 1 then
+		local drawspace = game.inits.drawspace
+		x, y = drawspace.tlfres.getMousePosition(drawspace.width, drawspace.height)
+		local f = game.mousereleased or __NOP__
+		f(game, x, y, button, istouch)
+	end
 end
 
 function love.mousemoved(x, y, dx, dy)

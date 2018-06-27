@@ -29,8 +29,6 @@ function title:init()
 	title.ui = {
 		clickable = {},
 		static = {},
-		fades = {},
-		touch_fx = {},
 		popup_clickable = {},
 		popup_static = {},
 	}
@@ -47,7 +45,7 @@ function title:init()
 		start_transparency = 0,
 		easing = "inQuart",
 		action = function()
-			self.statemanager:switch(require "gs_singleplayerselect")
+			self:switchState("gs_singleplayerselect")
 		end,
 	})
 	title.createButton(self, {
@@ -61,7 +59,7 @@ function title:init()
 		start_transparency = 0,
 		easing = "inQuart",
 		action = function()
-			self.statemanager:switch(require "gs_multiplayerselect")
+			self:switchState("gs_multiplayerselect")
 		end,
 	})
 	title.createImage(self, {
@@ -83,6 +81,7 @@ end
 
 function title:enter()
 	title.clicked = nil
+	self.uielements:clearScreenUIColor()
 	self.settings_menu_open = false
 	if self.sound:getCurrentBGM() ~= "bgm_menu" then
 		self.sound:stopBGM()
@@ -99,7 +98,7 @@ function title:enter()
 
 	title.createImage(self, {
 		name = "fadein",
-		container = title.ui.fades,
+		container = self.global_ui.fades,
 		image = images.unclickables_fadein,
 		duration = 30,
 		end_x = self.stage.width * 0.5,
@@ -123,6 +122,10 @@ function title:update(dt)
 	for _, tbl in pairs(title.ui) do
 		for _, v in pairs(tbl) do v:update(dt) end
 	end
+
+	for _, tbl in pairs(self.global_ui) do
+		for _, v in pairs(tbl) do v:update(dt) end
+	end
 end
 
 function title:draw()
@@ -130,8 +133,8 @@ function title:draw()
 	title.current_background:draw{darkened = darkened}
 	for _, v in pairs(title.ui.static) do v:draw{darkened = darkened} end
 	for _, v in pairs(title.ui.clickable) do v:draw{darkened = darkened} end
-	for _, v in pairs(title.ui.fades) do v:draw{darkened = darkened} end
-	for _, v in pairs(title.ui.touch_fx) do v:draw{darkened = darkened} end
+	for _, v in pairs(self.global_ui.fx) do v:draw{darkened = darkened} end
+	for _, v in pairs(self.global_ui.fades) do v:draw{darkened = darkened} end
 	self:_drawSettingsMenu(title)
 end
 

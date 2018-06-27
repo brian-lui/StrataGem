@@ -55,6 +55,10 @@ Game.TWEEN_TO_LANDING_ZONE_DURATION = 24
 Game.VERSION = "71.0"
 
 function Game:init()
+	self.global_ui = { -- all-screens effects
+		fx = {},
+		fades = {},
+	}
 	self.inits = require "/helpers/inits"
 	self.settings = require "/helpers/settings"
 	self.rng = love.math.newRandomGenerator()
@@ -72,12 +76,47 @@ function Game:init()
 	self.client = common.instance(require "client", self)
 	self.queue = common.instance(Queue, self)
 	self.statemanager = common.instance(require "/libraries/statemanager", self)
-	self.statemanager:switch(require "gs_title")
+	self:switchState("gs_title")
 	self.debugconsole = common.instance(require "/helpers/debugconsole", self)
 	self.debugconsole:setDefaultDisplayParams()
 	self.debugconsole:replacePrint()
 	self:reset()
 end
+
+function Game:reset()
+	self.current_phase = "Intro"
+	self.turn = 1
+	self.phase.time_to_next = self.phase.INIT_TIME_TO_NEXT
+	self.netplay_wait = 0
+	self.inputs_frozen = false
+	self.scoring_combo = 0
+	self.round_ended = false
+	self.me_player = false
+	self.them_player = false
+	self.active_piece = false
+	self.grid_wait = 0
+	self.screenshake_frames = 0
+	self.screenshake_vel = 0
+	self.rng:setSeed(os.time())
+	self.frame = 0
+	self.paused = false
+	self.settings_menu_open = false
+	self.screen_dark = {false, false, false}
+	self.inits.ID:reset()
+	self.sound:reset()
+	self.grid:reset()
+	self.particles:reset()
+	self.phase:reset()
+	self.uielements:clearScreenUIColor()
+end
+
+-- takes a string
+function Game:switchState(gamestate)
+	self.current_gamestate = require(gamestate)
+	self.statemanager:switch(self.current_gamestate)
+end
+
+
 
 --[[ Mandatory parameters:
 	gametype - Netplay or Singleplayer
@@ -132,8 +171,13 @@ function Game:start(params)
 
 	self.type = params.gametype
 
+	if self.me_player then
+		self.uielements:setScreenUIColor(self.me_player.primary_colors)
+	end
+
 	self.current_background_name = params.background
-	self.statemanager:switch(require "gs_main")
+	
+	self:switchState("gs_main")
 end
 
 function Game:setSaveFileLocation()
@@ -243,35 +287,10 @@ function Game:playReplay(replay_string)
 	}
 end
 
-function Game:reset()
-	self.current_phase = "Intro"
-	self.turn = 1
-	self.phase.time_to_next = self.phase.INIT_TIME_TO_NEXT
-	self.netplay_wait = 0
-	self.inputs_frozen = false
-	self.scoring_combo = 0
-	self.round_ended = false
-	self.me_player = false
-	self.them_player = false
-	self.active_piece = false
-	self.grid_wait = 0
-	self.screenshake_frames = 0
-	self.screenshake_vel = 0
-	self.rng:setSeed(os.time())
-	self.frame = 0
-	self.paused = false
-	self.settings_menu_open = false
-	self.screen_dark = {false, false, false}
-	self.inits.ID:reset()
-	self.sound:reset()
-	self.grid:reset()
-	self.particles:reset()
-	self.phase:reset()
-end
-
 function Game:update(dt)
 	self.client:update(dt)
 	self.sound:update()
+	self.uielements:screenUIupdate(dt)
 	self:updateDarkenedScreenTracker(dt) -- haha
 end
 
@@ -775,7 +794,8 @@ end
 --[[ creates an object that can be tweened but not clicked
 	mandatory parameters: name, image, end_x, end_y
 	optional parameters: duration, start_transparency, end_transparency,
-		start_x, start_y, easing, remove, exit_func, force_max_alpha
+		start_x, start_y, easing, remove, exit_func, force_max_alpha,
+		start_scaling, end_scaling, container, counter
 --]]
 function Game:_createImage(gamestate, params)
 	params = params or {}
@@ -787,7 +807,9 @@ function Game:_createImage(gamestate, params)
 		x = params.start_x or params.end_x,
 		y = params.start_y or params.end_y,
 		transparency = params.start_transparency or 255,
+		scaling = params.start_scaling or 1,
 		image = params.image,
+		counter = params.counter,
 		container = params.container or gamestate.ui.static,
 		force_max_alpha = params.force_max_alpha,
 	}
@@ -797,6 +819,7 @@ function Game:_createImage(gamestate, params)
 		x = params.end_x,
 		y = params.end_y,
 		transparency = params.end_transparency or 255,
+		scaling = params.end_scaling or 1,
 		easing = params.easing,
 		remove = params.remove,
 		exit_func = params.exit_func,
@@ -1079,7 +1102,7 @@ function Game:_createSettingsMenu(gamestate, params)
 					self:_closeQuitConfirmMenu(gamestate)
 					self.settings_menu_open = false
 					self:brightenScreen()
-					self.statemanager:switch(require (params.exitstate))
+					self:switchState(params.exitstate)
 				else
 					love.event.quit()
 				end
@@ -1102,6 +1125,8 @@ local pointIsInRect = require "/helpers/utilities".pointIsInRect
 
 --default mousepressed function if not specified by a sub-state
 function Game:_mousepressed(x, y, gamestate)
+	self.uielements.components.screenPress.create(self, gamestate, x, y)
+
 	if self.settings_menu_open then
 		for _, button in pairs(gamestate.ui.popup_clickable) do
 			if pointIsInRect(x, y, button:getRect()) then
@@ -1152,6 +1177,18 @@ function Game:_mousemoved(x, y, gamestate)
 			gamestate.clicked = false
 		end
 	end
+end
+
+-- checks if mouse is down (for ui). Can use different function for touchscreen
+function Game:_ismousedown()
+	return love.mouse.isDown(1)
+end
+
+-- get current mouse position
+function Game:_getmouseposition()
+	local drawspace = self.inits.drawspace
+	local x, y = drawspace.tlfres.getMousePosition(drawspace.width, drawspace.height)
+	return x, y
 end
 
 function Game:keypressed(key)

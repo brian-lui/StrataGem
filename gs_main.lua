@@ -10,8 +10,6 @@ function gs_main:init()
 	gs_main.ui = {
 		clickable = {},
 		static = {},
-		fades = {},
-		touch_fx = {},
 		popup_clickable = {},
 		popup_static = {},
 	}
@@ -63,7 +61,7 @@ function gs_main:enter()
 
 	gs_main.createImage(self, {
 		name = "fadein",
-		container = gs_main.ui.fades,
+		container = self.global_ui.fades,
 		image = images.unclickables_fadein,
 		duration = 30,
 		end_x = self.stage.width * 0.5,
@@ -119,6 +117,10 @@ function gs_main:update(dt)
 	end
 
 	for _, tbl in pairs(gs_main.ui) do
+		for _, v in pairs(tbl) do v:update(dt) end
+	end
+
+	for _, tbl in pairs(self.global_ui) do
 		for _, v in pairs(tbl) do v:update(dt) end
 	end
 end
@@ -275,8 +277,8 @@ function gs_main:draw()
 	self.camera:unset()
 	gs_main.drawText(self, {darkened = darkened})
 	gs_main.drawButtons(self)
-	for _, v in pairs(gs_main.ui.fades) do v:draw{darkened = darkened} end
-	for _, v in pairs(gs_main.ui.touch_fx) do v:draw{darkened = darkened} end
+	for _, v in pairs(self.global_ui.fx) do v:draw{darkened = darkened} end
+	for _, v in pairs(self.global_ui.fades) do v:draw{darkened = darkened} end
 end
 
 function gs_main:mousepressed(x, y)

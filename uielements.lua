@@ -374,25 +374,61 @@ Super = common.class("Super", Super)
 ---------------------------- ON-PRESS TOUCH EFFECT ----------------------------
 -------------------------------------------------------------------------------
 local ScreenPress = {}
-function ScreenPress:init(game)
-	self.game = game
+function ScreenPress:init(game, gamestate, x, y)
+	-- determine the color
+	local rand_color = game.uielements.screen_ui_color
+	if not rand_color then rand_color = {"red", "blue", "green", "yellow"} end
+	local rand = math.random(#rand_color)
+	local color = rand_color[rand]
+
+	-- Make the pop glowy effect
+	local pop_image = images["gems_pop_" .. color]
+	local pop_params = {
+		name = "screenpress_pop",
+		container = game.global_ui.fx,
+		counter = "particle",
+		image = pop_image,
+		end_x = x,
+		end_y = y,
+		duration = 30,
+		end_transparency = 0,
+		end_scaling = 4,
+		remove = true,
+	}
+	game:_createImage(gamestate, pop_params)
+
+	-- Make the starburst effect
+	local starburst_image = images.lookup.smalldust(color, false)
+	local starburst_end_xy = function(x, y)
+		local dist = game.stage.width * 0.2
+		local angle = math.random() * math.pi * 2
+		local end_x = dist * math.cos(angle) + x
+		local end_y = dist * math.sin(angle) + y
+		return end_x, end_y
+	end
+
+	for _ = 1, math.random(2, 6) do
+		local end_x, end_y = starburst_end_xy(x, y)
+		local starburst_params = {
+			name = "screenpress_starburst",
+			container = game.global_ui.fx,
+			duration = 30,
+			counter = "particle",
+			image = starburst_image,
+			start_x = x,
+			start_y = y,
+			end_x = end_x,
+			end_y = end_y,
+			easing = outCubic,
+			remove = true,
+		}
+
+		game:_createImage(gamestate, starburst_params)
+	end
 end
 
-function ScreenPress:generate(gamestate, color)
-	local end_x
-	local end_y
-	local image
-
-	local params = {
-		name = "screenpress",
-		container = gamestate.ui.touch_fx,
-		image = image,
-		end_x = end_x,
-		end_y = end_y,
-	}
-
-	local p = self.game:_createImage(gamestate, params)
-	p:change{}
+function ScreenPress.create(game, gamestate, x, y)
+	return common.instance(ScreenPress, game, gamestate, x, y)
 end
 
 ScreenPress = common.class("ScreenPress", ScreenPress)
@@ -401,7 +437,33 @@ ScreenPress = common.class("ScreenPress", ScreenPress)
 ----------------------------- ON-MOVE DRAG EFFECT -----------------------------
 -------------------------------------------------------------------------------
 local ScreenDrag = {}
+function ScreenDrag:init(game, gamestate, x, y)
+	-- determine the color
+	local rand_color = game.uielements.screen_ui_color
+	if not rand_color then rand_color = {"red", "blue", "green", "yellow"} end
+	local rand = math.random(#rand_color)
+	local color = rand_color[rand]
 
+	-- make a single trail image
+	local trail_image = images["particles_trail_" .. color]
+	local trail_params = {
+		name = "screenmove_trail",
+		container = game.global_ui.fx,
+		counter = "particle",
+		image = trail_image,
+		end_x = x,
+		end_y = y,
+		duration = 30,
+		start_scaling = 1.5,
+		end_scaling = 0,
+		remove = true,
+	}
+	game:_createImage(gamestate, trail_params)
+end
+
+function ScreenDrag.create(game, gamestate, x, y)
+	return common.instance(ScreenDrag, game, gamestate, x, y)
+end
 
 ScreenDrag = common.class("ScreenDrag", ScreenDrag)
 
@@ -410,8 +472,8 @@ local components = {
 	timer = Timer, -- TODO: this is not implemented yet, still in ui.timer
 	super = Super,
 	burst = Burst,
-	screen_press = ScreenPress,
-	screen_drag = ScreenDrag,
+	screenPress = ScreenPress,
+	screenDrag = ScreenDrag,
 }
 
 
@@ -423,6 +485,19 @@ function uielements:init(game)
 	-- Red X shown on gems in invalid placement spots
 	self.redx = Pic:create{game = game, x = 0, y = 0, image = images.ui_redx}
 	self.components = components
+	self.screen_ui_color = nil
+	self.screen_ui_trails = {}
+	self.SCREEN_TRAILS_TIMER = 0.05 -- in seconds
+	self.screen_trails_t = 0
+end
+
+function uielements:setScreenUIColor(color_table)
+	assert(type(color_table) == "table", "Need to provide it as a table!")
+	self.screen_ui_color = color_table
+end
+
+function uielements:clearScreenUIColor()
+	self.screen_ui_color = nil
 end
 
 -- draws the shadow underneath the player's gem piece
@@ -697,6 +772,22 @@ function uielements:update(dt)
 	else
 		for _, v in pairs(game.particles.allParticles.PlacedGem) do
 			v:tweenUp()
+		end
+	end
+end
+
+-- updates the screenpress/screenmove functionality
+-- always called
+function uielements:screenUIupdate(dt)
+	self.screen_trails_t = self.screen_trails_t + dt
+	if self.screen_trails_t > self.SCREEN_TRAILS_TIMER then
+		local game = self.game
+		local gamestate = game.current_gamestate
+		self.screen_trails_t = self.screen_trails_t - self.SCREEN_TRAILS_TIMER
+
+		if game:_ismousedown() then
+			local x, y = game:_getmouseposition()
+			self.components.screenDrag.create(game, gamestate, x, y)
 		end
 	end
 end

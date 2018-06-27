@@ -543,11 +543,11 @@ end
 function Phase:leave(dt)
 	local game = self.game
 	if game.type == "Netplay" then
-		game.statemanager:switch(require "gs_multiplayerselect")
+		game:switchState("gs_multiplayerselect")
 	elseif game.type == "Singleplayer" then
-		game.statemanager:switch(require "gs_singleplayerselect")
+		game:switchState("gs_singleplayerselect")
 	elseif game.type == "Replay" then
-		game.statemanager:switch(require "gs_singleplayerselect")
+		game:switchState("gs_singleplayerselect")
 		-- TODO: Switch to a replay state
 	end
 end
