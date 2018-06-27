@@ -471,8 +471,7 @@ function Charselect:draw()
 	if gamestate.name == "Multiplayer" then
 		self.lobby:draw()
 	end
-	for _, v in pairs(self.game.global_ui.fx) do v:draw{darkened = darkened} end
-	for _, v in pairs(self.game.global_ui.fades) do v:draw{darkened = darkened} end
+	game:_drawGlobals()
 end
 
 function Charselect:mousepressed(x, y)

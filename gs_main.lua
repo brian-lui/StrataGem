@@ -277,8 +277,7 @@ function gs_main:draw()
 	self.camera:unset()
 	gs_main.drawText(self, {darkened = darkened})
 	gs_main.drawButtons(self)
-	for _, v in pairs(self.global_ui.fx) do v:draw{darkened = darkened} end
-	for _, v in pairs(self.global_ui.fades) do v:draw{darkened = darkened} end
+	self:_drawGlobals()
 end
 
 function gs_main:mousepressed(x, y)

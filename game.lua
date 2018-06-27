@@ -1123,6 +1123,12 @@ end
 
 local pointIsInRect = require "/helpers/utilities".pointIsInRect
 
+-- draw the globals
+function Game:_drawGlobals()
+	for _, v in pairs(self.global_ui.fx) do v:draw() end
+	for _, v in pairs(self.global_ui.fades) do v:draw() end
+end
+
 --default mousepressed function if not specified by a sub-state
 function Game:_mousepressed(x, y, gamestate)
 	self.uielements.components.screenPress.create(self, gamestate, x, y)

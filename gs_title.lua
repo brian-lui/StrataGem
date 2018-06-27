@@ -133,9 +133,8 @@ function title:draw()
 	title.current_background:draw{darkened = darkened}
 	for _, v in pairs(title.ui.static) do v:draw{darkened = darkened} end
 	for _, v in pairs(title.ui.clickable) do v:draw{darkened = darkened} end
-	for _, v in pairs(self.global_ui.fx) do v:draw{darkened = darkened} end
-	for _, v in pairs(self.global_ui.fades) do v:draw{darkened = darkened} end
 	self:_drawSettingsMenu(title)
+	self:_drawGlobals()
 end
 
 function title:mousepressed(x, y)
