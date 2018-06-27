@@ -390,20 +390,20 @@ function ScreenPress:init(game, gamestate, x, y)
 		image = pop_image,
 		end_x = x,
 		end_y = y,
-		duration = 30,
+		duration = 15,
 		end_transparency = 0,
-		end_scaling = 4,
+		end_scaling = 2,
 		remove = true,
 	}
 	game:_createImage(gamestate, pop_params)
 
 	-- Make the starburst effect
 	local starburst_image = images.lookup.smalldust(color, false)
-	local starburst_end_xy = function(x, y)
-		local dist = game.stage.width * 0.2
+	local starburst_end_xy = function(start_x, start_y)
+		local dist = game.stage.width * 0.1
 		local angle = math.random() * math.pi * 2
-		local end_x = dist * math.cos(angle) + x
-		local end_y = dist * math.sin(angle) + y
+		local end_x = dist * math.cos(angle) + start_x
+		local end_y = dist * math.sin(angle) + start_y
 		return end_x, end_y
 	end
 
@@ -419,7 +419,8 @@ function ScreenPress:init(game, gamestate, x, y)
 			start_y = y,
 			end_x = end_x,
 			end_y = end_y,
-			easing = outCubic,
+			end_transparency = 127,
+			easing = "outCubic",
 			remove = true,
 		}
 
@@ -428,7 +429,7 @@ function ScreenPress:init(game, gamestate, x, y)
 end
 
 function ScreenPress.create(game, gamestate, x, y)
-	return common.instance(ScreenPress, game, gamestate, x, y)
+	common.instance(ScreenPress, game, gamestate, x, y)
 end
 
 ScreenPress = common.class("ScreenPress", ScreenPress)
@@ -458,7 +459,7 @@ function ScreenDrag:init(game, gamestate, x, y)
 		end_scaling = 0,
 		remove = true,
 	}
-	game:_createImage(gamestate, trail_params)
+	return game:_createImage(gamestate, trail_params)
 end
 
 function ScreenDrag.create(game, gamestate, x, y)
