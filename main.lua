@@ -17,8 +17,8 @@ function love.load()
 	love.window.setMode(desktopWidth / 2, desktopHeight / 2, {resizable=true})
 
 	-- set icon
-	local icon = love.graphics.newImage("/images/unclickables/windowicon.png")
-	love.window.setIcon(icon:getData())
+	local icon = love.image.newImageData("/images/unclickables/windowicon.png")
+	love.window.setIcon(icon)
 end
 
 
