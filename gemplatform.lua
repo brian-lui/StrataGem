@@ -20,6 +20,7 @@ function GemPlatform:init(params)
 	}
 	self.width = self.pic.width
 	self.height = self.pic.height
+	self.REDNESS_PER_FRAME = 0.0625
 end
 
 function GemPlatform:create(params)
@@ -42,7 +43,7 @@ function GemPlatform:draw(params)
 	self.pic:draw(p)
 
 	if self.redness > 0 then
-		p.RGBTable = {255, 255, 255, self.redness}
+		p.RGBTable = {1, 1, 1, self.redness}
 		p.image = images.ui_platform_red
 		self.pic:draw(p)
 	end
@@ -89,13 +90,13 @@ function GemPlatform:update(dt)
 		destroyed_damage_particles / 3 - destroyed_healing_particles / 5) * 0.25
 
 	if displayed_damage >= loc then	-- fully red, full spin
-		self.redness = math.min(self.redness + 16, 255)
-		if self.redness == 255 and not self.glow_startframe then
+		self.redness = math.min(self.redness + self.REDNESS_PER_FRAME, 1)
+		if self.redness == 1 and not self.glow_startframe then
 			self.glow_startframe = game.frame
 		end
 		self:setSpin(0.02)
 	elseif displayed_damage > (loc - 1) and displayed_damage < loc then
-		self.redness = math.min(self.redness + 16, 200 * (displayed_damage % 1))
+		self.redness = math.min(self.redness + self.REDNESS_PER_FRAME, 0.8 * (displayed_damage % 1))
 		self:setSpin((displayed_damage % 1) * 0.02)	-- partial spin
 	else
 		self.redness = 0

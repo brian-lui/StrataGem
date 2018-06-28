@@ -150,7 +150,7 @@ function FoamDroplet.generate(game, owner, col, delay_frames)
 	if delay_frames then
 		p.transparency = 0
 		p:wait(delay_frames)
-		p:change{duration = 0, transparency = 255}
+		p:change{duration = 0, transparency = 1}
 	end
 
 	p:change{
@@ -254,7 +254,7 @@ function Spout.generate(game, owner, col)
 	local p = common.instance(Spout, game.particles, params)
 	p:change{duration = 0, transparency = 0}
 	p:wait(owner.FOAM_APPEAR_DURATION)
-	p:change{duration = 0, transparency = 255}
+	p:change{duration = 0, transparency = 1}
 
 	local dest_y = grid.y[grid.BASIN_START_ROW] - images.GEM_HEIGHT * 0.5 + spout_height * 0.5
 	p:change{
@@ -329,7 +329,7 @@ function Splatter.generate(game, owner, x, y, image, delay_frames)
 		if delay_frames then
 			p.transparency = 0
 			p:wait(delay_frames)
-			p:change{duration = 0, transparency = 255}
+			p:change{duration = 0, transparency = 1}
 		end
 
 		p:change{
@@ -453,7 +453,7 @@ function HealingCloud.generate(game, owner, col)
 		p:change{
 		duration = duration,
 		scaling = 1,
-		transparency = 255,
+		transparency = 1,
 		easing = "inQuad",
 	}
 	game.sound:newSFX(owner.sounds.raincloud)
@@ -481,7 +481,7 @@ function HealingCloud.generate(game, owner, col)
 			dust_p_type
 		)
 		dust.transparency = 0
-		dust:change{duration = DUST_FADE_IN_DURATION, transparency = 255}
+		dust:change{duration = DUST_FADE_IN_DURATION, transparency = 1}
 		dust:change{
 			duration = dust_tween_duration,
 			rotation = dust_rotation,
@@ -543,10 +543,10 @@ function HealingColumnAura.generate(game, owner, col, delay)
 	if delay then
 		p.transparency = 0
 		p:wait(delay)
-		p:change{duration = 0, transparency = 255}
+		p:change{duration = 0, transparency = 1}
 	end
 
-	p:change{duration = 8, transparency = 255}
+	p:change{duration = 8, transparency = 1}
 	p:wait(30)
 	p:change{duration = 8, transparency = 0, remove = true}
 

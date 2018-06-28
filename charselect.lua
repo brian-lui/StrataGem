@@ -139,7 +139,7 @@ function Charselect:_createCharacterButtons()
 			end_x = end_x,
 			start_y = 0.1 * i,
 			end_y = end_y,
-			start_transparency = 195,
+			start_transparency = 0.75,
 			easing = "inOutSine",
 			pushed_sfx = "buttoncharacter",
 			action = function()
@@ -265,7 +265,7 @@ function Charselect:_createUIButtons()
 		duration = 60,
 		end_x = stage.width * 0.6,
 		end_y = stage.height * 0.8,
-		transparency = 127,
+		transparency = 0.5,
 		easing = "linear",
 		action = function()
 			self.game_background = (self.game_background - 2) % game.background.total + 1
@@ -283,7 +283,7 @@ function Charselect:_createUIButtons()
 		duration = 60,
 		end_x = stage.width * 0.9,
 		end_y = stage.height * 0.8,
-		transparency = 127,
+		transparency = 0.5,
 		easing = "linear",
 		action = function()
 			self.game_background = self.game_background % game.background.total + 1
@@ -306,19 +306,19 @@ function Charselect:_createUIImages()
 		image = images.dummy,
 		x = stage.width * 0.275,
 		y = stage.height * 0.45,
-		transparency = 60,
+		transparency = 0.25,
 	}
 
 	self.displayed_character_shadow.reset = function(c)
 		c:change{
 			duration = 0,
 			x = stage.width * 0.275,
-			transparency = 60,
+			transparency = 0.25,
 		}
 		c:change{
 			duration = 6,
 			x = stage.width * 0.325,
-			transparency = 255,
+			transparency = 1,
 			easing = "outQuart",
 		}
 	end
@@ -331,19 +331,19 @@ function Charselect:_createUIImages()
 		image = images.dummy,
 		x = stage.width * 0.25,
 		y = stage.height * 0.45,
-		transparency = 60,
+		transparency = 0.25,
 	}
 
 	self.displayed_character.reset = function(c)
 		c:change{
 			duration = 0,
 			x = stage.width * 0.25,
-			transparency = 60,
+			transparency = 0.25,
 		}
 		c:change{
 			duration = 6,
 			x = stage.width * 0.3,
-			transparency = 255,
+			transparency = 1,
 			easing = "outQuart",
 		}
 	end
@@ -356,18 +356,18 @@ function Charselect:_createUIImages()
 		image = images.dummy,
 		x = stage.width * 0.272,
 		y = stage.height * 0.7,
-		transparency = 60,
+		transparency = 0.25,
 	}
 	self.displayed_character_text.reset = function(c)
 		c:change{
 			duration = 0,
 			y = stage.height * 0.7,
-			transparency = 60,
+			transparency = 0.25,
 		}
 		c:change{
 			duration = 6,
 			y = stage.height * 0.65,
-			transparency = 255,
+			transparency = 1,
 			easing = "outQuart",
 		}
 	end
@@ -380,7 +380,7 @@ function Charselect:_createUIImages()
 		duration = 60,
 		end_x = stage.width * 0.75,
 		end_y = stage.height * 0.8,
-		transparency = 127,
+		transparency = 0.5,
 		easing = "linear",
 	}
 
@@ -392,7 +392,7 @@ function Charselect:_createUIImages()
 		duration = 60,
 		end_x = stage.width * 0.75,
 		end_y = stage.height * 0.8,
-		transparency = 127,
+		transparency = 0.5,
 		easing = "linear",
 	}
 end

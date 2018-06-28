@@ -195,7 +195,7 @@ function gs_main:drawGems(params)
 
 	for gem, r in self.grid:gems() do
 		if self.current_phase == "Action" and r <= 6 then
-			gem:draw{RGBTable = {255, 255, 255, 192}}
+			gem:draw{RGBTable = {1, 1, 1, 0.75}}
 		else
 			gem:draw(params)
 		end

@@ -110,7 +110,7 @@ function DebugConsole:_drawGrid()
 	local grid = self.grid
 	love.graphics.push("all")
 		love.graphics.setFont(self.game.inits.FONT.MEDIUM)
-		love.graphics.setColor(0, 255, 0)
+		love.graphics.setColor(0, 1, 0)
 		for r = 1, grid.ROWS + 1 do
 			love.graphics.print(r, 200, grid.y[r])
 		end
@@ -162,7 +162,7 @@ function DebugConsole:_drawGemOwners()
 	for gem in grid:gems() do
 		love.graphics.push("all")
 			if gem.player_num == 1 then
-				love.graphics.setColor(100, 0, 200, 220)
+				love.graphics.setColor(0.4, 0, 0.8, 0.85)
 				love.graphics.polygon(
 					"fill",
 					gem.x - gem.width * 0.5, gem.y - gem.height * 0.5,
@@ -170,7 +170,7 @@ function DebugConsole:_drawGemOwners()
 					gem.x + gem.width * 0.3, gem.y
 				)
 			elseif gem.player_num == 2 then
-				love.graphics.setColor(255, 153, 51, 255)
+				love.graphics.setColor(1, 0.6, 0.2, 1)
 				love.graphics.polygon(
 					"fill",
 					gem.x + gem.width * 0.5, gem.y - gem.height * 0.5,
@@ -178,7 +178,7 @@ function DebugConsole:_drawGemOwners()
 					gem.x - gem.width * 0.3, gem.y
 				)
 			elseif gem.player_num == 3 then
-				love.graphics.setColor(160, 160, 160, 255)
+				love.graphics.setColor(0.6, 0.6, 0.6, 1)
 				love.graphics.rectangle(
 					"fill",
 					gem.x - gem.width * 0.5,
@@ -189,9 +189,9 @@ function DebugConsole:_drawGemOwners()
 			end
 			if gem.flag_match_originator then
 				if gem.player_num == 1 then
-					love.graphics.setColor(255, 0, 255, 255)
+					love.graphics.setColor(1, 0, 1, 1)
 				elseif gem.player_num == 2 then
-					love.graphics.setColor(255, 255, 0, 255)
+					love.graphics.setColor(1, 1, 0, 1)
 				end
 				love.graphics.circle("fill", gem.x, gem.y, 10)
 			end
@@ -201,7 +201,7 @@ function DebugConsole:_drawGemOwners()
 	for _, gem in pairs(particles.allParticles.GemImage) do
 		love.graphics.push("all")
 			if gem.player_num == 1 then
-				love.graphics.setColor(100, 0, 200, 220)
+				love.graphics.setColor(0.4, 0, 0.8, 0.85)
 				love.graphics.polygon(
 					"fill",
 					gem.x - gem.width * 0.5, gem.y - gem.height * 0.5,
@@ -209,7 +209,7 @@ function DebugConsole:_drawGemOwners()
 					gem.x + gem.width * 0.3, gem.y
 				)
 			elseif gem.player_num == 2 then
-				love.graphics.setColor(255, 153, 51, 255)
+				love.graphics.setColor(1, 0.6, 0.2, 1)
 				love.graphics.polygon(
 					"fill",
 					gem.x + gem.width * 0.5, gem.y - gem.height * 0.5,

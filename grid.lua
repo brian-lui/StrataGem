@@ -504,7 +504,7 @@ function Grid:generate1by1(column, banned_color1, banned_color2)
 
 	new_gem.transparency = 0
 	new_gem:wait(self.game.GEM_EXPLODE_FRAMES)
-	new_gem:change{duration = 0, transparency = 255}
+	new_gem:change{duration = 0, transparency = 1}
 
 	self[row][column].gem = new_gem
 	return make_color

@@ -766,7 +766,7 @@ function Game:_createButton(gamestate, params)
 		name = params.name,
 		x = params.start_x or params.end_x,
 		y = params.start_y or params.end_y,
-		transparency = params.start_transparency or 255,
+		transparency = params.start_transparency or 1,
 		image = params.image,
 		container = params.container or gamestate.ui.clickable,
 		force_max_alpha = params.force_max_alpha,
@@ -776,7 +776,7 @@ function Game:_createButton(gamestate, params)
 		duration = params.duration,
 		x = params.end_x,
 		y = params.end_y,
-		transparency = params.end_transparency or 255,
+		transparency = params.end_transparency or 1,
 		easing = params.easing or "linear",
 		exit_func = params.exit_func,
 	}
@@ -809,7 +809,7 @@ function Game:_createImage(gamestate, params)
 		name = params.name,
 		x = params.start_x or params.end_x,
 		y = params.start_y or params.end_y,
-		transparency = params.start_transparency or 255,
+		transparency = params.start_transparency or 1,
 		scaling = params.start_scaling or 1,
 		image = params.image,
 		counter = params.counter,
@@ -821,7 +821,7 @@ function Game:_createImage(gamestate, params)
 		duration = params.duration,
 		x = params.end_x,
 		y = params.end_y,
-		transparency = params.end_transparency or 255,
+		transparency = params.end_transparency or 1,
 		scaling = params.end_scaling or 1,
 		easing = params.easing,
 		remove = params.remove,
@@ -839,11 +839,11 @@ function Game:_openSettingsMenu(gamestate)
 	self:darkenScreen()
 	static.settings_text:change{
 		duration = 15,
-		transparency = 255,
+		transparency = 1,
 	}
 	static.settingsframe:change{
 		duration = 15,
-		transparency = 255,
+		transparency = 1,
 	}
 	clickable.open_quit_menu:change{
 		duration = 0,
@@ -851,7 +851,7 @@ function Game:_openSettingsMenu(gamestate)
 	}
 	clickable.open_quit_menu:change{
 		duration = 15,
-		transparency = 255
+		transparency = 1
 	}
 	clickable.close_settings_menu:change{
 		duration = 0,
@@ -859,7 +859,7 @@ function Game:_openSettingsMenu(gamestate)
 	}
 	clickable.close_settings_menu:change{
 		duration = 15,
-		transparency = 255,
+		transparency = 1,
 	}
 end
 
@@ -877,7 +877,7 @@ function Game:_openQuitConfirmMenu(gamestate)
 	}
 	clickable.confirm_quit:change{
 		duration = 15,
-		transparency = 255,
+		transparency = 1,
 	}
 	clickable.close_quit_menu:change{
 		duration = 0,
@@ -885,7 +885,7 @@ function Game:_openQuitConfirmMenu(gamestate)
 	}
 	clickable.close_quit_menu:change{
 		duration = 15,
-		transparency = 255,
+		transparency = 1,
 	}
 	static.settings_text:change{
 		duration = 10,
@@ -893,7 +893,7 @@ function Game:_openQuitConfirmMenu(gamestate)
 	}
 	static.sure_to_quit:change{
 		duration = 15,
-		transparency = 255,
+		transparency = 1,
 	}
 	clickable.open_quit_menu:change{
 		duration = 0,
@@ -927,7 +927,7 @@ function Game:_closeQuitConfirmMenu(gamestate)
 	}
 	static.settings_text:change{
 		duration = 15,
-		transparency = 255,
+		transparency = 1,
 	}
 	static.sure_to_quit:change{
 		duration = 10,
@@ -939,7 +939,7 @@ function Game:_closeQuitConfirmMenu(gamestate)
 	}
 	clickable.open_quit_menu:change{
 		duration = 15,
-		transparency = 255,
+		transparency = 1,
 	}
 	clickable.close_settings_menu:change{
 		duration = 0,
@@ -947,7 +947,7 @@ function Game:_closeQuitConfirmMenu(gamestate)
 	}
 	clickable.close_settings_menu:change{
 		duration = 15,
-		transparency = 255,
+		transparency = 1,
 	}
 end
 

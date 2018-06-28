@@ -100,7 +100,7 @@ function Animations:create(tbl, player)
 		y = 0, -- recalculated every frame, leave this alone
 		angle = 0, -- recalculated every frame, leave this alone
 		scaling = 1,
-		transparency = 255,
+		transparency = 1,
 		priority = self.priority,
 		owner = player,
 		is_child = false,
@@ -144,7 +144,7 @@ function Animations:drawAll()
 end
 
 function Animations:drawTracers()
-	local colors = {{255, 0, 0}, {0, 255, 0}, {0, 0, 255}, {255, 255, 0}, {255, 0, 255}, {0, 255, 255}}
+	local colors = {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}, {1, 1, 0}, {1, 0, 1}, {0, 1, 1}}
 	local count = 1
 	love.graphics.push("all")
 		love.graphics.setPointSize(3 * window.scale)

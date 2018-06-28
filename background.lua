@@ -373,7 +373,7 @@ function Colors:_newColor(image)
 		image = image,
 		transparency = 0,
 	}
-	self.current_color:change{duration = 90, transparency = 255}
+	self.current_color:change{duration = 90, transparency = 1}
 end
 
 function Colors:update(dt)

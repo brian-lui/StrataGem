@@ -225,7 +225,7 @@ function ColorWord.generate(game, owner, x, y, color, delay)
 	if delay then
 		p:change{transparency = 0}
 		p:wait(delay)
-		p:change{duration = 0, transparency = 255}
+		p:change{duration = 0, transparency = 1}
 	end
 	p:change{
 		duration = 60,

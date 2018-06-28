@@ -135,7 +135,7 @@ end
 -- custom function to handle rotation around pivot
 function Gem:draw(params)
 	params = params or {}
-	local rgbt = params.RGBTable or {255, 255, 255, self.transparency or 255}
+	local rgbt = params.RGBTable or {1, 1, 1, self.transparency or 1}
 	if params.darkened and not self.force_max_alpha then
 		rgbt[1] = rgbt[1] * params.darkened
 		rgbt[2] = rgbt[2] * params.darkened
@@ -153,7 +153,7 @@ function Gem:draw(params)
 		love.graphics.draw(self.image, self.quad)
 
 		if self.new_image then
-			local new_image_rgbt = {rgbt[1], rgbt[2], rgbt[3], self.new_image.transparency or 255}
+			local new_image_rgbt = {rgbt[1], rgbt[2], rgbt[3], self.new_image.transparency or 1}
 			love.graphics.setColor(new_image_rgbt)
 			love.graphics.draw(self.new_image.image, self.quad)
 		end

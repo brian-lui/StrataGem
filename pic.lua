@@ -16,7 +16,7 @@ function Pic:init(game, tbl)
 	self.rotation = 0
 	self.speed_rotation = 0
 	self.scaling = 1
-	self.transparency = 255
+	self.transparency = 1
 
 	for k, v in pairs(tbl) do
 		self[k] = v
@@ -84,14 +84,14 @@ function Pic:draw(params)
 	love.graphics.push("all")
 		local x_scale = params.scale or self.x_scaling or self.scaling
 		local y_scale = params.scale or self.y_scaling or self.scaling
-		local rgbt = self.RGB or {255, 255, 255}
-		rgbt[4] = self.transparency or 255
+		local rgbt = self.RGB or {1, 1, 1}
+		rgbt[4] = self.transparency or 1
 
 		if params.darkened and not self.force_max_alpha then
 			love.graphics.setColor(
-				params.darkened * 255,
-				params.darkened * 255,
-				params.darkened * 255
+				params.darkened,
+				params.darkened,
+				params.darkened
 			)
 		elseif params.RGBTable then
 			love.graphics.setColor(params.RGBTable)
@@ -185,7 +185,7 @@ function Pic:newImageFadeIn(image, frames, delay)
 		self.new_image = {
 			image = image,
 			transparency = 0,
-			opaque_speed = 255 / frames,
+			opaque_speed = 1 / frames,
 			delay = delay or 0,
 		}
 	end
@@ -478,7 +478,7 @@ function Pic:update(dt)
 			self.new_image.delay = math.max(self.new_image.delay - 1, 0)
 		else
 			self.new_image.transparency = self.new_image.transparency + self.new_image.opaque_speed
-			if self.new_image.transparency >= 255 then
+			if self.new_image.transparency >= 1 then
 				self.image = self.new_image.image
 				self.new_image = nil
 				if self.new_image_queue then
@@ -487,7 +487,7 @@ function Pic:update(dt)
 						self.new_image = {
 							image = new_image.image,
 							transparency = 0,
-							opaque_speed = 255 / new_image.frames,
+							opaque_speed = 1 / new_image.frames,
 							delay = new_image.delay,
 						}
 					else

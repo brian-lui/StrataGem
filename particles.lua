@@ -208,7 +208,7 @@ function DamageParticle.generate(game, gem, delay_frames, force_max_alpha)
 		if delay_frames then
 			p:change{transparency = 0}
 			p:wait(delay_frames)
-			p:change{duration = 0, transparency = 255}
+			p:change{duration = 0, transparency = 1}
 		end
 
 		if drop_duration == 0 then
@@ -297,7 +297,7 @@ function DamageTrailParticle.generate(game, trail, delay_frames, force_max_alpha
 	if delay_frames then
 		p:change{transparency = 0}
 		p:wait(delay_frames)
-		p:change{duration = 0, transparency = 255}
+		p:change{duration = 0, transparency = 1}
 	 end
 
 	if trail.drop_duration then
@@ -379,7 +379,7 @@ function SuperParticle.generate(game, gem, num_particles, delay_frames, force_ma
 		if delay_frames then
 			p:change{transparency = 0}
 			p:wait(delay_frames)
-			p:change{duration = 0, transparency = 255}
+			p:change{duration = 0, transparency = 1}
 		 end
 
 		-- move particle
@@ -461,7 +461,7 @@ function HealingParticle.generate(params)
 		if delay then
 			p:change{transparency = 0}
 			p:wait(delay)
-			p:change{duration = 0, transparency = 255}
+			p:change{duration = 0, transparency = 1}
 		end
 		p:change{
 			duration = duration,
@@ -509,7 +509,7 @@ function HealingParticle.generateTrail(params)
 		trail.scaling = 1.25 - 0.25 * i
 		trail:change{transparency = 0}
 		trail:wait(delay + i * 2)
-		trail:change{duration = 0, transparency = 255}
+		trail:change{duration = 0, transparency = 1}
 		trail:change{duration = duration, curve = curve, remove = true}
 	end
 end
@@ -537,7 +537,7 @@ function HealingParticle.generateTwinkle(game, platform, delay_frames)
 		)
 		p.scaling, p.transparency = 0, 0
 		p:wait(delay_frames + (i - 1) * 12)
-		p:change{duration = 0, transparency = 255}
+		p:change{duration = 0, transparency = 1}
 		p:change{duration = 30, scaling = 1}
 		p:change{duration = 30, scaling = 0, remove = true}
 	end
@@ -587,7 +587,7 @@ function GarbageParticles.generate(game, gem, delay_frames)
 		if delay_frames then
 			p:change{transparency = 0}
 			p:wait(delay_frames)
-			p:change{duration = 0, transparency = 255}
+			p:change{duration = 0, transparency = 1}
 		end
 		p:change{
 			duration = duration,
@@ -668,7 +668,7 @@ function PopParticles.generate(params)
 	if params.delay_frames then
 		p:change{transparency = 0}
 		p:wait(params.delay_frames)
-		p:change{duration = 0, transparency = 255}
+		p:change{duration = 0, transparency = 1}
 	end
 
 	if params.glow_duration then p:wait(params.glow_duration) end
@@ -690,7 +690,7 @@ function PopParticles.generateReversePop(params)
 
 	p:change{duration = 0, transparency = 0, scaling = 4}
 	if params.delay_frames then p:wait(params.delay_frames) end
-	p:change{duration = 30, transparency = 255, scaling = 1, remove = true}
+	p:change{duration = 30, transparency = 1, scaling = 1, remove = true}
 end
 
 PopParticles = common.class("PopParticles", PopParticles, Pic)
@@ -764,10 +764,10 @@ function ExplodingGem.generate(params)
 			duration = explode_frames,
 			scaling = 2,
 			easing = "inBounce",
-			transparency = 255,
+			transparency = 1,
 		}
 	else
-		p:change{duration = explode_frames, transparency = 255}
+		p:change{duration = explode_frames, transparency = 1}
 	end
 
 	if params.glow_duration then p:wait(params.glow_duration) end
@@ -794,13 +794,13 @@ function ExplodingGem.generateReverseExplode(params)
 
 	local p = common.instance(
 		ExplodingGem,
-		{manager = game.particles, x = x, y = y, image = image, transparency = 255}
+		{manager = game.particles, x = x, y = y, image = image, transparency = 1}
 	)
 
 	if params.delay_frames then
 		p:change{transparency = 0}
 		p:wait(params.delay_frames)
-		p:change{duration = 0, transparency = 255}
+		p:change{duration = 0, transparency = 1}
 	end
 
 	p:change{duration = duration, transparency = 0, remove = true}
@@ -844,12 +844,12 @@ function ExplodingPlatform.generate(game, platform, delay_frames)
 			y,
 			todraw
 		)
-		p.transparency = 510
+		p.transparency = 2
 
 		if delay_frames then
 			p:change{transparency = 0}
 			p:wait(delay_frames)
-			p:change{duration = 0, transparency = 510}
+			p:change{duration = 0, transparency = 2}
 		end
 
 		local function y_func()
@@ -1140,7 +1140,7 @@ function Dust.generateBigFountain(params)
 		if params.delay_frames then
 			p:change{transparency = 0}
 			p:wait(params.delay_frames)
-			p:change{duration = 0, transparency = 255}
+			p:change{duration = 0, transparency = 1}
 		end
 
 		p:change{
@@ -1196,7 +1196,7 @@ function Dust.generateStarFountain(params)
 		if delay then
 			p:change{transparency = 0}
 			p:wait(delay)
-			p:change{duration = 0, transparency = 255}
+			p:change{duration = 0, transparency = 1}
 		end
 
 		p:change{
@@ -1231,7 +1231,7 @@ function Dust.generateStarFountain(params)
 			if delay then
 				trail:change{transparency = 0}
 				trail:wait(delay)
-				trail:change{duration = 0, transparency = 255}
+				trail:change{duration = 0, transparency = 1}
 			end
 			trail:wait(frames * 2)
 			trail:change{
@@ -1326,7 +1326,7 @@ function Dust.generateGarbageCircle(params)
 		if params.delay_frames then p:wait(params.delay_frames) end
 		p:change{
 			duration = fade_in_duration,
-			transparency = 255,
+			transparency = 1,
 		}
 		p:change{
 			duration = duration,
@@ -1379,7 +1379,7 @@ function PlacedGem:init(manager, gem, y, row, place_type)
 	Pic.init(
 		self,
 		manager.game,
-		{x = gem.x, y = y, image = gem.image, transparency = 192}
+		{x = gem.x, y = y, image = gem.image, transparency = 0.75}
 	)
 	local counter = self.game.inits.ID.particle
 	manager.allParticles.PlacedGem[counter] = self
@@ -1479,7 +1479,7 @@ function GemImage.generate(params)
 	if params.delay_frames then
 		p:change{transparency = 0}
 		p:wait(params.delay_frames)
-		p:change{duration = 0, transparency = 255}
+		p:change{duration = 0, transparency = 1}
 	end
 
 	if params.shake then
@@ -1527,7 +1527,7 @@ function WordEffects.generateDoublecastCloud(game, gem1, gem2, is_horizontal)
 		todraw
 	)
 	p.transparency = 0
-	p:change{duration = 20, transparency = 255, easing = "inCubic"}
+	p:change{duration = 20, transparency = 1, easing = "inCubic"}
 	p.update = function(_self, dt)
 		Pic.update(_self, dt)
 		_self.x, _self.y = (gem1.x + gem2.x) * 0.5, (gem1.y + gem2.y) * 0.5
@@ -1549,7 +1549,7 @@ function WordEffects.generateRushCloud(game, gem1, gem2, is_horizontal)
 	p.transparency = 0
 	p:change{
 		duration = 20,
-		transparency = 255,
+		transparency = 1,
 		easing = "inCubic",
 	}
 	p:change{
@@ -1622,7 +1622,7 @@ function WordEffects.generateGoStar(game, x, y, x_vel, y_vel, delay)
 	if delay then
 		p:change{transparency = 0}
 		p:wait(delay)
-		p:change{duration = 0, transparency = 255}
+		p:change{duration = 0, transparency = 1}
 	end
 	p:change{duration = 120, x = x + x_vel, y = y_func, remove = true}
 end
@@ -1716,13 +1716,13 @@ function Words.generateReady(game, delay)
 	if delay then
 		p:change{transparency = 0}
 		p:wait(delay)
-		p:change{duration = 0, transparency = 255}
+		p:change{duration = 0, transparency = 1}
 	end
 
 	p:change{
 		duration = 60,
 		x = 0.5 * stage.width,
-		transparency = 510,
+		transparency = 2,
 		during = {{5, 0, generate_big}, {2, 0, generate_small}},
 		easing = "outElastic",
 	}
@@ -1748,7 +1748,7 @@ function Words.generateGo(game, delay)
 	if delay then
 		p:change{transparency = 0}
 		p:wait(delay)
-		p:change{duration = 0, transparency = 255}
+		p:change{duration = 0, transparency = 1}
 	end
 
 	p.scaling = 0.1
@@ -1831,7 +1831,7 @@ function Words.generateNoRush(game, column)
 				}
 				p:change{
 					duration = 15,
-					transparency = 255,
+					transparency = 1,
 					exit_func = {blinkCheck, blink},
 				}
 			else
@@ -1851,7 +1851,7 @@ function Words.generateNoRush(game, column)
 		}
 		p:change{
 			duration = 15,
-			transparency = 255,
+			transparency = 1,
 			exit_func = {blinkCheck, blink},
 		}
 	end
@@ -1918,7 +1918,7 @@ function SuperFreezeEffects.generate(game, player, shadow_image, action_image, f
 	if delay_frames then
 		shadow:change{transparency = 0}
 		shadow:wait(delay_frames)
-		shadow:change{duration = 0, transparency = 255}
+		shadow:change{duration = 0, transparency = 1}
 	end
 	shadow:change{
 		duration = 30,
@@ -1939,7 +1939,7 @@ function SuperFreezeEffects.generate(game, player, shadow_image, action_image, f
 	if delay_frames then
 		portrait:change{transparency = 0}
 		portrait:wait(delay_frames)
-		portrait:change{duration = 0, transparency = 255}
+		portrait:change{duration = 0, transparency = 1}
 	end
 	portrait:change{
 		duration = 30,
@@ -1959,7 +1959,7 @@ function SuperFreezeEffects.generate(game, player, shadow_image, action_image, f
 	if delay_frames then
 		top_fuzz:change{transparency = 0}
 		top_fuzz:wait(delay_frames)
-		top_fuzz:change{duration = 0, transparency = 255}
+		top_fuzz:change{duration = 0, transparency = 1}
 	end
 	top_fuzz:change{duration = 21, y = 0, easing = "outQuart"}
 	top_fuzz:wait(40)
@@ -1975,7 +1975,7 @@ function SuperFreezeEffects.generate(game, player, shadow_image, action_image, f
 	if delay_frames then
 		bottom_fuzz:change{transparency = 0}
 		bottom_fuzz:wait(delay_frames)
-		bottom_fuzz:change{duration = 0, transparency = 255}
+		bottom_fuzz:change{duration = 0, transparency = 1}
 	end
 	bottom_fuzz:change{duration = 21, y = stage.height, easing = "outQuart"}
 	bottom_fuzz:wait(40)

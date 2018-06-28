@@ -152,7 +152,7 @@ function SmallFire.generateSmallFire(game, owner, col, delay, turns_remain)
 	if delay then
 		p:change{duration = 0, transparency = 0}
 		p:wait(delay)
-		p:change{duration = 0, transparency = 255}
+		p:change{duration = 0, transparency = 1}
 	end
 
 	p:change{duration = 15, y = bounce_top_y, scaling = 0.5}
@@ -291,7 +291,7 @@ function Boom._generateBoom(game, owner, x, y, delay_frames)
 
 		p.transparency = 0
 		p:wait(delay_frames + (i - 1)  * 4)
-		p:change{duration = 0, transparency = 255}
+		p:change{duration = 0, transparency = 1}
 		p:change{
 			duration = 60,
 			x = x_dest1,

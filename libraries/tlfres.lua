@@ -63,7 +63,7 @@ function TLfres.beginRendering(width, height, centered)
    return scale
 end
  
-local _black = {0, 0, 0, 255}
+local _black = {0, 0, 0, 1}
  
 -- Pops out of the transform; if letterboxColor is true, draws black letterbox
 -- bars. letterboxColor can also be any {r, g, b, a} table.

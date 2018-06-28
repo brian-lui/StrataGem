@@ -166,7 +166,7 @@ end
 
 function Animation:fadeIn(duration, easing)
 	assert(type(duration) == "number", "duration is not a number")
-	newTween(self, duration, "transparency", 255, easing, "FadeIn")
+	newTween(self, duration, "transparency", 1, easing, "FadeIn")
 end
 
 return common.class("Animation", Animation, Pic)

@@ -16,11 +16,11 @@ function Timer:init(game)
 		return math.max(1 / (t * 2 + 0.4), 1)
 	end
 	self.text_transparency = function(t)
-		return math.min(255 * 2.5 * t, 255)
+		return math.min(2.5 * t, 1)
 	end
 	self.time_remaining_int = 0
 	self.text_multiplier = 2 -- how much to speed up relative to a real second
-	self.FADE_SPEED = 15 -- transparency/frame to fade out at timer end
+	self.FADE_SPEED = 1/16 -- transparency/frame to fade out at timer end
 	self.timerbase = Pic:create{
 		game = game,
 		x = stage.timer.x,
@@ -52,7 +52,7 @@ function Timer:update(dt)
 	if phase.time_to_next == 0 then -- fade out
 		self.timerbar.transparency = math.max(self.timerbar.transparency - self.FADE_SPEED, 0)
 	else -- fade in
-		self.timerbar.transparency = math.min(self.timerbar.transparency + self.FADE_SPEED, 255)
+		self.timerbar.transparency = math.min(self.timerbar.transparency + self.FADE_SPEED, 1)
 	end
 	self.timerbase.transparency = self.timerbar.transparency
 
@@ -159,20 +159,20 @@ function Burst:update(dt)
 	-- full segments
 	for i = 1, self.SEGMENTS do
 		if full_segs >= i then
-			self.burst_block[i].transparency = 255
+			self.burst_block[i].transparency = 1
 		else
 			self.burst_block[i].transparency = 0
 		end
 
 		if full_segs < i and full_segs + 1 > i then
-			self.burst_partial[i].transparency = 255
+			self.burst_partial[i].transparency = 1
 		else
 			self.burst_partial[i].transparency = 0
 		end
 	end
 
 	-- glow
-	local glow_amount = math.sin(self.t * math.pi * 2 / self.GLOW_PERIOD) * 127.5 + 127.5
+	local glow_amount = math.sin(self.t * math.pi * 2 / self.GLOW_PERIOD) * 0.5 + 0.5
 	for i = 1, self.SEGMENTS do
 		self.burst_glow[i].transparency = full_segs_int == i and glow_amount or 0
 	end
@@ -298,12 +298,12 @@ function Super:action()
 		if is_supering then
 			word:change{
 				duration = 0,
-				transparency = 128,
+				transparency = 0.5,
 				scaling = 2,
 			}
 			word:change{
 				duration = 15,
-				transparency = 255,
+				transparency = 1,
 				scaling = 1,
 				easing = "inCubic",
 			}
@@ -340,9 +340,9 @@ function Super:update(dt)
 	)
 
 	if character.is_supering then
-		glow.transparency = 255
+		glow.transparency = 1
 	elseif character.mp >= character.SUPER_COST then
-		glow.transparency = math.sin(self.t * math.pi * 2 / self.GLOW_PERIOD) * 127.5 + 127.5
+		glow.transparency = math.sin(self.t * math.pi * 2 / self.GLOW_PERIOD) * 0.5 + 0.5
 	else
 		glow.transparency = 0
 		word.transparency = 0
@@ -419,7 +419,7 @@ function ScreenPress:init(game, gamestate, x, y)
 			start_y = y,
 			end_x = end_x,
 			end_y = end_y,
-			end_transparency = 127,
+			end_transparency = 0.5,
 			easing = "outCubic",
 			remove = true,
 		}
@@ -511,7 +511,7 @@ local function drawUnderGemShadow(self, piece)
 		piece.gems[i]:draw{
 			pivot_x = gem_shadow_x,
 			pivot_y = gem_shadow_y,
-			RGBTable = {0, 0, 0, 24},
+			RGBTable = {0, 0, 0, 0.1},
 		}
 	end
 end
@@ -540,7 +540,7 @@ local function drawPlacementShadow(self, piece, shift)
 			piece.gems[i]:draw{
 				pivot_x = show[i].x,
 				pivot_y = show[i].y,
-				RGBTable = {0, 0, 0, 128},
+				RGBTable = {0, 0, 0, 0.5},
 			}
 		end
 	end
@@ -562,7 +562,7 @@ local function drawDestinationShadow(self, piece, shift, account_for_doublecast)
 			local shift_needed = first_empty_row - (5 - 1)
 			local row = gem.row + shift_needed
 			gem:draw{
-				RGBTable = {255, 255, 255, 160},
+				RGBTable = {1, 1, 1, 0.6},
 				displace_y = self.game.grid.y[row] - gem.y,
 			}
 		end
@@ -576,7 +576,7 @@ local function drawDestinationShadow(self, piece, shift, account_for_doublecast)
 			piece.gems[i]:draw{
 				pivot_x = toshow[i].x,
 				pivot_y = toshow[i].y,
-				RGBTable = {255, 255, 255, 160},
+				RGBTable = {1, 1, 1, 0.6},
 			}
 		end
 	end
