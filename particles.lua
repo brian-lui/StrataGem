@@ -704,7 +704,11 @@ function ExplodingGem:init(params)
 	local x, y, image, transparency
 
 	if gem then
-		if gem.player_num == 3 then
+		if gem.player_num == 0 or gem.player_num == 3 then
+			if gem.player_num == 0 then
+				print("Warning! player_num 0 gem destroyed!")
+			end
+
 			if isStandardColor(gem.color) then
 				image = images["gems_grey_" .. gem.color]
 			else
@@ -772,7 +776,7 @@ function ExplodingGem.generate(params)
 
 	if params.glow_duration then p:wait(params.glow_duration) end
 
-	if gem.player_num == 3 then
+	if gem.player_num == 0 or gem.player_num == 3 then
 		p:change{duration = fade_frames, remove = true}
 	else
 		p:change{
