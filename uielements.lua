@@ -45,7 +45,7 @@ function Timer:update(dt)
 	local game = self.game
 	local phase = game.phase
 	-- set percentage of timer to show
-	local w = (phase.time_to_next / phase.INIT_TIME_TO_NEXT) * self.timerbar.width
+	local w = (phase.time_to_next / phase.INIT_ACTION_TIME) * self.timerbar.width
 	local x_offset = (self.timerbar.width - w) * 0.5
 	self.timerbar:setQuad(x_offset, 0, w, self.timerbar.height)
 

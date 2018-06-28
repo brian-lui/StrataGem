@@ -86,7 +86,6 @@ end
 function Game:reset()
 	self.current_phase = "Intro"
 	self.turn = 1
-	self.phase.time_to_next = self.phase.INIT_TIME_TO_NEXT
 	self.netplay_wait = 0
 	self.inputs_frozen = false
 	self.scoring_combo = 0
@@ -106,7 +105,6 @@ function Game:reset()
 	self.sound:reset()
 	self.grid:reset()
 	self.particles:reset()
-	self.phase:reset()
 	self.uielements:clearScreenUIColor()
 end
 
@@ -176,6 +174,8 @@ function Game:start(params)
 	end
 
 	self.current_background_name = params.background
+
+	self.phase:reset()
 	
 	self:switchState("gs_main")
 end
@@ -314,7 +314,7 @@ end
 function Game:newTurn()
 	self.turn = self.turn + 1
 	self.inputs_frozen = false
-	self.phase.time_to_next = self.phase.INIT_TIME_TO_NEXT
+	self.phase.time_to_next = self.phase.INIT_ACTION_TIME
 end
 
 

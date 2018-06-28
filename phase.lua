@@ -7,6 +7,7 @@ local Phase = {}
 function Phase:init(game)
 	self.game = game
 	self.INIT_TIME_TO_NEXT = 430 -- frames in each action phase
+	self.INIT_TIME_TO_NEXT_REPLAY = 120 -- frames in action phase in replay mode
 	self.PLATFORM_SPIN_DELAY = 30 -- frames to animate platforms exploding
 	self.GAMEOVER_DELAY = 180 -- how long to stay on gameover screen
 	self.NETPLAY_DELTA_WAIT = 360 -- frames to wait for delta before lost connection
@@ -15,7 +16,6 @@ end
 function Phase:reset()
 	self.next_phase = nil
 	self.frames_until_next_phase = 0
-	self.time_to_next = self.INIT_TIME_TO_NEXT
 	self.no_rush = {} --whether no_rush is eligible for animation
 	for i = 1, self.game.grid.COLUMNS do self.no_rush[i] = true end
 	self.matched_this_round = {false, false} -- p1 made a match, p2 made a match
@@ -23,6 +23,13 @@ function Phase:reset()
 	self.force_minimum_1_piece = true -- get at least 1 piece per turn
 	self.update_gravity_during_pause = false
 	self.damage_particle_duration = 0 -- for ResolvedMatches phase
+	if self.game.type == "Replay" then
+		self.INIT_ACTION_TIME = self.INIT_TIME_TO_NEXT_REPLAY
+	else
+		self.INIT_ACTION_TIME = self.INIT_TIME_TO_NEXT
+	end
+	self.time_to_next = self.INIT_ACTION_TIME
+	print("time to next", self.time_to_next, self.game.type)
 end
 
 -------------------------------------------------------------------------------
@@ -85,7 +92,6 @@ function Phase:action(dt)
 
 	for player in game:players() do player:actionPhase(dt) end
 	self.game.uielements:update()
-
 	self.time_to_next = self.time_to_next - 1
 	if game.type == "Singleplayer" then
 		if not ai.finished then ai:evaluateActions(game.them_player) end
