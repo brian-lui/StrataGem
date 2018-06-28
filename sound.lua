@@ -111,8 +111,10 @@ function SoundObject.generate(game, sound_name, is_bgm, no_repeats)
 			if no_repeats then return end
 			start_frame = previous_play + 2
 		end
+
+		local source_type = is_bgm and "stream" or "static"
 		local params = {
-			source = love.audio.newSource(s.filename),
+			source = love.audio.newSource(s.filename, source_type),
 			sound_name = sound_name,
 			start_frame = start_frame,
 			is_bgm = is_bgm,
@@ -142,7 +144,7 @@ function SoundObject:stop()
 end
 
 function SoundObject:isStopped()
-	return self.source:isStopped()
+	return not self.source:isPlaying()
 end
 
 function SoundObject:getVolume()
