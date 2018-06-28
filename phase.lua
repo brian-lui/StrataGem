@@ -18,7 +18,7 @@ function Phase:reset()
 	self.frames_until_next_phase = 0
 	self.no_rush = {} --whether no_rush is eligible for animation
 	for i = 1, self.game.grid.COLUMNS do self.no_rush[i] = true end
-	self.matched_this_round = {false, false} -- p1 made a match, p2 made a match
+	self.last_match_round = {0, 0} -- for p1, p2
 	self.garbage_this_round = 0
 	self.force_minimum_1_piece = true -- get at least 1 piece per turn
 	self.update_gravity_during_pause = false
@@ -288,7 +288,10 @@ function Phase:destroyMatchedGems(dt)
 	local game = self.game
 	local grid = game.grid
 
-	self.matched_this_round = grid:checkMatchedThisTurn() -- which players made a match
+	local p1match, p2match = grid:checkMatchedThisRound()
+	if p1match then self.last_match_round[1] = game.scoring_combo + 1 end
+	if p2match then self.last_match_round[2] = game.scoring_combo + 1 end
+
 	local explode_delay, particle_duration = grid:destroyMatchedGems(game.scoring_combo)
 
 	local delay = 0
@@ -315,8 +318,12 @@ function Phase:resolvingMatches(dt)
 	self:setPause(delay)
 
 	game.scoring_combo = game.scoring_combo + 1
-	if not self.matched_this_round[1] then grid:removeAllGemOwners(1) end
-	if not self.matched_this_round[2] then grid:removeAllGemOwners(2) end
+	if self.last_match_round[1] < game.scoring_combo then
+		grid:removeAllGemOwners(1)
+	end
+	if self.last_match_round[2] < game.scoring_combo then
+		grid:removeAllGemOwners(2)
+	end
 	grid:updateGrid()
 	self:activatePause("DuringGravity")
 end
@@ -478,7 +485,7 @@ function Phase:cleanup(dt)
 	game.ai:newTurn()
 	self.garbage_this_round = 0
 	self.force_minimum_1_piece = true
-	self.matched_this_round = {false, false}
+	self.last_match_round = {0, 0}
 	p1.dropped_piece, p2.dropped_piece = nil, nil
 	p1.played_pieces, p2.played_pieces = {}, {}
 	game.finished_getting_pieces = false

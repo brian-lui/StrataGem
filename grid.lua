@@ -347,8 +347,8 @@ function Grid:flagMatchedGems()
 						on the same turn
 						--]]
 						--[[
-						local ignore_p1 = not self.game.phase.matched_this_round[1]
-						local ignore_p2 = not self.game.phase.matched_this_round[2]
+						local ignore_p1 = self.game.phase.last_match_round[1] < self.game.scoring_combo
+						local ignore_p2 = self.game.phase.last_match_round[2] < self.game.scoring_combo
 						if ignore_p1 and not ignore_p2 then
 							if gem.player_num == 2 or gem.player_num == 3 then this_match_p2 = true end
 						elseif ignore_p2 and not ignore_p1 then
@@ -787,7 +787,7 @@ function Grid:updateRushPriority()
 end
 
 -- Which players made a match this turn
-function Grid:checkMatchedThisTurn()
+function Grid:checkMatchedThisRound()
 	local gem_table = self:getMatchedGems()
 	local matched = {false, false}
 	for i = 1, #gem_table do
