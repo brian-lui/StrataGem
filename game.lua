@@ -185,7 +185,7 @@ function Game:setSaveFileLocation()
 	local index = 1
 	local padded_index = lpad(tostring(index))
 	local filename = os.date("%Y%m%d") .. padded_index .. ".txt"
-	while love.filesystem.exists(filename) do
+	while love.filesystem.getInfo(filename, "file") do
 		index = index + 1
 		padded_index = lpad(tostring(index))
 		filename = os.date("%Y%m%d") .. padded_index .. ".txt"

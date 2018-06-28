@@ -6,7 +6,8 @@ settings.player = {name = "Card Gamer"}
 
 -- Check for player file and put it into settings.player.
 -- If file doesn't exist, write settings.player to disk
-if love.filesystem.exists("player.txt") then
+
+if love.filesystem.getInfo("player.txt", "file") then
 	local player_str = love.filesystem.read("player.txt")
 	settings.player = json.decode(player_str)
 else

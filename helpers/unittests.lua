@@ -476,13 +476,13 @@ end
 -- plays a file called replay1.txt, then replay2.txt, etc.
 local replay_num = 1
 local function playReplayTxt(game)
-	if not love.filesystem.exists("replay1.txt") then
+	if not love.filesystem.getInfo("replay1.txt", "file") then
 		print("no replay1.txt file found!")
 		return
 	end
 
 	local str ="replay" .. replay_num .. ".txt"
-	if love.filesystem.exists(str) then
+	if love.filesystem.getInfo(str, "file") then
 		local replay_string = love.filesystem.read(str)
 		replay_num = replay_num + 1
 		game:playReplay(replay_string)
