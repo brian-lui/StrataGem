@@ -374,9 +374,8 @@ end
 function DebugConsole:saveScreencap()
 	if self.save_screencaps then
 		self.screencap_number = self.screencap_number + 1
-		local screenshot = love.graphics.newScreenshot()
 		local filename = "turn" .. self.game.turn .. "cap" .. self.screencap_number .. ".png"
-		screenshot:encode("png", filename)
+		love.graphics.captureScreenshot(filename)
 		print("Saved file: " .. filename)
 	end
 end
