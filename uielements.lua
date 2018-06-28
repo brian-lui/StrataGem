@@ -622,7 +622,7 @@ end
 
 local function pieceLandedInStagingArea(game, gems, place_type)
 	local particles = game.particles
-	local player_num = gems[1].owner
+	local player_num = gems[1].player_num
 	local sign = player_num == 1 and 1 or -1
 	local y = game.stage.height * 0.3
 	if place_type == "double" then
