@@ -174,7 +174,6 @@ function Client:endMatch()
 end
 
 -- queue up for a match
--- TODO: This needs to ask the matchmaker and not the peer.
 function Client:queue(action, queue_details)
 	self:send{type = "queue", action = action, queue_details = queue_details}
 end

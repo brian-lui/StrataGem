@@ -116,8 +116,6 @@ end
 -- arrived at destination in grid, make some particles
 -- called from grid:moveGemAnim()
 function Gem:landedInGrid()
-	--particles.dust:generateGlow(self) -- BT said we don't need glow now
-	--TODO: support multiple gems
 	for _, fx in pairs(self.game.particles.allParticles.WordEffects) do
 		if fx.name == "DoublecastCloud" or fx.name == "RushCloud" then
 			fx:remove()

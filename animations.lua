@@ -22,7 +22,7 @@ local function xy(dist, angle, x, y)
 end
 
 -----------------------------------UPDATES-------------------------------------
-local locations = { -- TODO: put into stage.lua later?
+local locations = { -- TODO: put into stage.lua later
 	P1 = {x = 150, y = 150},
 	P2 = {x = 876, y = 150},
 }
