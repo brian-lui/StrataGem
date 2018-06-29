@@ -1556,49 +1556,11 @@ function WordEffects.generateRushCloud(game, gem1, gem2, is_horizontal)
 		transparency = 1,
 		easing = "inCubic",
 	}
-	p:change{
-		duration = 600,
-		during = {
-			8,
-			0,
-			WordEffects.generateRushParticle,
-			game,
-			gem1,
-			gem2,
-			is_horizontal,
-		}
-	}
 	p.update = function(_self, dt)
 		Pic.update(_self, dt)
 		_self.x, _self.y = (gem1.x + gem2.x) * 0.5, (gem1.y + gem2.y) * 0.5
 	end
 	p.cloud = true
-end
-
--- the sparks coming out from the rush cloud.
--- called from WordEffects.generateRushCloud
-function WordEffects.generateRushParticle(game, gem1, gem2)
-	local is_horizontal = gem1.row == gem2.row
-	local todraw = images.words_rushparticle
-	local x, y = (gem1.x + gem2.x) * 0.5, (gem1.y + gem2.y) * 0.5
-	local x_drift, y_adj
-	if is_horizontal then
-		x_drift = (math.random() - 0.5) * images.GEM_WIDTH * 2
-		y_adj = -images.GEM_HEIGHT * 0.5
-	else
-		x_drift = (math.random() - 0.5) * images.GEM_WIDTH
-		y_adj = -images.GEM_HEIGHT
-	end
-
-	local p = common.instance(
-		WordEffects,
-		game.particles,
-		x + x_drift,
-		y + y_adj,
-		todraw
-	)
-	p.rotation = (x_drift / images.GEM_WIDTH) / (math.pi * 2)
-	p:change{duration = 18, scaling = 0.7, remove = true}
 end
 
 -- falling stars accompanying Ready at start of match. Called from Words.Ready
