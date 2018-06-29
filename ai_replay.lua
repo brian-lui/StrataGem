@@ -14,10 +14,11 @@ function ai_replay:evaluateActions()
 	local p1_delta = self.deltas[game.turn][1]
 	local p2_delta = self.deltas[game.turn][2]
 
-	-- TODO: better handling of END
 	if p1_delta ~= "END" and p2_delta ~= "END" then
 		self:queueAction(game.deserializeDelta, {game, p1_delta, p1})
 		self:queueSecondAction(game.deserializeDelta, {game, p2_delta, p2})
+	else
+		-- TODO: if the replay ended, then it should pause I guess?
 	end
 end
 
