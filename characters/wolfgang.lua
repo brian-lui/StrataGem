@@ -70,7 +70,7 @@ Wolfgang.special_images = {
 		love.graphics.newImage('images/characters/wolfgang/goldenlabexplode.png'),
 		love.graphics.newImage('images/characters/wolfgang/russelexplode.png'),
 	},
-	dog_grey = images.gems_grey_red,
+	dog_grey = love.graphics.newImage('images/characters/wolfgang/greydog.png'),
 	dog_pop = love.graphics.newImage('images/characters/wolfgang/dogpop.png'),
 	red = {
 		dark = love.graphics.newImage('images/characters/wolfgang/r.png'),
