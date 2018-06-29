@@ -24,7 +24,7 @@ local gems = {
 local words = {
 	"doublecast", "rush", "ready", "go", "gameoverthanks", "norushonecolumn",
 	"norushfull", "doublecastcloudh", "doublecastcloudv", "rushcloudh",
-	"rushcloudv", "rushparticle", "gostar",
+	"rushcloudv", "gostar",
 }
 
 local ui = {
