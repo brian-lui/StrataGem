@@ -113,23 +113,6 @@ function Grid:basinGems()
 	end
 end
 
-function Grid:pendingGems()
-	local gems, rows, columns, index = {}, {}, {}, 0
-	for i = self.PENDING_START_ROW, self.PENDING_END_ROW do
-		for j = 0, self.COLUMNS + 1 do
-			if self[i][j].gem then
-				gems[#gems+1] = self[i][j].gem
-				rows[#rows+1] = i
-				columns[#columns+1] = j
-			end
-		end
-	end
-	return function()
-		index = index + 1
-		return gems[index], rows[index], columns[index]
-	end
-end
-
 function Grid:cols(player_num)
 	local c, i = {1, 2, 3, 4, 5, 6, 7, 8}, 0
 	if player_num == 1 then c = {1, 2, 3, 4} end
@@ -680,27 +663,14 @@ function Grid:dropColumns(params)
 	return max_anim_duration
 end
 
-function Grid:getPendingGems(player)
-	local ret = {}
-	local col_start, col_end = 1, 4
-	if player.ID == "P2" then col_start, col_end = 5, 8 end
-	for gem, r, c in self:gems() do
-		if r <= 6 and c >= col_start and gem.column <= col_end then
-			ret[#ret+1] = gem
-		end
-	end
-	return ret
-end
-
-function Grid:getPendingGemsByNum(player_num)
-	player_num = player_num or 3
+function Grid:getPendingGems(player_num)
 	local ret = {}
 	local col_start, col_end
 	if player_num == 1 then
 		col_start, col_end = 1, 4
 	elseif player_num == 2 then
 		col_start, col_end = 5, 8
-	elseif player_num == 3 then
+	else
 		col_start, col_end = 1, 8
 	end
 	for gem, r, c in self:gems() do
@@ -783,7 +753,6 @@ function Grid:updateRushPriority()
 			self[gem.row][gem.column].gem = gem
 		end
 	end
-
 end
 
 -- Which players made a match this turn
