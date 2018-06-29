@@ -338,6 +338,11 @@ function Grid:flagMatchedGems()
 							if gem.player_num == 1 or gem.player_num == 3 then this_match_p1 = true end
 						end
 						--]]
+						--[[ Alternated proposed solution:
+						Propagating up into the other player's original_match sets orig_match_override
+						to true. Only check original_match_flag if the override is on, otherwise use
+						regular flagging.
+						--]]
 						if gem.player_num == 1 then
 							this_match_p1 = true
 						elseif gem.player_num == 2 then
