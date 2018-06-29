@@ -384,7 +384,6 @@ function DebugConsole:resetScreencapNum()
 	self.screencap_number = 0
 end
 
--- TODO: able to destroy and create gems
 function DebugConsole:swapGridGem(x, y)
 	local grid = self.grid
 	for col in grid:cols() do

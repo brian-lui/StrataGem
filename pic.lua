@@ -7,7 +7,6 @@ local Pic = {}
 -- required: x, y, image
 -- container/counter to specify different container and ID counter
 -- doesn't assign the created instance to any container by default
--- TODO: If needed, initialize self.RGB and make it changeable with the change() method
 function Pic:init(game, tbl)
 	self.game = game
 	self.queued_moves = {}

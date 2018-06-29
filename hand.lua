@@ -130,7 +130,6 @@ end
 -- rows and columns should be given as a table for each gem
 -- e.g. {{3, 4}, {6, 6}} to move piece to r3/c6, r4/c6
 function Hand:movePieceToGrid(grid, piece, locations)
-	print("Player " .. self.owner.player_num .. " set as owner of piece")
 	for i = 1, #piece.gems do
 		-- gamestate
 		local gem, r, c = piece.gems[i], locations[i][1], locations[i][2]

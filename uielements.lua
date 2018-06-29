@@ -470,7 +470,7 @@ ScreenDrag = common.class("ScreenDrag", ScreenDrag)
 
 -------------------------------------------------------------------------------
 local components = {
-	timer = Timer, -- TODO: this is not implemented yet, still in ui.timer
+	timer = Timer,
 	super = Super,
 	burst = Burst,
 	screenPress = ScreenPress,
