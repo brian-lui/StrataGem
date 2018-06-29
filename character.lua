@@ -67,7 +67,7 @@ function Character:init(player_num, game)
 		love.errhand("Invalid player_num " .. tostring(player_num))
 	end
 	self.current_rush_cost = self.RUSH_COST
-	self.cur_double_cost = self.DOUBLE_COST
+	self.current_double_cost = self.DOUBLE_COST
 	self.played_pieces = {}
 	self:setup()
 	self.super_button = game.uielements.components.super.create(
@@ -186,7 +186,7 @@ function Character:pieceDroppedOK(piece, shift)
 	elseif place_type == "rush" then
 		return self.cur_burst >= self.current_rush_cost
 	elseif place_type == "double" then
-		return self.cur_burst >= self.cur_double_cost
+		return self.cur_burst >= self.current_double_cost
 	end
 end
 
@@ -207,7 +207,7 @@ function Character:canPlacePiece()
 	return not (
 		(self.is_supering and not self.CAN_SUPER_AND_PLAY_PIECE) or
 		(self.dropped_piece == "rushed" or self.dropped_piece == "doubled") or
-		(self.dropped_piece == "normal" and self.cur_burst < self.cur_double_cost)
+		(self.dropped_piece == "normal" and self.cur_burst < self.current_double_cost)
 	)
 end
 

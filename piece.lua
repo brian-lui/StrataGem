@@ -314,7 +314,7 @@ function Piece:isDropValid(shift)
 		else
 			return false
 		end
-	elseif gems_in_my_basin == self.size and player.cur_burst >= player.cur_double_cost
+	elseif gems_in_my_basin == self.size and player.cur_burst >= player.current_double_cost
 		and player.dropped_piece == "normal" then
 			place_type = "double"
 	else
@@ -411,7 +411,7 @@ function Piece:deselect()
 	local cols = self:getColumns(shift)
 	local go_ahead = (place_type == "normal") or
 		(place_type == "rush" and self:isValidRush()) or
-		(place_type == "double" and player.cur_burst >= player.cur_double_cost)
+		(place_type == "double" and player.cur_burst >= player.current_double_cost)
 	local char_ability_ok = player:pieceDroppedOK(self, shift)
 
 	if valid
