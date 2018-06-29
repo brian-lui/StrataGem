@@ -552,7 +552,7 @@ local function drawDestinationShadow(self, piece, shift, account_for_doublecast)
 	local toshow = {}
 	local drop_locs = grid:getDropLocations(piece, shift)
 	if account_for_doublecast then
-		local pending_gems = grid:getPendingGems(piece.owner)
+		local pending_gems = grid:getPendingGems(piece.player_num)
 
 		-- also draw the previous gem's shadows
 		for _, gem in pairs(pending_gems) do
@@ -592,7 +592,7 @@ function uielements:showShadows(piece)
 	drawUnderGemShadow(self, piece)
 	if piece:isDropValid(shift) then
 		-- TODO: somehow account for variable piece size
-		local pending_gems = self.game.grid:getPendingGems(piece.owner)
+		local pending_gems = self.game.grid:getPendingGems(piece.player_num)
 		local account_for_doublecast = #pending_gems == 2
 
 		drawPlacementShadow(self, piece, shift)
@@ -657,8 +657,8 @@ end
 function uielements:putPendingAtTop(delay)
 	local game = self.game
 	local pending = {
-		p1 = game.grid:getPendingGems(game.p1),
-		p2 = game.grid:getPendingGems(game.p2),
+		p1 = game.grid:getPendingGems(1),
+		p2 = game.grid:getPendingGems(2),
 	}
 
 	for _, player_gems in pairs(pending) do
@@ -720,7 +720,7 @@ end
 function uielements:update(dt)
 	local game = self.game
 	local player = game.me_player
-	local pending_gems = game.grid:getPendingGems(player)
+	local pending_gems = game.grid:getPendingGems(player.player_num)
 	local valid = false
 	local place_type
 	local cloud = game.particles.wordEffects.cloudExists(game.particles)

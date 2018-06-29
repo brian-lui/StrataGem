@@ -499,8 +499,8 @@ end
 
 function Wolfgang:beforeGravity()
 	local grid = self.game.grid
-	local pending_rush_gems = grid:getPendingGems(self.enemy)
-	local pending_my_gems = grid:getPendingGems(self)
+	local pending_rush_gems = grid:getPendingGems(self.enemy.player_num)
+	local pending_my_gems = grid:getPendingGems(self.player_num)
 	local delay = 0
 
 	-- Change good dogs to bad dogs if they are in rush column

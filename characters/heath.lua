@@ -377,7 +377,7 @@ function Heath:beforeGravity()
 	local grid = game.grid
 	local explode_delay, particle_delay = 0, 0
 
-	local pending_gems = grid:getPendingGemsByNum()
+	local pending_gems = grid:getPendingGems()
 	for _, gem in ipairs(pending_gems) do
 		self.pending_gem_cols[gem.column] = true
 	end

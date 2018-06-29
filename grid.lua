@@ -395,7 +395,7 @@ end
 	round.
 --]]
 function Grid:assignGemOriginators()
-	for gem in self:pendingGems() do
+	for _, gem in ipairs(self:getPendingGems()) do
 		gem.flag_match_originator = gem.player_num
 	end
 end
