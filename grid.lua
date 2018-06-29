@@ -717,21 +717,41 @@ end
 
 -- If the only pieces placed are a rush and a normal, reverse their falling order
 function Grid:updateRushPriority()
-	local normal_pieces, rush_pieces = 0, 0
-	for player in self.game:players() do
-		if player.place_type == "normal" then
-			normal_pieces = normal_pieces + 1
-		elseif player.place_type == "rush" then
-			rush_pieces = rush_pieces + 1
+	local gem_list = self:getPendingGems()
+	local doublecast = false
+	local p1_normal, p1_rush = false, false
+	local p2_normal, p2_rush = false, false
+
+	for _, gem in ipairs(gem_list) do
+		assert(gem.row >= 1 and gem.row <= 6, "Invalid pending gem row")
+		assert(gem.column >= 1 and gem.column <= 8, "Invalid pending gem col")
+
+		if gem.row == 1 or gem.row == 2 then -- doublecast
+			doublecast = true
+		elseif gem.row == 3 or gem.row == 4 then -- rush
+			if gem.column >= 1 and gem.column <= 4 then
+				p2_rush = true
+			elseif gem.column >= 5 and gem.column <= 8 then
+				p1_rush = true
+			end
+		elseif gem.row == 5 or gem.row == 6 then -- normal
+			if gem.column >= 1 and gem.column <= 4 then
+				p1_normal = true
+			elseif gem.column >= 5 and gem.column <= 8 then
+				p2_normal = true
+			end
 		end
 	end
 
-	-- it's tricky to move them because of overlap
-	if normal_pieces == 1 and rush_pieces == 1 then
+	-- No adjustment if any doublecast was played
+	if doublecast then return end
+
+	-- it's tricky to move them because of overlap, so we have to store them
+	if (p1_normal and p2_rush) or (p1_rush and p2_normal) then
 		local normal_gems, rush_gems = {}, {}
 
 		-- store the gems and delete from grid first
-		for gem in self:pendingGems() do
+		for _, gem in ipairs(gem_list) do
 			if gem.row == 3 or gem.row == 4 then
 				rush_gems[#rush_gems+1] = gem
 				self[gem.row][gem.column].gem = false
