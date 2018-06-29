@@ -435,6 +435,8 @@ function Piece:dropIntoBasin(coords, received_from_opponent)
 	local grid = game.grid
 	local player = self.owner
 	local hand = player.hand
+	local start_col = player.player_num == 1 and 1 or 5
+	local end_col = player.player_num == 1 and 4 or 8
 
 	-- not received_from_opponent means it's our piece being placed
 	-- therefore, so we need to send it to them
@@ -444,24 +446,48 @@ function Piece:dropIntoBasin(coords, received_from_opponent)
 		game.client:writeDeltaPiece(self, coords)
 	end
 
-	-- TODO: player.dropped_piece, player.place_type seems too complicated
+	-- see if gem is in own columns or enemy columns
+	local in_own_col, in_enemy_col = false, false
+	for _, col in ipairs(coords) do
+		if col >= start_col and col <= end_col then
+			in_own_col = true
+		else
+			in_enemy_col = true
+		end
+		assert(
+			(in_own_col and not in_enemy_col) or (not in_own_col and in_enemy_col),
+			"Invalid piece column placement"
+		)
+	end
+
 	-- place the gem into the holding area
 	local row_adj -- how many rows down from the top to place the gem
-	if player.place_type == "normal" then
-		row_adj = 4
-		player.dropped_piece = "normal"
-	elseif player.place_type == "rush" then
-		row_adj = 2
-		player.cur_burst = player.cur_burst - player.current_rush_cost
-		player.dropped_piece = "rushed"
-		for i = 1, #self.gems do self.gems[i].place_type = "rush" end
-	elseif player.place_type == "double" then
-		row_adj = 0
-		player.cur_burst = player.cur_burst - player.cur_double_cost
-		player.dropped_piece = "doubled"
-		for i = 1, #self.gems do self.gems[i].place_type = "double" end
+	if player.dropped_piece == "normal" then
+		if in_own_col then -- doublecast
+			assert(player.cur_burst >= player.current_double_cost, "No meter for doublecast")
+
+			row_adj = 0
+			player.cur_burst = player.cur_burst - player.current_double_cost
+			player.dropped_piece = "doubled"
+			for i = 1, #self.gems do self.gems[i].place_type = "double" end
+		else
+			error("Attempted to doublecast with a rush piece")
+		end
+	elseif player.dropped_piece == "rushed" then
+		error("Attempted to play another piece with rush already played")
+	elseif player.dropped_piece == "doubled" then
+		error("Attempted to play another piece with doublecast already played")
 	else
-		print("invalid player place type")
+		if in_own_col then -- normal
+			row_adj = 4
+			player.dropped_piece = "normal"
+		else -- rush
+			assert(player.cur_burst >= player.current_rush_cost, "No meter for rush")
+			row_adj = 2
+			player.cur_burst = player.cur_burst - player.current_rush_cost
+			player.dropped_piece = "rushed"
+			for i = 1, #self.gems do self.gems[i].place_type = "rush" end
+		end
 	end
 
 	local locations = {}
