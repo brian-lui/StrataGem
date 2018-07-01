@@ -6,8 +6,9 @@ Dogs placed in your basin are good dogs. Good dogs are wild and last until
 matched. Basins placed in the opponent's basin (rush) are bad dogs. Bad dogs
 do not listen and do nothing. They last for 3 turns and then go home.
 
-Super: Up to four non-wilds in your half of the basin are replaced with
-friendly dogs.
+Super: You gain four dog-icons. Once per turn, a dog-icon replaces a gem in
+your basin with a dog. The dog will create a match if possible, out of all
+possible matches. Otherwise, it will replace a random gem.
 --]]
 
 local love = _G.love
@@ -105,20 +106,44 @@ function Wolfgang:init(...)
 
 	-- init BARK
 	local add = self.player_num == 2 and stage.width * 0.77 or 0
-	local x = {
+	self.BARK_X = {
 		stage.width * 0.055 + add,
 		stage.width * 0.095 + add,
 		stage.width * 0.135 + add,
 		stage.width * 0.175 + add,
 	}
-	local y = stage.height * 0.57
+	self.BARK_Y = stage.height * 0.57
+	self.SUPER_DOG_Y_ADD = stage.height * 0.08 -- added to self.BARK_Y
 	self.letters = {
-		blue = self.fx.colorLetter.generate(game, self, x[1], y, "blue"),
-		yellow = self.fx.colorLetter.generate(game, self, x[2], y, "yellow"),
-		red = self.fx.colorLetter.generate(game, self, x[3], y, "red"),
-		green = self.fx.colorLetter.generate(game, self, x[4], y, "green"),
+		blue = self.fx.colorLetter.create(
+			game,
+			self,
+			self.BARK_X[1],
+			self.BARK_Y,
+			"blue"
+		),
+		yellow = self.fx.colorLetter.create(
+			game,
+			self,
+			self.BARK_X[2],
+			self.BARK_Y,
+			"yellow"
+		),
+		red = self.fx.colorLetter.create(
+			game,
+			self,
+			self.BARK_X[3],
+			self.BARK_Y,
+			"red"
+		),
+		green = self.fx.colorLetter.create(
+			game,
+			self,
+			self.BARK_X[4],
+			self.BARK_Y,
+			"green"
+		),
 	}
-
 	self.FULL_BARK_DOG_ADDS = 2
 	self.BAD_DOG_DURATION = 3
 	self.SUPER_DOG_CREATION_DELAY = 45 -- in frames
@@ -133,6 +158,7 @@ function Wolfgang:init(...)
 	self.bad_dog_counter = 1 -- cycles from 1 to self.BAD_DOG_DURATION
 	self.bad_dog_mad_image = self.special_images.bad_dog_mad
 	self.single_dogs_to_make = 0
+	self.super_dogs_to_make = 0
 end
 -------------------------------------------------------------------------------
 -- These are the BARK letter classes
@@ -150,7 +176,7 @@ function ColorLetter:remove()
 end
 
 -- BARK meter appears below the super meter.
-function ColorLetter.generate(game, owner, x, y, color)
+function ColorLetter.create(game, owner, x, y, color)
 	local params = {
 		x = x,
 		y = y,
@@ -238,9 +264,57 @@ end
 
 ColorWord = common.class("ColorWord", ColorWord, Pic)
 -------------------------------------------------------------------------------
+-- The pending super-dog icons
+local SuperDog = {}
+function SuperDog:init(manager, tbl)
+	Pic.init(self, manager.game, tbl)
+	local counter = self.game.inits.ID.particle
+	manager.allParticles.CharEffects[counter] = self
+	self.manager = manager
+end
+
+function SuperDog:remove()
+	self.manager.allParticles.CharEffects[self.ID] = nil
+end
+
+function SuperDog._getXY(owner)
+	local i = (owner.super_dogs_to_make - 1) % 4 + 1
+	local y_rows = math.ceil(owner.super_dogs_to_make / 4)
+	local x = owner.BARK_X[i]
+	local y = owner.BARK_Y + owner.SUPER_DOG_Y_ADD * y_rows
+	return x, y
+end
+
+function SuperDog:create(game, owner, delay)
+	local x, y = self._getXY(owner)
+	local rand = math.random(#owner.special_images.good_dog)
+	local image = owner.special_images.good_dog[rand]
+
+	local params = {
+		x = x,
+		y = y,
+		image = image,
+		owner = owner,
+		player_num = owner.player_num,
+		name = "WolfgangSuperDogIcon",
+	}
+
+	local p = common.instance(SuperDog, game.particles, params)
+	p.scaling = 0.75
+	if delay then
+		p:change{transparency = 0}
+		p:wait(delay)
+		p:change{duration = 0, transparency = 1}
+	end
+end
+
+SuperDog = common.class("SuperDog", SuperDog, Pic)
+
+-------------------------------------------------------------------------------
 Wolfgang.fx = {
 	colorLetter = ColorLetter,
 	colorWord = ColorWord,
+	superDog = SuperDog,
 }
 
 -------------------------------------------------------------------------------
@@ -529,7 +603,14 @@ function Wolfgang:beforeGravity()
 			delay = self.SUPER_DOG_CREATION_DELAY
 			self.gain_super_meter = false
 		end
+
+		-- Testing create super dogs
+		for _ = 1, 4 do
+			self.super_dogs_to_make = self.super_dogs_to_make + 1
+			self.fx.superDog:create(self.game, self)
+		end
 	end
+
 
 	return delay
 end
