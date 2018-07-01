@@ -333,21 +333,21 @@ end
 
 -- returns a random dog in the form of a gem_replace_table
 function Wolfgang:_getDogReplaceTable()
-	local images = self:_getRandomDog()
+	local image = self:_getRandomDog()
 	return {
 		color = "wild",
-		image = images.dog,
-		exploding_gem_image = images.explode,
-		grey_exploding_gem_image = images.grey,
-		pop_particle_image = images.pop,
+		image = image.dog,
+		exploding_gem_image = image.explode,
+		grey_exploding_gem_image = image.grey,
+		pop_particle_image = image.pop,
 	}
 end
 
 -- Turns a grid gem into a friendly dog
 -- Used during super
 function Wolfgang:_turnGemToDog(gem)
-	local images = self:_getRandomDog()
-	gem:setColor("wild", images.dog, images.explode, images.grey, images.pop)
+	local image = self:_getRandomDog()
+	gem:setColor("wild", image.dog, image.explode, image.grey, image.pop)
 	gem:setOwner(self.player_num)
 	gem:setMaxAlpha(true)
 	self.good_dogs[gem] = true
@@ -355,15 +355,15 @@ end
 
 -- same but for good dog in deserialization
 function Wolfgang:_turnGemToGoodDog(gem)
-	local images = self:_getRandomDog()
-	gem:setColor("wild", images.dog, images.explode, images.grey, images.pop)
+	local image = self:_getRandomDog()
+	gem:setColor("wild", image.dog, image.explode, image.grey, image.pop)
 	self.good_dogs[gem] = true
 end
 
 -- same but for bad dog, used in deserialization
 function Wolfgang:_turnGemToBadDog(gem, turns_remaining)
-	local images = self:_getRandomDog()
-	gem:setColor("wild", images.dog, images.explode, images.grey, images.pop)
+	local image = self:_getRandomDog()
+	gem:setColor("wild", image.dog, image.explode, image.grey, image.pop)
 
 	for i = 1, #self.special_images.good_dog do
 		if gem.image == self.special_images.good_dog[i] then
@@ -379,8 +379,8 @@ end
 
 -- same but for a dog in the hand, used in deserialization
 function Wolfgang:_turnHandGemToDog(gem)
-	local images = self:_getRandomDog()
-	gem:setColor("wild", images.dog, images.explode, images.grey, images.pop)
+	local image = self:_getRandomDog()
+	gem:setColor("wild", image.dog, image.explode, image.grey, image.pop)
 	self.good_dogs[gem] = true
 end
 
