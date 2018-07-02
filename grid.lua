@@ -150,11 +150,11 @@ end
 
 -- return score for simulated grid + piece placement
 function Grid:simulateScore(piece, coords)
-	local orig_grid = deepcpy(self)
-	orig_grid:simulatePlacePiece(piece, coords)
-	orig_grid:simulateGravity()
-	if not orig_grid:getScore() then print ("nil score") end
-	return orig_grid:getScore()
+	local grid_clone = deepcpy(self)
+	grid_clone:simulatePlacePiece(piece, coords)
+	grid_clone:simulateGravity()
+	if not grid_clone:getScore() then print ("nil score") end
+	return grid_clone:getScore()
 end
 
 -- Returns a list of matches, where each match is listed as the row and column
