@@ -113,7 +113,17 @@ function Wolfgang:init(...)
 		stage.width * 0.175 + add,
 	}
 	self.BARK_Y = stage.height * 0.57
-	self.SUPER_DOG_Y_ADD = stage.height * 0.08 -- added to self.BARK_Y
+
+	local super_x = stage.super[self.player_num].x
+	local super_y = stage.super[self.player_num].y
+	self.SUPER_DOG_LOCS = {
+		{x = super_x - stage.width * 0.07, y = super_y + stage.width * 0.02},
+		{x = super_x - stage.width * 0.07, y = super_y - stage.width * 0.02},
+		{x = super_x + stage.width * 0.07, y = super_y + stage.width * 0.02},
+		{x = super_x + stage.width * 0.07, y = super_y - stage.width * 0.02},
+		{x = -stage.width, y = -stage.height}, -- don't show 5th+ icons
+	}
+
 	self.letters = {
 		blue = self.fx.colorLetter.create(
 			game,
@@ -159,6 +169,7 @@ function Wolfgang:init(...)
 	self.bad_dog_mad_image = self.special_images.bad_dog_mad
 	self.single_dogs_to_make = 0
 	self.super_dogs_to_make = 0
+	self.super_dog_icons = {}
 end
 -------------------------------------------------------------------------------
 -- These are the BARK letter classes
@@ -277,16 +288,15 @@ function SuperDog:remove()
 	self.manager.allParticles.CharEffects[self.ID] = nil
 end
 
-function SuperDog._getXY(owner)
-	local i = (owner.super_dogs_to_make - 1) % 4 + 1
-	local y_rows = math.ceil(owner.super_dogs_to_make / 4)
-	local x = owner.BARK_X[i]
-	local y = owner.BARK_Y + owner.SUPER_DOG_Y_ADD * y_rows
-	return x, y
+-- check all gems in grid for which would create a match, then
+-- choose randomly
+function SuperDog:_getArrivalLocation()
+	local possible_matches = {}
 end
 
-function SuperDog:create(game, owner, delay)
-	local x, y = self._getXY(owner)
+function SuperDog.create(game, owner, delay)
+	local i = math.min(owner.super_dogs_to_make, 5)
+	local x, y = owner.SUPER_DOG_LOCS[i].x, owner.SUPER_DOG_LOCS[i].y
 	local rand = math.random(#owner.special_images.good_dog)
 	local image = owner.special_images.good_dog[rand]
 
@@ -295,6 +305,7 @@ function SuperDog:create(game, owner, delay)
 		y = y,
 		image = image,
 		owner = owner,
+		index = i,
 		player_num = owner.player_num,
 		name = "WolfgangSuperDogIcon",
 	}
@@ -306,6 +317,14 @@ function SuperDog:create(game, owner, delay)
 		p:wait(delay)
 		p:change{duration = 0, transparency = 1}
 	end
+
+	return p
+end
+
+function SuperDog:moveToGrid()
+	print("k v")
+	for k, v in pairs(self) do print(k, v) end
+	print(self:_getArrivalLocation())
 end
 
 SuperDog = common.class("SuperDog", SuperDog, Pic)
@@ -607,7 +626,7 @@ function Wolfgang:beforeGravity()
 		-- Testing create super dogs
 		for _ = 1, 4 do
 			self.super_dogs_to_make = self.super_dogs_to_make + 1
-			self.fx.superDog:create(self.game, self)
+			self.super_dog_icons[#self.super_dog_icons] = self.fx.superDog.create(self.game, self)
 		end
 	end
 
@@ -618,6 +637,13 @@ end
 function Wolfgang:beforeTween()
 	self.is_supering = false
 	self:_brightenScreen()
+
+	-- Testing create super dogs
+	for i, v in ipairs(self.super_dog_icons) do print(i, v) end
+	local moving_dog = self.super_dog_icons[#self.super_dog_icons]
+	local superdog_location = moving_dog:moveToGrid()
+	-- turn superdog_location into gooddog
+	self.super_dogs_to_make = self.super_dogs_to_make - 1
 end
 
 function Wolfgang:beforeMatch()
