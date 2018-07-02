@@ -289,43 +289,6 @@ function SuperDog:remove()
 	self.manager.allParticles.CharEffects[self.ID] = nil
 end
 
--- check all gems in grid for which would create a match, then
--- choose randomly. Returns the gem to replace
-function SuperDog:_getArrivalLocation()
-	local game = self.game
-	local grid = game.grid
-	local possible_gems = {}
-
-	-- check possible matches
-	local original_matched_gems = #grid:getMatchedGems()
-	for gem, r, c in grid:basinGems(self.player_num) do
-		if gem.color ~= "wild" and gem.color ~= "none" then
-			local grid_clone = deepcpy(grid)
-			grid_clone[r][c].gem.color = "wild"
-			local new_matched_gems = #grid_clone:getMatchedGems()
-			if new_matched_gems > original_matched_gems then
-				possible_gems[#possible_gems + 1] = gem
-			end
-		end
-	end
-
-	-- if no possible matches
-	if #possible_gems == 0 then
-		for gem in grid:basinGems(self.player_num) do
-			possible_gems[#possible_gems + 1] = gem
-		end
-	end
-
-	-- get a random dog
-	local ret
-	if #possible_gems > 0 then
-		local rand = game.rng:random(#possible_gems)
-		ret = possible_gems[rand]
-	end
-
-	return ret
-end
-
 function SuperDog.create(game, owner, delay)
 	local i = math.min(owner.super_dogs_to_make, 5)
 	local x, y = owner.SUPER_DOG_LOCS[i].x, owner.SUPER_DOG_LOCS[i].y
@@ -433,31 +396,43 @@ function Wolfgang:_turnHandGemToDog(gem)
 	self.good_dogs[gem] = true
 end
 
-function Wolfgang:_turnRandomFriendlyBasinGemToDog()
+-- check all gems in grid for which would create a match, then
+-- choose randomly. Returns the gem to replace
+function Wolfgang:_getSuperArrivalLocation()
 	local game = self.game
+	local grid = game.grid
+	local possible_gems = {}
 
-	local start_col, end_col
-	if self.player_num == 1 then
-		start_col, end_col = 1, 4
-	elseif self.player_num == 2 then
-		start_col, end_col = 5, 8
-	else
-		error("Invalid player number")
-	end
-
-	local valid_gems = {}
-	for gem, _, col in game.grid:basinGems() do
-		if col >= start_col and col <= end_col and gem.color ~= "wild" then
-			valid_gems[#valid_gems+1] = gem
+	-- check possible matches
+	local original_matched_gems = #grid:getMatchedGems()
+	for gem, r, c in grid:basinGems(self.player_num) do
+		if gem.color ~= "wild" and gem.color ~= "none" then
+			local grid_clone = deepcpy(grid)
+			grid_clone[r][c].gem.color = "wild"
+			local new_matched_gems = #grid_clone:getMatchedGems()
+			if new_matched_gems > original_matched_gems then
+				possible_gems[#possible_gems + 1] = gem
+			end
 		end
 	end
 
-	if #valid_gems > 0 then
-		local rand = game.rng:random(#valid_gems)
-		local chosen_gem = valid_gems[rand]
-		self:_turnGemToDog(chosen_gem)
+	-- if no possible matches
+	if #possible_gems == 0 then
+		for gem in grid:basinGems(self.player_num) do
+			possible_gems[#possible_gems + 1] = gem
+		end
 	end
+
+	-- get a random dog
+	local ret
+	if #possible_gems > 0 then
+		local rand = game.rng:random(#possible_gems)
+		ret = possible_gems[rand]
+	end
+
+	return ret
 end
+
 
 -- Goes through hand dogs and writes the bad dog images. No hurry to do so,
 -- since it won't matter until next action phase, so we do it in cleanup phase
