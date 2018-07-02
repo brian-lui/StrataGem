@@ -316,7 +316,7 @@ function Charselect:_createUIImages()
 			transparency = 0.25,
 		}
 		c:change{
-			duration = 6,
+			duration = 8,
 			x = stage.width * 0.325,
 			transparency = 1,
 			easing = "outQuart",

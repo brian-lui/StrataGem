@@ -1887,11 +1887,11 @@ function SuperFreezeEffects.generate(game, player, shadow_image, action_image, f
 		shadow:change{duration = 0, transparency = 1}
 	end
 	shadow:change{
-		duration = 30,
+		duration = 40,
 		x = stage.width * (0.5 + 0.025 * sign),
 		easing = "outQuart",
 	}
-	shadow:wait(25)
+	shadow:wait(15)
 	shadow:change{duration = 5, transparency = 0, remove = true}
 
 	local portrait = common.instance(SuperFreezeEffects, game.particles, {
