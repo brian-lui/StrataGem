@@ -16,6 +16,7 @@ local common = require "class.commons"
 local Character = require "character"
 local images = require "images"
 local Pic = require "pic"
+local deepcpy = require "/helpers/utilities".deepcpy
 
 local Wolfgang = {}
 
@@ -289,9 +290,38 @@ function SuperDog:remove()
 end
 
 -- check all gems in grid for which would create a match, then
--- choose randomly
+-- choose randomly. Returns the gem to replace
 function SuperDog:_getArrivalLocation()
-	local possible_matches = {}
+	local game = self.game
+	local grid = game.grid
+	local possible_gems = {}
+
+	-- check possible matches
+	local original_matched_gems = #grid:getMatchedGems()
+	for gem, r, c in grid:basinGems(self.player_num) do
+		local grid_clone = deepcpy(grid)
+		grid_clone[r][c].gem.color = "wild"
+		local new_matched_gems = #grid_clone:getMatchedGems()
+		if new_matched_gems > original_matched_gems then
+			possible_gems[#possible_gems + 1] = gem
+		end
+	end
+
+	-- if no possible matches
+	if #possible_gems == 0 then
+		for gem in grid:basinGems(self.player_num) do
+			possible_gems[#possible_gems + 1] = gem
+		end
+	end
+
+	-- get a random dog
+	local ret
+	if #possible_gems > 0 then
+		local rand = game.rng:random(#possible_gems)
+		ret = possible_gems[rand]
+	end
+
+	return ret
 end
 
 function SuperDog.create(game, owner, delay)
@@ -322,9 +352,7 @@ function SuperDog.create(game, owner, delay)
 end
 
 function SuperDog:moveToGrid()
-	print("k v")
-	for k, v in pairs(self) do print(k, v) end
-	print(self:_getArrivalLocation())
+	self:_getArrivalLocation()
 end
 
 SuperDog = common.class("SuperDog", SuperDog, Pic)
@@ -617,12 +645,13 @@ function Wolfgang:beforeGravity()
 
 	-- Create super dogs
 	if self.is_supering then
+		--[[ 
 		for _ = 1, 4 do
 			self:_turnRandomFriendlyBasinGemToDog()
 			delay = self.SUPER_DOG_CREATION_DELAY
 			self.gain_super_meter = false
 		end
-
+--]]
 		-- Testing create super dogs
 		for _ = 1, 4 do
 			self.super_dogs_to_make = self.super_dogs_to_make + 1
