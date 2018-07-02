@@ -323,6 +323,7 @@ end
 function SuperDog:moveToGrid(gem)
 	if gem then
 		self.owner:_turnGemToGoodDog(gem)
+		gem:setOwner(self.player_num)
 		self:destroy()
 	end
 end
