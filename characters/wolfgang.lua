@@ -316,8 +316,15 @@ function SuperDog.create(game, owner, delay)
 	return p
 end
 
-function SuperDog:moveToGrid()
-	self:_getArrivalLocation()
+function SuperDog:destroy()
+	self:change{duration = 60, scaling = 0, remove = true}
+end
+
+function SuperDog:moveToGrid(gem)
+	if gem then
+		self.owner:_turnGemToGoodDog(gem)
+		self:destroy()
+	end
 end
 
 SuperDog = common.class("SuperDog", SuperDog, Pic)
@@ -622,17 +629,10 @@ function Wolfgang:beforeGravity()
 
 	-- Create super dogs
 	if self.is_supering then
-		--[[ 
-		for _ = 1, 4 do
-			self:_turnRandomFriendlyBasinGemToDog()
-			delay = self.SUPER_DOG_CREATION_DELAY
-			self.gain_super_meter = false
-		end
---]]
-		-- Testing create super dogs
 		for _ = 1, 4 do
 			self.super_dogs_to_make = self.super_dogs_to_make + 1
-			self.super_dog_icons[#self.super_dog_icons] = self.fx.superDog.create(self.game, self)
+			local new_dog = self.fx.superDog.create(self.game, self)
+			self.super_dog_icons[self.super_dogs_to_make] = new_dog
 		end
 	end
 
@@ -644,12 +644,13 @@ function Wolfgang:beforeTween()
 	self.is_supering = false
 	self:_brightenScreen()
 
-	-- Testing create super dogs
-	for i, v in ipairs(self.super_dog_icons) do print(i, v) end
-	local moving_dog = self.super_dog_icons[#self.super_dog_icons]
-	local superdog_location = moving_dog:moveToGrid()
-	-- turn superdog_location into gooddog
-	self.super_dogs_to_make = self.super_dogs_to_make - 1
+	-- Move a superdog to grid
+	if self.super_dogs_to_make > 0 then
+		local arrival_gem = self:_getSuperArrivalLocation()
+		local moving_dog = self.super_dog_icons[self.super_dogs_to_make]
+		moving_dog:moveToGrid(arrival_gem)
+		self.super_dogs_to_make = self.super_dogs_to_make - 1
+	end
 end
 
 function Wolfgang:beforeMatch()
