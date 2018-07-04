@@ -1,3 +1,14 @@
+--[[ Color: green
+Passive: For every match you make, a random gem in your basin gains a flower
+mark. When the flower gem breaks (regardless of who breaks it, including grey
+breaks) the Holly who made the flower heals one damage and the opponent takes
+one damage.
+
+Super: 8 random gems gain spore pods. Starting on the following turn, a spore
+pod explodes and destroys the gem it is on. Any matches created from this
+destruction are credited to Holly.
+--]]
+
 local love = _G.love
 local common = require "class.commons"
 local Character = require "character"
@@ -36,4 +47,28 @@ Holly.sounds = {
 function Holly:init(...)
 	Character.init(self, ...)
 end
+
+function Holly:beforeGravity()
+	-- gain super spore pods
+end
+
+function Holly:beforeMatch()
+	-- store a record of number of matches
+end
+
+function Holly:duringMatch()
+	-- apply flower heal/damage
+	-- depending on game logic, apply spore match damage here if spore gem was destroyed
+end
+
+function Holly:afterMatch()
+	-- add a flower per match #
+	-- set match # to 0
+end
+
+function Holly:afterAllMatches()
+	-- spore pod explosion (once per turn)
+	-- if explode, then return [delay, true] to go to gravity phase, otherwise [delay, false]
+end
+
 return common.class("Holly", Holly, Character)
