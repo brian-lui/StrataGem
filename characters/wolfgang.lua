@@ -157,6 +157,7 @@ function Wolfgang:init(...)
 	}
 	self.FULL_BARK_DOG_ADDS = 2
 	self.BAD_DOG_DURATION = 3
+	self.GEM_TO_DOG_ANIM_TIME = 30
 	self.SUPER_DOG_CREATION_DELAY = 45 -- in frames
 	self.GOOD_DOG_CYCLE = 135 -- calling a good dog animation cycle
 	self.BAD_DOG_CYCLE = 30 -- calling a bad dog animation cycle
@@ -316,16 +317,104 @@ function SuperDog.create(game, owner, delay)
 	return p
 end
 
-function SuperDog:destroy()
-	self:change{duration = 60, scaling = 0, remove = true}
+function SuperDog:destroy(delay)
+	local TIME_TO_EXPLOSION = 50
+	if delay then self:wait(delay) end	
+	self:change{
+		duration = TIME_TO_EXPLOSION,
+		transparency = 1,
+		scaling = 1.5,
+		easing = "inBounce",
+	}
+	self:change{
+		duration = 20,
+		transparency = 0,
+		scaling = 2,
+		remove = true,
+	}
+	return TIME_TO_EXPLOSION
 end
 
-function SuperDog:moveToGrid(gem)
-	if gem then
-		self.owner:_turnGemToGoodDog(gem)
-		gem:setOwner(self.player_num)
-		self:destroy()
+function SuperDog:moveToGrid(gem, delay)
+	local DEST_PAUSE = 20 -- origin explosion to destination animation
+	delay = delay or 0
+	local game = self.game
+	local owner = self.owner
+
+	-- pop background at origin
+	local pop_params = {
+		x = self.x,
+		y = self.y,
+		image = owner.special_images.dog_pop,
+		draw_order = -1,
+		owner = owner,
+		player_num = owner.player_num,
+		name = "SuperDogPop",
+	}
+	local pop = common.instance(SuperDog, game.particles, pop_params)
+	pop.scaling = 0.75
+	if delay then
+		pop:change{transparency = 0}
+		pop:wait(delay)
+		pop:change{duration = 0, transparency = 1}
 	end
+	pop:change{duration = 30, transparency = 0, scaling = 3, remove = true}
+
+	-- this creates the explosion effect too
+	local explosion_duration = self:destroy(delay)
+
+	-- garbage circle particles at destination
+	game.particles.dust.generateGarbageCircle{
+		game = game,
+		x = gem.x,
+		y = gem.y,
+		color = "wild",
+		delay_frames = delay + explosion_duration + DEST_PAUSE,
+	}
+
+	-- reverse pop at destination
+	local reverse_pop = {
+		x = gem.x,
+		y = gem.y,
+		image = owner.special_images.dog_pop,
+		draw_order = -1,
+		owner = owner,
+		player_num = owner.player_num,
+		name = "SuperDogReversePop",
+	}
+	local rev_pop = common.instance(SuperDog, game.particles, reverse_pop)
+	rev_pop:change{transparency = 0, scaling = 4}
+	rev_pop:wait(delay + explosion_duration + DEST_PAUSE)
+	rev_pop:change{
+		duration = 30,
+		transparency = 1,
+		scaling = 1,
+		remove = true,
+	}
+
+	-- reverse explode at destination
+	local rev_explode_time = game.particles.explodingGem.generateReverseExplode{
+		game = game,
+		x = gem.x,
+		y = gem.y,
+		image = self.image,
+		delay_frames = delay + explosion_duration + DEST_PAUSE,
+	}
+
+	local total_delay = delay + explosion_duration + DEST_PAUSE + rev_explode_time
+
+	-- fountain at destination
+	game.particles.dust.generateBigFountain{
+		game = game,
+		x = gem.x,
+		y = gem.y,
+		color = "wild",
+		delay_frames = total_delay,
+	}
+
+	owner:_turnGemToGoodDog(gem, delay + explosion_duration + DEST_PAUSE)
+	gem:setOwner(self.player_num)
+	return total_delay
 end
 
 SuperDog = common.class("SuperDog", SuperDog, Pic)
@@ -699,13 +788,19 @@ function Wolfgang:beforeTween()
 	self.is_supering = false
 	self:_brightenScreen()
 
+	local delay
 	-- Move a superdog to grid
 	if self.super_dogs_to_make > 0 then
 		local arrival_gem = self:_getSuperArrivalLocation()
-		local moving_dog = self.super_dog_icons[self.super_dogs_to_make]
-		moving_dog:moveToGrid(arrival_gem)
-		self.super_dogs_to_make = self.super_dogs_to_make - 1
+		if arrival_gem then
+			local moving_dog = self.super_dog_icons[self.super_dogs_to_make]
+			delay = moving_dog:moveToGrid(arrival_gem)
+			self.super_dogs_to_make = self.super_dogs_to_make - 1
+		end
 	end
+
+	print("total delay", delay)
+	return delay
 end
 
 function Wolfgang:beforeMatch()
