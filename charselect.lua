@@ -310,13 +310,14 @@ function Charselect:_createUIImages()
 	}
 
 	self.displayed_character_shadow.reset = function(c)
+		c:clear()
 		c:change{
 			duration = 0,
 			x = stage.width * 0.275,
 			transparency = 0.25,
 		}
 		c:change{
-			duration = 8,
+			duration = 24,
 			x = stage.width * 0.325,
 			transparency = 1,
 			easing = "outQuart",
@@ -335,13 +336,14 @@ function Charselect:_createUIImages()
 	}
 
 	self.displayed_character.reset = function(c)
+		c:clear()
 		c:change{
 			duration = 0,
 			x = stage.width * 0.25,
 			transparency = 0.25,
 		}
 		c:change{
-			duration = 6,
+			duration = 18,
 			x = stage.width * 0.3,
 			transparency = 1,
 			easing = "outQuart",
