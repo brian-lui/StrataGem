@@ -79,14 +79,17 @@ end
 -- default colors are "red", "blue", "green", "yellow"
 -- If a non-standard gem color is specified, must also provide exploding gem,
 -- grey exploding gem, and pop particle images
-function Gem:setColor(color, gem_image, exploding_gem, grey_exploding_gem, pop_particle)
+function Gem:setColor(color, gem_image, exploding_gem, grey_exploding_gem, pop_particle, delay, duration)
 	assert(color, "No color provided")
 
 	self.color = color
-	if gem_image then
-		self:newImage(gem_image)
+
+	local new_image = gem_image and gem_image or gemImages[color:lower()]
+
+	if delay then
+		self:newImageFadeIn(new_image, duration or 0, delay)
 	else
-		self:newImage(gemImages[color:lower()])
+		self:newImage(new_image)
 	end
 
 	if color ~= "red" and color ~= "blue" and color ~= "green" and color ~= "yellow" then
