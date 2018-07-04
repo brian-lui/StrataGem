@@ -1,4 +1,4 @@
---[[ Color: blue
+--[[ Color: red
 Passive: Wolfgang has a BARK meter. Every time you make a match of a certain
 color, the BARK meter gains a letter. (Blue, Amarillo, Red, Kreen). When the
 Bark meter is filled, your next gem cluster you gain will contain a Dog piece.
