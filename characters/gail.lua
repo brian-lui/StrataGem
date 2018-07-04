@@ -39,6 +39,9 @@ Gail.sounds = {
 	bgm = "bgm_gail",
 }
 
+function Gail:init(...)
+	Character.init(self, ...)
+end
 
 local TestPetal = {}
 function TestPetal:init(manager, tbl)

@@ -32,4 +32,9 @@ Hailey.burst_images = {
 Hailey.sounds = {
 	bgm = "bgm_hailey",
 }
+
+function Hailey:init(...)
+	Character.init(self, ...)
+end
+
 return common.class("Hailey", Hailey, Character)

@@ -33,4 +33,8 @@ Damon.sounds = {
 	bgm = "bgm_holly",
 }
 
+function Damon:init(...)
+	Character.init(self, ...)
+end
+
 return common.class("Damon", Damon, Character)

@@ -33,4 +33,7 @@ Holly.sounds = {
 	bgm = "bgm_holly",
 }
 
+function Holly:init(...)
+	Character.init(self, ...)
+end
 return common.class("Holly", Holly, Character)

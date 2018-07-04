@@ -34,4 +34,8 @@ Ivy.sounds = {
 	bgm = "bgm_ivy",
 }
 
+function Ivy:init(...)
+	Character.init(self, ...)
+end
+
 return common.class("Ivy", Ivy, Character)

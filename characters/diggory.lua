@@ -32,4 +32,9 @@ Diggory.burst_images = {
 Diggory.sounds = {
 	bgm = "bgm_diggory",
 }
+
+function Diggory:init(...)
+	Character.init(self, ...)
+end
+
 return common.class("Diggory", Diggory, Character)

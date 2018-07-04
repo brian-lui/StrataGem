@@ -32,4 +32,9 @@ Buzz.burst_images = {
 Buzz.sounds = {
 	bgm = "bgm_buzz",
 }
+
+function Buzz:init(...)
+	Character.init(self, ...)
+end
+
 return common.class("Buzz", Buzz, Character)

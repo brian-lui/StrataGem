@@ -29,4 +29,11 @@ Joy.burst_images = {
 	glow = {images.ui_burst_partglow_red, images.ui_burst_fullglow_red}
 }
 
+Joy.sounds = {
+}
+
+function Joy:init(...)
+	Character.init(self, ...)
+end
+
 return common.class("Joy", Joy, Character)

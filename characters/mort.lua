@@ -33,4 +33,8 @@ Mort.sounds = {
 	bgm = "bgm_mort",
 }
 
+function Mort:init(...)
+	Character.init(self, ...)
+end
+
 return common.class("Mort", Mort, Character)
