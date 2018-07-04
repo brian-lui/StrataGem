@@ -181,7 +181,7 @@ function Game:start(params)
 end
 
 function Game:setSaveFileLocation()
-	local function lpad (s) return string.rep("0", 8 - #s) .. s end
+	local function lpad (s) return string.rep("0", 4 - #s) .. s end
 	local index = 1
 	local padded_index = lpad(tostring(index))
 	local filename = os.date("%Y%m%d") .. padded_index .. ".txt"
