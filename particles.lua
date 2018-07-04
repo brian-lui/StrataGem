@@ -1888,7 +1888,7 @@ function SuperFreezeEffects.generate(game, player, shadow_image, action_image, f
 	end
 	shadow:change{
 		duration = 40,
-		x = stage.width * (0.5 + 0.025 * sign),
+		x = stage.width * (0.5 + 0.05 * sign),
 		easing = "outQuart",
 	}
 	shadow:wait(15)
