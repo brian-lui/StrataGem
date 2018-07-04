@@ -459,11 +459,11 @@ function Charselect:draw()
 
 	local darkened = game:isScreenDark()
 	self.current_background:draw{darkened = darkened}
-	for _, v in spairs(gamestate.ui.static) do v:draw{darkened = darkened} end
-	for _, v in pairs(gamestate.ui.clickable) do v:draw{darkened = darkened} end
 	self.displayed_character_shadow:draw{darkened = darkened}
 	self.displayed_character:draw{darkened = darkened}
 	self.displayed_character_text:draw{darkened = darkened}
+	for _, v in spairs(gamestate.ui.static) do v:draw{darkened = darkened} end
+	for _, v in pairs(gamestate.ui.clickable) do v:draw{darkened = darkened} end
 	game:_drawSettingsMenu(self.gamestate)
 
 	if gamestate.name == "Multiplayer" then
