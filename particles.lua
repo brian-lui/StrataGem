@@ -1887,7 +1887,7 @@ function SuperFreezeEffects.generate(game, player, shadow_image, action_image, f
 		shadow:change{duration = 0, transparency = 1}
 	end
 	shadow:change{
-		duration = 40,
+		duration = 50,
 		x = stage.width * (0.5 + 0.05 * sign),
 		easing = "outQuart",
 	}
@@ -1912,7 +1912,7 @@ function SuperFreezeEffects.generate(game, player, shadow_image, action_image, f
 		x = stage.width * (0.5 + 0.025 * sign),
 		easing = "outQuart",
 	}
-	portrait:wait(25)
+	portrait:wait(35)
 	portrait:change{duration = 5, transparency = 0, remove = true}
 
 	local top_fuzz = common.instance(SuperFreezeEffects, game.particles, {
@@ -1928,7 +1928,7 @@ function SuperFreezeEffects.generate(game, player, shadow_image, action_image, f
 		top_fuzz:change{duration = 0, transparency = 1}
 	end
 	top_fuzz:change{duration = 21, y = 0, easing = "outQuart"}
-	top_fuzz:wait(40)
+	top_fuzz:wait(50)
 	top_fuzz:change{duration = 5, transparency = 0, remove = true}
 
 	local bottom_fuzz = common.instance(SuperFreezeEffects, game.particles, {
@@ -1944,11 +1944,11 @@ function SuperFreezeEffects.generate(game, player, shadow_image, action_image, f
 		bottom_fuzz:change{duration = 0, transparency = 1}
 	end
 	bottom_fuzz:change{duration = 21, y = stage.height, easing = "outQuart"}
-	bottom_fuzz:wait(40)
+	bottom_fuzz:wait(50)
 	bottom_fuzz:change{duration = 5, transparency = 0, remove = true}
 	game.sound:newSFX("superactivate")
 
-	return 90
+	return 100
 end
 
 SuperFreezeEffects = common.class("SuperFreezeEffects", SuperFreezeEffects, Pic)
