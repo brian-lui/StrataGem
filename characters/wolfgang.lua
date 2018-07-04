@@ -365,43 +365,97 @@ end
 
 -- Turns a grid gem into a friendly dog
 -- Used during super
-function Wolfgang:_turnGemToDog(gem)
+function Wolfgang:_turnGemToDog(gem, delay)
 	local image = self:_getRandomDog()
-	gem:setColor("wild", image.dog, image.explode, image.grey, image.pop)
+	gem:setColor(
+		"wild",
+		image.dog,
+		image.explode,
+		image.grey,
+		image.pop,
+		delay,
+		self.GEM_TO_DOG_ANIM_TIME
+	)
 	gem:setOwner(self.player_num)
 	gem:setMaxAlpha(true)
 	self.good_dogs[gem] = true
 end
 
 -- same but for good dog in deserialization
-function Wolfgang:_turnGemToGoodDog(gem)
+function Wolfgang:_turnGemToGoodDog(gem, delay)
 	local image = self:_getRandomDog()
-	gem:setColor("wild", image.dog, image.explode, image.grey, image.pop)
-	self.good_dogs[gem] = true
+	gem:setColor(
+		"wild",
+		image.dog,
+		image.explode,
+		image.grey,
+		image.pop,
+		delay,
+		self.GEM_TO_DOG_ANIM_TIME
+	)
+
+	local function stateChanges() self.good_dogs[gem] = true end
+
+	if delay then
+		self.game.queue:add(delay, stateChanges)
+	else
+		stateChanges()
+	end
 end
 
 -- same but for bad dog, used in deserialization
-function Wolfgang:_turnGemToBadDog(gem, turns_remaining)
+function Wolfgang:_turnGemToBadDog(gem, turns_remaining, delay)
 	local image = self:_getRandomDog()
-	gem:setColor("wild", image.dog, image.explode, image.grey, image.pop)
+	gem:setColor("wild",
+		image.dog,
+		image.explode,
+		image.grey,
+		image.pop,
+		delay,
+		self.GEM_TO_DOG_ANIM_TIME
+	)
 
-	for i = 1, #self.special_images.good_dog do
-		if gem.image == self.special_images.good_dog[i] then
-			gem.bad_dog_image = self.special_images.bad_dog[i]
+	local function stateChanges()
+		for i = 1, #self.special_images.good_dog do
+			if gem.image == self.special_images.good_dog[i] then
+				gem.bad_dog_image = self.special_images.bad_dog[i]
+			end
 		end
+
+		gem.good_dog_image = gem.image
+		gem.image = gem.bad_dog_image
+		gem.indestructible = true
+		gem.color = "none"
+		self.bad_dogs[gem] = turns_remaining
 	end
-	gem.good_dog_image = gem.image
-	gem.image = gem.bad_dog_image
-	gem.indestructible = true
-	gem.color = "none"
-	self.bad_dogs[gem] = turns_remaining
+
+	if delay then
+		self.game.queue:add(delay, stateChanges)
+	else
+		stateChanges()
+	end
 end
 
 -- same but for a dog in the hand, used in deserialization
-function Wolfgang:_turnHandGemToDog(gem)
+function Wolfgang:_turnHandGemToDog(gem, delay)
 	local image = self:_getRandomDog()
-	gem:setColor("wild", image.dog, image.explode, image.grey, image.pop)
-	self.good_dogs[gem] = true
+	gem:setColor(
+		"wild",
+		image.dog,
+		image.explode,
+		image.grey,
+		image.pop,
+		delay,
+		self.GEM_TO_DOG_ANIM_TIME
+	)
+
+	local function stateChanges() self.good_dogs[gem] = true end
+
+	if delay then
+		self.game.queue:add(delay, stateChanges)
+	else
+		stateChanges()
+	end
 end
 
 -- check all gems in grid for which would create a match, then
