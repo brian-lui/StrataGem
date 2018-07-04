@@ -179,6 +179,7 @@ end
 -- of its topmost/leftmost gem, a length, and whether it's horizontal.
 function Grid:_getRawMatches(min_length)
 	local function getColor(row, column)
+		assert(self[row][column], "invalid row/column provided to grid call, row: " .. row .. ", col:" .. column)
 		if self[row][column].gem then
 			return self[row][column].gem.color
 		end
