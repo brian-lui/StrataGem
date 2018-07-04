@@ -301,6 +301,23 @@ local function resetGame(game)
 			my_guy = "heath"
 		end
 	end
+
+	local function lpad (s) return string.rep("0", 4 - #s) .. s end
+	local index = 1
+	local padded_index = lpad(tostring(index))
+	local filename = os.date("%Y%m%d") .. padded_index .. ".txt"
+	while love.filesystem.getInfo(filename, "file") do
+		index = index + 1
+		padded_index = lpad(tostring(index))
+		filename = os.date("%Y%m%d") .. padded_index .. ".txt"
+	end
+
+	index = index - 1
+	if index > 0 then
+		padded_index = lpad(tostring(index))
+		filename = os.date("%Y%m%d") .. padded_index .. ".txt"
+		love.filesystem.remove(filename)
+	end
 end
 
 local my_guy = "heath"
@@ -332,6 +349,23 @@ local function resetGameP2(game)
 			my_guy = "heath"
 		end
 	end
+
+	local function lpad (s) return string.rep("0", 4 - #s) .. s end
+	local index = 1
+	local padded_index = lpad(tostring(index))
+	local filename = os.date("%Y%m%d") .. padded_index .. ".txt"
+	while love.filesystem.getInfo(filename, "file") do
+		index = index + 1
+		padded_index = lpad(tostring(index))
+		filename = os.date("%Y%m%d") .. padded_index .. ".txt"
+	end
+
+	index = index - 1
+	if index > 0 then
+		padded_index = lpad(tostring(index))
+		filename = os.date("%Y%m%d") .. padded_index .. ".txt"
+		love.filesystem.remove(filename)
+	end	
 end
 
 local function displayNoRush(game)
