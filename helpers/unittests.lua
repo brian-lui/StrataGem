@@ -303,6 +303,37 @@ local function resetGame(game)
 	end
 end
 
+local my_guy = "heath"
+local cpu_guy = "heath"
+local function resetGameP2(game)
+	game:start{
+		gametype = "Singleplayer",
+		char1 = my_guy,
+		char2 = cpu_guy,
+		playername1 = game.settings.player.name,
+		playername2 = "Sucky AI",
+		background = "checkmate",
+		side = 2,
+	}
+	if cpu_guy == "heath" then
+		cpu_guy = "walter"
+	elseif cpu_guy == "walter" then
+		cpu_guy = "wolfgang"
+	elseif cpu_guy == "wolfgang" then
+		cpu_guy = "heath"
+	end
+
+	if cpu_guy == "wolfgang" then
+		if my_guy == "heath" then
+			my_guy = "walter"
+		elseif my_guy == "walter" then
+			my_guy = "wolfgang"
+		elseif my_guy == "wolfgang" then
+			my_guy = "heath"
+		end
+	end
+end
+
 local function displayNoRush(game)
 	local column = 6
 	game.particles.words.generateNoRush(game, column)
@@ -547,7 +578,7 @@ local Unittests = {
 	t = testGreyCombo,
 	y = shuffleHands,
 	u = resetGame,
-	i = displayNoRush,
+	i = resetGameP2,
 	o = tweenPlacedGemDown,
 	p = tweenPlacedGemUp,
 	a = wolfgangGemSpeedToggle,
