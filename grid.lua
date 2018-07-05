@@ -47,7 +47,7 @@ function Grid:init(game)
 	end
 
 	-- pending gem positions
-	for i = 1, 6 do self.y[i] = stage.gem_height * (i - 8) end
+	for i = 0, 6 do self.y[i] = stage.gem_height * (i - 8) end
 
 	-- landing gem positions
 	self.y[7] = basin_bottom - 11.75 * stage.gem_height
@@ -62,7 +62,7 @@ function Grid:init(game)
 		self.y[i] = basin_bottom + (i - self.ROWS - 0.75) * stage.gem_height
 	end
 
-	for row = self.PENDING_START_ROW, self.BASIN_END_ROW + 1 do
+	for row = self.PENDING_START_ROW - 1, self.BASIN_END_ROW + 1 do
 		self[row] = {}
 		for col = 0, self.COLUMNS + 1 do
 			self[row][col] = {gem = nil, owner = 0}
@@ -71,7 +71,7 @@ function Grid:init(game)
 end
 
 function Grid:reset()
-	for row = self.PENDING_START_ROW, self.BASIN_END_ROW + 1 do
+	for row = self.PENDING_START_ROW - 1, self.BASIN_END_ROW + 1 do
 		self[row] = {}
 		for col = 0, self.COLUMNS + 1 do
 			self[row][col] = {gem = false, owner = 0}
@@ -179,7 +179,8 @@ end
 -- of its topmost/leftmost gem, a length, and whether it's horizontal.
 function Grid:_getRawMatches(min_length)
 	local function getColor(row, column)
-		assert(self[row][column], "invalid row/column provided to grid call, row: " .. row .. ", col:" .. column)
+		assert(self[row], "invalid row provided to grid call, row: " .. row)
+		assert(self[row][column], "invalid column provided to grid call, row: " .. row .. ", col:" .. column)
 		if self[row][column].gem then
 			return self[row][column].gem.color
 		end
