@@ -555,12 +555,12 @@ function Wolfgang:_getSuperArrivalLocation()
 	local possible_gems = {}
 
 	-- check possible matches
-	local original_matched_gems = #grid:getMatchedGems()
+	local _, original_matched_gems = grid:getMatchedGems()
 	for gem, r, c in grid:basinGems(self.player_num) do
 		if gem.color ~= "wild" and gem.color ~= "none" then
 			local grid_clone = deepcpy(grid)
 			grid_clone[r][c].gem.color = "wild"
-			local new_matched_gems = #grid_clone:getMatchedGems()
+			local _, new_matched_gems = grid_clone:getMatchedGems()
 			if new_matched_gems > original_matched_gems then
 				possible_gems[#possible_gems + 1] = gem
 			end
