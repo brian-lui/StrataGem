@@ -419,7 +419,7 @@ function Piece:deselect()
 	and go_ahead
 	and char_ability_ok
 	and self.game.current_phase == "Action" then
-		player.place_type = place_type
+		--player.place_type = place_type
 		self:dropIntoBasin(cols)
 	else -- snap back to original place. Pic.change interferes with rotate tween
 		self.x = player.hand[self.hand_idx].x

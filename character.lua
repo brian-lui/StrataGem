@@ -52,7 +52,7 @@ Character.garbage_rows_created = 0
 Character.dropped_piece = nil
 Character.is_supering = false
 Character.super_params = {}
-Character.place_type = "none"
+--Character.place_type = "none"
 Character.gain_super_meter = nil -- set 'false' to gain no meter from matches
 Character.CAN_SUPER_AND_PLAY_PIECE = false -- this is always false now
 

@@ -58,10 +58,11 @@ local function getCoords(piece, column)
 end
 
 -- place piece into actual grid
-local function placePiece(self, piece, coords, place_type)
+--local function placePiece(self, piece, coords, place_type)
+local function placePiece(self, piece, coords)
 	local player = piece.owner
-	place_type = place_type or "normal"
-	player.place_type = place_type
+	--place_type = place_type or "normal"
+	--player.place_type = place_type
 	self:queueAction(piece.dropIntoBasin, {piece, coords, true})
 	self.ai_delta = self.game:serializeDelta(self.ai_delta, piece, coords)
 end
