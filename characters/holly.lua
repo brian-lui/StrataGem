@@ -4,9 +4,11 @@ mark. When the flower gem breaks (regardless of who breaks it, including grey
 breaks) the Holly who made the flower heals one damage and the opponent takes
 one damage.
 
-Super: 8 random gems gain spore pods. Starting on the following turn, a spore
-pod explodes and destroys the gem it is on. Any matches created from this
-destruction are credited to Holly.
+Super: 2 spores appear randomly in either the topmost row or second top most
+row of any of the opponent’s columns. (So 2 spores randomly appearing in 2 of 8
+possible spaces.) If the opponent breaks a spore through matching, all
+the damage (including combo damage) is reflected. Spores disappear after three
+turns.
 --]]
 
 local love = _G.love
@@ -58,7 +60,8 @@ end
 
 function Holly:duringMatch()
 	-- apply flower heal/damage
-	-- depending on game logic, apply spore match damage here if spore gem was destroyed
+	--[[ if a match contains both player's spores, grey match. otherwise,
+	if a match contains a spore, force it to be flagged for the opponent]]
 end
 
 function Holly:afterMatch()
@@ -66,9 +69,9 @@ function Holly:afterMatch()
 	-- set match # to 0
 end
 
-function Holly:afterAllMatches()
-	-- spore pod explosion (once per turn)
-	-- if explode, then return [delay, true] to go to gravity phase, otherwise [delay, false]
+function Holly:cleanup()
+	-- countdown spores and disappear ones that reach 0 turns remaining
+	Character.cleanup(self)
 end
 
 return common.class("Holly", Holly, Character)
