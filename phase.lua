@@ -101,9 +101,7 @@ function Phase:action(dt)
 
 	if self.time_to_next <= 0 then
 		local drawspace = game.inits.drawspace
-		love.mousereleased(
-			drawspace.tlfres.getMousePosition(drawspace.width, drawspace.height)
-		)
+		game:mousereleased(game:_getmouseposition())
 
 		if game.type == "Netplay" then
 			self:setPhase("NetplaySendDelta")
