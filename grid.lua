@@ -81,17 +81,17 @@ end
 
 function Grid:gems(player_num)
 	local gems, rows, columns, index = {}, {}, {}, 0
-	local start_col, end_col
+	local start_col, end_col, step
 	if player_num == 1 then
-		start_col, end_col = 1, 4
+		start_col, end_col, step = 1, 4, 1
 	elseif player_num == 2 then
-		start_col, end_col = 8, 5
+		start_col, end_col, step = 8, 5, -1
 	else
-		start_col, end_col = 1, 8
+		start_col, end_col, step = 1, 8, 1
 	end
 
 	for i = self.PENDING_START_ROW, self.BASIN_END_ROW + 1 do
-		for j = start_col, end_col do
+		for j = start_col, end_col, step do
 			if self[i][j].gem then
 				gems[#gems+1] = self[i][j].gem
 				rows[#rows+1] = i
@@ -107,17 +107,17 @@ end
 
 function Grid:basinGems(player_num)
 	local gems, rows, columns, index = {}, {}, {}, 0
-	local start_col, end_col
+	local start_col, end_col, step
 	if player_num == 1 then
-		start_col, end_col = 1, 4
+		start_col, end_col, step = 1, 4, 1
 	elseif player_num == 2 then
-		start_col, end_col = 8, 5
+		start_col, end_col, step = 8, 5, -1
 	else
-		start_col, end_col = 1, 8
+		start_col, end_col, step = 1, 8, 1
 	end
 
 	for i = self.BASIN_START_ROW, self.BASIN_END_ROW + 1 do
-		for j = start_col, end_col do
+		for j = start_col, end_col, step do
 			if self[i][j].gem then
 				gems[#gems+1] = self[i][j].gem
 				rows[#rows+1] = i
