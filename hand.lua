@@ -384,13 +384,13 @@ end
 -- gets whether the player can still place a piece this turn
 function Hand:canPlacePiece()
 	local player = self.owner
-	local place_type = player.dropped_piece
+	local placed_piece = player.dropped_piece
 
 	if player.is_supering and not player.CAN_SUPER_AND_PLAY_PIECE then
 		return false
-	elseif place_type == "rushed" or place_type == "doubled" then
+	elseif placed_piece == "rushed" or placed_piece == "doubled" then
 		return false
-	elseif place_type == "normal" and player.cur_burst < player.current_double_cost then
+	elseif placed_piece == "normal" and player.cur_burst < player.current_double_cost then
 		return false
 	else
 		return true
