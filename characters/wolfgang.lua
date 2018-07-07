@@ -929,6 +929,7 @@ function Wolfgang:afterAllMatches()
 			self.super_dogs_to_make = self.super_dogs_to_make - 1
 			force_gravity_phase = true
 			self.need_to_activate_super_dog = false
+			self.gain_super_meter = false
 		end
 	end
 
@@ -960,7 +961,7 @@ function Wolfgang:cleanup()
 	self:_countdownBadDogs()
 	self.this_turn_matched_colors = {}
 	self.need_to_activate_super_dog = true
-	self.gain_super_meter = nil
+	self.gain_super_meter = true
 	Character.cleanup(self)
 end
 
