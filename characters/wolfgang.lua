@@ -171,6 +171,7 @@ function Wolfgang:init(...)
 	self.bad_dog_mad_image = self.special_images.bad_dog_mad
 	self.single_dogs_to_make = 0
 	self.super_dogs_to_make = 0
+	self.need_to_activate_super_dog = true
 	self.super_dog_icons = {}
 end
 -------------------------------------------------------------------------------
@@ -787,7 +788,7 @@ end
 function Wolfgang:beforeTween()
 	self.is_supering = false
 	self:_brightenScreen()
-
+--[[
 	local delay
 	-- Move a superdog to grid
 	if self.super_dogs_to_make > 0 then
@@ -801,6 +802,7 @@ function Wolfgang:beforeTween()
 
 	print("total delay", delay)
 	return delay
+	--]]
 end
 
 function Wolfgang:beforeMatch()
@@ -911,11 +913,26 @@ function Wolfgang:afterAllMatches()
 	if all_lit_up then
 		self.single_dogs_to_make = self.single_dogs_to_make + self.FULL_BARK_DOG_ADDS
 		for _, letter in pairs(self.letters) do letter:darken() end
-		delay = 60
+		delay = 40
 	end
 
 	-- if any bad dogs were destroyed, go to gravity phase again
 	local force_gravity_phase = self:_upkeepBadDogs()
+
+	-- Move a superdog to grid
+	if self.super_dogs_to_make > 0 and self.need_to_activate_super_dog then
+		local arrival_gem = self:_getSuperArrivalLocation()
+		if arrival_gem then
+			local moving_dog = self.super_dog_icons[self.super_dogs_to_make]
+			local super_dog_delay = moving_dog:moveToGrid(arrival_gem, delay)
+			delay = math.max(delay, super_dog_delay)
+			self.super_dogs_to_make = self.super_dogs_to_make - 1
+			force_gravity_phase = true
+			self.need_to_activate_super_dog = false
+		end
+	end
+
+	print("total delay", delay)
 	if force_gravity_phase then print("going to gravity phase") end
 	return delay, force_gravity_phase
 end
@@ -942,7 +959,7 @@ function Wolfgang:cleanup()
 	self:_assignBadDogImages()
 	self:_countdownBadDogs()
 	self.this_turn_matched_colors = {}
-	self.need_to_countdown_bad_dogs = true
+	self.need_to_activate_super_dog = true
 	self.gain_super_meter = nil
 	Character.cleanup(self)
 end

@@ -348,7 +348,7 @@ function SuperParticle.generate(game, gem, num_particles, delay_frames, force_ma
 		print("Warning: player super gain disabled but SuperParticle.generate called")
 		return
 	end
-	
+
 	for _ = 1, num_particles do
 		-- create bezier curve
 		local x1, y1 = gem.x, gem.y -- start
