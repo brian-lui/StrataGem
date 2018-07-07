@@ -571,7 +571,9 @@ function Wolfgang:_getSuperArrivalLocation()
 	-- if no possible matches
 	if #possible_gems == 0 then
 		for gem in grid:basinGems(self.player_num) do
-			possible_gems[#possible_gems + 1] = gem
+			if gem.color ~= "wild" and gem.color ~= "none" then
+				possible_gems[#possible_gems + 1] = gem
+			end
 		end
 	end
 
