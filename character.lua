@@ -53,7 +53,7 @@ Character.dropped_piece = nil
 Character.is_supering = false
 Character.super_params = {}
 --Character.place_type = "none"
-Character.gain_super_meter = nil -- set 'false' to gain no meter from matches
+Character.gain_super_meter = true -- set false to gain no meter from matches
 Character.CAN_SUPER_AND_PLAY_PIECE = false -- this is always false now
 
 function Character:init(player_num, game)
@@ -78,7 +78,7 @@ function Character:init(player_num, game)
 end
 
 function Character:addSuper(amt)
-	self.mp = self.mp + amt
+	if self.gain_super_meter then self.mp = self.mp + amt end
 end
 
 function Character:addDamage(damage, delay)

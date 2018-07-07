@@ -883,7 +883,7 @@ function Grid:destroyGem(params)
 		if params.damage ~= false then
 			player.enemy:addDamage(1 + extra_damage, delay_until_explode)
 		end
-		if params.super_meter ~= false then
+		if params.super_meter ~= false and player.gain_super_meter then
 			assert(player.meter_gain[gem.color], "Nil super meter gain value!")
 			player:addSuper(player.meter_gain[gem.color])
 		end
@@ -903,7 +903,7 @@ function Grid:destroyGem(params)
 			soundfile_name
 		)
 
-		if params.super_meter ~= false then
+		if params.super_meter ~= false and player.gain_super_meter then
 			local num = player.is_supering and 0 or player.meter_gain[gem.color]
 			particles.superParticles.generate(
 				game,
