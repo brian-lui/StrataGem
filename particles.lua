@@ -344,7 +344,7 @@ end
 -- particles follow cubic Bezier curve from gem origin to super bar.
 function SuperParticle.generate(game, gem, num_particles, delay_frames, force_max_alpha)
 	local player = game:playerByIndex(gem.player_num)
-	if not player.gain_super_meter then
+	if not player.can_gain_super then
 		print("Warning: player super gain disabled but SuperParticle.generate called")
 		return
 	end

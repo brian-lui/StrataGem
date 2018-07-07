@@ -833,7 +833,7 @@ function Grid:destroyMatchedGems(combo_bonus)
 
 		local gain_super = nil
 		local owner = self.game:playerByIndex(gem.player_num)
-		if owner then gain_super = owner.gain_super_meter end
+		if owner then gain_super = owner.can_gain_super end
 
 		local delay_explode, damage_duration = self:destroyGem{
 			gem = gem,
@@ -883,7 +883,7 @@ function Grid:destroyGem(params)
 		if params.damage ~= false then
 			player.enemy:addDamage(1 + extra_damage, delay_until_explode)
 		end
-		if params.super_meter ~= false and player.gain_super_meter then
+		if params.super_meter ~= false and player.can_gain_super then
 			assert(player.meter_gain[gem.color], "Nil super meter gain value!")
 			player:addSuper(player.meter_gain[gem.color])
 		end
@@ -903,7 +903,7 @@ function Grid:destroyGem(params)
 			soundfile_name
 		)
 
-		if params.super_meter ~= false and player.gain_super_meter then
+		if params.super_meter ~= false and player.can_gain_super then
 			local num = player.is_supering and 0 or player.meter_gain[gem.color]
 			particles.superParticles.generate(
 				game,
