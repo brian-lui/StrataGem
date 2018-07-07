@@ -1036,8 +1036,13 @@ function Wolfgang:serializeSpecials()
 	end
 	ret[#ret+1] = ","
 
-	-- pending dogs to make
+	-- pending single dogs to make
 	ret[#ret+1] = self.single_dogs_to_make
+	ret[#ret+1] = ","
+
+	-- pending super dogs to make
+	ret[#ret+1] = self.super_dogs_to_make
+	ret[#ret+1] = ","
 
 	return table.concat(ret)
 end
@@ -1053,7 +1058,8 @@ function Wolfgang:deserializeSpecials(str)
 	local hand_dogs = specials[2]
 	local good_dogs = specials[3]
 	local bad_dogs = specials[4]
-	local upcoming_dogs = specials[5]
+	local upcoming_single_dogs = specials[5]
+	local upcoming_super_dogs = specials[6]
 
 	-- lighting
 	local letters = {
@@ -1113,7 +1119,9 @@ function Wolfgang:deserializeSpecials(str)
 		self:_turnGemToBadDog(gem, turns_remaining)
 	end
 
-	self.single_dogs_to_make = tonumber(upcoming_dogs)
+	-- upcoming dogs
+	self.single_dogs_to_make = tonumber(upcoming_single_dogs)
+	self.super_dogs_to_make = tonumber(upcoming_super_dogs)
 
 	-- upkeep
 	self:_assignBadDogImages()
