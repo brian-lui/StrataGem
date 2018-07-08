@@ -915,7 +915,7 @@ function Wolfgang:afterAllMatches()
 	if all_lit_up then
 		self.single_dogs_to_make = self.single_dogs_to_make + self.FULL_BARK_DOG_ADDS
 		for _, letter in pairs(self.letters) do letter:darken() end
-		delay = 40
+		delay = 30
 	end
 
 	-- if any bad dogs were destroyed, go to gravity phase again
