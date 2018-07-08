@@ -189,9 +189,6 @@ end
 
 function Phase:beforeGravity(dt)
 	local game = self.game
-	if game.p1.is_supering then game.p1:emptyMP() end
-	if game.p2.is_supering then game.p2:emptyMP() end
-
 	local delay = 0
 	for player in game:players() do
 		local player_delay = player:beforeGravity()
