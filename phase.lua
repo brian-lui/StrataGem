@@ -155,7 +155,6 @@ end
 
 function Phase:resolve(dt)
 	local game = self.game
-	--assert(game.me_player.place_type, "PLACE TYPE BUG")
 
 	if game.type ~= "Replay" then game:writeDeltas() end
 	game.grid:updateRushPriority()
@@ -348,7 +347,6 @@ function Phase:resolvedMatches(dt)
 
 	self:setPause(delay)
 
-	--for player in game:players() do player.place_type = "none" end
 	game.scoring_combo = 0
 
 	if next_phase == "DestroyDamagedPlatforms" then

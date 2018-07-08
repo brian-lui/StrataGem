@@ -427,19 +427,7 @@ function Game:deserializeDelta(delta_string, player)
 			assert(piece, "piece in position " .. pos .. " not found")
 			assert(rotation, "rotation not provided")
 			assert(column, "placement column not provided")
-			--[[
-			if v == "Pc2" then
-				player.place_type = "double"
-			else
-				for col in self.grid:cols(player.player_num) do
-					if column == col then
-						player.place_type = "normal"
-						break
-					end
-					player.place_type = "rush"
-				end
-			end
-			--]]
+
 			for _ = 1, rotation do piece:rotate() end
 
 			local coords
@@ -461,7 +449,6 @@ function Game:deserializeDelta(delta_string, player)
 			player.super_params = delta[i+1]
 		end
 	end
-	--print("Player " .. player.player_num .. " piece place type: " .. player.place_type)
 end
 
 -------------------------------------------------------------------------------
