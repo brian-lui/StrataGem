@@ -781,14 +781,14 @@ function Wolfgang:beforeGravity()
 			local new_dog = self.fx.superDog.create(self.game, self)
 			self.super_dog_icons[self.super_dogs_to_make] = new_dog
 		end
-	end
 
+		self.is_supering = false
+	end
 
 	return delay
 end
 
 function Wolfgang:beforeTween()
-	self.is_supering = false
 	self:_brightenScreen()
 --[[
 	local delay
