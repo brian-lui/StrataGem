@@ -883,8 +883,9 @@ function Wolfgang:afterMatch()
 	local delay = 0
 	for color in pairs(self.this_turn_matched_colors) do
 		self.letters[color]:lightUp()
-		delay = 45
+		delay = 30
 	end
+	self.can_gain_super = true
 	return delay
 end
 
