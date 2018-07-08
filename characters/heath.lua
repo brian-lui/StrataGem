@@ -83,7 +83,7 @@ function Heath:init(...)
 	self.FIRE_EXIST_TURNS = 3 -- how many turns the fire exists for
 
 	self.burned_this_turn = false -- whether fires have burned already
-
+	self.supered_this_turn = false
 	self.pending_fires = {0, 0, 0, 0, 0, 0, 0, 0} -- match fires generated at t0
 	self.ready_fires = {0, 0, 0, 0, 0, 0, 0, 0} -- fires at t1, ready to burn
 	self.pending_gem_cols = {} -- pending gems, for extinguishing of ready_fires
@@ -421,6 +421,10 @@ function Heath:beforeGravity()
 		end
 
 		game.sound:newSFX(self.sounds.passive)
+
+		self:emptyMP()
+		self.is_supering = false
+		self.supered_this_turn = true
 	end
 
 	return explode_delay + particle_delay
@@ -474,7 +478,7 @@ function Heath:afterMatch()
 	local delay = 0
 	local fire_sound = false
 	for i in grid:cols() do
-		if self.pending_fires[i] > 0 and not self.is_supering then
+		if self.pending_fires[i] > 0 and not self.supered_this_turn then
 			if self:_columnHasParticle(i) then
 			-- when a new fire overwrites an old fire, overwrite the image
 			-- by immediately updating turns_remaining instead of at cleanup
@@ -498,16 +502,11 @@ end
 function Heath:afterAllMatches()
 	local grid = self.game.grid
 	local delay, frames_to_explode = 0, 0
-	-- super
-	if self.is_supering then
-		self:emptyMP()
-		self.is_supering = false
-	end
 
 	-- activate horizontal match fires
 	if not self.burned_this_turn then
 		for i in grid:cols() do
-			if self.ready_fires[i] > 0 and not self.is_supering then
+			if self.ready_fires[i] > 0 and not self.supered_this_turn then
 				local row = grid:getFirstEmptyRow(i) + 1
 				if grid[row][i].gem then
 					local explode_delay, damage_duration = grid:destroyGem{
@@ -542,7 +541,7 @@ function Heath:cleanup()
 	self:_updateParticleTimers()
 
 	self.burned_this_turn = false
-	self.is_supering = false
+	self.supered_this_turn = false
 
 	Character.cleanup(self)
 end
