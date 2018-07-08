@@ -790,21 +790,6 @@ end
 
 function Wolfgang:beforeTween()
 	self:_brightenScreen()
---[[
-	local delay
-	-- Move a superdog to grid
-	if self.super_dogs_to_make > 0 then
-		local arrival_gem = self:_getSuperArrivalLocation()
-		if arrival_gem then
-			local moving_dog = self.super_dog_icons[self.super_dogs_to_make]
-			delay = moving_dog:moveToGrid(arrival_gem)
-			self.super_dogs_to_make = self.super_dogs_to_make - 1
-		end
-	end
-
-	print("total delay", delay)
-	return delay
-	--]]
 end
 
 function Wolfgang:beforeMatch()
