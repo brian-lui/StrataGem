@@ -660,6 +660,8 @@ function Walter:_activateSuper()
 		self.fx.spout.generate(self.game, self, col)
 	end
 
+	self:emptyMP()
+
 	return explode_delay + particle_delay
 end
 
@@ -699,14 +701,17 @@ end
 function Walter:beforeGravity()
 	local delay = 0
 
-	if self.is_supering then delay = self:_activateSuper()	end
+	if self.is_supering then
+		delay = self:_activateSuper()
+		self.is_supering = false
+	end
+
 	local additional_delay = self:_cloudHealingDamage(delay)
 
 	return delay + additional_delay
 end
 
 function Walter:beforeTween()
-	self.is_supering = false
 	self.game:brightenScreen(self.player_num)
 end
 
