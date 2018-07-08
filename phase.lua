@@ -268,10 +268,10 @@ function Phase:getMatchedGems(dt)
 	end
 
 	if matches > 0 then
-		self:setPause(delay + self.damage_particle_duration)
+		self:setPause(delay)
 		self:activatePause("DestroyMatchedGems")
 	else
-		self:setPause(delay)
+		self:setPause(delay + self.damage_particle_duration)
 		self.damage_particle_duration = 0
 		self:activatePause("ResolvedMatches")
 	end
