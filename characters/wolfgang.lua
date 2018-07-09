@@ -122,7 +122,7 @@ function Wolfgang:init(...)
 		{x = super_x - stage.width * 0.07, y = super_y - stage.width * 0.02},
 		{x = super_x + stage.width * 0.07, y = super_y + stage.width * 0.02},
 		{x = super_x + stage.width * 0.07, y = super_y - stage.width * 0.02},
-		{x = -stage.width, y = -stage.height}, -- don't show 5th+ icons
+		{x = -stage.width, y = stage.height * 2}, -- don't show 5th+ icons
 	}
 
 	self.letters = {
