@@ -886,7 +886,7 @@ function Wolfgang:afterMatch()
 		self.letters[color]:lightUp()
 		delay = 30
 	end
-	self.can_gain_super = true
+
 	return delay
 end
 
