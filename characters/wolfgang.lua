@@ -782,6 +782,7 @@ function Wolfgang:beforeGravity()
 			self.super_dog_icons[self.super_dogs_to_make] = new_dog
 		end
 
+		self:emptyMP()
 		self.is_supering = false
 	end
 
