@@ -288,13 +288,14 @@ function Phase:destroyMatchedGems(dt)
 
 	local explode_delay, particle_duration = grid:destroyMatchedGems(game.scoring_combo)
 
-	local delay = 0
+	local delay = explode_delay + game.GEM_FADE_FRAMES
 	for player in game:players() do
 		local player_delay = player:duringMatch()
 		delay = math.max(delay, player_delay or 0)
 	end
 	local total_delay = math.max(delay, explode_delay + particle_duration)
-	self:setPause(total_delay)
+
+	self:setPause(delay)
 	self:activatePause("ResolvingMatches")
 	self.damage_particle_duration = total_delay
 end
