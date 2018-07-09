@@ -951,10 +951,10 @@ function Wolfgang:afterAllMatches()
 			self.need_to_activate_super_dog = false
 			self.can_gain_super = false
 		end
+	else
+		self.can_gain_super = true -- in case of garbage matches
 	end
 
-	print("total delay", delay)
-	if force_gravity_phase then print("going to gravity phase") end
 	return delay, force_gravity_phase
 end
 
