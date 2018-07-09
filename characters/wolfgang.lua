@@ -307,45 +307,62 @@ function SuperDog.create(game, owner, delay)
 		name = "WolfgangSuperDogIcon",
 	}
 
-	local p = common.instance(SuperDog, game.particles, params)
-	p.scaling = 0.75
+	local dog = common.instance(SuperDog, game.particles, params)
+	dog.scaling = 0.75
 	if delay then
-		p:change{transparency = 0}
-		p:wait(delay)
-		p:change{duration = 0, transparency = 1}
+		dog:change{transparency = 0}
+		dog:wait(delay)
+		dog:change{duration = 0, transparency = 1}
 	end
 
-	return p
-end
+	-- pop background
+	local pop_params = {
+		x = x,
+		y = y,
+		image = owner.special_images.dog_pop,
+		draw_order = -1,
+		owner = owner,
+		player_num = owner.player_num,
+		name = "SuperDogPop",
+	}
+	local pop = common.instance(SuperDog, game.particles, pop_params)
+	pop.scaling = 0.75
+	if delay then
+		pop:change{transparency = 0}
+		pop:wait(delay)
+		pop:change{duration = 0, transparency = 1}
+	end
+	pop:change{duration = 30, transparency = 0, scaling = 3, remove = true}
 
-function SuperDog:destroy(delay)
-	local TIME_TO_EXPLOSION = 50
-	if delay then self:wait(delay) end	
-	self:change{
-		duration = TIME_TO_EXPLOSION,
-		transparency = 1,
-		scaling = 1.5,
-		easing = "inBounce",
+	-- star fountain
+	game.particles.dust.generateStarFountain{
+		game = game,
+		x = x,
+		y = y,
+		color = "wild",
+		delay = delay,
 	}
-	self:change{
-		duration = 20,
-		transparency = 0,
-		scaling = 2,
-		remove = true,
-	}
-	return TIME_TO_EXPLOSION
+
+	return dog
 end
 
 function SuperDog:moveToGrid(gem, delay)
-	local DEST_PAUSE = 20 -- origin explosion to destination animation
-	delay = delay or 0
 	local game = self.game
 	local owner = self.owner
+	local INIT_EXPLODE_TIME = 20 -- initial explosion duration
+	local TRAVEL_TIME = 90 -- origin explosion to destination animation
+	delay = delay or 0
+
+	-- move 5th+ dogs back to 4th spot
+	local start_x, start_y = self.x, self.y
+	if self.index == 5 then
+		start_x, start_y = owner.SUPER_DOG_LOCS[4].x, owner.SUPER_DOG_LOCS[4].y
+	end
 
 	-- pop background at origin
 	local pop_params = {
-		x = self.x,
-		y = self.y,
+		x = start_x,
+		y = start_y,
 		image = owner.special_images.dog_pop,
 		draw_order = -1,
 		owner = owner,
@@ -788,10 +805,12 @@ function Wolfgang:beforeGravity()
 
 	-- Create super dogs
 	if self.is_supering then
-		for _ = 1, 4 do
+		for i = 1, 4 do
 			self.super_dogs_to_make = self.super_dogs_to_make + 1
-			local new_dog = self.fx.superDog.create(self.game, self)
+			local new_dog = self.fx.superDog.create(self.game, self, (i-1) * 15)
+			new_dog.force_max_alpha = true
 			self.super_dog_icons[self.super_dogs_to_make] = new_dog
+			delay = math.max(delay, i * 15)
 		end
 
 		self:emptyMP()
