@@ -361,17 +361,30 @@ function SuperDog:moveToGrid(gem, delay)
 	end
 	pop:change{duration = 30, transparency = 0, scaling = 3, remove = true}
 
-	-- this creates the explosion effect too
-	local explosion_duration = self:destroy(delay)
+	-- move the dog to the destination, and replace image when there
+	local x1, y1 = start_x, start_y -- start
+	local x2, y2 = gem.x, start_y - (gem.y - start_y)  
+	local x3, y3 = gem.x, gem.y -- end
+	local curve = love.math.newBezierCurve(x1, y1, x2, y2, x3, y3)
+	self:wait(INIT_EXPLODE_TIME + delay)
+	self:change{
+		duration = TRAVEL_TIME,
+		curve = curve,
+		scaling = 1,
+		remove = true,
+		exit_func = function() owner:_turnGemToGoodDog(gem) end,
+	}
 
 	-- garbage circle particles at destination
-	game.particles.dust.generateGarbageCircle{
-		game = game,
-		x = gem.x,
-		y = gem.y,
-		color = "wild",
-		delay_frames = delay + explosion_duration + DEST_PAUSE,
-	}
+	for i = 0, 1 do
+		game.particles.dust.generateGarbageCircle{
+			game = game,
+			x = gem.x,
+			y = gem.y,
+			delay_frames = i * 8 + delay + INIT_EXPLODE_TIME + TRAVEL_TIME,
+			color = "wild",
+		}
+	end
 
 	-- reverse pop at destination
 	local reverse_pop = {
@@ -385,7 +398,7 @@ function SuperDog:moveToGrid(gem, delay)
 	}
 	local rev_pop = common.instance(SuperDog, game.particles, reverse_pop)
 	rev_pop:change{transparency = 0, scaling = 4}
-	rev_pop:wait(delay + explosion_duration + DEST_PAUSE)
+	rev_pop:wait(delay + INIT_EXPLODE_TIME + TRAVEL_TIME)
 	rev_pop:change{
 		duration = 30,
 		transparency = 1,
@@ -399,10 +412,10 @@ function SuperDog:moveToGrid(gem, delay)
 		x = gem.x,
 		y = gem.y,
 		image = self.image,
-		delay_frames = delay + explosion_duration + DEST_PAUSE,
+		delay_frames = delay + INIT_EXPLODE_TIME + TRAVEL_TIME,
 	}
 
-	local total_delay = delay + explosion_duration + DEST_PAUSE + rev_explode_time
+	local total_delay = delay + INIT_EXPLODE_TIME + TRAVEL_TIME + rev_explode_time
 
 	-- fountain at destination
 	game.particles.dust.generateBigFountain{
@@ -413,7 +426,6 @@ function SuperDog:moveToGrid(gem, delay)
 		delay_frames = total_delay,
 	}
 
-	owner:_turnGemToGoodDog(gem, delay + explosion_duration + DEST_PAUSE)
 	gem:setOwner(self.player_num)
 	return total_delay
 end
