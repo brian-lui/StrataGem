@@ -569,6 +569,8 @@ end
 
 function MatchDust.generate(game, owner, match_list)
 	local grid = game.grid
+	local stage = game.stage
+	local TIME_TO_DEST = 120
 	local dust_color = match_list[1].color
 	local image = images.lookup.smalldust(dust_color, false)
 	assert(image, "Invalid color specified for dust")
@@ -576,8 +578,8 @@ function MatchDust.generate(game, owner, match_list)
 	for i = 1, #match_list do
 		for _ = 1, 20 do
 			local row, col = match_list[i].row, match_list[i].column
-			local x_start = grid.x[col] + images.GEM_WIDTH * (math.random() - 0.5)
-			local y_start = grid.y[row] + images.GEM_HEIGHT * (math.random() - 0.5)
+			local x_start = grid.x[col] + images.GEM_WIDTH * (math.random()-0.5)
+			local y_start = grid.y[row] + images.GEM_HEIGHT * (math.random()-0.5)
 			local x_dest = grid.x[col]
 			local y_dest = grid.y[owner.CLOUD_ROW]
 
@@ -594,7 +596,7 @@ function MatchDust.generate(game, owner, match_list)
 
 			local p = common.instance(MatchDust, game.particles, params)
 			p:change{
-				duration = 120,
+				duration = TIME_TO_DEST,
 				x = x_dest,
 				y = y_dest,
 				easing = "inCubic",
@@ -603,7 +605,42 @@ function MatchDust.generate(game, owner, match_list)
 		end
 	end
 
-	return 120 -- time until dust disappears
+	-- vertical dust sparklies
+	for _, gem in ipairs(match_list) do
+		for i = 0, 79, 2 do
+			local params = {
+				x = grid.x[gem.column] + images.GEM_WIDTH * (math.random()-0.5),
+				y = grid.y[gem.row],
+				image = images.lookup.smalldust(dust_color),
+				draw_order = 2,
+				name = "WalterMatchSparkle",
+			}
+
+			local up = common.instance(MatchDust, game.particles, params)
+			up.transparency = 0
+			up:wait(i)
+			up:change{duration = 0, transparency = 1}
+			up:change{
+				duration = 90,
+				y = up.y - stage.height,
+				remove = true,
+				easing = "outQuad",
+			}
+
+			local down = common.instance(MatchDust, game.particles, params)
+			down.transparency = 0
+			down:wait(i)
+			down:change{duration = 0, transparency = 1}
+			down:change{
+				duration = 90,
+				y = down.y + stage.height,
+				remove = true,
+				easing = "outQuad",
+			}
+		end
+	end
+	
+	return TIME_TO_DEST
 end
 MatchDust = common.class("MatchDust", MatchDust, Pic)
 
@@ -734,7 +771,7 @@ function Walter:beforeMatch()
 	local gem_list = grid:getMatchedGemLists()
 	for _, list in pairs(gem_list) do
 		if self.player_num == list[1].player_num and list[1].is_in_a_vertical_match then
-			delay = math.max(delay, 20)
+			delay = math.max(delay, game.GEM_EXPLODE_FRAMES)
 			frames_until_cloud_forms = self.fx.matchDust.generate(game, self, list)
 		end
 	end
