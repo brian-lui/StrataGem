@@ -349,7 +349,6 @@ end
 function SuperDog:moveToGrid(gem, delay)
 	local game = self.game
 	local owner = self.owner
-	local INIT_EXPLODE_TIME = 20 -- initial explosion duration
 	local TRAVEL_TIME = 90 -- origin explosion to destination animation
 	delay = delay or 0
 
@@ -383,7 +382,7 @@ function SuperDog:moveToGrid(gem, delay)
 	local x2, y2 = gem.x, start_y - (gem.y - start_y)  
 	local x3, y3 = gem.x, gem.y -- end
 	local curve = love.math.newBezierCurve(x1, y1, x2, y2, x3, y3)
-	self:wait(INIT_EXPLODE_TIME + delay)
+	self:wait(delay)
 	self:change{
 		duration = TRAVEL_TIME,
 		curve = curve,
@@ -398,7 +397,7 @@ function SuperDog:moveToGrid(gem, delay)
 			game = game,
 			x = gem.x,
 			y = gem.y,
-			delay_frames = i * 8 + delay + INIT_EXPLODE_TIME + TRAVEL_TIME,
+			delay_frames = i * 8 + delay + TRAVEL_TIME,
 			color = "wild",
 		}
 	end
@@ -415,7 +414,7 @@ function SuperDog:moveToGrid(gem, delay)
 	}
 	local rev_pop = common.instance(SuperDog, game.particles, reverse_pop)
 	rev_pop:change{transparency = 0, scaling = 4}
-	rev_pop:wait(delay + INIT_EXPLODE_TIME + TRAVEL_TIME)
+	rev_pop:wait(delay + TRAVEL_TIME)
 	rev_pop:change{
 		duration = 30,
 		transparency = 1,
@@ -429,10 +428,10 @@ function SuperDog:moveToGrid(gem, delay)
 		x = gem.x,
 		y = gem.y,
 		image = self.image,
-		delay_frames = delay + INIT_EXPLODE_TIME + TRAVEL_TIME,
+		delay_frames = delay + TRAVEL_TIME,
 	}
 
-	local total_delay = delay + INIT_EXPLODE_TIME + TRAVEL_TIME + rev_explode_time
+	local total_delay = delay + TRAVEL_TIME + rev_explode_time
 
 	-- fountain at destination
 	game.particles.dust.generateBigFountain{
