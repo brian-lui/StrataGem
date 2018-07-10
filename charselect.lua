@@ -1,5 +1,8 @@
--- This is the character select as a class, so it can be instantiated by either
--- singleplayer or netplay
+--[[
+This is the character select as a class, so it can be instantiated by either
+singleplayer or netplay gamestates.
+It includes a Lobby class that provides an interface to client.lua
+--]]
 
 local common = require "class.commons"
 local images = require "images"

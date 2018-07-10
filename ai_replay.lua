@@ -1,4 +1,7 @@
--- Subclass of normal AI that just relays player inputs from a file.
+--[[
+Subclass of normal AI that just relays player inputs from a file.
+--]]
+
 local common = require "class.commons"
 
 local ai_replay = {}

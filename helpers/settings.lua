@@ -1,3 +1,8 @@
+--[[
+This module handles the game settings and default.
+In future, this should also handle some type of player login/info system.
+--]]
+
 local love = _G.love
 local json = require "/libraries/dkjson"
 

@@ -1,6 +1,6 @@
-local love = _G.love
-
 --[[
+	This is just a testing module for character animations later
+
 	HEY DUDES READ THIS
 	put images into the image table then call image.name
 
@@ -19,6 +19,8 @@ local love = _G.love
 	dog:fadeOut(fade_speed, duration, easing) -- not implemented yet lol!
 	dog:fadeIn(fade_speed, duration, easing) -- not implemented yet lol!
 --]]
+
+local love = _G.love
 
 local image = {
 	heathbody = love.graphics.newImage('images/heathpuppet/heathbody.png'),

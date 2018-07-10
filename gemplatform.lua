@@ -1,3 +1,9 @@
+--[[
+A small module to handle the platforms underneath the gems in the player's hand.
+It's separated into its own class because the platforms have to move and spin
+and turn red and break up and all that.
+--]]
+
 local images = require "images"
 local common = require "class.commons" -- class support
 local Pic = require "pic"

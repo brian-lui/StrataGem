@@ -1,3 +1,8 @@
+--[[
+This is the gamestate module for the multiplayer character select screen.
+--]]
+
+
 local common = require "class.commons"
 
 local Multiplayer = {name = "Multiplayer", gametype = "Netplay"}

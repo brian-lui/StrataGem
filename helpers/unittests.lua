@@ -1,3 +1,8 @@
+--[[
+This is a debug module. By pressing a key on the keyboard, a function can be
+called. You can pretty much write your own function here.
+--]]
+
 -- You can make some patterns to test bugs
 local common = require "class.commons"
 local Gem = require "gem"

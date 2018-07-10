@@ -1,3 +1,8 @@
+--[[
+This module handles music and sound effects. The most commonly called modules
+should be Sound:newBGM() and Sound:newSFX().
+--]]
+
 local love = _G.love
 local common = require "class.commons"
 local stringEndsWith = require "/helpers/utilities".stringEndsWith

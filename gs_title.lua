@@ -1,4 +1,6 @@
 --[[
+	This is the gamestate module for the title  screen.
+
 	Note to coders and code readers!
 	You can't call title.createButton by doing title:createButton(...)
 	That will call it by passing in an instance of title, which doesn't work

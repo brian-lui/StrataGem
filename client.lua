@@ -1,3 +1,8 @@
+--[[
+This module provides the netplay functions, handling connection, disconnection,
+finding a match, and sending and receiving deltas and gamestates during a match
+--]]
+
 local love = _G.love
 local socket = require "socket"
 local json = require "/libraries/dkjson"

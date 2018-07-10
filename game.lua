@@ -1,3 +1,17 @@
+--[[
+This is the main game module.
+It contains several major components:
+Queue - this is the component that allows convenient callbacks, for situations
+where there isn't a better way to callback
+Serialization - this module has a section for serializing the gamestate and
+delta
+Menu - this has the menu prototype, e.g. the settings menu and actions
+Global default callbacks - this has global default functions for things like
+keypress, mouse actions
+Global default functions - this has global functions that apply to multiple
+states, such as darkening and brightening screen
+--]]
+
 local love = _G.love
 local Pic = require "pic"
 local common = require "/libraries/classcommons"

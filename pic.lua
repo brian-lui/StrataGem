@@ -1,3 +1,11 @@
+--[[
+This is the base class for almost all game images. Images are represented as
+instances of the Pic class, and can use the methods associated with it.
+
+The most useful methods are Pic:create(), Pic:newImage(), Pic:newImageFadeIn(),
+Pic:change(), and Pic:wait().
+--]]
+
 local love = _G.love
 local common = require "class.commons"
 local tween = require "/libraries/tween"

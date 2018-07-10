@@ -1,3 +1,8 @@
+--[[
+This module is the class for an individual gem.
+Because of some previous coding issues, this doesn't fully conform to pic.lua
+standards, especially in Gem:draw().
+--]]
 local love = _G.love
 local common = require "class.commons" -- class support
 local images = require "images"

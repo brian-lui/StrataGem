@@ -1,13 +1,15 @@
-local love = _G.love
 --[[
-	Every background should have:
-	ID_number - used for the ordering of the backgrounds
-	init(game)
-	update(dt)
-	draw()
-	The background class needs to be added, near the end of this file
+This module provides the backgrounds and associated animations for all
+gamestates.
+
+Every background should have:
+ID_number - used for the ordering of the backgrounds
+init(game)
+update(dt)
+draw()
 --]]
 
+local love = _G.love
 local common = require "class.commons"
 local Pic = require "pic"
 local spairs = require "/helpers/utilities".spairs

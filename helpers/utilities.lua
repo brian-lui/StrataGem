@@ -1,3 +1,8 @@
+--[[
+This module provides a variety of helper functions. The specific helper
+function can be required directly when needed.
+--]]
+
 local utilities = {}
 
 function utilities.spairs(tab, ...)

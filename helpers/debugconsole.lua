@@ -1,3 +1,9 @@
+--[[
+This module provides debug functionality for the main gamestate. It prints a
+variety of information directly to the screen, the information to be printed is
+described by DebugConsole:setDefaultDisplayParams()
+--]]
+
 local love = _G.love
 local common = require "class.commons" -- class support
 local pointIsInRect = require "/helpers/utilities".pointIsInRect

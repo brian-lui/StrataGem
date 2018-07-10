@@ -1,10 +1,9 @@
-local love = _G.love
-
 --[[
 	This module provides the animations for the characters in the top corners
 	of the game field.
 --]]
 
+local love = _G.love
 local common = require "class.commons"
 local Pic = require "pic"
 local tween = require "/libraries/tween"

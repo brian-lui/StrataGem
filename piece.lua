@@ -1,3 +1,10 @@
+--[[
+This is the module for a piece. A piece is one of the (usually 2-gem) pieces
+in the player's hand.
+
+Most of the methods are to do with how to handle the piece when it's dropped
+into the basin.
+--]]
 local love = _G.love
 local common = require "class.commons"
 local tween = require "/libraries/tween"

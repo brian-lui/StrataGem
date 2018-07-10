@@ -1,3 +1,7 @@
+--[[
+Turning off a few options to improve loading speed.
+--]]
+
 local love = _G.love
 
 function love.conf(t)

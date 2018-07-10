@@ -1,3 +1,12 @@
+--[[
+This is an important module that handles everything to do with the basin's
+gamestate. This includes:
+Gem movement - moving the gamestate of gem row/columns
+Gravity - updating the displayed position of gems in the basin when they fall
+Matches - getting list of gems that should be matched
+Ownership - updating the ownership of gems to determine match credit
+--]]
+
 local images = require "images"
 local common = require "class.commons"
 local Gem = require "gem"

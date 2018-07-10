@@ -1,3 +1,8 @@
+--[[
+This is the base class for all characters in the game, which is used as a
+template by the individual characters.
+--]]
+
 local love = _G.love
 local common = require "class.commons"
 local images = require "images"

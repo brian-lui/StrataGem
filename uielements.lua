@@ -1,3 +1,11 @@
+--[[
+This module provides the UI elements and effects:
+Timer, burst super - these are for the main gamestate.
+On-press, on-move effect: these are the animation effects for mouse actions.
+UI elements - these provide the gem helper images when placing a piece into
+the basin.
+--]]
+
 local images = require "images"
 local common = require "class.commons"
 local Pic = require "pic"

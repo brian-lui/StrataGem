@@ -1,3 +1,8 @@
+--[[
+This module mainly defines the locations of the objects that will be shown
+on-screen in the main gamestate.
+--]]
+
 local love = _G.love
 local common = require "class.commons"
 local images = require "images"

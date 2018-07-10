@@ -1,3 +1,7 @@
+--[[
+This file describes some "global" defaults.
+--]]
+
 local love = _G.love
 local TLfres = require "/libraries/tlfres"
 

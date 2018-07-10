@@ -1,3 +1,11 @@
+--[[
+This is the module for loading all the game images that aren't character
+specific. It uses a multithreaded image loader to improve performance.
+
+It also contains lookup functions that return a weighted random particle
+of a specific type.
+--]]
+
 local love = _G.love
 local lily = require "/libraries/lily"
 

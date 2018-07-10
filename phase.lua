@@ -1,4 +1,13 @@
--- handles the main game phases
+--[[
+This module handles the phases for the main gamestate.
+There should be a graphical depiction of the loop somewhere, that will be
+helpful to read.
+
+Important methods:
+setPause, activatePause, setPhase - control flow for when to go to the next
+phase
+--]]
+
 local love = _G.love
 local common = require "class.commons"
 

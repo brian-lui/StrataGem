@@ -1,3 +1,8 @@
+--[[
+Subclass of normal AI that provides computer actions in a local
+singleplayer game.
+--]]
+
 local common = require "class.commons"
 local ai_singleplayer = {}
 

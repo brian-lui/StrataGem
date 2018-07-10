@@ -1,5 +1,3 @@
-local common = require "class.commons"
-
 --[[
 Each AI is assigned to a player on creation, replacing user input.
 
@@ -10,6 +8,8 @@ ai:queueAction(func, args)	Sets the currently-queued action for the ai
 ai:performQueuedAction()	Performs the last action queued (ONCE)
 ai:newTurn()	Resets anything that needs to reset between turns.
 --]]
+
+local common = require "class.commons"
 
 local ai = {
 	finished = false,

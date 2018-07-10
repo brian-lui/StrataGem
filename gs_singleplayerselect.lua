@@ -1,3 +1,8 @@
+--[[
+This is the gamestate module for the single player character select screen.
+--]]
+
+
 local common = require "class.commons"
 
 local Singleplayer = {name = "Singleplayer", gametype = "Singleplayer"}

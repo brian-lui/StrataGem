@@ -1,3 +1,8 @@
+--[[
+This is the entry module for LOVE2D.
+The main stuff is actually in game.lua.
+--]]
+
 -- For compatibility; Lua 5.3 moved unpack to table.unpack
 _G.table.unpack = _G.table.unpack or _G.unpack
 

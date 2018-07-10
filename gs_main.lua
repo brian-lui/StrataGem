@@ -1,3 +1,7 @@
+--[[
+This is the gamestate module for the main gameplay screen.
+--]]
+
 local common = require "class.commons"
 local images = require "images"
 local pointIsInRect = require "/helpers/utilities".pointIsInRect

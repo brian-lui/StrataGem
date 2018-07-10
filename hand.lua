@@ -1,3 +1,10 @@
+--[[
+This is the specification for your hand, and methods to act on the hand. You
+have a hand of up to 5 possible pieces to choose from. The methods are mainly
+to do with updating the hand, moving it along with each new turn, and creating
+new pieces for the hand.
+--]]
+
 local common = require "class.commons" -- class support
 local Piece = require "piece"
 local GemPlatform = require "gemplatform"
