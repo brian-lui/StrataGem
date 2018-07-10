@@ -113,6 +113,7 @@ function Wolfgang:init(...)
 		stage.width * 0.135 + add,
 		stage.width * 0.175 + add,
 	}
+	self.BARK_X_MID = stage.width * 0.115 + add
 	self.BARK_Y = stage.height * 0.57
 
 	local super_x = stage.super[self.player_num].x
@@ -238,6 +239,7 @@ end
 ColorLetter = common.class("ColorLetter", ColorLetter, Pic)
 -------------------------------------------------------------------------------
 -- The appropriate words (BLUE! AMARILLO! etc) appear at the matched gem
+-- They then fly towards their letter
 local ColorWord = {}
 function ColorWord:init(manager, tbl)
 	Pic.init(self, manager.game, tbl)
@@ -272,8 +274,38 @@ function ColorWord.generate(game, owner, x, y, color, delay)
 		y = y - game.stage.height * 0.072,
 		easing = "outCubic",
 	}
-	p:wait(30)
-	p:change{duration = 45, transparency = 0, remove = true}
+
+	-- tween into BARK meter, along with trail of dust and attack stars
+	local during_func = function()
+		game.particles.dust.generateFountain(game, p.x, p.y, color, 4)
+	end
+	local fountain_func = function()
+		game.particles.dust.generateBigFountain{
+			game = game,
+			x = owner.BARK_X_MID,
+			y = owner.BARK_Y,
+			color = color,
+			num = 18,
+		}
+	end
+	p:change{
+		duration = 45,
+		x = owner.BARK_X_MID,
+		y = owner.BARK_Y,
+		during = {1, 1, during_func},
+		exit_func = {
+			{fountain_func},
+			{game.uielements.screenshake, game.uielements, 1},
+		},
+		easing = "inCubic",
+	}
+	p:change{
+		duration = 15,
+		scaling = 3,
+		transparency = 0,
+		exit_func = {game.uielements.screenshake, game.uielements, 1},
+		remove = true,
+	}
 end
 
 ColorWord = common.class("ColorWord", ColorWord, Pic)
