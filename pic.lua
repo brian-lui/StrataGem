@@ -80,6 +80,7 @@ end
 	rotation: rotation number to draw
 	scale: scaling to draw
 	RGBTable: colors to draw, given as {red, green, blue, alpha}
+	transparency: transparency to draw
 	image: image to draw
 	darkened: draw darker (when pop-up menu is active).
 		Overridden by force_max_alpha boolean
@@ -92,7 +93,7 @@ function Pic:draw(params)
 		local x_scale = params.scale or self.x_scaling or self.scaling
 		local y_scale = params.scale or self.y_scaling or self.scaling
 		local rgbt = self.RGB or {1, 1, 1}
-		rgbt[4] = self.transparency or 1
+		rgbt[4] = params.transparency or self.transparency or 1
 
 		if params.darkened and not self.force_max_alpha then
 			love.graphics.setColor(
@@ -354,6 +355,7 @@ end
 			false to move from end of previous position
 			only used if queue is false
 		during: optionally provided as {frame_step, frame_start, func, args}
+			or {{fs1, fs1, f1, a1}, {fs2, fs2, f2, a2}, ...}
 			executes this every dt_step while tweening
 		remove: set to true to delete when the move finishes
 		exit_func: execute when the move finishes.
