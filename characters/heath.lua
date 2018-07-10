@@ -87,6 +87,18 @@ function Heath:init(...)
 	self.pending_fires = {0, 0, 0, 0, 0, 0, 0, 0} -- match fires generated at t0
 	self.ready_fires = {0, 0, 0, 0, 0, 0, 0, 0} -- fires at t1, ready to burn
 	self.pending_gem_cols = {} -- pending gems, for extinguishing of ready_fires
+
+	-- transparency of fire gem glowing
+	self.fireGemGlow = function()
+		local frame = self.game.frame
+		local PERIOD = 60
+		local percentage = (frame % PERIOD) / PERIOD
+		if percentage <= 0.5 then
+			return percentage * 2
+		else
+			return (1 - percentage) * 2
+		end
+	end
 end
 
 -- *This part creates the animations for the character's specials and supers
@@ -174,6 +186,26 @@ function SmallFire:update(dt)
 	if self.turns_remaining <= 0 and self:isStationary() and not self.fading_out then
 		self.owner.fx.smokes.generate(self.game, self.owner, self.x, self.y)
 		self:_fadeOut()
+	end
+end
+
+function SmallFire:draw()
+	Pic.draw(self)
+	local grid = self.game.grid
+	local row = grid:getFirstEmptyRow(self.col, true)
+	local gem = grid[row + 1][self.col].gem
+	if gem then
+		local glow_image
+		if gem.exploding_gem_image then
+			glow_image = gem.exploding_gem_image
+		else
+			glow_image = images["gems_explode_" .. gem.color]
+		end
+
+		Pic.draw(gem, {
+			image = glow_image,
+			transparency = self.owner.fireGemGlow(),
+		})
 	end
 end
 
@@ -317,6 +349,8 @@ end
 
 Boom = common.class("Boom", Boom, Pic)
 
+
+
 -------------------------------------------------------------------------------
 Heath.fx = {
 	smallFire = SmallFire,
@@ -372,6 +406,7 @@ function Heath:_columnHasParticle(column)
 	return false
 end
 
+-- get pending gem columns for fire extinguishing, and activate super
 function Heath:beforeGravity()
 	local game = self.game
 	local grid = game.grid
@@ -447,12 +482,12 @@ function Heath:afterGravity()
 	end
 end
 
+-- store horizontal fire locations, used in aftermatch phase
 function Heath:beforeMatch()
 	local game = self.game
 	local grid = game.grid
 	local gem_table = grid:getMatchedGems()
 
-	-- store horizontal fire locations, used in aftermatch phase
 	for _, gem in pairs(gem_table) do
 		local top_gem = gem.row == grid:getFirstEmptyRow(gem.column, true) + 1
 		if self.player_num == gem.player_num
