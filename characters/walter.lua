@@ -576,16 +576,16 @@ function MatchDust.generate(game, owner, match_list)
 	assert(image, "Invalid color specified for dust")
 
 	for i = 1, #match_list do
-		for _ = 1, 20 do
+		for j = 1, 40 do
 			local row, col = match_list[i].row, match_list[i].column
-			local x_start = grid.x[col] + images.GEM_WIDTH * (math.random()-0.5)
-			local y_start = grid.y[row] + images.GEM_HEIGHT * (math.random()-0.5)
+			local x_start = grid.x[col] + images.GEM_WIDTH * (math.random()-0.5) * 3
+			local y_start = grid.y[row] + images.GEM_HEIGHT * (math.random()-0.5) * 2
 			local x_dest = grid.x[col]
 			local y_dest = grid.y[owner.CLOUD_ROW]
 
 			local params = {
-				x = x_start,
-				y = y_start,
+				x = grid.x[col],
+				y = grid.y[row],
 				image = image,
 				col = col,
 				owner = owner,
@@ -595,8 +595,15 @@ function MatchDust.generate(game, owner, match_list)
 			}
 
 			local p = common.instance(MatchDust, game.particles, params)
+			p:wait(math.ceil(j * 0.5))
 			p:change{
-				duration = TIME_TO_DEST,
+				duration = 15,
+				x = x_start,
+				y = y_start,
+				easing = "inCubic",
+			}
+			p:change{
+				duration = TIME_TO_DEST - 15,
 				x = x_dest,
 				y = y_dest,
 				easing = "inCubic",
@@ -607,12 +614,12 @@ function MatchDust.generate(game, owner, match_list)
 
 	-- vertical dust sparklies
 	for _, gem in ipairs(match_list) do
-		for i = 0, 79, 2 do
+		for i = 0, 79, 3 do
 			local params = {
-				x = grid.x[gem.column] + images.GEM_WIDTH * (math.random()-0.5),
-				y = grid.y[gem.row],
+				x = grid.x[gem.column] + images.GEM_WIDTH * (math.random()-0.5) * 1.2,
+				y = stage.height * 1.1,
 				image = images.lookup.smalldust(dust_color),
-				draw_order = 2,
+				draw_order = -2,
 				name = "WalterMatchSparkle",
 			}
 
@@ -621,21 +628,9 @@ function MatchDust.generate(game, owner, match_list)
 			up:wait(i)
 			up:change{duration = 0, transparency = 1}
 			up:change{
-				duration = 90,
-				y = up.y - stage.height,
+				duration = 30 + math.random() * 36,
+				y = stage.height * -0.1,
 				remove = true,
-				easing = "outQuad",
-			}
-
-			local down = common.instance(MatchDust, game.particles, params)
-			down.transparency = 0
-			down:wait(i)
-			down:change{duration = 0, transparency = 1}
-			down:change{
-				duration = 90,
-				y = down.y + stage.height,
-				remove = true,
-				easing = "outQuad",
 			}
 		end
 	end
