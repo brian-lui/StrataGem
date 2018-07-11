@@ -791,6 +791,7 @@ function Wolfgang:update(dt)
 		self.bad_dog_frames = self.bad_dog_frames + 1
 	end
 
+	-- glowing good dogs
 	for dog in pairs(self.good_dogs) do
 		if dog.is_destroyed then
 			self.good_dogs[dog] = nil
@@ -800,6 +801,13 @@ function Wolfgang:update(dt)
 		if dog:isStationary() then dog:update(dt) end
 	end
 
+	-- glowing super dogs
+	for _, dog in ipairs(self.super_dog_icons) do
+		if good_dog_anim then self:_goodDogAnimation(dog) end
+		if dog:isStationary() then dog:update(dt) end
+	end
+
+	-- glowing bad dogs
 	for dog, turns_remaining in pairs(self.bad_dogs) do
 		local actual_turns_remaining = math.min(turns_remaining + 1, 3) -- lol
 		if bad_dog_anim and self.bad_dog_counter % actual_turns_remaining == 0 then
