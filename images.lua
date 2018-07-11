@@ -30,9 +30,11 @@ local gems = {
 	"pop_red", "pop_blue", "pop_green", "pop_yellow",
 }
 local words = {
-	"doublecast", "rush", "ready", "go", "gameoverthanks", "norushonecolumn",
-	"norushfull", "doublecastcloudh", "doublecastcloudv", "rushcloudh",
+	"doublecast", "rush", "ready", "go", "gameoverthanks", "norush",
+	"doublecastcloudh", "doublecastcloudv", "rushcloudh",
 	"rushcloudv", "gostar",
+	"p1_grab", "p1_any", "p1_gem", "p1_dropgemshere",
+	"p2_grab", "p2_any", "p2_gem", "p2_dropgemshere",
 }
 
 local ui = {
@@ -50,6 +52,7 @@ local ui = {
 	"burst_full_red", "burst_full_blue", "burst_full_green", "burst_full_yellow",
 	"burst_partglow_red", "burst_partglow_blue", "burst_partglow_green", "burst_partglow_yellow",
 	"burst_fullglow_red", "burst_fullglow_blue", "burst_fullglow_green", "burst_fullglow_yellow",
+	"warning",
 }
 
 local particles = {
