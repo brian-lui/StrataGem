@@ -91,7 +91,7 @@ function Heath:init(...)
 	-- transparency of fire gem glowing
 	self.fireGemGlow = function()
 		local frame = self.game.frame
-		local PERIOD = 60
+		local PERIOD = 120
 		local percentage = (frame % PERIOD) / PERIOD
 		if percentage <= 0.5 then
 			return percentage * 2
