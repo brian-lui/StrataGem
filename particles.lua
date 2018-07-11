@@ -1124,7 +1124,8 @@ end
 
 --[[ called when a gem is destroyed (usually through a match)
 	mandatory: game, either gem or [x, y, color]. [x, y, color] takes priority
-	optional: num (#particles, default 24), duration (default 30), delay_frames
+	optional: num (#particles, default 24), duration (default 30),
+		delay_frames, force_max_alpha
 --]]
 function Dust.generateBigFountain(params)
 	local game = params.game
@@ -1314,7 +1315,7 @@ end
 
 --[[ The circular particles on garbage creation
 	mandatory: game, either gem or [x, y, color]. [x, y, color] takes priority
-	optional: num (number of particles), duration, delay_frames
+	optional: num (number of particles), duration, delay_frames, force_max_alpha
 --]]
 function Dust.generateGarbageCircle(params)
 	local game = params.game
@@ -1341,6 +1342,7 @@ function Dust.generateGarbageCircle(params)
 			image,
 			p_type
 		)
+		p.force_max_alpha = params.force_max_alpha
 		p.transparency = 0
 		if params.delay_frames then p:wait(params.delay_frames) end
 		p:change{
@@ -1790,7 +1792,7 @@ function Words.generateNoRush(game, column)
 		local grid = game.grid
 		local x = grid.x[column]
 		local y = (grid.y[grid.RUSH_ROW] + grid.y[grid.RUSH_ROW+1]) / 2
-		local todraw = images.words_norushonecolumn
+		local todraw = images.words_norush
 		local p = common.instance(Words, game.particles, x, y, todraw)
 		p:change{
 			duration = 20,
