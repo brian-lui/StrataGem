@@ -174,6 +174,7 @@ function Wolfgang:init(...)
 	self.super_dogs_to_make = 0
 	self.need_to_activate_super_dog = true
 	self.super_dog_icons = {}
+	self.waiting_for_light_up_time = 0
 end
 -------------------------------------------------------------------------------
 -- These are the BARK letter classes
@@ -250,7 +251,7 @@ function ColorLetter:darken(delay)
 		else
 			self:newImageFadeIn(self.owner.special_images[self.color].dark, 30)
 		end
-		
+
 		self.manager.dust.generateStarFountain{
 			game = self.game,
 			x = self.x,
@@ -281,6 +282,9 @@ function ColorWord:remove()
 end
 
 function ColorWord.generate(game, owner, x, y, color, delay)
+	local RISE_UP_TIME = 60 -- word floats up
+	local TRAVEL_TIME = 45 -- word goes to BARK meter
+	local EXPLODE_TIME = 15 -- word explodes at BARK meter
 	local params = {
 		x = x,
 		y = y,
@@ -298,7 +302,7 @@ function ColorWord.generate(game, owner, x, y, color, delay)
 		p:change{duration = 0, transparency = 1}
 	end
 	p:change{
-		duration = 60,
+		duration = RISE_UP_TIME,
 		y = y - game.stage.height * 0.072,
 		easing = "outCubic",
 	}
@@ -317,7 +321,7 @@ function ColorWord.generate(game, owner, x, y, color, delay)
 		}
 	end
 	p:change{
-		duration = 45,
+		duration = TRAVEL_TIME,
 		x = owner.BARK_X_MID,
 		y = owner.BARK_Y,
 		during = {1, 1, during_func},
@@ -328,12 +332,14 @@ function ColorWord.generate(game, owner, x, y, color, delay)
 		easing = "inCubic",
 	}
 	p:change{
-		duration = 15,
+		duration = EXPLODE_TIME,
 		scaling = 3,
 		transparency = 0,
 		exit_func = {game.uielements.screenshake, game.uielements, 1},
 		remove = true,
 	}
+
+	return delay + RISE_UP_TIME + TRAVEL_TIME
 end
 
 ColorWord = common.class("ColorWord", ColorWord, Pic)
@@ -352,11 +358,13 @@ function SuperDog:remove()
 end
 
 function SuperDog.create(game, owner, delay)
+	local SCALE_IN_TIME = 20
 	local i = math.min(owner.super_dogs_to_make, 5)
 	local x, y = owner.SUPER_DOG_LOCS[i].x, owner.SUPER_DOG_LOCS[i].y
 	local rand = math.random(#owner.special_images.good_dog)
 	local image = owner.special_images.good_dog[rand]
 
+	-- create the dog
 	local params = {
 		x = x,
 		y = y,
@@ -366,41 +374,56 @@ function SuperDog.create(game, owner, delay)
 		player_num = owner.player_num,
 		name = "WolfgangSuperDogIcon",
 	}
-
 	local dog = common.instance(SuperDog, game.particles, params)
-	dog.scaling = 0.75
+	dog.scaling = 1.5
 	if delay then
 		dog:change{transparency = 0}
 		dog:wait(delay)
 		dog:change{duration = 0, transparency = 1}
 	end
+	dog:change{duration = SCALE_IN_TIME, scaling = 0.75}
 
-	-- pop background
-	local pop_params = {
+	-- garbage circle particles
+	for _ = 0, 1 do
+		game.particles.dust.generateGarbageCircle{
+			game = game,
+			x = x,
+			y = y,
+			delay_frames = i * 15 + delay,
+			color = "wild",
+			force_max_alpha = true,
+		}
+	end
+
+	-- reverse pop
+	local reverse_pop = {
 		x = x,
 		y = y,
 		image = owner.special_images.dog_pop,
 		draw_order = -1,
 		owner = owner,
 		player_num = owner.player_num,
-		name = "SuperDogPop",
+		name = "SuperDogReversePop",
 	}
-	local pop = common.instance(SuperDog, game.particles, pop_params)
-	pop.scaling = 0.75
-	if delay then
-		pop:change{transparency = 0}
-		pop:wait(delay)
-		pop:change{duration = 0, transparency = 1}
-	end
-	pop:change{duration = 30, transparency = 0, scaling = 3, remove = true}
+	local rev_pop = common.instance(SuperDog, game.particles, reverse_pop)
+	rev_pop.force_max_alpha = true
+	rev_pop:change{transparency = 0, scaling = 4}
+	rev_pop:wait(delay)
+	rev_pop:change{
+		duration = 30,
+		transparency = 1,
+		scaling = 1,
+		remove = true,
+	}
 
-	-- star fountain
-	game.particles.dust.generateStarFountain{
+	-- fountain
+	game.particles.dust.generateBigFountain{
 		game = game,
 		x = x,
 		y = y,
 		color = "wild",
-		delay = delay,
+		delay_frames = delay + SCALE_IN_TIME,
+		force_max_alpha = true,
 	}
 
 	return dog
@@ -410,6 +433,7 @@ function SuperDog:moveToGrid(gem, delay)
 	local game = self.game
 	local owner = self.owner
 	local TRAVEL_TIME = 90 -- origin explosion to destination animation
+	local ENDING_PAUSE = 20 -- how many frames to pause for ending fountain
 	delay = delay or 0
 
 	-- move 5th+ dogs back to 4th spot
@@ -430,16 +454,14 @@ function SuperDog:moveToGrid(gem, delay)
 	}
 	local pop = common.instance(SuperDog, game.particles, pop_params)
 	pop.scaling = 0.75
-	if delay then
-		pop:change{transparency = 0}
-		pop:wait(delay)
-		pop:change{duration = 0, transparency = 1}
-	end
+	pop:change{transparency = 0}
+	pop:wait(delay)
+	pop:change{duration = 0, transparency = 1}
 	pop:change{duration = 30, transparency = 0, scaling = 3, remove = true}
 
 	-- move the dog to the destination, and replace image when there
 	local x1, y1 = start_x, start_y -- start
-	local x2, y2 = gem.x, start_y - (gem.y - start_y)  
+	local x2, y2 = gem.x, start_y - (gem.y - start_y)
 	local x3, y3 = gem.x, gem.y -- end
 	local curve = love.math.newBezierCurve(x1, y1, x2, y2, x3, y3)
 	self:wait(delay)
@@ -451,59 +473,35 @@ function SuperDog:moveToGrid(gem, delay)
 		exit_func = function() owner:_turnGemToGoodDog(gem) end,
 	}
 
-	-- garbage circle particles at destination
-	for i = 0, 1 do
-		game.particles.dust.generateGarbageCircle{
-			game = game,
-			x = gem.x,
-			y = gem.y,
-			delay_frames = i * 8 + delay + TRAVEL_TIME,
-			color = "wild",
-		}
-	end
-
-	-- reverse pop at destination
-	local reverse_pop = {
-		x = gem.x,
-		y = gem.y,
+	-- pop background at destination
+	local dest_pop_params = {
+		x = x3,
+		y = y3,
 		image = owner.special_images.dog_pop,
 		draw_order = -1,
 		owner = owner,
 		player_num = owner.player_num,
-		name = "SuperDogReversePop",
+		name = "SuperDogPop",
 	}
-	local rev_pop = common.instance(SuperDog, game.particles, reverse_pop)
-	rev_pop:change{transparency = 0, scaling = 4}
-	rev_pop:wait(delay + TRAVEL_TIME)
-	rev_pop:change{
-		duration = 30,
-		transparency = 1,
-		scaling = 1,
-		remove = true,
-	}
+	local dest_pop = common.instance(SuperDog, game.particles, dest_pop_params)
+	dest_pop.scaling = 0.75
+	dest_pop:change{transparency = 0}
+	dest_pop:wait(delay + TRAVEL_TIME)
+	dest_pop:change{duration = 0, transparency = 1}
+	dest_pop:change{duration = 30, transparency = 0, scaling = 3, remove = true}
 
-	-- reverse explode at destination
-	local rev_explode_time = game.particles.explodingGem.generateReverseExplode{
+	-- star fountain at destination
+	game.particles.dust.generateStarFountain{
 		game = game,
-		x = gem.x,
-		y = gem.y,
-		image = self.image,
-		delay_frames = delay + TRAVEL_TIME,
-	}
-
-	local total_delay = delay + TRAVEL_TIME + rev_explode_time
-
-	-- fountain at destination
-	game.particles.dust.generateBigFountain{
-		game = game,
-		x = gem.x,
-		y = gem.y,
+		x = x3,
+		y = y3,
 		color = "wild",
-		delay_frames = total_delay,
+		delay = delay + TRAVEL_TIME,
 	}
 
 	gem:setOwner(self.player_num)
-	return total_delay
+
+	return delay + TRAVEL_TIME + ENDING_PAUSE
 end
 
 SuperDog = common.class("SuperDog", SuperDog, Pic)
@@ -877,7 +875,7 @@ function Wolfgang:beforeGravity()
 			local new_dog = self.fx.superDog.create(self.game, self, (i-1) * 15)
 			new_dog.force_max_alpha = true
 			self.super_dog_icons[self.super_dogs_to_make] = new_dog
-			delay = math.max(delay, i * 15)
+			delay = math.max(delay, i * 20)
 		end
 
 		self:emptyMP()
@@ -962,9 +960,9 @@ function Wolfgang:beforeMatch()
 		end
 	end
 
-	-- create the colorwords
+	-- create the colorwords and light up BARK meter for matches
 	for color, pos in pairs(create_words) do
-		self.fx.colorWord.generate(
+		local arrive_time = self.fx.colorWord.generate(
 			self.game,
 			self,
 			pos.x,
@@ -972,18 +970,24 @@ function Wolfgang:beforeMatch()
 			color,
 			self.game.GEM_EXPLODE_FRAMES
 		)
+		self.letters[color]:lightUp(arrive_time)
+		self.waiting_for_light_up_time = arrive_time - 30
 	end
 
 	return delay
 end
 
--- Light up the BARK meter for any matches
+-- Wait for queued animation to play out
 function Wolfgang:afterMatch()
 	local delay = 0
+	-- For light up triple wilddog match rare case
 	for color in pairs(self.this_turn_matched_colors) do
 		self.letters[color]:lightUp()
 		delay = 30
 	end
+
+	delay = math.max(delay, self.waiting_for_light_up_time)
+	self.waiting_for_light_up_time = 0
 
 	return delay
 end
