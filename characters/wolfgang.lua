@@ -206,31 +206,59 @@ function ColorLetter.create(game, owner, x, y, color)
 	return common.instance(ColorLetter, game.particles, params)
 end
 
-function ColorLetter:lightUp()
+function ColorLetter:lightUp(delay)
 	if not self.lighted then
 		self.lighted = true
-		self:newImageFadeIn(self.owner.special_images[self.color].glow, 10)
+
+		if delay then
+			self.game.queue:add(
+				delay,
+				self.newImageFadeIn,
+				self,
+				self.owner.special_images[self.color].glow,
+				10
+			)
+		else
+			self:newImageFadeIn(self.owner.special_images[self.color].glow, 10)
+		end
+
 		self.manager.dust.generateStarFountain{
 			game = self.game,
 			x = self.x,
 			y = self.y,
 			color = self.color,
+			delay = delay,
 		}
+		self:wait(delay)
 		self:change{duration = 25, scaling = 1.5, easing = "inBack"}
 		self:change{duration = 25, scaling = 1, easing = "outBack"}
 	end
 end
 
-function ColorLetter:darken()
+function ColorLetter:darken(delay)
 	if self.lighted then
 		self.lighted = false
-		self:newImageFadeIn(self.owner.special_images[self.color].dark, 30)
+
+		if delay then
+			self.game.queue:add(
+				delay,
+				self.newImageFadeIn,
+				self,
+				self.owner.special_images[self.color].dark,
+				30
+			)
+		else
+			self:newImageFadeIn(self.owner.special_images[self.color].dark, 30)
+		end
+		
 		self.manager.dust.generateStarFountain{
 			game = self.game,
 			x = self.x,
 			y = self.y,
 			color = self.color,
+			delay = delay,
 		}
+		self:wait(delay)
 		self:change{duration = 25, scaling = 0.7, easing = "inBack"}
 		self:change{duration = 25, scaling = 1, easing = "outBack"}
 	end
