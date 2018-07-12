@@ -384,16 +384,14 @@ function SuperDog.create(game, owner, delay)
 	dog:change{duration = SCALE_IN_TIME, scaling = 0.75}
 
 	-- garbage circle particles
-	for _ = 0, 1 do
-		game.particles.dust.generateGarbageCircle{
-			game = game,
-			x = x,
-			y = y,
-			delay_frames = i * 15 + delay,
-			color = "wild",
-			force_max_alpha = true,
-		}
-	end
+	game.particles.dust.generateGarbageCircle{
+		game = game,
+		x = x,
+		y = y,
+		delay_frames = delay,
+		color = "wild",
+		force_max_alpha = true,
+	}
 
 	-- reverse pop
 	local reverse_pop = {
