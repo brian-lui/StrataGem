@@ -111,6 +111,7 @@ function gs_main:update(dt)
 		self.particles:update(dt) -- variable fps
 		gs_main.current_background:update(dt) -- variable fps
 		self.uielements.timer:update(dt)
+		self.uielements.helptext:update(dt)
 		for player in self:players() do
 			gs_main.ui.static.burst[player.player_num]:update(dt)
 			player.super_button:update(dt)
@@ -137,7 +138,6 @@ function gs_main:drawScreenElements(params)
 	end
 	gs_main.ui.static.basin:draw(params)
 	self.uielements.timer:draw(params)	-- timer bar
-
 	for player in self:players() do
 		player.animation:draw{h_flip = player.ID == "P2"} -- sprite
 	end
@@ -243,6 +243,7 @@ function gs_main:drawText(params)
 	for _, v in pairs(self.particles.allParticles.Words) do
 		v:draw(params)
 	end
+	self.uielements.helptext:draw(params)
 	self.debugconsole:draw()
 end
 

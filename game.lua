@@ -183,9 +183,7 @@ function Game:start(params)
 
 	self.type = params.gametype
 
-	if self.me_player then
-		self.uielements:setScreenUIColor(self.me_player.primary_colors)
-	end
+	self.uielements:reset()
 
 	self.current_background_name = params.background
 
