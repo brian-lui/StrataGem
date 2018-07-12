@@ -13,7 +13,6 @@ local Pic = require "pic"
 -------------------------------------------------------------------------------
 ------------------------------- TIMER COMPONENT -------------------------------
 -------------------------------------------------------------------------------
-
 local Timer = {}
 
 function Timer:init(game)
@@ -379,6 +378,124 @@ end
 Super = common.class("Super", Super)
 
 -------------------------------------------------------------------------------
+---------------------------- DROP GEMS HERE IMAGES ----------------------------
+-------------------------------------------------------------------------------
+local GrabAnyGem = {}
+function GrabAnyGem:init(game)
+	self.game = game
+
+	local stage = game.stage
+	local player = game.me_player or 1 -- TODO: handle no me_player better
+	local sign = player.player_num == 1 and -1 or 1
+	local APPEARANCE_WAIT_TIME = 30
+	local APPEAR_TIME = 90
+	local BOUNCE_TIME = 30
+
+	local grab_end_x = player.hand[3].x + sign * stage.width * 0.08
+	local grab_start_x = grab_end_x + sign * stage.width * 0.5
+	local grab_y = player.hand[3].y
+	local grab_image = images["words_p" .. player.player_num .. "_grab"]
+
+	self.grab = Pic:create{
+		game = game,
+		x = grab_start_x, 
+		y = grab_y,
+		image = grab_image,
+	}
+	self.grab:wait(APPEARANCE_WAIT_TIME)
+	self.grab:change{
+		duration = APPEAR_TIME,
+		x = grab_end_x,
+		easing = "outBounce",
+	}
+
+	local any_end_x = player.hand[4].x + sign * stage.width * 0.08
+	local any_start_x = any_end_x + sign * stage.width * 0.5
+	local any_y = player.hand[4].y
+	local any_image = images["words_p" .. player.player_num .. "_any"]
+
+	self.any = Pic:create{
+		game = game,
+		x = any_start_x, 
+		y = any_y,
+		image = any_image,
+	}
+	self.any:wait(APPEARANCE_WAIT_TIME)
+	self.any:change{
+		duration = APPEAR_TIME,
+		x = any_end_x,
+		easing = "outBounce",
+	}
+
+	local gem_end_x = player.hand[5].x + sign * stage.width * 0.08
+	local gem_start_x = gem_end_x + sign * stage.width * 0.5
+	local gem_y = player.hand[5].y
+	local gem_image = images["words_p" .. player.player_num .. "_gem"]
+
+	self.gem = Pic:create{
+		game = game,
+		x = gem_start_x, 
+		y = gem_y,
+		image = gem_image,
+	}
+	self.gem:wait(APPEARANCE_WAIT_TIME)
+	self.gem:change{
+		duration = APPEAR_TIME,
+		x = gem_end_x,
+		easing = "outBounce",
+	}
+
+	local here_x = stage.width * (0.5 + sign * 0.1)
+	local here_start_y = stage.height * 0.15
+	local here_end_y = stage.height * 0.35
+	local here_image = images["words_p" .. player.player_num .. "_dropgemshere"]
+	self.here = Pic:create{
+		game = game,
+		x = here_x, 
+		y = here_start_y,
+		image = here_image,
+	}
+
+	self.here.reset = function(_self)
+		_self.y = here_start_y
+		_self:change{
+			duration = BOUNCE_TIME,
+			y = here_end_y,
+			easing = "outBounce",
+		}
+	end
+	self.here:reset()
+end
+
+function GrabAnyGem:update(dt)
+	if self.here then self.here:update(dt) end
+	if self.grab then self.grab:update(dt) end
+	if self.any then self.any:update(dt) end
+	if self.gem then self.gem:update(dt) end
+end
+
+function GrabAnyGem:draw(params)
+	local game = self.game
+	if game and game.me_player and game.turn == 1 then
+		if game.active_piece then
+			if self.here then self.here:draw(params) end
+		elseif not game.me_player.dropped_piece then
+			if self.grab then self.grab:draw(params) end
+			if self.any then self.any:draw(params) end
+			if self.gem then self.gem:draw(params) end
+		end
+	end
+end
+
+function GrabAnyGem:switchToDropGemsHere()
+end
+
+function GrabAnyGem:switchToGrabAnyGem()
+end
+
+GrabAnyGem = common.class("GrabAnyGem", GrabAnyGem)
+
+-------------------------------------------------------------------------------
 ---------------------------- ON-PRESS TOUCH EFFECT ----------------------------
 -------------------------------------------------------------------------------
 local ScreenPress = {}
@@ -483,10 +600,13 @@ local components = {
 	burst = Burst,
 	screenPress = ScreenPress,
 	screenDrag = ScreenDrag,
+	grabAnyGem = GrabAnyGem,
 }
 
 
-local uielements = {}
+local uielements = {
+	helptext = {}
+}
 
 function uielements:init(game)
 	self.game = game
@@ -500,10 +620,19 @@ function uielements:init(game)
 	self.screen_trails_t = 0
 end
 
-function uielements:setScreenUIColor(color_table)
-	assert(type(color_table) == "table", "Need to provide it as a table!")
-	self.screen_ui_color = color_table
+function uielements:reset()
+	local game = self.game
+	if game.me_player then
+		self.helptext = common.instance(GrabAnyGem, game)
+		self.screen_ui_color = game.me_player.primary_colors
+	else
+		self.helptext = {
+			update = function() end,
+			draw = function() end,
+		}
+	end
 end
+
 
 function uielements:clearScreenUIColor()
 	self.screen_ui_color = nil
@@ -724,7 +853,7 @@ function uielements:putPendingAtTop(delay)
 end
 
 -- generates dust for active piece, and calculates tweens for gem shadows
--- only called during active phase
+-- only called during active phase in main gamestate
 function uielements:update(dt)
 	local game = self.game
 	local player = game.me_player
@@ -786,7 +915,7 @@ function uielements:update(dt)
 end
 
 -- updates the screenpress/screenmove functionality
--- always called
+-- always called from every gamestate
 function uielements:screenUIupdate(dt)
 	self.screen_trails_t = self.screen_trails_t + dt
 	if self.screen_trails_t > self.SCREEN_TRAILS_TIMER then
