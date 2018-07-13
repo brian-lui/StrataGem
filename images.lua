@@ -35,6 +35,7 @@ local words = {
 	"rushcloudv", "gostar",
 	"p1_grab", "p1_any", "p1_gem", "p1_dropgemshere",
 	"p2_grab", "p2_any", "p2_gem", "p2_dropgemshere",
+	"taptorotate",
 }
 
 local ui = {
