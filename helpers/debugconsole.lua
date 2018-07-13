@@ -54,7 +54,7 @@ function DebugConsole:setDefaultDisplayParams()
 	local game = self.game
 	local phase = self.phase
 	local params = {
-		display_all = true,
+		display_all = false,
 		display_prints = true,
 		display_player_names = true,
 		display_gem_info = true,
