@@ -445,9 +445,9 @@ function GrabAnyGem:init(game)
 		easing = "outBounce",
 	}
 
-	local here_x = stage.width * (0.5 + sign * 0.1)
 	local here_start_y = stage.height * 0.15
 	local here_end_y = stage.height * 0.35
+	local here_x = 0.5 * stage.width + sign * images.GEM_WIDTH * 2
 	local here_image = images["words_p" .. player.player_num .. "_dropgemshere"]
 	self.here = Pic:create{
 		game = game,
