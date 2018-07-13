@@ -380,9 +380,11 @@ Super = common.class("Super", Super)
 -------------------------------------------------------------------------------
 ---------------------------- DROP GEMS HERE IMAGES ----------------------------
 -------------------------------------------------------------------------------
-local GrabAnyGem = {}
-function GrabAnyGem:init(game)
+local Helptext = {}
+function Helptext:init(game)
 	self.game = game
+	self.deleted = false
+	self.drop_here_shown = false
 
 	local stage = game.stage
 	local player = game.me_player or 1 -- TODO: handle no me_player better
@@ -451,55 +453,109 @@ function GrabAnyGem:init(game)
 		easing = "outBounce",
 	}
 
-	local here_start_y = stage.height * 0.15
-	local here_end_y = stage.height * 0.35
 	local here_x = 0.5 * stage.width + sign * images.GEM_WIDTH * 2
+	local here_y = stage.height * 0.35
 	local here_image = images["words_p" .. player.player_num .. "_dropgemshere"]
 	self.here = Pic:create{
 		game = game,
 		x = here_x, 
-		y = here_start_y,
+		y = here_y,
 		image = here_image,
+		transparency = 0,
 	}
-
-	self.here.reset = function(_self)
-		_self.y = here_start_y
-		_self:change{
-			duration = BOUNCE_TIME,
-			y = here_end_y,
-			easing = "outBounce",
-		}
-	end
-	self.here:reset()
 end
 
-function GrabAnyGem:update(dt)
+function Helptext:update(dt)
+	local game = self.game
+
+	if game.turn == 1 and game.current_phase == "Action" then
+		if game.active_piece then
+			self:showDropGemsHere()
+		else
+			self:hideDropGemsHere()
+		end
+
+		if game.phase.time_to_next <= 10 then self:remove() end
+	end
+
 	if self.here then self.here:update(dt) end
 	if self.grab then self.grab:update(dt) end
 	if self.any then self.any:update(dt) end
 	if self.gem then self.gem:update(dt) end
 end
 
-function GrabAnyGem:draw(params)
+function Helptext:draw(params)
 	local game = self.game
-	if game and game.me_player and game.turn == 1 then
-		if game.active_piece then
-			if self.here then self.here:draw(params) end
-		elseif not game.me_player.dropped_piece then
-			if self.grab then self.grab:draw(params) end
-			if self.any then self.any:draw(params) end
-			if self.gem then self.gem:draw(params) end
+	if game and game.me_player then
+		if self.here then self.here:draw(params) end
+		if self.grab then self.grab:draw(params) end
+		if self.any then self.any:draw(params) end
+		if self.gem then self.gem:draw(params) end
+	end
+end
+
+function Helptext:remove()
+	for _, item in ipairs{self.here, self.grab, self.any, self.gem} do
+		item:clear()
+		item:change{duration = 20, transparency = 0, remove = true}
+	end
+	self.deleted = true
+end
+
+function Helptext:showDropGemsHere()
+	if not self.drop_here_shown then
+		self.here:wait(15)
+		self.here:change{duration = 20, transparency = 1}
+		self.drop_here_shown = true
+
+		for _, item in ipairs{self.grab, self.any, self.gem} do
+			item:clear()
+			item:wait(15)
+			item:change{duration = 20, transparency = 0}
 		end
 	end
 end
 
-function GrabAnyGem:switchToDropGemsHere()
+function Helptext:hideDropGemsHere()
+	if self.drop_here_shown then
+		self.here:clear()
+		self.here:change{duration = 0, transparency = 0}
+		self.drop_here_shown = false
+
+		for _, item in ipairs{self.grab, self.any, self.gem} do
+			item:clear()
+			item:change{duration = 10, transparency = 1}
+		end
+	end
 end
 
-function GrabAnyGem:switchToGrabAnyGem()
+Helptext = common.class("Helptext", Helptext)
+
+-------------------------------------------------------------------------------
+-------------------------- WARNING SIGN NEXT TO GEMS --------------------------
+-------------------------------------------------------------------------------
+local WarningSign = {}
+
+function WarningSign:init(game)
+	self.game = game
+
+	self.object1 = Pic:create{
+		game = game,
+		x = stage.timer.x,
+		y = stage.timer.y,
+		image = images.ui_timer_bar,
+	}
 end
 
-GrabAnyGem = common.class("GrabAnyGem", GrabAnyGem)
+function WarningSign:update(dt)
+end
+
+function WarningSign:draw()
+	self.object1:draw()
+end
+
+WarningSign = common.class("WarningSign", WarningSign)
+
 
 -------------------------------------------------------------------------------
 ---------------------------- ON-PRESS TOUCH EFFECT ----------------------------
@@ -619,6 +675,8 @@ local uielements = {
 function uielements:init(game)
 	self.game = game
 	self.timer = common.instance(Timer, game)
+	--self.warning_sign = common.instance(WarningSign, game)
+
 	-- Red X shown on gems in invalid placement spots
 	self.redx = Pic:create{game = game, x = 0, y = 0, image = images.ui_redx}
 	self.components = components
@@ -631,7 +689,7 @@ end
 function uielements:reset()
 	local game = self.game
 	if game.me_player then
-		self.helptext = common.instance(GrabAnyGem, game)
+		self.helptext = common.instance(Helptext, game)
 		self.screen_ui_color = game.me_player.primary_colors
 	else
 		self.helptext = {
@@ -640,7 +698,6 @@ function uielements:reset()
 		}
 	end
 end
-
 
 function uielements:clearScreenUIColor()
 	self.screen_ui_color = nil
