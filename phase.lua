@@ -100,7 +100,6 @@ function Phase:action(dt)
 	local ai = game.ai
 
 	for player in game:players() do player:actionPhase(dt) end
-	self.game.uielements:update()
 	self.time_to_next = self.time_to_next - 1
 	if game.type == "Singleplayer" then
 		if not ai.finished then ai:evaluateActions(game.them_player) end
@@ -610,6 +609,7 @@ function Phase:run(...)
 			player:update(...)
 		end
 		todo(self, ...)
+		game.uielements:update(...)		
 		game.queue:update()
 	end
 end

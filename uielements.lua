@@ -853,7 +853,7 @@ function uielements:putPendingAtTop(delay)
 end
 
 -- generates dust for active piece, and calculates tweens for gem shadows
--- only called during active phase in main gamestate
+-- only called in main gamestate
 function uielements:update(dt)
 	local game = self.game
 	local player = game.me_player
@@ -861,9 +861,15 @@ function uielements:update(dt)
 	local valid = false
 	local place_type
 	local cloud = game.particles.wordEffects.cloudExists(game.particles)
+	local active_piece = game.active_piece
+
+	self.timer:update(dt)
+	self.helptext:update(dt)
+	--self.warning_sign:update(dt)
+
+	if game.current_phase ~= "Action" then return end
 
 	-- if piece is held, generate effects and check if it's valid
-	local active_piece = game.active_piece
 	if active_piece then
 		active_piece:generateDust()
 		local midline, on_left = active_piece:isOnMidline()
