@@ -29,9 +29,12 @@ inits.ID = {
 inits.ID:reset()
 
 inits.FONT = {
-	REGULAR = love.graphics.newFont('/fonts/anonymous.ttf', 20),
-	MEDIUM = love.graphics.newFont('/fonts/anonymous.ttf', 30),
-	SLIGHTLY_BIGGER = love.graphics.newFont('/fonts/anonymous.ttf', 40),
+	STANDARD_REGULAR = love.graphics.newFont('/fonts/anonymous.ttf', 20),
+	STANDARD_MEDIUM = love.graphics.newFont('/fonts/anonymous.ttf', 30),
+	STANDARD_BIGGER = love.graphics.newFont('/fonts/anonymous.ttf', 40),
+	CARTOON_REGULAR = love.graphics.newFont('/fonts/BD_Cartoon_Shout.ttf', 20),
+	CARTOON_MEDIUM = love.graphics.newFont('/fonts/BD_Cartoon_Shout.ttf', 30),
+	CARTOON_BIGGER = love.graphics.newFont('/fonts/BD_Cartoon_Shout.ttf', 40),
 }
 
 return inits
