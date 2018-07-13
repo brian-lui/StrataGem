@@ -387,12 +387,12 @@ function GrabAnyGem:init(game)
 	local stage = game.stage
 	local player = game.me_player or 1 -- TODO: handle no me_player better
 	local sign = player.player_num == 1 and -1 or 1
-	local APPEARANCE_WAIT_TIME = 30
-	local APPEAR_TIME = 90
+	local APPEARANCE_WAIT_TIME = 60
+	local APPEAR_TIME = 45
 	local BOUNCE_TIME = 30
 
 	local grab_end_x = player.hand[3].x + sign * stage.width * 0.08
-	local grab_start_x = grab_end_x + sign * stage.width * 0.5
+	local grab_start_x = grab_end_x + sign * stage.width * 0.2
 	local grab_y = player.hand[3].y
 	local grab_image = images["words_p" .. player.player_num .. "_grab"]
 
@@ -402,7 +402,9 @@ function GrabAnyGem:init(game)
 		y = grab_y,
 		image = grab_image,
 	}
+	self.grab.transparency = 0
 	self.grab:wait(APPEARANCE_WAIT_TIME)
+	self.grab:change{duration = 0, transparency = 1}
 	self.grab:change{
 		duration = APPEAR_TIME,
 		x = grab_end_x,
@@ -410,7 +412,7 @@ function GrabAnyGem:init(game)
 	}
 
 	local any_end_x = player.hand[4].x + sign * stage.width * 0.08
-	local any_start_x = any_end_x + sign * stage.width * 0.5
+	local any_start_x = any_end_x + sign * stage.width * 0.2
 	local any_y = player.hand[4].y
 	local any_image = images["words_p" .. player.player_num .. "_any"]
 
@@ -420,7 +422,9 @@ function GrabAnyGem:init(game)
 		y = any_y,
 		image = any_image,
 	}
+	self.any.transparency = 0
 	self.any:wait(APPEARANCE_WAIT_TIME)
+	self.any:change{duration = 0, transparency = 1}
 	self.any:change{
 		duration = APPEAR_TIME,
 		x = any_end_x,
@@ -428,7 +432,7 @@ function GrabAnyGem:init(game)
 	}
 
 	local gem_end_x = player.hand[5].x + sign * stage.width * 0.08
-	local gem_start_x = gem_end_x + sign * stage.width * 0.5
+	local gem_start_x = gem_end_x + sign * stage.width * 0.2
 	local gem_y = player.hand[5].y
 	local gem_image = images["words_p" .. player.player_num .. "_gem"]
 
@@ -438,7 +442,9 @@ function GrabAnyGem:init(game)
 		y = gem_y,
 		image = gem_image,
 	}
+	self.gem.transparency = 0
 	self.gem:wait(APPEARANCE_WAIT_TIME)
+	self.gem:change{duration = 0, transparency = 1}
 	self.gem:change{
 		duration = APPEAR_TIME,
 		x = gem_end_x,
@@ -559,6 +565,7 @@ end
 
 ScreenPress = common.class("ScreenPress", ScreenPress)
 
+
 -------------------------------------------------------------------------------
 ----------------------------- ON-MOVE DRAG EFFECT -----------------------------
 -------------------------------------------------------------------------------
@@ -593,6 +600,9 @@ end
 
 ScreenDrag = common.class("ScreenDrag", ScreenDrag)
 
+
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
 -------------------------------------------------------------------------------
 local components = {
 	timer = Timer,
@@ -600,9 +610,7 @@ local components = {
 	burst = Burst,
 	screenPress = ScreenPress,
 	screenDrag = ScreenDrag,
-	grabAnyGem = GrabAnyGem,
 }
-
 
 local uielements = {
 	helptext = {}
