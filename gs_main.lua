@@ -60,7 +60,7 @@ function gs_main:enter()
 	})
 
 	for player in self:players() do
-		gs_main.ui.static.burst[player.player_num] = self.uielements.components.burst.create(self, player)
+		gs_main.ui.static.burst[player.player_num] = self.uielements.burstMeter.create(self, player)
 	end
 
 	gs_main.createImage(self, {

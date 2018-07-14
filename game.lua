@@ -1133,7 +1133,7 @@ end
 
 --default mousepressed function if not specified by a sub-state
 function Game:_mousepressed(x, y, gamestate)
-	self.uielements.components.screenPress.create(self, gamestate, x, y)
+	self.uielements.screenPress.create(self, gamestate, x, y)
 
 	if self.settings_menu_open then
 		for _, button in pairs(gamestate.ui.popup_clickable) do

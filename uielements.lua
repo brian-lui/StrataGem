@@ -707,22 +707,18 @@ ScreenDrag = common.class("ScreenDrag", ScreenDrag)
 -------------------------------------------------------------------------------
 -------------------------------------------------------------------------------
 -------------------------------------------------------------------------------
-local components = {
-	super = Super,
-	burst = Burst,
-	screenPress = ScreenPress,
-	screenDrag = ScreenDrag,
-}
-
 local uielements = {}
 
 function uielements:init(game)
 	self.game = game
+	self.superMeter = Super
+	self.burstMeter = Burst
+	self.screenPress = ScreenPress
+	self.screenDrag = ScreenDrag
 	--self.warning_sign = common.instance(WarningSign, game)
 
 	-- Red X shown on gems in invalid placement spots
 	self.redx = Pic:create{game = game, x = 0, y = 0, image = images.ui_redx}
-	self.components = components
 	self.screen_ui_color = nil
 	self.screen_ui_trails = {}
 	self.SCREEN_TRAILS_TIMER = 0.05 -- in seconds
@@ -1039,7 +1035,7 @@ function uielements:screenUIupdate(dt)
 
 		if game:_ismousedown() then
 			local x, y = game:_getmouseposition()
-			self.components.screenDrag.create(game, gamestate, x, y)
+			self.screenDrag.create(game, gamestate, x, y)
 		end
 	end
 end
