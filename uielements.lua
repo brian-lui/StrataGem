@@ -600,8 +600,8 @@ function WarningSign:init(game)
 
 	self.game = game
 	self.owner = player
-	self.FADE_IN_TIME = 10
-	self.FADE_OUT_TIME = 15
+	self.FADE_IN_TIME = 30
+	self.FADE_OUT_TIME = 20
 
 	local warn_x = {
 		player.hand[1].x + sign * stage.width * 0.06,
