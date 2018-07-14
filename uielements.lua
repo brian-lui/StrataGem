@@ -619,6 +619,9 @@ function WarningSign:init(game)
 		x = warn_x[1],
 		y = warn_y[1],
 		image = image,
+		transparency = 0,
+		platform_num = 1,
+		visible = false,
 	}
 
 	self.warn2 = Pic:create{
@@ -626,6 +629,9 @@ function WarningSign:init(game)
 		x = warn_x[2],
 		y = warn_y[2],
 		image = image,
+		transparency = 0,
+		platform_num = 2,
+		visible = false,
 	}
 
 	self.warn3 = Pic:create{
@@ -633,22 +639,50 @@ function WarningSign:init(game)
 		x = warn_x[3],
 		y = warn_y[3],
 		image = image,
+		transparency = 0,
+		platform_num = 3,
+		visible = false,
 	}
 
 end
 
+function WarningSign:fadeIn(icon)
+	if not icon.visible then
+		print("fade in platform", icon.platform_num)
+		icon:change{duration = self.FADE_IN_TIME, transparency = 1}
+		icon.visible = true
+	end
+end
+
+function WarningSign:fadeOut(icon)
+	if icon.visible then
+		icon:change{duration = self.FADE_OUT_TIME, transparency = 0}
+		icon.visible = false
+	end
+end
+
 function WarningSign:update(dt)
+	local game = self.game
 	local items = {self.warn1, self.warn2, self.warn3}
+
+	-- if danger then
+	-- if game.current_phase == "Action" phase
+
 	for _, item in ipairs(items) do
+		local platform = self.owner.hand[item.platform_num]
+		if platform.piece then
+			self:fadeIn(item)
+		else
+			self:fadeOut(item)
+		end
+
 		item:update(dt)
 	end
 end
 
 function WarningSign:draw(params)
 	local items = {self.warn1, self.warn2, self.warn3}
-	for _, item in ipairs(items) do
-		item:draw(params)
-	end
+	for _, item in ipairs(items) do item:draw(params) end
 end
 
 WarningSign = common.class("WarningSign", WarningSign)
