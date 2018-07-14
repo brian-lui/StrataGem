@@ -509,6 +509,8 @@ function Helptext:update(dt)
 		if game.phase.time_to_next <= 10 then self:remove() end
 	end
 
+	if game.turn ~= 1 and not self.deleted then self:remove() end
+
 	local items = {self.here, self.grab, self.any, self.gem, self.tap}
 	for _, item in ipairs(items) do
 		if item then item:update(dt) end
