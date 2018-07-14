@@ -708,20 +708,16 @@ ScreenDrag = common.class("ScreenDrag", ScreenDrag)
 -------------------------------------------------------------------------------
 -------------------------------------------------------------------------------
 local components = {
-	timer = Timer,
 	super = Super,
 	burst = Burst,
 	screenPress = ScreenPress,
 	screenDrag = ScreenDrag,
 }
 
-local uielements = {
-	helptext = {}
-}
+local uielements = {}
 
 function uielements:init(game)
 	self.game = game
-	self.timer = common.instance(Timer, game)
 	--self.warning_sign = common.instance(WarningSign, game)
 
 	-- Red X shown on gems in invalid placement spots
@@ -735,14 +731,14 @@ end
 
 function uielements:reset()
 	local game = self.game
+	local NOP = function() end
+
+	self.timer = common.instance(Timer, game)
 	if game.me_player then
 		self.helptext = common.instance(Helptext, game)
 		self.screen_ui_color = game.me_player.primary_colors
 	else
-		self.helptext = {
-			update = function() end,
-			draw = function() end,
-		}
+		self.helptext = {update = NOP, draw = NOP}
 	end
 end
 
