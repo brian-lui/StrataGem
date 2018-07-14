@@ -382,16 +382,18 @@ Super = common.class("Super", Super)
 -------------------------------------------------------------------------------
 local Helptext = {}
 function Helptext:init(game)
-	self.game = game
-	self.deleted = false
-	self.drop_here_shown = false
-
 	local stage = game.stage
-	local player = game.me_player or 1 -- TODO: handle no me_player better
+	local player = game.me_player --TODO: handle no me_player better
 	local sign = player.player_num == 1 and -1 or 1
 	local APPEARANCE_WAIT_TIME = 60
 	local APPEAR_TIME = 45
-	local BOUNCE_TIME = 30
+
+	self.game = game
+	self.owner = player
+	self.deleted = false
+	self.grab_shown = true
+	self.drop_here_shown = false
+
 
 	local grab_end_x = player.hand[3].x + sign * stage.width * 0.08
 	local grab_start_x = grab_end_x + sign * stage.width * 0.2
@@ -400,7 +402,7 @@ function Helptext:init(game)
 
 	self.grab = Pic:create{
 		game = game,
-		x = grab_start_x, 
+		x = grab_start_x,
 		y = grab_y,
 		image = grab_image,
 	}
@@ -420,7 +422,7 @@ function Helptext:init(game)
 
 	self.any = Pic:create{
 		game = game,
-		x = any_start_x, 
+		x = any_start_x,
 		y = any_y,
 		image = any_image,
 	}
@@ -440,7 +442,7 @@ function Helptext:init(game)
 
 	self.gem = Pic:create{
 		game = game,
-		x = gem_start_x, 
+		x = gem_start_x,
 		y = gem_y,
 		image = gem_image,
 	}
@@ -458,7 +460,7 @@ function Helptext:init(game)
 	local here_image = images["words_p" .. player.player_num .. "_dropgemshere"]
 	self.here = Pic:create{
 		game = game,
-		x = here_x, 
+		x = here_x,
 		y = here_y,
 		image = here_image,
 		transparency = 0,
@@ -469,10 +471,15 @@ function Helptext:update(dt)
 	local game = self.game
 
 	if game.turn == 1 and game.current_phase == "Action" then
-		if game.active_piece then
+		if self.owner.dropped_piece then
+			self:hideDropGemsHere()
+			self:hideGrabAnyGem()
+		elseif game.active_piece then
 			self:showDropGemsHere()
+			self:hideGrabAnyGem()
 		else
 			self:hideDropGemsHere()
+			self:showGrabAnyGem()
 		end
 
 		if game.phase.time_to_next <= 10 then self:remove() end
@@ -507,12 +514,6 @@ function Helptext:showDropGemsHere()
 		self.here:wait(15)
 		self.here:change{duration = 20, transparency = 1}
 		self.drop_here_shown = true
-
-		for _, item in ipairs{self.grab, self.any, self.gem} do
-			item:clear()
-			item:wait(15)
-			item:change{duration = 20, transparency = 0}
-		end
 	end
 end
 
@@ -521,11 +522,27 @@ function Helptext:hideDropGemsHere()
 		self.here:clear()
 		self.here:change{duration = 0, transparency = 0}
 		self.drop_here_shown = false
+	end
+end
 
+function Helptext:showGrabAnyGem()
+	if not self.grab_shown then
 		for _, item in ipairs{self.grab, self.any, self.gem} do
 			item:clear()
-			item:change{duration = 10, transparency = 1}
+			item:wait(15)
+			item:change{duration = 20, transparency = 1}
 		end
+		self.grab_shown = true
+	end
+end
+
+function Helptext:hideGrabAnyGem()
+	if self.grab_shown then
+		for _, item in ipairs{self.grab, self.any, self.gem} do
+			item:clear()
+			item:change{duration = 10, transparency = 0}
+		end
+		self.grab_shown = false
 	end
 end
 
