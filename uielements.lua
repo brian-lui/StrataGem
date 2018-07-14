@@ -648,6 +648,7 @@ end
 
 function WarningSign:fadeIn(icon)
 	if not icon.visible then
+		for i = 1, 8 do print(self.game.phase.no_rush[i]) end
 		print("fade in platform", icon.platform_num)
 		icon:change{duration = self.FADE_IN_TIME, transparency = 1}
 		icon.visible = true
@@ -665,17 +666,20 @@ function WarningSign:update(dt)
 	local game = self.game
 	local items = {self.warn1, self.warn2, self.warn3}
 
-	-- if danger then
-	-- if game.current_phase == "Action" phase
+	local danger = false
+	for i = 1, game.grid.COLUMNS do
+		if not game.phase.no_rush[i] then danger = true end
+	end
 
 	for _, item in ipairs(items) do
 		local platform = self.owner.hand[item.platform_num]
-		if platform.piece then
-			self:fadeIn(item)
-		else
-			self:fadeOut(item)
+		if game.current_phase == "Action" then
+			if platform.piece and danger then
+				self:fadeIn(item)
+			else
+				self:fadeOut(item)
+			end
 		end
-
 		item:update(dt)
 	end
 end
