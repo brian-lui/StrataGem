@@ -458,6 +458,24 @@ function Helptext:init(game)
 		easing = "outBounce",
 	}
 
+	local tap_x = player.hand[3].x + sign * stage.width * 0.175
+	local tap_y = player.hand[3].y
+	local tap_image = images.words_taptorotate
+
+	self.tap = Pic:create{
+		game = game,
+		x = tap_x,
+		y = tap_y,
+		image = tap_image,
+		final_x = tap_x,
+	}
+	self.tap.transparency = 0
+	self.tap:wait(APPEARANCE_WAIT_TIME + APPEAR_TIME)
+	self.tap:change{
+		duration = 20,
+		transparency = 1,
+	}
+
 	local here_x = 0.5 * stage.width + sign * images.GEM_WIDTH * 2
 	local here_y = stage.height * 0.35
 	local here_image = images["words_p" .. player.player_num .. "_dropgemshere"]
@@ -488,24 +506,25 @@ function Helptext:update(dt)
 		if game.phase.time_to_next <= 10 then self:remove() end
 	end
 
-	if self.here then self.here:update(dt) end
-	if self.grab then self.grab:update(dt) end
-	if self.any then self.any:update(dt) end
-	if self.gem then self.gem:update(dt) end
+	local items = {self.here, self.grab, self.any, self.gem, self.tap}
+	for _, item in ipairs(items) do
+		if item then item:update(dt) end
+	end
 end
 
 function Helptext:draw(params)
 	local game = self.game
+	local items = {self.here, self.grab, self.any, self.gem, self.tap}
 	if game and game.me_player then
-		if self.here then self.here:draw(params) end
-		if self.grab then self.grab:draw(params) end
-		if self.any then self.any:draw(params) end
-		if self.gem then self.gem:draw(params) end
+		for _, item in ipairs(items) do
+			if item then item:draw(params) end
+		end
 	end
 end
 
 function Helptext:remove()
-	for _, item in ipairs{self.here, self.grab, self.any, self.gem} do
+	local items = {self.here, self.grab, self.any, self.gem, self.tap}
+	for _, item in ipairs(items) do
 		item:clear()
 		item:change{duration = 20, transparency = 0, remove = true}
 	end
@@ -531,11 +550,14 @@ end
 function Helptext:showGrabAnyGem()
 	if not self.grab_shown then
 		local MIN_WIDTH = self.game.stage.width * 0.0078125
-		for _, item in ipairs{self.grab, self.any, self.gem} do
+		local items = {self.grab, self.any, self.gem, self.tap}
+
+		for _, item in ipairs(items) do
 			if item.final_x - item.x < MIN_WIDTH then item:clear() end
 			item:wait(15)
 			item:change{duration = 20, transparency = 1}
 		end
+
 		self.grab_shown = true
 	end
 end
@@ -543,10 +565,13 @@ end
 function Helptext:hideGrabAnyGem()
 	if self.grab_shown then
 		local MIN_WIDTH = self.game.stage.width * 0.0078125
-		for _, item in ipairs{self.grab, self.any, self.gem} do
+		local items = {self.grab, self.any, self.gem, self.tap}
+
+		for _, item in ipairs(items) do
 			if item.final_x - item.x < MIN_WIDTH then item:clear() end
 			item:change{duration = 10, transparency = 0}
 		end
+
 		self.grab_shown = false
 	end
 end
