@@ -131,11 +131,17 @@ function gs_main:drawScreenElements(params)
 	for _, v in pairs(particles.allParticles.PlatformTinyStar) do
 		v:draw(params)
 	end
+
 	for _, v in pairs(particles.allParticles.PlatformStar) do
 		v:draw(params)
 	end
+
+	-- ui elements
 	gs_main.ui.static.basin:draw(params)
-	self.uielements.timer:draw(params)	-- timer bar
+	self.uielements.timer:draw(params)
+	self.uielements.warningSign:draw(params)
+
+	-- player sprite
 	for player in self:players() do
 		player.animation:draw{h_flip = player.ID == "P2"} -- sprite
 	end

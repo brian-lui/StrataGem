@@ -591,21 +591,64 @@ Helptext = common.class("Helptext", Helptext)
 local WarningSign = {}
 
 function WarningSign:init(game)
-	self.game = game
+	assert(game.me_player, "Shouldn't initiate without a game.me_player!")
 
-	self.object1 = Pic:create{
-		game = game,
-		x = stage.timer.x,
-		y = stage.timer.y,
-		image = images.ui_timer_bar,
+	local stage = game.stage
+	local player = game.me_player
+	local image = images.ui_warning
+	local sign = player.player_num == 1 and -1 or 1
+
+	self.game = game
+	self.owner = player
+	self.FADE_IN_TIME = 10
+	self.FADE_OUT_TIME = 15
+
+	local warn_x = {
+		player.hand[1].x + sign * stage.width * 0.06,
+		player.hand[2].x + sign * stage.width * 0.06,
+		player.hand[3].x + sign * stage.width * 0.06,
 	}
+	local warn_y = {
+		player.hand[1].y,
+		player.hand[2].y,
+		player.hand[3].y,
+	}
+
+	self.warn1 = Pic:create{
+		game = game,
+		x = warn_x[1],
+		y = warn_y[1],
+		image = image,
+	}
+
+	self.warn2 = Pic:create{
+		game = game,
+		x = warn_x[2],
+		y = warn_y[2],
+		image = image,
+	}
+
+	self.warn3 = Pic:create{
+		game = game,
+		x = warn_x[3],
+		y = warn_y[3],
+		image = image,
+	}
+
 end
 
 function WarningSign:update(dt)
+	local items = {self.warn1, self.warn2, self.warn3}
+	for _, item in ipairs(items) do
+		item:update(dt)
+	end
 end
 
-function WarningSign:draw()
-	self.object1:draw()
+function WarningSign:draw(params)
+	local items = {self.warn1, self.warn2, self.warn3}
+	for _, item in ipairs(items) do
+		item:draw(params)
+	end
 end
 
 WarningSign = common.class("WarningSign", WarningSign)
@@ -722,8 +765,6 @@ function uielements:init(game)
 	self.burstMeter = Burst
 	self.screenPress = ScreenPress
 	self.screenDrag = ScreenDrag
-	--self.warning_sign = common.instance(WarningSign, game)
-
 	-- Red X shown on gems in invalid placement spots
 	self.redx = Pic:create{game = game, x = 0, y = 0, image = images.ui_redx}
 	self.screen_ui_color = nil
@@ -739,9 +780,11 @@ function uielements:reset()
 	self.timer = common.instance(Timer, game)
 	if game.me_player then
 		self.helptext = common.instance(Helptext, game)
+		self.warningSign = common.instance(WarningSign, game)
 		self.screen_ui_color = game.me_player.primary_colors
 	else
 		self.helptext = {update = NOP, draw = NOP}
+		self.warningSign = {update = NOP, draw = NOP}
 	end
 end
 
@@ -976,7 +1019,7 @@ function uielements:update(dt)
 
 	self.timer:update(dt)
 	self.helptext:update(dt)
-	--self.warning_sign:update(dt)
+	self.warningSign:update(dt)
 
 	if game.current_phase ~= "Action" then return end
 
