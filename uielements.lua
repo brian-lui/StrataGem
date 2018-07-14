@@ -382,8 +382,10 @@ Super = common.class("Super", Super)
 -------------------------------------------------------------------------------
 local Helptext = {}
 function Helptext:init(game)
+	assert(game.me_player, "Shouldn't initiate without a game.me_player!")
+
 	local stage = game.stage
-	local player = game.me_player --TODO: handle no me_player better
+	local player = game.me_player
 	local sign = player.player_num == 1 and -1 or 1
 	local APPEARANCE_WAIT_TIME = 135
 	local APPEAR_TIME = 45
@@ -393,7 +395,8 @@ function Helptext:init(game)
 	self.deleted = false
 	self.grab_shown = true
 	self.drop_here_shown = false
-
+	self.FADE_IN_TIME = 10
+	self.FADE_OUT_TIME = 15
 
 	local grab_end_x = player.hand[3].x + sign * stage.width * 0.08
 	local grab_start_x = grab_end_x + sign * stage.width * 0.2
@@ -472,7 +475,7 @@ function Helptext:init(game)
 	self.tap.transparency = 0
 	self.tap:wait(APPEARANCE_WAIT_TIME + APPEAR_TIME)
 	self.tap:change{
-		duration = 20,
+		duration = self.FADE_IN_TIME,
 		transparency = 1,
 	}
 
@@ -526,7 +529,11 @@ function Helptext:remove()
 	local items = {self.here, self.grab, self.any, self.gem, self.tap}
 	for _, item in ipairs(items) do
 		item:clear()
-		item:change{duration = 20, transparency = 0, remove = true}
+		item:change{
+			duration = self.FADE_OUT_TIME,
+			transparency = 0,
+			remove = true,
+		}
 	end
 	self.deleted = true
 end
@@ -534,7 +541,7 @@ end
 function Helptext:showDropGemsHere()
 	if not self.drop_here_shown then
 		self.here:wait(15)
-		self.here:change{duration = 20, transparency = 1}
+		self.here:change{duration = self.FADE_IN_TIME, transparency = 1}
 		self.drop_here_shown = true
 	end
 end
@@ -555,7 +562,7 @@ function Helptext:showGrabAnyGem()
 		for _, item in ipairs(items) do
 			if item.final_x - item.x < MIN_WIDTH then item:clear() end
 			item:wait(15)
-			item:change{duration = 20, transparency = 1}
+			item:change{duration = self.FADE_IN_TIME, transparency = 1}
 		end
 
 		self.grab_shown = true
@@ -569,7 +576,7 @@ function Helptext:hideGrabAnyGem()
 
 		for _, item in ipairs(items) do
 			if item.final_x - item.x < MIN_WIDTH then item:clear() end
-			item:change{duration = 10, transparency = 0}
+			item:change{duration = self.FADE_OUT_TIME, transparency = 0}
 		end
 
 		self.grab_shown = false
