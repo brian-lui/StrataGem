@@ -385,7 +385,7 @@ function Helptext:init(game)
 	local stage = game.stage
 	local player = game.me_player --TODO: handle no me_player better
 	local sign = player.player_num == 1 and -1 or 1
-	local APPEARANCE_WAIT_TIME = 60
+	local APPEARANCE_WAIT_TIME = 135
 	local APPEAR_TIME = 45
 
 	self.game = game
@@ -405,6 +405,7 @@ function Helptext:init(game)
 		x = grab_start_x,
 		y = grab_y,
 		image = grab_image,
+		final_x = grab_end_x,
 	}
 	self.grab.transparency = 0
 	self.grab:wait(APPEARANCE_WAIT_TIME)
@@ -425,6 +426,7 @@ function Helptext:init(game)
 		x = any_start_x,
 		y = any_y,
 		image = any_image,
+		final_x = any_end_x,
 	}
 	self.any.transparency = 0
 	self.any:wait(APPEARANCE_WAIT_TIME)
@@ -445,6 +447,7 @@ function Helptext:init(game)
 		x = gem_start_x,
 		y = gem_y,
 		image = gem_image,
+		final_x = gem_end_x,
 	}
 	self.gem.transparency = 0
 	self.gem:wait(APPEARANCE_WAIT_TIME)
@@ -527,8 +530,9 @@ end
 
 function Helptext:showGrabAnyGem()
 	if not self.grab_shown then
+		local MIN_WIDTH = self.game.stage.width * 0.0078125
 		for _, item in ipairs{self.grab, self.any, self.gem} do
-			item:clear()
+			if item.final_x - item.x < MIN_WIDTH then item:clear() end
 			item:wait(15)
 			item:change{duration = 20, transparency = 1}
 		end
@@ -538,8 +542,9 @@ end
 
 function Helptext:hideGrabAnyGem()
 	if self.grab_shown then
+		local MIN_WIDTH = self.game.stage.width * 0.0078125
 		for _, item in ipairs{self.grab, self.any, self.gem} do
-			item:clear()
+			if item.final_x - item.x < MIN_WIDTH then item:clear() end
 			item:change{duration = 10, transparency = 0}
 		end
 		self.grab_shown = false
