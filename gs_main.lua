@@ -139,7 +139,6 @@ function gs_main:drawScreenElements(params)
 	-- ui elements
 	gs_main.ui.static.basin:draw(params)
 	self.uielements.timer:draw(params)
-	self.uielements.warningSign:draw(params)
 
 	-- player sprite
 	for player in self:players() do
@@ -248,6 +247,7 @@ function gs_main:drawText(params)
 		v:draw(params)
 	end
 	self.uielements.helptext:draw(params)
+	self.uielements.warningSign:draw(params)
 	self.debugconsole:draw()
 end
 
