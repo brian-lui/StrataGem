@@ -598,7 +598,8 @@ function WarningSign:init(game)
 	local stage = game.stage
 	local player = game.me_player
 	local image = images.ui_warning
-	local sign = player.player_num == 1 and -1 or 1
+	local sign = player.player_num == 1 and 1 or -1
+	local platform_width = player.hand[1].platform.width
 
 	self.game = game
 	self.owner = player
@@ -607,9 +608,9 @@ function WarningSign:init(game)
 	self.FADE_OUT_TIME = 20
 
 	local warn_x = {
-		player.hand[1].x + sign * stage.width * 0.06,
-		player.hand[2].x + sign * stage.width * 0.06,
-		player.hand[3].x + sign * stage.width * 0.06,
+		player.hand[1].x + sign * platform_width * 0.5,
+		player.hand[2].x + sign * platform_width * 0.5,
+		player.hand[3].x + sign * platform_width * 0.5,
 	}
 	local warn_y = {
 		player.hand[1].y,
