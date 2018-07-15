@@ -385,6 +385,7 @@ function Helptext:init(game)
 	assert(game.me_player, "Shouldn't initiate without a game.me_player!")
 
 	local stage = game.stage
+	local grid = game.grid
 	local player = game.me_player
 	local sign = player.player_num == 1 and -1 or 1
 	local platform_width = player.hand[1].platform.width
@@ -481,7 +482,7 @@ function Helptext:init(game)
 	}
 
 	local here_x = 0.5 * stage.width + sign * images.GEM_WIDTH * 2
-	local here_y = stage.height * 0.35
+	local here_y = (grid.y[grid.BASIN_START_ROW] + grid.y[grid.PENDING_END_ROW]) * 0.5
 	local here_image = images["words_p" .. player.player_num .. "_dropgemshere"]
 	self.here = Pic:create{
 		game = game,
