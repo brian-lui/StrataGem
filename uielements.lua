@@ -387,6 +387,7 @@ function Helptext:init(game)
 	local stage = game.stage
 	local player = game.me_player
 	local sign = player.player_num == 1 and -1 or 1
+	local platform_width = player.hand[1].platform.width
 	local APPEARANCE_WAIT_TIME = 135
 	local APPEAR_TIME = 45
 
@@ -398,8 +399,8 @@ function Helptext:init(game)
 	self.FADE_IN_TIME = 10
 	self.FADE_OUT_TIME = 15
 
-	local grab_end_x = player.hand[3].x + sign * stage.width * 0.08
-	local grab_start_x = grab_end_x + sign * stage.width * 0.2
+	local grab_end_x = player.hand[3].x + sign * platform_width
+	local grab_start_x = grab_end_x + sign * platform_width * 3
 	local grab_y = player.hand[3].y
 	local grab_image = images["words_p" .. player.player_num .. "_grab"]
 
@@ -419,8 +420,8 @@ function Helptext:init(game)
 		easing = "outBounce",
 	}
 
-	local any_end_x = player.hand[4].x + sign * stage.width * 0.08
-	local any_start_x = any_end_x + sign * stage.width * 0.2
+	local any_end_x = player.hand[4].x + sign * platform_width
+	local any_start_x = any_end_x + sign * platform_width * 3
 	local any_y = player.hand[4].y
 	local any_image = images["words_p" .. player.player_num .. "_any"]
 
@@ -440,8 +441,8 @@ function Helptext:init(game)
 		easing = "outBounce",
 	}
 
-	local gem_end_x = player.hand[5].x + sign * stage.width * 0.08
-	local gem_start_x = gem_end_x + sign * stage.width * 0.2
+	local gem_end_x = player.hand[5].x + sign * platform_width
+	local gem_start_x = gem_end_x + sign * platform_width * 3
 	local gem_y = player.hand[5].y
 	local gem_image = images["words_p" .. player.player_num .. "_gem"]
 
@@ -461,7 +462,7 @@ function Helptext:init(game)
 		easing = "outBounce",
 	}
 
-	local tap_x = player.hand[3].x + sign * stage.width * 0.175
+	local tap_x = player.hand[3].x + sign * platform_width * 2
 	local tap_y = player.hand[3].y
 	local tap_image = images.words_taptorotate
 
@@ -595,7 +596,6 @@ local WarningSign = {}
 function WarningSign:init(game)
 	assert(game.me_player, "Shouldn't initiate without a game.me_player!")
 
-	local stage = game.stage
 	local player = game.me_player
 	local image = images.ui_warning
 	local sign = player.player_num == 1 and 1 or -1
