@@ -110,7 +110,7 @@ function Burst:init(game, character)
 	elseif self.player_num == 2 then
 		ID = "P2"
 	else
-		print("invalid player_num provided")
+		error("invalid player_num provided")
 	end
 
 	local frame_image = self.player_num == 1 and images.ui_burst_gauge_gold or images.ui_burst_gauge_silver
@@ -602,6 +602,7 @@ function WarningSign:init(game)
 
 	self.game = game
 	self.owner = player
+	self.player_num = player.player_num
 	self.FADE_IN_TIME = 30
 	self.FADE_OUT_TIME = 20
 
@@ -650,8 +651,6 @@ end
 
 function WarningSign:fadeIn(icon)
 	if not icon.visible then
-		for i = 1, 8 do print(self.game.phase.no_rush[i]) end
-		print("fade in platform", icon.platform_num)
 		icon:change{duration = self.FADE_IN_TIME, transparency = 1}
 		icon.visible = true
 	end
@@ -669,8 +668,8 @@ function WarningSign:update(dt)
 	local items = {self.warn1, self.warn2, self.warn3}
 
 	local danger = false
-	for i = 1, game.grid.COLUMNS do
-		if not game.phase.no_rush[i] then danger = true end
+	for col in game.grid:cols(self.player_num) do
+		if not game.phase.no_rush[col] then danger = true end
 	end
 
 	for _, item in ipairs(items) do
