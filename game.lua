@@ -188,7 +188,7 @@ function Game:start(params)
 
 	self.phase:reset()
 	
-	self:switchState("gs_main")
+	self:switchState("gs_versussplash")
 end
 
 function Game:setSaveFileLocation()
