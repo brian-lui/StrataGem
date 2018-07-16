@@ -60,6 +60,56 @@ Character.super_params = {}
 Character.can_gain_super = true -- set false to gain no meter from matches
 Character.CAN_SUPER_AND_PLAY_PIECE = false -- this is always false now
 
+--[[ Permissible font sizes: "big", "medium", "small"
+Big takes up 3 rows of space. Medium takes up 2 rows. Small takes up 1 row.
+An array of [quote number][line number]{size, text} e.g.
+{
+	{
+		{size = "big", text = "You're fired!"},
+		{size = "small", text = "In my younger and more vulnerable days"},
+	},
+	{
+		{size = "medium", text = "Smells like updog in here."},
+		{size = "medium", text = "What's updog?"},
+		{size = "medium", text = "Not much what's up with you dog?"},
+	},
+}
+--]]
+Character.vs_quotes = {
+	{
+		{
+			size = "big",
+			text = "Smells like updog in here.",
+		},
+		{
+			size = "small",
+			text = "Not much what's up with you dog?",
+		},
+	},
+	{
+		{
+			size = "small",
+			text = "It was the best of times, it was the worst of times.",
+		},
+		{
+			size = "big",
+			text = "In bed",
+		},
+	},
+}
+
+Character.win_quotes = {
+	{
+		{size = "big", text = "I win."},
+		{size = "small", text = "Thanks."},
+	},
+	{
+		{size = "medium", text = "You lose."},
+		{size = "medium", text = "Sorry."},
+		{size = "small", text = "In bed"},
+	},
+}
+
 function Character:init(player_num, game)
 	self.game = game
 	self.player_num = player_num
