@@ -146,15 +146,6 @@ function gs_main:drawScreenElements(params)
 	end
 end
 
--- screenshake effect
-function gs_main.screenshake(self, shake)
-	local frame = self.frame
-	shake = math.min(shake or 6, 6)
-	local h_displacement = shake * (frame % 7 * 0.5 + frame % 13 * 0.25 + frame % 23 / 6 - 5)
-	local v_displacement = shake * (frame % 5 * 2/3 + frame % 11 * 0.25 + frame % 17 / 6 - 5)
-	self.camera:setPosition(h_displacement, v_displacement)
-end
-
 -- draw gems and related objects (platforms, particles)
 function gs_main:drawGems(params)
 	local allParticles = self.particles.allParticles

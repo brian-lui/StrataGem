@@ -45,4 +45,19 @@ function Camera:setScale(sx, sy)
 	self.scaleY = sy or self.scaleY
 end
 
+function Camera:setScreenshake(current_frame, velocity)
+	local shake = math.min(velocity or 6, 6)
+	local h_displacement = shake * (
+		current_frame % 7 * 0.5 +
+		current_frame % 13 * 0.25 +
+		current_frame % 23 / 6 - 5
+	)
+	local v_displacement = shake * (
+		current_frame % 5 * 2/3 +
+		current_frame % 11 * 0.25 +
+		current_frame % 17 / 6 - 5
+	)
+	self:setPosition(h_displacement, v_displacement)
+end
+
 return common.class("Camera", Camera)
