@@ -582,7 +582,7 @@ local function playReplayTxt(game)
 end
 local function wolfgangGemSpeedToggle(game)
 	for player in game:players() do
-		if player.character_id == "Wolfgang" then
+		if player.character_name == "Wolfgang" then
 			if player.GOOD_DOG_CYCLE == 13.5 then
 				player.GOOD_DOG_CYCLE = 135
 				player.BAD_DOG_CYCLE = 30

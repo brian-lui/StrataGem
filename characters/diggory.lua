@@ -7,7 +7,7 @@ local Diggory = {}
 
 Diggory.large_image = love.graphics.newImage('images/portraits/diggory.png')
 Diggory.small_image = love.graphics.newImage('images/portraits/diggorysmall.png')
-Diggory.character_id = "Diggory"
+Diggory.character_name = "Diggory"
 Diggory.meter_gain = {
 	red = 4,
 	blue = 4,

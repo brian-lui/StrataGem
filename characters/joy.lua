@@ -7,7 +7,7 @@ local Joy = {}
 
 Joy.large_image = love.graphics.newImage('images/portraits/joy.png')
 Joy.small_image = love.graphics.newImage('images/portraits/joysmall.png')
-Joy.character_id = "Joy"
+Joy.character_name = "Joy"
 Joy.meter_gain = {
 	red = 8,
 	blue = 4,

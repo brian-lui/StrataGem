@@ -12,7 +12,7 @@ local Pic = require "pic"
 local Character = require "character"
 
 local Walter = {}
-Walter.character_id = "Walter"
+Walter.character_name = "Walter"
 Walter.meter_gain = {
 	red = 4,
 	blue = 8,

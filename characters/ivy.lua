@@ -7,7 +7,7 @@ local Ivy = {}
 
 Ivy.large_image = love.graphics.newImage('images/portraits/ivy.png')
 Ivy.small_image = love.graphics.newImage('images/portraits/ivysmall.png')
-Ivy.character_id = "Ivy"
+Ivy.character_name = "Ivy"
 Ivy.meter_gain = {
 	red = 4,
 	blue = 4,

@@ -8,7 +8,7 @@ local Gail = {}
 
 Gail.large_image = love.graphics.newImage('images/portraits/gail.png')
 Gail.small_image = love.graphics.newImage('images/portraits/gailsmall.png')
-Gail.character_id = "Gail"
+Gail.character_name = "Gail"
 Gail.meter_gain = {
 	red = 4,
 	blue = 4,

@@ -7,7 +7,7 @@ local Mort = {}
 
 Mort.large_image = love.graphics.newImage('images/portraits/mort.png')
 Mort.small_image = love.graphics.newImage('images/portraits/mortsmall.png')
-Mort.character_id = "Mort"
+Mort.character_name = "Mort"
 Mort.meter_gain = {
 	red = 4,
 	blue = 8,

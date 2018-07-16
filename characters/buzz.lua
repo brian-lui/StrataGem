@@ -7,7 +7,7 @@ local Buzz = {}
 
 Buzz.large_image = love.graphics.newImage('images/portraits/buzz.png')
 Buzz.small_image = love.graphics.newImage('images/portraits/buzzsmall.png')
-Buzz.character_id = "Buzz"
+Buzz.character_name = "Buzz"
 Buzz.meter_gain = {
 	red = 4,
 	blue = 4,

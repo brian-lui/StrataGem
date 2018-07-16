@@ -26,7 +26,7 @@ Wolfgang.action_image = love.graphics.newImage('images/portraits/action_wolfgang
 Wolfgang.shadow_image = love.graphics.newImage('images/portraits/shadow_wolfgang.png')
 Wolfgang.super_fuzz_image = love.graphics.newImage('images/ui/superfuzzred.png')
 
-Wolfgang.character_id = "Wolfgang"
+Wolfgang.character_name = "Wolfgang"
 Wolfgang.meter_gain = {
 	red = 8,
 	blue = 4,

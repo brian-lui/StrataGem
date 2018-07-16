@@ -15,7 +15,7 @@ local Pic = require "pic"
 local Character = require "character"
 
 local Heath = {}
-Heath.character_id = "Heath"
+Heath.character_name = "Heath"
 Heath.meter_gain = {
 	red = 8,
 	blue = 4,

@@ -221,8 +221,8 @@ function Game:writeReplayHeader()
 	local text = {}
 	text[#text+1] = self.VERSION .. ":"
 	text[#text+1] = self.type .. ":"
-	text[#text+1] = self.p1.character_id .. ":"
-	text[#text+1] = self.p2.character_id .. ":"
+	text[#text+1] = self.p1.character_name .. ":"
+	text[#text+1] = self.p2.character_name .. ":"
 	text[#text+1] = self.p1.player_name .. ":"
 	text[#text+1] = self.p2.player_name .. ":"
 	text[#text+1] = self.current_background_name .. ":"
@@ -522,7 +522,7 @@ function Game:serializeState()
 		return loc.gem and loc.gem.color:sub(1, 1):upper() or "z"
 	end
 
-	local p1char, p2char = p1.character_id, p2.character_id
+	local p1char, p2char = p1.character_name, p2.character_name
 
 	-- super, burst, damage
 	local p1burst, p1super, p1damage = p1.cur_burst, p1.mp, p1.hand.damage
@@ -603,13 +603,13 @@ function Game:deserializeState(state_string)
 	local rng_state = state[20]
 	local p1_special_str, p2_special_str = state[21], state[22]
 
-	-- if p1.character_id or p2.character_id not match, replace them
-	if p1char ~= self.p1.character_id then
-		print("p1char, id", p1char, self.p1.character_id)
+	-- if p1.character_name or p2.character_name not match, replace them
+	if p1char ~= self.p1.character_name then
+		print("p1char, id", p1char, self.p1.character_name)
 		self.p1 = common.instance(require("characters." .. p1char), 1, self)
 	end
-	if p2char ~= self.p2.character_id then
-		print("p2char, id", p2char, self.p2.character_id)
+	if p2char ~= self.p2.character_name then
+		print("p2char, id", p2char, self.p2.character_name)
 		self.p2 = common.instance(require("characters." .. p2char), 2, self)
 	end
 	self.p1.enemy = self.p2

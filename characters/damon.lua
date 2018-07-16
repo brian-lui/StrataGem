@@ -7,7 +7,7 @@ local Damon = {}
 
 Damon.large_image = love.graphics.newImage('images/portraits/damon.png')
 Damon.small_image = love.graphics.newImage('images/portraits/damonsmall.png')
-Damon.character_id = "Damon"
+Damon.character_name = "Damon"
 Damon.meter_gain = {
 	red = 4,
 	blue = 4,
