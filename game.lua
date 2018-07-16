@@ -109,8 +109,6 @@ function Game:reset()
 	self.them_player = false
 	self.active_piece = false
 	self.grid_wait = 0
-	self.screenshake_frames = 0
-	self.screenshake_vel = 0
 	self.rng:setSeed(os.time())
 	self.frame = 0
 	self.paused = false

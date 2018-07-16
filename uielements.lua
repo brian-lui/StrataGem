@@ -812,6 +812,8 @@ function uielements:init(game)
 	self.screen_ui_trails = {}
 	self.SCREEN_TRAILS_TIMER = 0.05 -- in seconds
 	self.screen_trails_t = 0
+	self.screenshake_frames = 0
+	self.screenshake_vel = 0
 end
 
 function uielements:reset()
@@ -948,8 +950,8 @@ end
 
 -- sends screenshake data depending on how many gems matched, called on match
 function uielements:screenshake(damage)
-	self.game.screenshake_frames = self.game.screenshake_frames + math.max(0, damage * 5)
-	self.game.screenshake_vel = self.game.screenshake_vel + math.max(0, damage)
+	self.screenshake_frames = self.screenshake_frames + math.max(0, damage * 5)
+	self.screenshake_vel = self.screenshake_vel + math.max(0, damage)
 end
 
 local function pieceLandedInStagingArea(game, gems, place_type)
@@ -1047,6 +1049,20 @@ function uielements:putPendingAtTop(delay)
 	end
 end
 
+function uielements:setCameraScreenshake(current_frame)
+	local game = self.game
+	current_frame = current_frame or game.frame
+	if self.screenshake_frames > 0 then
+		game.camera:setScreenshake(current_frame, self.screenshake_vel)
+	else
+		game.camera:setPosition(0, 0)
+	end
+end
+
+function uielements:updateScreenshake()
+	self.screenshake_frames = math.max(0, self.screenshake_frames - 1)
+end
+
 -- generates dust for active piece, and calculates tweens for gem shadows
 -- only called in main gamestate
 function uielements:update(dt)
@@ -1061,6 +1077,7 @@ function uielements:update(dt)
 	self.timer:update(dt)
 	self.helptext:update(dt)
 	self.warningSign:update(dt)
+	self:updateScreenshake()
 
 	if game.current_phase ~= "Action" then return end
 

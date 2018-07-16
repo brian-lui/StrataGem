@@ -258,11 +258,7 @@ function gs_main:draw()
 	local darkened = self:isScreenDark()
 	gs_main.current_background:draw{darkened = darkened}
 	self.camera:set(1, 1)
-		if self.screenshake_frames > 0 then
-			gs_main.screenshake(self, self.screenshake_vel)
-		else
-			self.camera:setPosition(0, 0)
-		end
+		self.uielements:setCameraScreenshake()
 
 		gs_main.drawUI(self, {darkened = darkened})
 		gs_main.drawScreenElements(self, {darkened = darkened})
