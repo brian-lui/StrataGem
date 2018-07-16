@@ -73,7 +73,8 @@ function Game:init()
 		fx = {},
 		fades = {},
 	}
-	self.camera = common.instance(require "/libraries/camera")	
+	self.texts = require "/text/text"
+	self.camera = common.instance(require "/libraries/camera")
 	self.inits = require "/helpers/inits"
 	self.settings = require "/helpers/settings"
 	self.rng = love.math.newRandomGenerator()

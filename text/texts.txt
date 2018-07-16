@@ -1,0 +1,78 @@
+# This is all the text, currently has vs_quotes and win_quotes.
+# We put it in a separate file for convenience and possible ease of translation.
+#
+# Permissible font sizes: "big", "medium", "small"
+# Big takes up 3 rows of space. Medium takes up 2 rows. Small takes up 1 row.
+# Currently we have enough space to comfortably display 6 rows in vs_quotes
+#
+# #Hash symbol indicates a comment, will not be parsed
+# blank lines also will not be parsed
+# `Backtick indiates a new section
+# *Asterisk indicates a new sub-section
+#
+# Each quote has 3 parts:
+# --- indicates new quote
+# next line, big/medium/small indicates font size
+# next line is the quote itself
+# repeat these two
+
+`VS_QUOTES
+
+*Heath
+---
+big
+You're fired!
+small
+In my younger and more vulnerable years my father gave me some advice that I've been turning over in my mind ever since.
+---
+big
+Placeholder quote
+
+*Walter
+
+*Gail
+
+*Holly
+
+*Wolfgang
+
+*Hailey
+
+*Diggory
+
+*Buzz
+
+*Ivy
+
+*Joy
+
+*Mort
+
+*Damon
+
+
+`WIN_QUOTES
+
+*Walter
+
+*Gail
+
+*Holly
+
+*Wolfgang
+
+*Hailey
+
+*Diggory
+
+*Buzz
+
+*Ivy
+
+*Joy
+
+*Mort
+
+*Damon
+
+
