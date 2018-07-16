@@ -1,10 +1,10 @@
 --[[
-	This is the gamestate module for the title  screen.
+	This is the gamestate module for the Title screen.
 
 	Note to coders and code readers!
-	You can't call title.createButton by doing title:createButton(...)
-	That will call it by passing in an instance of title, which doesn't work
-	You have to call it with title.createButton(self, ...)
+	You can't call Title.createButton by doing Title:createButton(...)
+	That will call it by passing in an instance of Title, which doesn't work
+	You have to call it with Title.createButton(self, ...)
 	That passes in an instance of self, which works (???)
 	Look I didn't code this I just know how to use it, ok
 --]]
@@ -12,31 +12,31 @@
 local common = require "class.commons"
 local images = require "images"
 
-local title = {name = "title"}
+local Title = {name = "Title"}
 
 -- refer to game.lua for instructions for createButton and createImage
-function title:createButton(params)
-	return self:_createButton(title, params)
+function Title:createButton(params)
+	return self:_createButton(Title, params)
 end
 
-function title:createImage(params)
-	return self:_createImage(title, params)
+function Title:createImage(params)
+	return self:_createImage(Title, params)
 end
 
--- After the initial tween, we keep the icons here if returning to title screen
+-- After the initial tween, we keep the icons here if returning to Title screen
 -- So we put it in init(), not enter() like in the other states
-function title:init()
+function Title:init()
 	local stage = self.stage
 	self.time_step, self.timeBucket = 1/60, 0
-	title.ui = {
+	Title.ui = {
 		clickable = {},
 		static = {},
 		popup_clickable = {},
 		popup_static = {},
 	}
-	self:_createSettingsMenu(title)
+	self:_createSettingsMenu(Title)
 
-	title.createButton(self, {
+	Title.createButton(self, {
 		name = "vscpu",
 		image = images.buttons_vscpu,
 		image_pushed = images.buttons_vscpupush,
@@ -50,7 +50,7 @@ function title:init()
 			self:switchState("gs_singleplayerselect")
 		end,
 	})
-	title.createButton(self, {
+	Title.createButton(self, {
 		name = "netplay",
 		image = images.buttons_netplay,
 		image_pushed = images.buttons_netplaypush,
@@ -64,7 +64,7 @@ function title:init()
 			self:switchState("gs_multiplayerselect")
 		end,
 	})
-	title.createImage(self, {
+	Title.createImage(self, {
 		name = "logo",
 		image = images.unclickables_titlelogo,
 		duration = 45,
@@ -81,13 +81,13 @@ function title:init()
 	})
 end
 
-function title:enter()
-	title.clicked = nil
+function Title:enter()
+	Title.clicked = nil
 	self.uielements:clearScreenUIColor()
 	self.settings_menu_open = false
 	if self.sound:getCurrentBGM() ~= "bgm_menu" then
 		self.sound:stopBGM()
-		title.ui.static.logo:change{
+		Title.ui.static.logo:change{
 			duration = 45,
 			exit_func = function()
 				if self.sound:getCurrentBGM() ~= "bgm_menu" then
@@ -96,9 +96,9 @@ function title:enter()
 			end,
 		}
 	end
-	title.current_background = common.instance(self.background.checkmate, self)
+	Title.current_background = common.instance(self.background.checkmate, self)
 
-	title.createImage(self, {
+	Title.createImage(self, {
 		name = "fadein",
 		container = self.global_ui.fades,
 		image = images.unclickables_fadein,
@@ -111,40 +111,40 @@ function title:enter()
 	})
 end
 
-function title:openSettingsMenu()
-	self:_openSettingsMenu(title)
+function Title:openSettingsMenu()
+	self:_openSettingsMenu(Title)
 end
 
-function title:closeSettingsMenu()
-	self:_closeSettingsMenu(title)
+function Title:closeSettingsMenu()
+	self:_closeSettingsMenu(Title)
 end
 
-function title:update(dt)
-	title.current_background:update(dt)
-	for _, tbl in pairs(title.ui) do
+function Title:update(dt)
+	Title.current_background:update(dt)
+	for _, tbl in pairs(Title.ui) do
 		for _, v in pairs(tbl) do v:update(dt) end
 	end
 end
 
-function title:draw()
+function Title:draw()
 	local darkened = self:isScreenDark()
-	title.current_background:draw{darkened = darkened}
-	for _, v in pairs(title.ui.static) do v:draw{darkened = darkened} end
-	for _, v in pairs(title.ui.clickable) do v:draw{darkened = darkened} end
-	self:_drawSettingsMenu(title)
+	Title.current_background:draw{darkened = darkened}
+	for _, v in pairs(Title.ui.static) do v:draw{darkened = darkened} end
+	for _, v in pairs(Title.ui.clickable) do v:draw{darkened = darkened} end
+	self:_drawSettingsMenu(Title)
 	self:_drawGlobals()
 end
 
-function title:mousepressed(x, y)
-	self:_mousepressed(x, y, title)
+function Title:mousepressed(x, y)
+	self:_mousepressed(x, y, Title)
 end
 
-function title:mousereleased(x, y)
-	self:_mousereleased(x, y, title)
+function Title:mousereleased(x, y)
+	self:_mousereleased(x, y, Title)
 end
 
-function title:mousemoved(x, y)
-	self:_mousemoved(x, y, title)
+function Title:mousemoved(x, y)
+	self:_mousemoved(x, y, Title)
 end
 
-return title
+return Title
