@@ -796,7 +796,7 @@ end
 	mandatory parameters: name, image, end_x, end_y
 	optional parameters: duration, start_transparency, end_transparency,
 		start_x, start_y, easing, remove, exit_func, force_max_alpha,
-		start_scaling, end_scaling, container, counter
+		start_scaling, end_scaling, container, counter, h_flip
 --]]
 function Game:_createImage(gamestate, params)
 	params = params or {}
@@ -813,6 +813,7 @@ function Game:_createImage(gamestate, params)
 		counter = params.counter,
 		container = params.container or gamestate.ui.static,
 		force_max_alpha = params.force_max_alpha,
+		h_flip = params.h_flip,
 	}
 
 	button:change{
