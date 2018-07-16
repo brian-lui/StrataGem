@@ -101,6 +101,13 @@ local charselect = {
 	"thumbnail_rabbitsnowstorm", "thumbnail_checkmate",
 }
 
+local vs = {
+	"vs", "bubble_red", "bubble_blue", "bubble_green", "bubble_yellow",
+	"smallword_heath", "smallword_walter", "smallword_gail", "smallword_holly",
+	"smallword_wolfgang", "smallword_hailey", "smallword_diggory",
+	"smallword_buzz", "smallword_ivy", "smallword_joy", "smallword_mort",
+	--"smallword_damon",
+}
 -- categories to create, in the form [key] = {category}
 -- assumes that key is the same as pathname
 -- e.g. buttons = buttons will create
@@ -114,6 +121,7 @@ local categories = {
 	particles = particles,
 	portraits = portraits,
 	charselect = charselect,
+	vs = vs,
 }
 
 local images = {
