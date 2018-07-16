@@ -10,7 +10,6 @@ local spairs = require "/helpers/utilities".spairs
 local gs_main = {name = "gs_main"}
 
 function gs_main:init()
-	self.camera = common.instance(require "/libraries/camera")
 	gs_main.ui = {
 		clickable = {},
 		static = {},
@@ -115,7 +114,6 @@ function gs_main:update(dt)
 			player.super_button:update(dt)
 		end
 		self.animations:updateAll(dt)
-		self.screenshake_frames = math.max(0, self.screenshake_frames - 1)
 		self.timeBucket = self.timeBucket + dt
 	end
 
