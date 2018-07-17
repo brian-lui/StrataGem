@@ -1,0 +1,183 @@
+# This is all the text, currently has vs_quotes and win_quotes.
+# We put it in a separate file for convenience and possible ease of translation.
+#
+# Permissible font sizes: "big", "medium", "small"
+# Big takes up 3 rows of space. Medium takes up 2 rows. Small takes up 1 row.
+# Currently we have enough space to comfortably display 6 rows in vs_quotes
+#
+# #Hash symbol indicates a comment, will not be parsed
+# blank lines also will not be parsed
+# `Backtick indiates a new section
+# *Asterisk indicates a new sub-section
+# ~Tilde indicates a new quote
+#
+# Each quote has 2 parts:
+# first line, big/medium/small indicates font size
+# next line is the quote itself
+# repeat these two
+
+`VS_QUOTES
+
+*Heath
+~
+big
+You're fired!
+small
+In my younger and more vulnerable years my father gave me some advice that I've been turning over in my mind ever since.
+~
+big
+Let's get cookin'!
+~
+medium
+I'm Heath Burns, the Burning Sensation!
+small
+Whether 'tis nobler in the mind to suffer the slings and arrows of outrageous fortune, or to take arms against a sea of troubles, and by opposing end them?
+
+*Walter
+~
+big
+Now you'll experience 'flow'.
+~
+big
+Time to make a splash.
+~
+medium
+You look wet behind the ears.
+
+
+*Gail
+~
+big
+My magic will blow you away!
+~
+big
+Here comes the twister!
+~
+medium
+Here I am.
+medium
+Rock you like a hurricane!
+
+*Holly
+~
+medium
+Hello deary, did you want a gardening lesson?
+
+*Wolfgang
+~
+big
+Smells like updog in here.
+~
+big
+Let's take a walk.
+~
+big
+Bark!
+~
+medium
+You came prepared to fight a madman, and instead you found a dog!?
+
+*Hailey
+~
+big
+You better chill out!
+~
+big
+Everybody freeze!
+~
+big
+You're about to catch a cold.
+
+*Diggory
+~
+big
+Let's rock!
+
+*Buzz
+~
+medium
+You'll be shocked by my powers!
+~
+big
+Danger! High voltage!
+~
+medium
+You've sparked my interest.
+
+*Ivy
+~
+big
+Care for an apple?
+~
+medium
+You better learn my name 'cause it's Ivy!
+~
+big
+This girl is poison.
+small
+I mean me. I'm poison. Only metaphorically though. I create poison but I'm not actually MADE of poison, you know what I mean?
+
+*Joy
+~
+medium
+Yay!
+medium
+A new friend to play with!
+
+*Mort
+~
+big
+Hey everyone.
+~
+big
+Hi guys.
+~
+big
+Ghouls have cooties.
+~
+medium
+I will torment your soul for all eternity! Teeheehee.
+
+*Damon
+~
+medium
+I am hellbent on destroying you!
+~
+big
+Time to raise some hell.
+~
+big
+Wake me up inside.
+~
+big
+I hate my dad.
+~
+medium
+Let the bodies hit the floor.
+
+
+`WIN_QUOTES
+
+*Walter
+
+*Gail
+
+*Holly
+
+*Wolfgang
+
+*Hailey
+
+*Diggory
+
+*Buzz
+
+*Ivy
+
+*Joy
+
+*Mort
+
+*Damon
+
+
