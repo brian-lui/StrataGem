@@ -69,6 +69,7 @@ Game.TWEEN_TO_LANDING_ZONE_DURATION = 24
 Game.VERSION = "71.0"
 
 function Game:init()
+	self.frame, self.time_step, self.timeBucket = 0, 1/60, 0
 	self.global_ui = { -- all-screens effects
 		fx = {},
 		fades = {},
@@ -128,7 +129,22 @@ function Game:switchState(gamestate)
 	self.statemanager:switch(self.current_gamestate)
 end
 
-
+--[[
+This is a wrapper to do stuff at 60hz. We want the logic stuff to be at
+60hz, but the drawing can be at whatever! So each love.update runs at
+unbounded speed, and then adds dt to bucket. When bucket is larger
+than 1/60, it runs the logic functions until bucket is less than 1/60,
+or we reached the maximum number of times to run the logic this cycle.
+--]]
+function Game:timeDip(func, ...)
+	for _ = 1, 4 do -- run a maximum of 4 logic cycles per love.update cycle
+		if self.timeBucket >= self.time_step then
+			func(...)
+			self.frame = self.frame + 1
+			self.timeBucket = self.timeBucket - self.time_step
+		end
+	end
+end
 
 --[[ Mandatory parameters:
 	gametype - Netplay or Singleplayer

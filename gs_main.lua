@@ -89,31 +89,19 @@ function gs_main:closeSettingsMenu()
 	self:_closeSettingsMenu(gs_main)
 end
 
-local function timeDip(self, logic_function, ...)
---[[ This is a wrapper to do stuff at 60hz. We want the logic stuff to be at
-	60hz, but the drawing can be at whatever! So each love.update runs at
-	unbounded speed, and then adds dt to bucket. When bucket is larger
-	than 1/60, it runs the logic functions until bucket is less than 1/60,
-	or we reached the maximum number of times to run the logic this cycle. --]]
-	for _ = 1, 4 do -- run a maximum of 4 logic cycles per love.update cycle
-		if self.timeBucket >= self.time_step then
-			logic_function(...)
-			self.frame = self.frame + 1
-			self.timeBucket = self.timeBucket - self.time_step
-		end
-	end
-end
-
 function gs_main:update(dt)
 	if not self.paused then
-		timeDip(self, function() self.phase:run(self.time_step) end)
-		self.particles:update(dt) -- variable fps
-		gs_main.current_background:update(dt) -- variable fps
-		for player in self:players() do
-			gs_main.ui.static.burst[player.player_num]:update(dt)
-			player.super_button:update(dt)
-		end
-		self.animations:updateAll(dt)
+		self:timeDip(function()
+			self.phase:run(self.time_step)
+			self.particles:update(dt)
+			gs_main.current_background:update(dt)
+			for player in self:players() do
+				gs_main.ui.static.burst[player.player_num]:update(dt)
+				player.super_button:update(dt)
+			end
+			self.animations:updateAll(dt)
+		end)
+
 		self.timeBucket = self.timeBucket + dt
 	end
 
