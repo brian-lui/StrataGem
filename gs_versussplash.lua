@@ -27,16 +27,17 @@ function VersusSplash:init()
 	}
 
 	-- timings
-	self.POSE_WAIT_TIME = 10 -- time before poses appear
-	self.POSE_APPEAR_TIME = 30 -- time for action pose tween
-	self.POSE_SHADOW_TIME = 50 -- time for pose shadow tween
-	self.VS_WAIT_TIME = 40 -- time before vs icon appears
-	self.NAMES_WAIT_TIME = 50 -- time before vs character names appear
-	self.WORDS_APPEAR_TIME = 20 -- time for vs icon/character name tween
-	self.WORDBUBBLE_WAIT_TIME = 90 -- time before word bubbles appear
-	self.WORDBUBBLE_APPEAR_TIME = 45 -- time for word bubbles tween
-	self.TEXT_WAIT_TIME = 140 -- time before text appears
-	self.NEXT_SCREEN_TIME = 300 -- time before going to next screen
+	self.FADE_IN_TIME = 30 -- fade in from black
+	self.POSE_WAIT_TIME = 5 + self.FADE_IN_TIME -- poses appear
+	self.POSE_APPEAR_TIME = 30 -- action pose tween
+	self.POSE_SHADOW_TIME = 50 -- pose shadow tween
+	self.VS_WAIT_TIME = 35 + self.FADE_IN_TIME -- vs icon appears
+	self.NAMES_WAIT_TIME = 45 + self.FADE_IN_TIME-- character names appear
+	self.WORDS_APPEAR_TIME = 20 -- vs icon/character name tween
+	self.WORDBUBBLE_WAIT_TIME = 85 + self.FADE_IN_TIME -- word bubbles appear
+	self.WORDBUBBLE_APPEAR_TIME = 45 -- word bubbles tween
+	self.TEXT_WAIT_TIME = 135 + self.FADE_IN_TIME-- text appears
+	self.NEXT_SCREEN_TIME = 360 -- time before going to next screen
 end
 
 function VersusSplash:enter()
@@ -51,6 +52,18 @@ function VersusSplash:enter()
 	local p1_action_image = images["portraits_action_" .. p1char]
 	local p2_action_image = images["portraits_action_" .. p2char]
 
+	-- fade-in
+	VersusSplash.createImage(self, {
+		name = "fadein",
+		container = self.global_ui.fades,
+		image = images.unclickables_fadein,
+		duration = self.FADE_IN_TIME,
+		end_x = self.stage.width * 0.5,
+		end_y = self.stage.height * 0.5,
+		end_transparency = 0,
+		easing = "linear",
+		remove = true,
+	})
 	-- action poses and associated shadow
 	self.p1_action_pose = VersusSplash.createImage(self, {
 		name = "p1_action_pose",
