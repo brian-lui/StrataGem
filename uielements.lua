@@ -509,6 +509,10 @@ function Helptext:update(dt)
 		end
 
 		if self:_isAnyGemRotated() then self:_removeTapToRotate() end
+
+		if self.grab_and_drop_deleted and not self.tap_deleted then
+			self:_relocateTapToRotate()
+		end
 	end
 
 	local items = {self.here, self.grab, self.any, self.gem, self.tap}
@@ -518,14 +522,17 @@ function Helptext:update(dt)
 end
 
 function Helptext:draw(params)
-	if self.grab_and_drop_deleted and self.tap_deleted then return end
-
 	local game = self.game
-	local items = {self.here, self.grab, self.any, self.gem, self.tap}
+
 	if game and game.me_player then
-		for _, item in ipairs(items) do
-			if item then item:draw(params) end
+		if not self.grab_and_drop_deleted then
+			local items = {self.here, self.grab, self.any, self.gem}
+			for _, item in ipairs(items) do
+				if item then item:draw(params) end
+			end
 		end
+
+		if not self.tap_deleted and self.tap then self.tap:draw(params) end
 	end
 end
 
@@ -557,7 +564,7 @@ end
 
 function Helptext:_removeTapToRotate()
 	if self.tap_deleted then return end
-
+	print("delete tap")
 	self.tap:clear()
 	self.tap:change{
 		duration = self.FADE_OUT_TIME,
@@ -568,7 +575,29 @@ function Helptext:_removeTapToRotate()
 	self.tap_deleted = true
 end
 
+-- If grab/any/gem is gone and tap to rotate exists, move it down
+function Helptext:_relocateTapToRotate()
+	if self.tap_relocated then return end
+
+	local sign = self.owner.player_num == 1 and -1 or 1
+	local hand_pos = self.owner.hand[4]
+	print("relocate tap")
+	print("x vs x", self.tap.x, hand_pos.x + sign * hand_pos.platform.width)
+	print("y vs y", self.tap.y, hand_pos.y)
+
+	self.tap:wait(45)
+	self.tap:change{
+		duration = 90,
+		x = hand_pos.x + sign * hand_pos.platform.width,
+		y = hand_pos.y,
+		easing = "inOutCubic",
+	}
+	self.tap_relocated = true
+end
+
 function Helptext:_showDropGemsHere()
+	if self.grab_and_drop_deleted then return end
+
 	if not self.drop_here_shown then
 		self.here:wait(15)
 		self.here:change{duration = self.FADE_IN_TIME, transparency = 1}
@@ -577,6 +606,8 @@ function Helptext:_showDropGemsHere()
 end
 
 function Helptext:_hideDropGemsHere()
+	if self.grab_and_drop_deleted then return end
+
 	if self.drop_here_shown then
 		self.here:clear()
 		self.here:change{duration = 0, transparency = 0}
@@ -585,6 +616,8 @@ function Helptext:_hideDropGemsHere()
 end
 
 function Helptext:_showGrabAnyGem()
+	if self.grab_and_drop_deleted then return end
+
 	if not self.grab_shown then
 		local MIN_WIDTH = self.game.stage.width * 0.0078125
 		local items = {self.grab, self.any, self.gem}
@@ -599,6 +632,8 @@ function Helptext:_showGrabAnyGem()
 end
 
 function Helptext:_hideGrabAnyGem()
+	if self.grab_and_drop_deleted then return end
+
 	if self.grab_shown then
 		local MIN_WIDTH = self.game.stage.width * 0.0078125
 		local items = {self.grab, self.any, self.gem}
