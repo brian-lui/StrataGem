@@ -602,6 +602,10 @@ local function scanForGlobals(game)
 	for k, v in pairs(_G) do print(k, v) end
 end
 
+local function skipSplashScreen(game)
+	game:switchState("gs_main")
+end
+
 local Unittests = {
 	f1 = saveGamestate,
 	f2 = loadGamestate,
@@ -631,7 +635,7 @@ local Unittests = {
 	l = showDebugInfo,
 	z = toggleDebugDisplay,
 	x = toggleSlowdown,
-	--c = ,
+	c = skipSplashScreen,
 	--v = ,
 	b = makeAGarbage,
 	n = changeLayout,
