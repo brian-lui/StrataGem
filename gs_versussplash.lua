@@ -35,7 +35,7 @@ function VersusSplash:init()
 	self.WORDS_APPEAR_TIME = 20 -- time for vs icon/character name tween
 	self.WORDBUBBLE_WAIT_TIME = 90 -- time before word bubbles appear
 	self.WORDBUBBLE_APPEAR_TIME = 45 -- time for word bubbles tween
-	self.TEXT_WAIT_TIME = 150 -- time before text appears
+	self.TEXT_WAIT_TIME = 140 -- time before text appears
 	self.NEXT_SCREEN_TIME = 300 -- time before going to next screen
 end
 
