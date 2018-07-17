@@ -189,10 +189,10 @@ function VersusSplash:enter()
 	-- word bubbles
 	local p1_bubble_image = images["vs_bubble_" .. self.p1.primary_colors[1]]
 	local p2_bubble_image = images["vs_bubble_" .. self.p2.primary_colors[1]]
-	local p1_bubble_x = stage.width * 0.5 + images.vs_vs:getWidth() * 0.5 - p1_bubble_image:getWidth() * 0.5
-	local p1_bubble_y = stage.height - p1_bubble_image:getHeight() * 0.5
-	local p2_bubble_x = stage.width * 0.5 - images.vs_vs:getWidth() * 0.5 + p2_bubble_image:getWidth() * 0.5
-	local p2_bubble_y = p2_bubble_image:getHeight() * 0.5
+	local p1_bubble_x = stage.width * 0.5 - images.vs_vs:getWidth() * 0.5 + p1_bubble_image:getWidth() * 0.5
+	local p1_bubble_y = p1_bubble_image:getHeight() * 0.5
+	local p2_bubble_x = stage.width * 0.5 + images.vs_vs:getWidth() * 0.5 - p2_bubble_image:getWidth() * 0.5
+	local p2_bubble_y = stage.height - p2_bubble_image:getHeight() * 0.5
 
 	self.p1_bubble = VersusSplash.createImage(self, {
 		name = "p1_bubble",
@@ -229,12 +229,12 @@ function VersusSplash:enter()
 	local p1_all_quotes = self.quotes.vs_quotes[self.p1.character_name:lower()]
 	local p1_quote = p1_all_quotes[math.random(#p1_all_quotes)]
 	local p1_x = p1_bubble_x
-	local p1_y = stage.height - p1_bubble_image:getHeight() * 0.9
+	local p1_y = p1_bubble_image:getHeight() * 0.1
 
 	local p2_all_quotes = self.quotes.vs_quotes[self.p2.character_name:lower()]
 	local p2_quote = p2_all_quotes[math.random(#p2_all_quotes)]
 	local p2_x = p2_bubble_x
-	local p2_y = p2_bubble_image:getHeight() * 0.1
+	local p2_y = stage.height - p2_bubble_image:getHeight() * 0.9
 
 	self.FORMATTED_QUOTE = {
 		VersusSplash.convertQuoteToRows(self, p1_quote, p1_x, p1_y),
