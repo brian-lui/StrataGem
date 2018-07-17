@@ -71,8 +71,10 @@ function VersusSplash:enter()
 		duration = 0,
 		end_x = -p1_action_image:getWidth() * 0.5,
 		end_y = p1_action_image:getHeight() * 0.5,
+		end_transparency = 0,
 	})
 	self.p1_action_pose:wait(self.POSE_WAIT_TIME)
+	self.p1_action_pose:change{duration = 0, transparency = 1}
 	self.p1_action_pose:change{
 		duration = self.POSE_APPEAR_TIME,
 		x = p1_action_image:getWidth() * 0.5,
@@ -85,8 +87,10 @@ function VersusSplash:enter()
 		duration = 0,
 		end_x = p1_action_image:getWidth() * -0.5,
 		end_y = p1_action_image:getHeight() * 0.5,
+		end_transparency = 0,
 	})
 	self.p1_shadow_pose:wait(self.POSE_WAIT_TIME)
+	self.p1_shadow_pose:change{duration = 0, transparency = 1}
 	self.p1_shadow_pose:change{
 		duration = self.POSE_APPEAR_TIME,
 		x = stage.width * 0.025 + p1_action_image:getWidth() * 0.5,
@@ -100,8 +104,10 @@ function VersusSplash:enter()
 		end_x = stage.width + p2_action_image:getWidth() * 0.5,
 		end_y = stage.height - p2_action_image:getHeight() * 0.5,
 		h_flip = true,
+		end_transparency = 0,
 	})
 	self.p2_action_pose:wait(self.POSE_WAIT_TIME)
+	self.p2_action_pose:change{duration = 0, transparency = 1}
 	self.p2_action_pose:change{
 		duration = self.POSE_APPEAR_TIME,
 		x = stage.width - p2_action_image:getWidth() * 0.5,
@@ -115,8 +121,10 @@ function VersusSplash:enter()
 		end_x = stage.width + p2_action_image:getWidth() * 0.5,
 		end_y = stage.height - p2_action_image:getHeight() * 0.5,
 		h_flip = true,
+		end_transparency = 0,
 	})
 	self.p2_shadow_pose:wait(self.POSE_WAIT_TIME)
+	self.p2_shadow_pose:change{duration = 0, transparency = 1}
 	self.p2_shadow_pose:change{
 		duration = self.POSE_APPEAR_TIME,
 		x = stage.width * 0.975 - p2_action_image:getWidth() * 0.5,
