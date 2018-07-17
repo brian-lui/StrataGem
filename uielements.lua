@@ -565,7 +565,6 @@ function Helptext:showGrabAnyGem()
 
 		for _, item in ipairs(items) do
 			if item.final_x - item.x < MIN_WIDTH then item:clear() end
-			item:wait(15)
 			item:change{duration = self.FADE_IN_TIME, transparency = 1}
 		end
 
@@ -580,6 +579,7 @@ function Helptext:hideGrabAnyGem()
 
 		for _, item in ipairs(items) do
 			if item.final_x - item.x < MIN_WIDTH then item:clear() end
+			item:wait(15)
 			item:change{duration = self.FADE_OUT_TIME, transparency = 0}
 		end
 
