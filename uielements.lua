@@ -394,7 +394,6 @@ function Helptext:init(game)
 
 	self.game = game
 	self.owner = player
-	self.deleted = false
 	self.grab_shown = true
 	self.drop_here_shown = false
 	self.FADE_IN_TIME = 10
@@ -494,12 +493,14 @@ function Helptext:init(game)
 end
 
 function Helptext:update(dt)
+	if self.grab_and_drop_deleted and self.tap_deleted then return end
+
 	local game = self.game
 
-	if game.turn == 1 and game.current_phase == "Action" then
+	if game.current_phase == "Action" then
 		if self.owner.dropped_piece then
-			self:hideDropGemsHere()
-			self:hideGrabAnyGem()
+			self:removeGrabAndDropGems()
+			self:removeTapToRotate()
 		elseif game.active_piece then
 			self:showDropGemsHere()
 			self:hideGrabAnyGem()
@@ -507,11 +508,7 @@ function Helptext:update(dt)
 			self:hideDropGemsHere()
 			self:showGrabAnyGem()
 		end
-
-		if game.phase.time_to_next <= 10 then self:remove() end
 	end
-
-	if game.turn ~= 1 and not self.deleted then self:remove() end
 
 	local items = {self.here, self.grab, self.any, self.gem, self.tap}
 	for _, item in ipairs(items) do
@@ -520,6 +517,8 @@ function Helptext:update(dt)
 end
 
 function Helptext:draw(params)
+	if self.grab_and_drop_deleted and self.tap_deleted then return end
+	
 	local game = self.game
 	local items = {self.here, self.grab, self.any, self.gem, self.tap}
 	if game and game.me_player then
@@ -529,17 +528,33 @@ function Helptext:draw(params)
 	end
 end
 
-function Helptext:remove()
-	local items = {self.here, self.grab, self.any, self.gem, self.tap}
-	for _, item in ipairs(items) do
-		item:clear()
-		item:change{
+function Helptext:removeGrabAndDropGems()
+	if not self.grab_and_drop_deleted then
+		local items = {self.here, self.grab, self.any, self.gem}
+		for _, item in ipairs(items) do
+			item:clear()
+			item:change{
+				duration = self.FADE_OUT_TIME,
+				transparency = 0,
+				remove = true,
+			}
+		end
+		self.here, self.grab, self.any, self.gem = nil, nil, nil, nil
+		self.grab_and_drop_deleted = true
+	end
+end
+
+function Helptext:removeTapToRotate()
+	if not self.tap_deleted then
+		self.tap:clear()
+		self.tap:change{
 			duration = self.FADE_OUT_TIME,
 			transparency = 0,
 			remove = true,
 		}
+		self.tap = nil
+		self.tap_deleted = true
 	end
-	self.deleted = true
 end
 
 function Helptext:showDropGemsHere()
