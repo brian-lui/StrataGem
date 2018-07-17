@@ -499,15 +499,16 @@ function Helptext:update(dt)
 
 	if game.current_phase == "Action" then
 		if self.owner.dropped_piece then
-			self:removeGrabAndDropGems()
-			self:removeTapToRotate()
+			self:_removeGrabAndDropGems()
 		elseif game.active_piece then
-			self:showDropGemsHere()
-			self:hideGrabAnyGem()
+			self:_showDropGemsHere()
+			self:_hideGrabAnyGem()
 		else
-			self:hideDropGemsHere()
-			self:showGrabAnyGem()
+			self:_hideDropGemsHere()
+			self:_showGrabAnyGem()
 		end
+
+		if self:_isAnyGemRotated() then self:_removeTapToRotate() end
 	end
 
 	local items = {self.here, self.grab, self.any, self.gem, self.tap}
@@ -518,7 +519,7 @@ end
 
 function Helptext:draw(params)
 	if self.grab_and_drop_deleted and self.tap_deleted then return end
-	
+
 	local game = self.game
 	local items = {self.here, self.grab, self.any, self.gem, self.tap}
 	if game and game.me_player then
@@ -528,36 +529,46 @@ function Helptext:draw(params)
 	end
 end
 
-function Helptext:removeGrabAndDropGems()
-	if not self.grab_and_drop_deleted then
-		local items = {self.here, self.grab, self.any, self.gem}
-		for _, item in ipairs(items) do
-			item:clear()
-			item:change{
-				duration = self.FADE_OUT_TIME,
-				transparency = 0,
-				remove = true,
-			}
-		end
-		self.here, self.grab, self.any, self.gem = nil, nil, nil, nil
-		self.grab_and_drop_deleted = true
+function Helptext:_isAnyGemRotated()
+	if self.tap_deleted then return true end
+
+	for piece in self.owner.hand:pieces() do
+		if piece.rotation_index ~= 0 then return true end
 	end
+
+	return false
 end
 
-function Helptext:removeTapToRotate()
-	if not self.tap_deleted then
-		self.tap:clear()
-		self.tap:change{
+function Helptext:_removeGrabAndDropGems()
+	if self.grab_and_drop_deleted then return end
+
+	local items = {self.here, self.grab, self.any, self.gem}
+	for _, item in ipairs(items) do
+		item:clear()
+		item:change{
 			duration = self.FADE_OUT_TIME,
 			transparency = 0,
 			remove = true,
 		}
-		self.tap = nil
-		self.tap_deleted = true
 	end
+	self.here, self.grab, self.any, self.gem = nil, nil, nil, nil
+	self.grab_and_drop_deleted = true
 end
 
-function Helptext:showDropGemsHere()
+function Helptext:_removeTapToRotate()
+	if self.tap_deleted then return end
+
+	self.tap:clear()
+	self.tap:change{
+		duration = self.FADE_OUT_TIME,
+		transparency = 0,
+		remove = true,
+	}
+	self.tap = nil
+	self.tap_deleted = true
+end
+
+function Helptext:_showDropGemsHere()
 	if not self.drop_here_shown then
 		self.here:wait(15)
 		self.here:change{duration = self.FADE_IN_TIME, transparency = 1}
@@ -565,7 +576,7 @@ function Helptext:showDropGemsHere()
 	end
 end
 
-function Helptext:hideDropGemsHere()
+function Helptext:_hideDropGemsHere()
 	if self.drop_here_shown then
 		self.here:clear()
 		self.here:change{duration = 0, transparency = 0}
@@ -573,10 +584,10 @@ function Helptext:hideDropGemsHere()
 	end
 end
 
-function Helptext:showGrabAnyGem()
+function Helptext:_showGrabAnyGem()
 	if not self.grab_shown then
 		local MIN_WIDTH = self.game.stage.width * 0.0078125
-		local items = {self.grab, self.any, self.gem, self.tap}
+		local items = {self.grab, self.any, self.gem}
 
 		for _, item in ipairs(items) do
 			if item.final_x - item.x < MIN_WIDTH then item:clear() end
@@ -587,10 +598,10 @@ function Helptext:showGrabAnyGem()
 	end
 end
 
-function Helptext:hideGrabAnyGem()
+function Helptext:_hideGrabAnyGem()
 	if self.grab_shown then
 		local MIN_WIDTH = self.game.stage.width * 0.0078125
-		local items = {self.grab, self.any, self.gem, self.tap}
+		local items = {self.grab, self.any, self.gem}
 
 		for _, item in ipairs(items) do
 			if item.final_x - item.x < MIN_WIDTH then item:clear() end
