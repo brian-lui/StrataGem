@@ -202,16 +202,23 @@ function VersusSplash:enter()
 	}
 
 	-- load quotes and positionings
-	self.QUOTE_P1 = self.p1.vs_quotes[math.random(#self.p1.vs_quotes)]
-	self.QUOTE_P2 = self.p2.vs_quotes[math.random(#self.p2.vs_quotes)]
-
-	self.QUOTE_P1_X = p1_bubble_x - p1_bubble_image:getWidth() * 0.46
-	self.QUOTE_P2_X = p2_bubble_x - p2_bubble_image:getWidth() * 0.46
 	self.QUOTE_WIDTH = p1_bubble_image:getWidth() * 0.92
-
-	self.QUOTE_P1_Y = stage.height - p1_bubble_image:getHeight() * 0.9
-	self.QUOTE_P2_Y = p2_bubble_image:getHeight() * 0.1
 	self.QUOTE_HEIGHT = p1_bubble_image:getHeight() * 0.7
+
+	local p1_all_quotes = self.quotes.vs_quotes[self.p1.character_name:lower()]
+	local p1_quote = p1_all_quotes[math.random(#p1_all_quotes)]
+	local p1_x = p1_bubble_x
+	local p1_y = stage.height - p1_bubble_image:getHeight() * 0.9
+
+	local p2_all_quotes = self.quotes.vs_quotes[self.p2.character_name:lower()]
+	local p2_quote = p2_all_quotes[math.random(#p2_all_quotes)]
+	local p2_x = p2_bubble_x
+	local p2_y = p2_bubble_image:getHeight() * 0.1
+
+	self.FORMATTED_QUOTE = {
+		VersusSplash.convertQuoteToRows(self, p1_quote, p1_x, p1_y),
+		VersusSplash.convertQuoteToRows(self, p2_quote, p2_x, p2_y),
+	}
 
 	-- timer to goto next screen. lazy coding to avoid using queue:add
 	self.dummy_timer = VersusSplash.createImage(self, {
@@ -222,17 +229,18 @@ function VersusSplash:enter()
 		end_y = -stage.height,
 		exit_func = function() self:switchState("gs_main") end,
 	})
+
 end
 
-function VersusSplash:_drawText(quote, x_start, y_start)
-	if self.private_framecount < self.TEXT_WAIT_TIME then return end
-
+function VersusSplash:convertQuoteToRows(quote, x_start, y_start)
 	local small_font = self.inits.FONT.CARTOON_SMALL
 	local medium_font = self.inits.FONT.CARTOON_MEDIUM
 	local big_font = self.inits.FONT.CARTOON_BIG
 
-	-- get how many rows of text to draw
-	local row_count, rows = 0, {}
+	local row_count = 0
+	local cumulative_length = 0
+	local rows = {}
+
 	for _, data in ipairs(quote) do
 		assert(data.text, "No text provided for quote")
 		local text = data.text:upper()
@@ -250,97 +258,91 @@ function VersusSplash:_drawText(quote, x_start, y_start)
 			error("Size not provided for quote")
 		end
 
-		local width, wrapped_rows = font:getWrap(text, self.QUOTE_WIDTH)
+		local total_width, wrapped_rows = font:getWrap(text, self.QUOTE_WIDTH)
 		for _, row in ipairs(wrapped_rows) do
+			local width = font:getWidth(row)
+			local x = x_start - width * 0.5
 			rows[#rows+1] = {
 				font = font,
 				size = data.size,
 				text = row,
-				width = small_font:getWidth(row),
+				x = x,
+				start_pos = cumulative_length,
+				end_pos = cumulative_length + #row * row_multiplier,
+				speed = 1 / row_multiplier,
 			}
-
 			row_count = row_count + row_multiplier
+			cumulative_length = cumulative_length + #row * row_multiplier + 1
 		end
 	end
 
 	-- Find the y-locations of where to draw the text
-	local rows_y = {}
+	local y_values = {}
 	for i = 1, row_count do
-		rows_y[i] = y_start + self.QUOTE_HEIGHT * (i / (row_count + 1))
+		y_values[i] = y_start + self.QUOTE_HEIGHT * (i / (row_count + 1))
 	end
 
-	-- draw text
+	-- add y-locations to the rows
 	local current_row = 0
 	for _, row in ipairs(rows) do
 		if row.size == "small" then
 			current_row = current_row + 1
-			draw_y = rows_y[current_row] + self.inits.FONT.CARTOON_SMALL_ROWADJUST
+			row.y = y_values[current_row] + self.inits.FONT.CARTOON_SMALL_ROWADJUST
 		elseif row.size == "medium" then
 			current_row = current_row + 2
-			draw_y = (rows_y[current_row - 1] + rows_y[current_row]) * 0.5
+			row.y = (y_values[current_row-1] + y_values[current_row]) * 0.5
 				+ self.inits.FONT.CARTOON_MEDIUM_ROWADJUST
 		elseif row.size == "big" then
 			current_row = current_row + 3
-			draw_y = rows_y[current_row - 1] + self.inits.FONT.CARTOON_BIG_ROWADJUST
+			row.y = y_values[current_row-1] + self.inits.FONT.CARTOON_BIG_ROWADJUST
 		else
 			error("Invalid row size " .. row.size)
 		end
-
-		love.graphics.push("all")
-			love.graphics.setFont(row.font)
-			love.graphics.setColor(0, 0, 0)
-			love.graphics.printf(
-				row.text,
-				x_start,
-				draw_y,
-				self.QUOTE_WIDTH,
-				"center"
-			)
-		love.graphics.pop()
 	end
 
---[[
-	local current_row = 0
-	for _, data in ipairs(quote) do
-		local draw_y, font
-		if data.size == "small" then
-			font = small_font
-			current_row = current_row + 1
-			draw_y = rows_y[current_row] + self.inits.FONT.CARTOON_SMALL_ROWADJUST
-		elseif data.size == "medium" then
-			font = medium_font
-			current_row = current_row + 2
-			draw_y = (rows_y[current_row - 1] + rows_y[current_row]) * 0.5
-				+ self.inits.FONT.CARTOON_MEDIUM_ROWADJUST
-		elseif data.size == "big" then
-			font = big_font
-			current_row = current_row + 3
-			draw_y = rows_y[current_row - 1] + self.inits.FONT.CARTOON_BIG_ROWADJUST
+	return rows
+end
+
+function VersusSplash:_drawText()
+	if self.private_framecount < self.TEXT_WAIT_TIME then return end
+
+	local SCROLL_SPEED = 1
+	local pos = (self.private_framecount - self.TEXT_WAIT_TIME) * SCROLL_SPEED
+
+	for player_num = 1, 2 do
+		local rows = self.FORMATTED_QUOTE[player_num]
+		for _, row in ipairs(rows) do
+			if pos >= row.end_pos then
+				love.graphics.push("all")
+					love.graphics.setFont(row.font)
+					love.graphics.setColor(0, 0, 0)
+					love.graphics.print(row.text, row.x, row.y)
+				love.graphics.pop()
+			elseif pos >= row.start_pos then
+				local print_to = math.floor((pos - row.start_pos) * row.speed) + 1
+				local text = row.text:sub(1, print_to)
+				love.graphics.push("all")
+					love.graphics.setFont(row.font)
+					love.graphics.setColor(0, 0, 0)
+					love.graphics.print(text, row.x, row.y)
+				love.graphics.pop()
+			end
 		end
-
-		love.graphics.push("all")
-			love.graphics.setFont(font)
-			love.graphics.setColor(0, 0, 0)
-			love.graphics.printf(
-				data.text:upper(),
-				x_start,
-				draw_y,
-				self.QUOTE_WIDTH,
-				"center"
-			)
-		love.graphics.pop()
 	end
-	--]]
 end
 
 function VersusSplash:update(dt)
-	self.uielements:updateScreenshake()
-	self.private_framecount = self.private_framecount + 1
+	self:timeDip(function()
+		self.uielements:updateScreenshake()
+		self.private_framecount = self.private_framecount + 1
 
-	VersusSplash.current_background:update(dt)
-	for _, tbl in pairs(VersusSplash.ui) do
-		for _, v in pairs(tbl) do v:update(dt) end
-	end
+		VersusSplash.current_background:update(dt)
+		for _, tbl in pairs(VersusSplash.ui) do
+			for _, v in pairs(tbl) do v:update(dt) end
+		end
+	end)
+
+	self.timeBucket = self.timeBucket + dt
 end
 
 function VersusSplash:draw()
@@ -359,8 +361,7 @@ function VersusSplash:draw()
 		}
 		for _, item in ipairs(todraw) do item:draw{darkened = darkened} end
 
-		VersusSplash._drawText(self, self.QUOTE_P1, self.QUOTE_P1_X, self.QUOTE_P1_Y)
-		VersusSplash._drawText(self, self.QUOTE_P2, self.QUOTE_P2_X, self.QUOTE_P2_Y)
+		VersusSplash._drawText(self)
 
 		for _, v in pairs(VersusSplash.ui.clickable) do
 			v:draw{darkened = darkened}
