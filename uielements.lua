@@ -515,10 +515,12 @@ function Helptext:update(dt)
 		end
 	end
 
-	local items = {self.here, self.grab, self.any, self.gem, self.tap}
+	local items = {self.here, self.grab, self.any, self.gem}
 	for _, item in ipairs(items) do
 		if item then item:update(dt) end
 	end
+
+	if self.tap then self.tap:update(dt) end
 end
 
 function Helptext:draw(params)
@@ -582,8 +584,6 @@ function Helptext:_relocateTapToRotate()
 	local sign = self.owner.player_num == 1 and -1 or 1
 	local hand_pos = self.owner.hand[4]
 	print("relocate tap")
-	print("x vs x", self.tap.x, hand_pos.x + sign * hand_pos.platform.width)
-	print("y vs y", self.tap.y, hand_pos.y)
 
 	self.tap:wait(45)
 	self.tap:change{
@@ -591,6 +591,7 @@ function Helptext:_relocateTapToRotate()
 		x = hand_pos.x + sign * hand_pos.platform.width,
 		y = hand_pos.y,
 		easing = "inOutCubic",
+		debug = true,
 	}
 	self.tap_relocated = true
 end
