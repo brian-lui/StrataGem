@@ -515,12 +515,10 @@ function Helptext:update(dt)
 		end
 	end
 
-	local items = {self.here, self.grab, self.any, self.gem}
-	for _, item in ipairs(items) do
+	local items = {self.here, self.grab, self.any, self.gem, self.tap}
+	for _, item in pairs(items) do
 		if item then item:update(dt) end
 	end
-
-	if self.tap then self.tap:update(dt) end
 end
 
 function Helptext:draw(params)
@@ -529,7 +527,7 @@ function Helptext:draw(params)
 	if game and game.me_player then
 		if not self.grab_and_drop_deleted then
 			local items = {self.here, self.grab, self.any, self.gem}
-			for _, item in ipairs(items) do
+			for _, item in pairs(items) do
 				if item then item:draw(params) end
 			end
 		end
