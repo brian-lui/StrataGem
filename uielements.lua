@@ -1008,7 +1008,7 @@ local function drawDestinationShadow(self, piece, shift, account_for_doublecast)
 
 		-- also draw the previous gem's shadows
 		for _, gem in pairs(pending_gems) do
-			local first_empty_row = grid:getFirstEmptyRow(gem.column)
+			local first_empty_row = grid:getFirstEmptyRow(gem.column, true)
 			-- shift needed is first_empty_row - (upper normal-placement-column - 1)
 			-- this is bad code sorry
 			local shift_needed = first_empty_row - (5 - 1)

@@ -363,7 +363,7 @@ function Piece:isValidRush()
 	local enough_burst = player.cur_burst >= player.current_rush_cost
 	local row_ok = true
 	for i = 1, self.size do
-		local empty_row = grid:getFirstEmptyRow(cols[i])
+		local empty_row = grid:getFirstEmptyRow(cols[i], true)
 		if empty_row < grid.RUSH_ROW then
 			row_ok = false
 			if self.game.particles.no_rush_check[cols[i]] == 0 then

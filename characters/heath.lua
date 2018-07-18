@@ -141,7 +141,7 @@ end
 function SmallFire.generateSmallFire(game, owner, col, delay, turns_remain)
 	local grid = game.grid
 
-	local start_row = grid:getFirstEmptyRow(col, true)
+	local start_row = grid:getFirstEmptyRow(col)
 	local start_y = grid.y[start_row]
 	local bounce_top_y = grid.y[start_row - 1]
 
@@ -192,7 +192,7 @@ end
 function SmallFire:draw()
 	Pic.draw(self)
 	local grid = self.game.grid
-	local row = grid:getFirstEmptyRow(self.col, true)
+	local row = grid:getFirstEmptyRow(self.col)
 	local gem = grid[row + 1][self.col].gem
 	if gem then
 		local glow_image
@@ -419,7 +419,7 @@ function Heath:beforeGravity()
 
 	if self.is_supering then
 		for col in grid:cols(self.player_num) do
-			local top_row = grid:getFirstEmptyRow(col, true) + 1
+			local top_row = grid:getFirstEmptyRow(col) + 1
 			if top_row <= grid.BOTTOM_ROW then
 				local gem = grid[top_row][col].gem
 				gem:setOwner(self.player_num)
@@ -489,7 +489,7 @@ function Heath:beforeMatch()
 	local gem_table = grid:getMatchedGems()
 
 	for _, gem in pairs(gem_table) do
-		local top_gem = gem.row == grid:getFirstEmptyRow(gem.column, true) + 1
+		local top_gem = gem.row == grid:getFirstEmptyRow(gem.column) + 1
 		if self.player_num == gem.player_num
 		and gem.is_in_a_horizontal_match
 		and top_gem then

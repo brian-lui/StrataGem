@@ -453,11 +453,11 @@ function Grid:setAllGemReadOnlyFlags(bool)
 	for gem in self:gems() do gem:setProtectedFlag(bool) end
 end
 
--- ignore_pending boolean will return the first empty row ignoring pending gems
-function Grid:getFirstEmptyRow(column, ignore_pending)
+-- include_pending boolean will return the first empty row including pending gems
+function Grid:getFirstEmptyRow(column, include_pending)
 	if column then
-		local empty_spaces = ignore_pending and 12 or 0 -- pending cols as empty
-		local start_row = ignore_pending and 13 or 1
+		local empty_spaces = include_pending and 0 or 12 -- pending cols as empty
+		local start_row = include_pending and 1 or 13
 		for i = start_row, self.BOTTOM_ROW do
 			if not self[i][column].gem then empty_spaces = empty_spaces + 1 end
 		end
@@ -472,7 +472,7 @@ function Grid:getDropLocations(piece, optional_shift)
 	local column = piece:getColumns(optional_shift)
 	local row, ret = {}, {}
 	for i = 1, piece.size do
-		row[i] = self:getFirstEmptyRow(column[i])
+		row[i] = self:getFirstEmptyRow(column[i], true)
 		if not piece.is_horizontal and row[i] then
 			row[i] = row[i] - piece.size + i
 		end

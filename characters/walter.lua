@@ -498,7 +498,7 @@ function HealingCloud:update(dt)
 	local grid = self.game.grid
 	self.elapsed_frames = self.elapsed_frames + 1
 	if self.elapsed_frames >= self.frames_between_droplets then
-		local target_row = grid:getFirstEmptyRow(self.col, true)
+		local target_row = grid:getFirstEmptyRow(self.col)
 		local dest_y = grid.y[target_row] + 0.5 * images.GEM_WIDTH
 		local droplet_loc = table.remove(self.droplet_x, math.random(#self.droplet_x))
 		if #self.droplet_x == 0 then
@@ -668,7 +668,7 @@ function Walter:_activateSuper()
 	-- find highest column
 	local col, start_row = -1, grid.BOTTOM_ROW
 	for i in grid:cols(self.player_num) do
-		local rows =  grid:getFirstEmptyRow(i, true) + 1
+		local rows =  grid:getFirstEmptyRow(i) + 1
 		if rows <= start_row then col, start_row = i, rows end
 	end
 
