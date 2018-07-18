@@ -22,28 +22,32 @@
 ~
 big
 You're fired!
-small
-In my younger and more vulnerable years my father gave me some advice that I've been turning over in my mind ever since.
 ~
 big
 Let's get cookin'!
 ~
 medium
 I'm Heath Burns, the Burning Sensation!
-small
-Whether 'tis nobler in the mind to suffer the slings and arrows of outrageous fortune, or to take arms against a sea of troubles, and by opposing end them?
+~
+medium
+Wanna turn up the heat? 
+~
+medium
+It's getting hot in here.
 
 *Walter
 ~
 big
-Now you'll experience 'flow'.
+Now you'll experience flow.
 ~
 big
-Time to make a splash.
+Time to make a splash!
 ~
 medium
 You look wet behind the ears.
-
+~
+medium
+I'm here to make waves.
 
 *Gail
 ~
