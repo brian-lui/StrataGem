@@ -1,3 +1,37 @@
+--[[ Color: yellow
+Passive: Yellow gems cast by Diggory destroy the gem below them, dealing one
+damage. This ability can't destroy other yellows or indestructible gems.
+
+Super: The bottom two rows of your basin break. If any yellows are broken, they
+deal double damage.
+
+Implementation notes:
+
+passive happens once per turn in afterGravity phase, and gives super
+Implementation:
+beforegravity, get all pending yellow gems that belong to self:
+	grid:getPendingGems() => gem.player_num == self.player_num & gem.color == "yellow"
+	store gems in destructo_table
+aftergravity,
+	for all gems in destructo_table
+		check if row + 1 has a gem
+		if so, check if it's not yellow and not indestructible
+			if so, destroy it
+
+Super and combos from super do not give meter
+Implementation:
+	in beforegravity phase:
+		set self.can_gain_super to false
+		check bottom two rows for gems
+		destroy all non-indestructible gems
+
+	in beforetween phase:
+		self.game:brightenScreen(self.player_num)
+
+	in afterallmatches phase:
+		self.can_gain_super to true
+--]]
+
 local love = _G.love
 local common = require "class.commons"
 local Character = require "character"
