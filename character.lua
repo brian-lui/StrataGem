@@ -108,11 +108,13 @@ function Character:setup()
 	self.hand:makeInitialPieces()
 
 	-- character animation placeholder, waiting for animations
-	self.animation = Pic:create{
+	Pic:create{
 		game = self.game,
 		x = stage.character[self.ID].x,
 		y = stage.character[self.ID].y,
 		image = self.small_image,
+		container = self,
+		name = "animation",
 	}
 end
 

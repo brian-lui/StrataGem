@@ -20,11 +20,13 @@ local spairs = require "/helpers/utilities".spairs
 local RabbitInASnowstorm = {ID_number = 5}
 function RabbitInASnowstorm:init(game)
 	self.game = game
-	self.background = Pic:create{
+	Pic:create{
 		game = game,
 		x = game.stage.x_mid,
 		y = game.stage.y_mid,
 		image = love.graphics.newImage('images/backgrounds/rabbitsnowstorm/rabbitsnowstorm.png'),
+		container = self,
+		name = "background",
 	}
 
 	game.inits.ID.background_particle = 0
@@ -59,15 +61,14 @@ function Checkmate:init(game)
 	self.OVERLAY_DURATION = (self.IMAGE_HEIGHT / self.OVERLAY_RATE) / game.time_step
 	self.NEXT_SWAP_TIME = 6.5 -- seconds until next picture swap
 	self.swap_time = self.NEXT_SWAP_TIME
-	self.images = {}
 	game.inits.ID.background_particle = 0
-	self.background = Pic:create{
+	Pic:create{
 		game = game,
 		x = self.IMAGE_WIDTH * 0.5,
 		y = self.IMAGE_HEIGHT * 0.5,
 		image = checkmate_images[0],
-		container = self.images,
-		counter = "background_particle",
+		container = self,
+		name = "background",
 	}
 	self.image_idx = 0
 end
@@ -94,13 +95,13 @@ function Checkmate:update(dt)
 		self.swap_time = self.NEXT_SWAP_TIME
 		self.image_idx = (self.image_idx + 1) % 10
 		local new_bk = checkmate_images[self.image_idx]
-		self.overlay = Pic:create{
+		Pic:create{
 			game = self.game,
 			x = bk.x,
 			y = bk.y,
 			image = new_bk,
-			container = self.images,
-			counter = "background_particle",
+			container = self,
+			name = "overlay",
 		}
 		self.overlay:change{
 			duration = self.OVERLAY_DURATION,
@@ -139,11 +140,13 @@ Checkmate = common.class("Checkmate", Checkmate)
 local Clouds = {ID_number = 2}
 function Clouds:init(game)
 	self.game = game
-	self.background = Pic:create{
+	Pic:create{
 		game = game,
 		x = game.stage.x_mid,
 		y = game.stage.y_mid,
 		image = love.graphics.newImage('images/backgrounds/cloud/sky.png'),
+		container = self,
+		name = "background",
 	}
 	self.big_clouds, self.medium_clouds, self.small_clouds = {}, {}, {}
 	self.big_timer_func = function() return math.random(300, 400) end
@@ -272,11 +275,13 @@ Clouds = common.class("Clouds", Clouds)
 local Starfall = {ID_number = 3}
 function Starfall:init(game)
 	self.game = game
-	self.background = Pic:create{
+	Pic:create{
 		game = game,
 		x = game.stage.x_mid,
 		y = game.stage.y_mid,
 		image = love.graphics.newImage('images/backgrounds/starfall/starfall.png'),
+		container = self,
+		name = "background",
 	}
 	self.star_timer_func = function() return math.random(70, 100) end
 	self.star_timer = self.star_timer_func()
@@ -345,11 +350,13 @@ local Colors = {ID_number = 4}
 function Colors:init(game)
 	self.game = game
 	self.t = 0
-	self.current_color = Pic:create{
+	Pic:create{
 		game = self.game,
 		x = game.stage.x_mid,
 		y = game.stage.y_mid,
 		image = love.graphics.newImage('images/backgrounds/colors/white.png'),
+		container = self,
+		name = "current_color",
 	}
 	self.previous_color = nil
 	self.timing_full_cycle = 1800
@@ -368,12 +375,14 @@ function Colors:_newColor(image)
 	self.previous_color = self.current_color
 	self.previous_color:change{duration = 180, transparency = 0,
 		exit_func = function() self.previous_color = nil end}
-	self.current_color = Pic:create{
+	Pic:create{
 		game = self.game,
 		x = stage.x_mid,
 		y = stage.y_mid,
 		image = image,
 		transparency = 0,
+		container = self,
+		name = "current_color",
 	}
 	self.current_color:change{duration = 90, transparency = 1}
 end

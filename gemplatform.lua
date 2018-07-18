@@ -18,11 +18,13 @@ function GemPlatform:init(params)
 	self.getx = self.owner.hand.getx
 	self.redness = 0
 	self.spin = 0	-- radians per frame
-	self.pic = Pic:create{
+	Pic:create{
 		game = self.game,
 		x = self.owner.hand[self.hand_idx].x,
 		y = self.owner.hand[self.hand_idx].y,
 		image = self.owner.ID == "P1" and images.ui_platform_gold or images.ui_platform_silver,
+		container = self,
+		name = "pic",
 	}
 	self.width = self.pic.width
 	self.height = self.pic.height

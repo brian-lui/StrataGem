@@ -28,23 +28,32 @@ function Timer:init(game)
 	self.time_remaining_int = 0
 	self.text_multiplier = 2 -- how much to speed up relative to a real second
 	self.FADE_SPEED = 1/16 -- transparency/frame to fade out at timer end
-	self.timerbase = Pic:create{
+
+	Pic:create{
 		game = game,
 		x = stage.timer.x,
 		y = stage.timer.y,
 		image = images.ui_timer_gauge,
+		container = self,
+		name = "timerbase",
 	}
-	self.timerbar = Pic:create{
+
+	Pic:create{
 		game = game,
 		x = stage.timer.x,
 		y = stage.timer.y,
 		image = images.ui_timer_bar,
+		container = self,
+		name = "timerbar",
 	}
-	self.timertext = Pic:create{
+
+	Pic:create{
 		game = game,
 		x = stage.timertext.x,
 		y = stage.timertext.y,
 		image = images.dummy,
+		container = self,
+		name = "timertext",
 	}
 end
 
@@ -114,32 +123,42 @@ function Burst:init(game, character)
 	end
 
 	local frame_image = self.player_num == 1 and images.ui_burst_gauge_gold or images.ui_burst_gauge_silver
-	self.burst_frame = Pic:create{
+	Pic:create{
 		game = self.game,
 		x = stage.burst[ID].frame.x,
 		y = stage.burst[ID].frame.y,
 		image = frame_image,
+		container = self,
+		name = "burst_frame",
 	}
 	self.burst_block, self.burst_partial, self.burst_glow = {}, {}, {}
 
 	for i = 1, self.SEGMENTS do
-		self.burst_block[i] = Pic:create{
+		Pic:create{
 			game = self.game,
 			x = stage.burst[ID][i].x,
 			y = stage.burst[ID][i].y,
 			image = character.burst_images.full,
+			container = self.burst_block,
+			name = i,
 		}
-		self.burst_partial[i] = Pic:create{
+
+		Pic:create{
 			game = self.game,
 			x = stage.burst[ID][i].x,
 			y = stage.burst[ID][i].y,
 			image = character.burst_images.partial,
+			container = self.burst_partial,
+			name = i,
 		}
-		self.burst_glow[i] = Pic:create{
+
+		Pic:create{
 			game = self.game,
 			x = stage.burst[ID][i].glow_x,
 			y = stage.burst[ID][i].glow_y,
 			image = character.burst_images.glow[i],
+			container = self.burst_glow,
+			name = i,
 		}
 	end
 end
@@ -253,36 +272,50 @@ function Super:init(game, character, player_num)
 	self.TWINKLE_FREQUENCY = 9 -- frames per twinkle star generation
 	self.twinkles = {}
 
-	self.super_frame = Pic:create{
+	Pic:create{
 		game = self.game,
 		x = stage.super[self.player_num].x,
 		y = stage.super[self.player_num].y,
 		image = character.super_images.empty,
+		container = self,
+		name = "super_frame",
 	}
-	self.super_word = Pic:create{
+
+	Pic:create{
 		game = self.game,
 		x = stage.super[self.player_num].x,
 		y = stage.super[self.player_num].word_y,
 		image = character.super_images.word,
+		container = self,
+		name = "super_word",
 	}
-	self.super_meter_image = Pic:create{
+
+	Pic:create{
 		game = self.game,
 		x = stage.super[self.player_num].x,
 		y = stage.super[self.player_num].y,
 		image = character.super_images.full,
+		container = self,
+		name = "super_meter_image",
 	}
-	self.super_glow = Pic:create{
+
+	Pic:create{
 		game = self.game,
 		x = stage.super[self.player_num].x,
 		y = stage.super[self.player_num].y,
 		image = character.super_images.glow,
+		container = self,
+		name = "super_glow",
 	}
-	self.super_overlay = Pic:create{
+
+	Pic:create{
 		game = self.game,
 		x = stage.super[self.player_num].x,
 		y = stage.super[self.player_num].y,
 		image = character.super_images.overlay,
-}
+		container = self,
+		name = "super_overlay",
+	}
 end
 
 function Super:getRect()
@@ -404,12 +437,14 @@ function Helptext:init(game)
 	local grab_y = player.hand[3].y
 	local grab_image = images["words_p" .. player.player_num .. "_grab"]
 
-	self.grab = Pic:create{
+	Pic:create{
 		game = game,
 		x = grab_start_x,
 		y = grab_y,
 		image = grab_image,
 		final_x = grab_end_x,
+		container = self,
+		name = "grab",
 	}
 	self.grab.transparency = 0
 	self.grab:wait(APPEARANCE_WAIT_TIME)
@@ -425,12 +460,14 @@ function Helptext:init(game)
 	local any_y = player.hand[4].y
 	local any_image = images["words_p" .. player.player_num .. "_any"]
 
-	self.any = Pic:create{
+	Pic:create{
 		game = game,
 		x = any_start_x,
 		y = any_y,
 		image = any_image,
 		final_x = any_end_x,
+		container = self,
+		name = "any",
 	}
 	self.any.transparency = 0
 	self.any:wait(APPEARANCE_WAIT_TIME)
@@ -446,12 +483,14 @@ function Helptext:init(game)
 	local gem_y = player.hand[5].y
 	local gem_image = images["words_p" .. player.player_num .. "_gem"]
 
-	self.gem = Pic:create{
+	Pic:create{
 		game = game,
 		x = gem_start_x,
 		y = gem_y,
 		image = gem_image,
 		final_x = gem_end_x,
+		container = self,
+		name = "gem",
 	}
 	self.gem.transparency = 0
 	self.gem:wait(APPEARANCE_WAIT_TIME)
@@ -466,12 +505,14 @@ function Helptext:init(game)
 	local tap_y = player.hand[3].y
 	local tap_image = images.words_taptorotate
 
-	self.tap = Pic:create{
+	Pic:create{
 		game = game,
 		x = tap_x,
 		y = tap_y,
 		image = tap_image,
 		final_x = tap_x,
+		container = self,
+		name = "tap",
 	}
 	self.tap.transparency = 0
 	self.tap:wait(APPEARANCE_WAIT_TIME + APPEAR_TIME)
@@ -483,12 +524,15 @@ function Helptext:init(game)
 	local here_x = 0.5 * stage.width + sign * images.GEM_WIDTH * 2
 	local here_y = (grid.y[grid.BASIN_START_ROW] + grid.y[grid.PENDING_END_ROW]) * 0.5
 	local here_image = images["words_p" .. player.player_num .. "_dropgemshere"]
-	self.here = Pic:create{
+
+	Pic:create{
 		game = game,
 		x = here_x,
 		y = here_y,
 		image = here_image,
 		transparency = 0,
+		container = self,
+		name = "here",
 	}
 end
 
@@ -679,7 +723,7 @@ function WarningSign:init(game)
 		player.hand[3].y,
 	}
 
-	self.warn1 = Pic:create{
+	Pic:create{
 		game = game,
 		x = warn_x[1],
 		y = warn_y[1],
@@ -687,9 +731,11 @@ function WarningSign:init(game)
 		transparency = 0,
 		platform_num = 1,
 		visible = false,
+		container = self,
+		name = "warn1",
 	}
 
-	self.warn2 = Pic:create{
+	Pic:create{
 		game = game,
 		x = warn_x[2],
 		y = warn_y[2],
@@ -697,9 +743,11 @@ function WarningSign:init(game)
 		transparency = 0,
 		platform_num = 2,
 		visible = false,
+		container = self,
+		name = "warn2",
 	}
 
-	self.warn3 = Pic:create{
+	Pic:create{
 		game = game,
 		x = warn_x[3],
 		y = warn_y[3],
@@ -707,6 +755,8 @@ function WarningSign:init(game)
 		transparency = 0,
 		platform_num = 3,
 		visible = false,
+		container = self,
+		name = "warn3",
 	}
 
 end
@@ -866,14 +916,22 @@ function uielements:init(game)
 	self.burstMeter = Burst
 	self.screenPress = ScreenPress
 	self.screenDrag = ScreenDrag
-	-- Red X shown on gems in invalid placement spots
-	self.redx = Pic:create{game = game, x = 0, y = 0, image = images.ui_redx}
 	self.screen_ui_color = nil
 	self.screen_ui_trails = {}
 	self.SCREEN_TRAILS_TIMER = 0.05 -- in seconds
 	self.screen_trails_t = 0
 	self.screenshake_frames = 0
 	self.screenshake_vel = 0
+
+	-- Red X shown on gems in invalid placement spots
+	Pic:create{
+		game = game,
+		x = 0,
+		y = 0,
+		image = images.ui_redx,
+		container = self,
+		name = "redx",
+	}
 end
 
 function uielements:reset()

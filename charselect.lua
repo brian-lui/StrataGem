@@ -303,13 +303,15 @@ function Charselect:_createUIImages()
 	local stage = game.stage
 
 	-- large portrait shadow
-	self.displayed_character_shadow = Pic:create{
+	Pic:create{
 		game = game,
 		name = "maincharacter",
 		image = images.dummy,
 		x = stage.width * 0.275,
 		y = stage.height * 0.45,
 		transparency = 0.25,
+		container = self,
+		name = "displayed_character_shadow",
 	}
 
 	self.displayed_character_shadow.reset = function(c)
@@ -329,13 +331,15 @@ function Charselect:_createUIImages()
 	self.displayed_character_shadow:reset()
 
 	-- large portrait with dummy pic
-	self.displayed_character = Pic:create{
+	Pic:create{
 		game = game,
 		name = "maincharacter",
 		image = images.dummy,
 		x = stage.width * 0.25,
 		y = stage.height * 0.45,
 		transparency = 0.25,
+		container = self,
+		name = "displayed_character",
 	}
 
 	self.displayed_character.reset = function(c)
@@ -355,13 +359,14 @@ function Charselect:_createUIImages()
 	self.displayed_character:reset()
 
 	-- large text of character name
-	self.displayed_character_text = Pic:create{
+	Pic:create{
 		game = game,
-		name = "maincharactertext",
 		image = images.dummy,
 		x = stage.width * 0.272,
 		y = stage.height * 0.7,
 		transparency = 0.25,
+		container = self,
+		name = "displayed_character_text",
 	}
 	self.displayed_character_text.reset = function(c)
 		c:change{
