@@ -197,6 +197,7 @@ end
 function Phase:beforeGravity(dt)
 	local game = self.game
 	local delay = 0
+
 	for player in game:players() do
 		local player_delay = player:beforeGravity()
 		delay = math.max(delay, player_delay or 0)

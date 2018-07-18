@@ -9,6 +9,7 @@ the basin.
 local images = require "images"
 local common = require "class.commons"
 local Pic = require "pic"
+local deepcpy = require "/helpers/utilities".deepcpy
 
 -------------------------------------------------------------------------------
 ------------------------------- TIMER COMPONENT -------------------------------
@@ -711,6 +712,8 @@ function WarningSign:init(game)
 	self.player_num = player.player_num
 	self.FADE_IN_TIME = 30
 	self.FADE_OUT_TIME = 20
+	self.dangerous = false -- a gem is above no_rush line
+	self.really_dangerous = false  -- 1 or 0 empty rows left
 
 	local warn_x = {
 		player.hand[1].x + sign * platform_width * 0.5,
@@ -777,29 +780,45 @@ end
 
 function WarningSign:update(dt)
 	local game = self.game
+	local grid = game.grid
 	local items = {self.warn1, self.warn2, self.warn3}
 
-	local danger = false
-	for col in game.grid:cols(self.player_num) do
-		if not game.phase.no_rush[col] then danger = true end
-	end
+	if game.current_phase == "Action" then
+		for col in grid:cols(self.player_num) do
+			if not game.phase.no_rush[col] then
+				self.dangerous = true
+				if grid:getFirstEmptyRow(col) <= grid.BASIN_START_ROW then
+					self.really_dangerous = true
+				end
+			end
+		end
 
-	for _, item in ipairs(items) do
-		local platform = self.owner.hand[item.platform_num]
-		if game.current_phase == "Action" then
-			if platform.piece and danger then
+		for _, item in ipairs(items) do
+			local platform = self.owner.hand[item.platform_num]
+			if platform.piece and self.dangerous then
 				self:fadeIn(item)
 			else
 				self:fadeOut(item)
 			end
 		end
-		item:update(dt)
+	else
+		for _, item in ipairs(items) do self:fadeOut(item) end
 	end
+
+	for _, item in ipairs(items) do item:update(dt) end
 end
 
 function WarningSign:draw(params)
 	local items = {self.warn1, self.warn2, self.warn3}
-	for _, item in ipairs(items) do item:draw(params) end
+	for _, item in ipairs(items) do
+		item:draw(params)
+		if self.really_dangerous then
+			local extra_params = deepcpy(params)
+			local sign = self.player_num == 1 and 1 or -1
+			extra_params.x = item.x + sign * item.width * 0.5
+			item:draw(extra_params)
+		end
+	end
 end
 
 WarningSign = common.class("WarningSign", WarningSign)
