@@ -1004,7 +1004,7 @@ end
 function Grid:getLoser()
 	local p1loss, p2loss = false, false
 	for i = 1, self.COLUMNS do
-		local empty_row = self:getFirstEmptyRow(i)
+		local empty_row = self:getFirstEmptyRow(i, true)
 		if empty_row < self.LOSE_ROW then
 			if i <= 4 then p1loss = true else p2loss = true end
 		end
