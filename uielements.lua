@@ -538,11 +538,18 @@ function Helptext:init(game)
 end
 
 function Helptext:update(dt)
-	if self.grab_and_drop_deleted and self.tap_deleted then return end
-
 	local game = self.game
 
-	if game.current_phase == "Action" then
+	local any_items_remaining = false
+	local items = {self.here, self.grab, self.any, self.gem, self.tap}
+	for _, item in pairs(items) do
+		if item then
+			item:update(dt)
+			any_items_remaining = true
+		end
+	end
+
+	if game.current_phase == "Action" and any_items_remaining then
 		if self.owner.dropped_piece then
 			self:_removeGrabAndDropGems()
 		elseif game.active_piece then
@@ -559,23 +566,16 @@ function Helptext:update(dt)
 			self:_relocateTapToRotate()
 		end
 	end
-
-	local items = {self.here, self.grab, self.any, self.gem, self.tap}
-	for _, item in pairs(items) do
-		if item then item:update(dt) end
-	end
 end
 
 function Helptext:draw(params)
 	local game = self.game
 
 	if game and game.me_player then
-		if not self.grab_and_drop_deleted then
-			local items = {self.here, self.grab, self.any, self.gem}
+			local items = {self.here, self.grab, self.any, self.gem, self.tap}
 			for _, item in pairs(items) do
 				if item then item:draw(params) end
 			end
-		end
 
 		if not self.tap_deleted and self.tap then self.tap:draw(params) end
 	end
@@ -603,20 +603,20 @@ function Helptext:_removeGrabAndDropGems()
 			remove = true,
 		}
 	end
-	self.here, self.grab, self.any, self.gem = nil, nil, nil, nil
+
 	self.grab_and_drop_deleted = true
 end
 
 function Helptext:_removeTapToRotate()
 	if self.tap_deleted then return end
-	print("delete tap")
+
 	self.tap:clear()
 	self.tap:change{
 		duration = self.FADE_OUT_TIME,
 		transparency = 0,
 		remove = true,
 	}
-	self.tap = nil
+
 	self.tap_deleted = true
 end
 
@@ -626,7 +626,6 @@ function Helptext:_relocateTapToRotate()
 
 	local sign = self.owner.player_num == 1 and -1 or 1
 	local hand_pos = self.owner.hand[4]
-	print("relocate tap")
 
 	self.tap:wait(45)
 	self.tap:change{
@@ -634,7 +633,6 @@ function Helptext:_relocateTapToRotate()
 		x = hand_pos.x + sign * hand_pos.platform.width,
 		y = hand_pos.y,
 		easing = "inOutCubic",
-		debug = true,
 	}
 	self.tap_relocated = true
 end
