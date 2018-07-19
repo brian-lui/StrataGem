@@ -45,30 +45,35 @@ function Grid:init(game)
 	self.y = {}
 	self.active_rect = {}
 
+	-- add a 1px border due to the gridlines
+	-- don't ask me why we need to add 3 pixels for the width instead of 2
+	local SPACED_GEM_WIDTH = images.GEM_WIDTH + 3
+	local SPACED_GEM_HEIGHT = images.GEM_HEIGHT + 3
+
 	for i = 0, self.COLUMNS + 1 do
-		self.x[i] = stage.x_mid + (i - (self.COLUMNS / 2) - 0.5) * stage.gem_width
+		self.x[i] = stage.x_mid + (i - (self.COLUMNS / 2) - 0.5) * SPACED_GEM_WIDTH
 		self.active_rect[i] = {
-			self.x[i] - 0.5 * stage.gem_width,
+			self.x[i] - 0.5 * SPACED_GEM_WIDTH,
 			0,
-			stage.gem_width,
+			SPACED_GEM_WIDTH,
 			stage.height,
 		}
 	end
 
 	-- pending gem positions
-	for i = 0, 6 do self.y[i] = stage.gem_height * (i - 8) end
+	for i = 0, 6 do self.y[i] = SPACED_GEM_HEIGHT * (i - 8) end
 
 	-- landing gem positions
-	self.y[7] = basin_bottom - 11.75 * stage.gem_height
-	self.y[8] = basin_bottom - 10.75 * stage.gem_height
-	self.y[9] = basin_bottom - 10.75 * stage.gem_height
-	self.y[10] = basin_bottom - 9.75 * stage.gem_height
-	self.y[11] = basin_bottom - 9.75 * stage.gem_height
-	self.y[12] = basin_bottom - 8.75 * stage.gem_height
+	self.y[7] = basin_bottom - 11.75 * SPACED_GEM_HEIGHT
+	self.y[8] = basin_bottom - 10.75 * SPACED_GEM_HEIGHT
+	self.y[9] = basin_bottom - 10.75 * SPACED_GEM_HEIGHT
+	self.y[10] = basin_bottom - 9.75 * SPACED_GEM_HEIGHT
+	self.y[11] = basin_bottom - 9.75 * SPACED_GEM_HEIGHT
+	self.y[12] = basin_bottom - 8.75 * SPACED_GEM_HEIGHT
 
 	-- basin positions
 	for i = self.BASIN_START_ROW, self.BASIN_END_ROW + 1 do
-		self.y[i] = basin_bottom + (i - self.ROWS - 0.75) * stage.gem_height
+		self.y[i] = basin_bottom + (i - self.ROWS - 0.75) * SPACED_GEM_HEIGHT
 	end
 
 	for row = self.PENDING_START_ROW - 1, self.BASIN_END_ROW + 1 do
