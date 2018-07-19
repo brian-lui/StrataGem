@@ -161,9 +161,9 @@ function Charselect:_createCharacterButtons()
 
 	-- Temporary thing for demo version
 	for name, data in pairs(gamestate.ui.clickable) do
-		if name ~= "heath" and name ~= "walter" and name ~= "wolfgang" then
+		if name ~= "heath" and name ~= "walter" and name ~= "wolfgang" and name ~= "diggory" then
 			data.action = function() end
-			data.RGB = {96, 96, 96}
+			data.RGB = {0.35, 0.35, 0.35}
 		end
 	end
 end
