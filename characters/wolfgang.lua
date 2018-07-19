@@ -175,7 +175,7 @@ function Wolfgang:init(...)
 	self.super_dogs_to_make = 0
 	self.need_to_activate_super_dog = true
 	self.super_dog_icons = {}
-	self.waiting_for_light_up_time = 0
+	--self.waiting_for_light_up_time = 0
 end
 -------------------------------------------------------------------------------
 -- These are the BARK letter classes
@@ -891,7 +891,7 @@ end
 function Wolfgang:beforeMatch()
 	local game = self.game
 	local grid = game.grid
-	local delay = 0
+	--local delay = 0
 
 	-- See which color matches we made, for BARK lighting up
 	-- Also find the position of the colorwords here
@@ -970,10 +970,10 @@ function Wolfgang:beforeMatch()
 			self.game.GEM_EXPLODE_FRAMES
 		)
 		self.letters[color]:lightUp(arrive_time)
-		self.waiting_for_light_up_time = arrive_time - 30
+		--self.waiting_for_light_up_time = arrive_time - 30
 	end
 
-	return delay
+	--return delay
 end
 
 -- Wait for queued animation to play out
@@ -985,8 +985,8 @@ function Wolfgang:afterMatch()
 		delay = 30
 	end
 
-	delay = math.max(delay, self.waiting_for_light_up_time)
-	self.waiting_for_light_up_time = 0
+	--delay = math.max(delay, self.waiting_for_light_up_time)
+	--self.waiting_for_light_up_time = 0
 
 	return delay
 end
