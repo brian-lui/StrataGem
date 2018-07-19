@@ -975,8 +975,8 @@ end
 local function drawUnderGemShadow(self, piece)
 	local stage = self.game.stage
 	for i = 1, piece.size do
-		local gem_shadow_x = piece.gems[i].x + 0.1 * stage.gem_width
-		local gem_shadow_y = piece.gems[i].y + 0.1 * stage.gem_height
+		local gem_shadow_x = piece.gems[i].x + 0.1 * images.GEM_WIDTH
+		local gem_shadow_y = piece.gems[i].y + 0.1 * images.GEM_HEIGHT
 		piece.gems[i]:draw{
 			pivot_x = gem_shadow_x,
 			pivot_y = gem_shadow_y,

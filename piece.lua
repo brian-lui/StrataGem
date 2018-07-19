@@ -12,6 +12,7 @@ local Pic = require "pic"
 local Gem = require "gem"
 local reverseTable = require "/helpers/utilities".reverseTable
 local pointIsInRect = require "/helpers/utilities".pointIsInRect
+local images = require "images"
 
 local Piece = {}
 function Piece:init(tbl)
@@ -209,9 +210,9 @@ function Piece:draw(params)
 		for i = 1, self.size do
 			local displace_x, displace_y = 0, 0
 			if self.is_horizontal then
-				displace_x = stage.gem_width * (i - (1 + self.size) * 0.5)
+				displace_x = images.GEM_WIDTH * (i - (1 + self.size) * 0.5)
 			else
-				displace_y = stage.gem_height * (i - (1 + self.size) * 0.5)
+				displace_y = images.GEM_HEIGHT * (i - (1 + self.size) * 0.5)
 			end
 			local gem_params = {
 				pivot_x = self.x,
@@ -243,7 +244,7 @@ function Piece:getColumns(shift)
 	local grid = self.game.grid
 	local ret = {}
 	shift = shift or 0
-	if shift then shift = shift * stage.gem_width end
+	if shift then shift = shift * images.GEM_WIDTH end
 
 	if self.is_horizontal then
 		for i = 1, self.size do

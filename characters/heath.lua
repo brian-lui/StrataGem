@@ -301,9 +301,9 @@ function Boom._generateBoom(game, owner, x, y, delay_frames)
 		})
 	end
 
-	local x_vel = stage.gem_width * (math.random() - 0.5) * 16
-	local y_vel = stage.gem_height * - (math.random() * 0.5 + 0.5) * 16
-	local gravity = stage.gem_height * 10
+	local x_vel = images.GEM_WIDTH * (math.random() - 0.5) * 16
+	local y_vel = images.GEM_HEIGHT * - (math.random() * 0.5 + 0.5) * 16
+	local gravity = images.GEM_HEIGHT * 10
 	local x_dest1 = x + 1 * x_vel
 	local x_dest2 = x + 1.5 * x_vel
 

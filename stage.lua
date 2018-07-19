@@ -14,8 +14,8 @@ function stage:init(game)
 	local HALF_SUPER_HEIGHT = 0.09 * game.inits.drawspace.height
 	self.width = game.inits.drawspace.width
 	self.height = game.inits.drawspace.height
-	self.gem_width = images.gems_red:getWidth()
-	self.gem_height = images.gems_red:getHeight()
+	images.GEM_WIDTH = images.gems_red:getWidth()
+	images.GEM_HEIGHT = images.gems_red:getHeight()
 	self.x_mid = self.width / 2
 	self.y_mid = self.height / 2
 	self.super_click = {
@@ -24,12 +24,12 @@ function stage:init(game)
 	}
 	self.burst = {P1 = {}, P2 = {}}
 	self.burst.P1.frame = {
-		x = self.x_mid - (9.5 * self.gem_width),
-		y = self.y_mid - 3 * self.gem_height,
+		x = self.x_mid - (9.5 * images.GEM_WIDTH),
+		y = self.y_mid - 3 * images.GEM_HEIGHT,
 	}
 	self.burst.P2.frame = {
-		x = self.x_mid + (9.5 * self.gem_width),
-		y = self.y_mid - 3 * self.gem_height,
+		x = self.x_mid + (9.5 * images.GEM_WIDTH),
+		y = self.y_mid - 3 * images.GEM_HEIGHT,
 	}
 	local burst_width = images.ui_burst_part_red:getWidth()
 
@@ -50,14 +50,14 @@ function stage:init(game)
 
 	self.super = {
 		{
-			x = self.x_mid - 9.5 * self.gem_width,
-			y = self.y_mid - self.gem_height,
-			word_y = self.y_mid - self.gem_height
+			x = self.x_mid - 9.5 * images.GEM_WIDTH,
+			y = self.y_mid - images.GEM_HEIGHT,
+			word_y = self.y_mid - images.GEM_HEIGHT
 		},
 		{
-			x = self.x_mid + 9.5 * self.gem_width,
-			y = self.y_mid - self.gem_height,
-			word_y = self.y_mid - self.gem_height
+			x = self.x_mid + 9.5 * images.GEM_WIDTH,
+			y = self.y_mid - images.GEM_HEIGHT,
+			word_y = self.y_mid - images.GEM_HEIGHT
 		},
 	}
 	self.super[1].rect = {
@@ -76,12 +76,12 @@ function stage:init(game)
 
 	self.character = {
 		P1 = {
-			x = self.x_mid - (8.2 * self.gem_width),
-			y = self.y_mid - (4.6 * self.gem_height),
+			x = self.x_mid - (8.2 * images.GEM_WIDTH),
+			y = self.y_mid - (4.6 * images.GEM_HEIGHT),
 		},
 		P2 = {
-			x = self.x_mid + (8.2 * self.gem_width),
-			y = self.y_mid - (4.6 * self.gem_height),
+			x = self.x_mid + (8.2 * images.GEM_WIDTH),
+			y = self.y_mid - (4.6 * images.GEM_HEIGHT),
 		}
 	}
 

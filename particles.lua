@@ -1323,7 +1323,7 @@ function Dust.generateGarbageCircle(params)
 	local x_dest = params.x or params.gem.x
 	local y_dest = params.y or params.gem.y
 	local image = images.lookup.stardust(params.color or params.gem.color)
-	local distance = game.stage.gem_width * (math.random() + 1)
+	local distance = images.GEM_WIDTH * (math.random() + 1)
 	local fade_in_duration = 10
 	local duration = (params.duration or game.GEM_EXPLODE_FRAMES) - fade_in_duration
 	local rotation = duration / 60

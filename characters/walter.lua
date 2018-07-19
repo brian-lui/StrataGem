@@ -308,9 +308,9 @@ function Splatter.generate(game, owner, x, y, image, delay_frames)
 	for _ = 1, math.random(2, 4) do
 		local p = common.instance(Splatter, game.particles, params)
 
-		local x_vel = stage.gem_width * (math.random() - 0.5) * 4
-		local y_vel = stage.gem_height * - (math.random() * 0.5 + 0.5) * 4
-		local gravity = stage.gem_height * 2.5
+		local x_vel = images.GEM_WIDTH * (math.random() - 0.5) * 4
+		local y_vel = images.GEM_HEIGHT * - (math.random() * 0.5 + 0.5) * 4
+		local gravity = images.GEM_HEIGHT * 2.5
 		local x_dest1 = x + 1 * x_vel
 		local x_dest2 = x + 1.5 * x_vel
 		local y_func1 = function()
