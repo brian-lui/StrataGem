@@ -88,7 +88,7 @@ function stage:init(game)
 	self.timer = {x = self.x_mid, y = self.height * 0.3}
 	self.timertext = {x = self.x_mid, y = self.height * 0.28}
 
-	self.basin = {x = self.x_mid, y = self.height * 0.646}
+	self.basin = {x = self.x_mid, y = self.height * 0.654}
 	self.settings_button = {
 		gs_main = {x = self.x_mid, y = self.height * 0.957},
 		Title = {x = self.width * 0.92, y = self.height * 0.91},
