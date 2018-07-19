@@ -431,8 +431,8 @@ end
 function SuperDog:moveToGrid(gem, delay)
 	local game = self.game
 	local owner = self.owner
-	local TRAVEL_TIME = 90 -- origin explosion to destination animation
-	local ENDING_PAUSE = 20 -- how many frames to pause for ending fountain
+	local TRAVEL_TIME = 60 -- origin explosion to destination animation
+	local ENDING_PAUSE = 5 -- how many frames to pause for ending fountain
 	delay = delay or 0
 
 	-- move 5th+ dogs back to 4th spot
