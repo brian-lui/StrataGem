@@ -16,6 +16,8 @@ Hailey.meter_gain = {
 	none = 4,
 	wild = 4,
 }
+Hailey.primary_colors = {"blue"}
+
 Hailey.super_images = {
 	word = images.ui_super_text_blue,
 	empty = images.ui_super_empty_blue,

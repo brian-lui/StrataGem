@@ -16,6 +16,7 @@ Ivy.meter_gain = {
 	none = 4,
 	wild = 4,
 }
+Ivy.primary_colors = {"green"}
 
 Ivy.super_images = {
 	word = images.ui_super_text_green,

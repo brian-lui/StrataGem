@@ -16,6 +16,8 @@ Buzz.meter_gain = {
 	none = 4,
 	wild = 4,
 }
+Buzz.primary_colors = {"yellow"}
+
 Buzz.super_images = {
 	word = images.ui_super_text_yellow,
 	empty = images.ui_super_empty_yellow,

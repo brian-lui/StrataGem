@@ -16,6 +16,8 @@ Joy.meter_gain = {
 	none = 4,
 	wild = 4,
 }
+Joy.primary_colors = {"red"}
+
 Joy.super_images = {
 	word = images.ui_super_text_red,
 	empty = images.ui_super_empty_red,

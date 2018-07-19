@@ -29,6 +29,8 @@ Holly.meter_gain = {
 	none = 4,
 	wild = 4,
 }
+Holly.primary_colors = {"green"}
+
 Holly.super_images = {
 	word = images.ui_super_text_green,
 	empty = images.ui_super_empty_green,

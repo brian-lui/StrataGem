@@ -17,6 +17,8 @@ Gail.meter_gain = {
 	none = 4,
 	wild = 4,
 }
+Gail.primary_colors = {"yellow"}
+
 Gail.super_images = {
 	word = images.ui_super_text_yellow,
 	empty = images.ui_super_empty_yellow,

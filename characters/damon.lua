@@ -16,6 +16,8 @@ Damon.meter_gain = {
 	none = 4,
 	wild = 4,
 }
+Damon.primary_colors = {"green"}
+
 Damon.super_images = {
 	word = images.ui_super_text_green,
 	empty = images.ui_super_empty_green,

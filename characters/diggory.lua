@@ -50,6 +50,8 @@ Diggory.meter_gain = {
 	none = 4,
 	wild = 4,
 }
+Diggory.primary_colors = {"yellow"}
+
 Diggory.super_images = {
 	word = images.ui_super_text_yellow,
 	empty = images.ui_super_empty_yellow,

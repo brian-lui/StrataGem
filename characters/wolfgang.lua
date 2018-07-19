@@ -35,6 +35,7 @@ Wolfgang.meter_gain = {
 	none = 4,
 	wild = 4,
 }
+Wolfgang.primary_colors = {"red"}
 
 Wolfgang.super_images = {
 	word = images.ui_super_text_red,
