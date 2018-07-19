@@ -93,14 +93,15 @@ function gs_main:update(dt)
 	if not self.paused then
 		self:timeDip(function()
 			self.phase:run(self.time_step)
-			self.particles:update(dt)
-			gs_main.current_background:update(dt)
 			for player in self:players() do
 				gs_main.ui.static.burst[player.player_num]:update(dt)
 				player.super_button:update(dt)
 			end
 			self.animations:updateAll(dt)
 		end)
+
+		self.particles:update(dt)
+		gs_main.current_background:update(dt)
 
 		self.timeBucket = self.timeBucket + dt
 	end
