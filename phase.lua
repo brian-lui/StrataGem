@@ -238,9 +238,12 @@ function Phase:afterGravity(dt)
 	game.particles.wordEffects.clear(game.particles)
 
 	local delay = 0
+	local next_phase = "GetMatchedGems"
+
 	for player in self.game:players() do
-		local player_delay = player:afterGravity()
+		local player_delay, go_to_gravity_phase = player:afterGravity()
 		delay = math.max(delay, player_delay or 0)
+		if go_to_gravity_phase then next_phase = "DuringGravity" end
 	end
 	self:setPause(delay)
 
@@ -251,7 +254,7 @@ function Phase:afterGravity(dt)
 			end
 		end
 	end
-	self:activatePause("GetMatchedGems")
+	self:activatePause(next_phase)
 
 	game.debugconsole:saveScreencap()
 end
@@ -275,7 +278,6 @@ function Phase:getMatchedGems(dt)
 		local player_delay = player:beforeMatch()
 		delay = math.max(delay, player_delay or 0)
 	end
-
 	if matches > 0 then
 		self:setPause(delay)
 		self:activatePause("DestroyMatchedGems")
