@@ -629,9 +629,10 @@ function Helptext:_relocateTapToRotate()
 
 	self.tap:wait(45)
 	self.tap:change{
-		duration = 90,
+		duration = 30,
 		x = hand_pos.x + sign * hand_pos.platform.width,
 		y = hand_pos.y,
+		rotation = math.pi * 2,
 		easing = "inOutCubic",
 	}
 	self.tap_relocated = true
