@@ -45,10 +45,8 @@ function Grid:init(game)
 	self.y = {}
 	self.active_rect = {}
 
-	-- add a 1px border due to the gridlines
-	-- don't ask me why we need to add 3 pixels for the width instead of 2
-	local SPACED_GEM_WIDTH = images.GEM_WIDTH + 3
-	local SPACED_GEM_HEIGHT = images.GEM_HEIGHT + 3
+	local SPACED_GEM_WIDTH = images.GEM_WIDTH
+	local SPACED_GEM_HEIGHT = images.GEM_HEIGHT + 0.5 -- dunno why lol
 
 	for i = 0, self.COLUMNS + 1 do
 		self.x[i] = stage.x_mid + (i - (self.COLUMNS / 2) - 0.5) * SPACED_GEM_WIDTH
