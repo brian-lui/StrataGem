@@ -147,6 +147,7 @@ function Character:update(dt) end
 function Character:actionPhase(dt) end
 function Character:beforeGravity() end
 function Character:beforeTween() end
+function Character:duringTween() end
 function Character:afterGravity() end
 function Character:beforeMatch() end -- before gems are matched
 function Character:duringMatch() end -- while matches are exploding

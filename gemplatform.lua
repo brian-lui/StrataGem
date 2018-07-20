@@ -18,7 +18,8 @@ function GemPlatform:init(params)
 	self.getx = self.owner.hand.getx
 	self.redness = 0
 	self.spin = 0	-- radians per frame
-	Pic:create{
+
+	Pic:create{ -- the star
 		game = self.game,
 		x = self.owner.hand[self.hand_idx].x,
 		y = self.owner.hand[self.hand_idx].y,
@@ -26,8 +27,20 @@ function GemPlatform:init(params)
 		container = self,
 		name = "pic",
 	}
+	Pic:create{ -- the drop shadow
+		game = self.game,
+		x = self.owner.hand[self.hand_idx].x,
+		y = self.owner.hand[self.hand_idx].y,
+		image = images.ui_platform_shadow,
+		container = self,
+		name = "drop_shadow",
+	}
+
 	self.width = self.pic.width
 	self.height = self.pic.height
+	self.shadow_x_shift = self.width * 0.05 -- shadow offset x
+	self.shadow_y_shift = self.height * 0.1 -- shadow offset y
+
 	self.REDNESS_PER_FRAME = 0.0625
 end
 
@@ -41,13 +54,24 @@ end
 
 function GemPlatform:draw(params)
 	local p = {} -- need to create a copy of params or else it will modify params
-	for k, v in pairs(params) do p[k] = v end
+	local shadow_p = {} -- one for the shadow too lmao
+
+	for k, v in pairs(params) do
+		p[k] = v
+		shadow_p[k] = v
+	end
 
 	if self.shake then
 		local f = self.game.frame
 		p.x = self.pic.x + self.shake * (f % 7 * 0.5 + f % 13 * 0.25 + f % 23 / 6 - 5)
 		p.y = self.pic.y + self.shake * (f % 5 * 2/3 + f % 11 * 0.25 + f % 17 / 6 - 5)
 	end
+
+	shadow_p.x = (p.x or self.pic.x) + self.shadow_x_shift
+	shadow_p.y = (p.y or self.pic.y) + self.shadow_y_shift
+	shadow_p.rotation = self.pic.rotation
+
+	self.drop_shadow:draw(shadow_p)
 	self.pic:draw(p)
 
 	if self.redness > 0 then

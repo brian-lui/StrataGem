@@ -39,8 +39,8 @@ local words = {
 }
 
 local ui = {
-	"basin", "platform_gold", "platform_silver", "platform_red", "redx",
-	"timer_gauge", "timer_bar", "timer_1", "timer_2", "timer_3",
+	"basin", "redx", "timer_gauge", "timer_bar", "timer_1", "timer_2", "timer_3",
+	"platform_gold", "platform_silver", "platform_red", "platform_shadow",
 	"starpiece1", "starpiece2", "starpiece3", "starpiece4",
 
 	"super_text_red", "super_text_blue", "super_text_green", "super_text_yellow",
