@@ -3,36 +3,14 @@ Passive: Yellow gems cast by Diggory destroy the gem below them, dealing one
 damage. This ability can't destroy other yellows or indestructible gems.
 
 Super: The bottom two rows of your basin break. If any yellows are broken, they
-deal double damage.
-
-Implementation notes:
-
-When a yellow gem lands on another gem, there is a brief pause, and then it
-SLAMS down and crushes the gem. In addition to the regular gem break animation,
-2 dust clouds should appear with exactly the same animation as heath's smoke
-when the fire gets extinguished. Don't forget to randomly x and y flip the dust
-cloud. Also, 2-5 clods (randomly selected, randomly x and y flipped)
-should parabola out.
-
-Super
-
-The entire screen shakes.
-
-Lots of dust clouds appear at the bottom of the basin (x and y flipped) similar
-to Walter's water.
-
-clods randomly parabola out from the dust clouds similar to the walter water
-(but not as high and not quite as high a rate. They should only go about 1 and
-a half gem heights upward) don't forget to randomly x and y flip those too.
-
-As the shaking and clodding is happening, the gems sink into the clouds and
-break.
+deal double damage. (Will be changed soon)
 --]]
 
 local love = _G.love
 local common = require "class.commons"
-local Character = require "character"
 local images = require "images"
+local Pic = require "pic"
+local Character = require "character"
 
 local Diggory = {}
 
@@ -71,6 +49,7 @@ function Diggory:init(...)
 
 	self.slammy_gems = {}
 	self.slammed_this_turn = false
+	self.slammy_particle_wait_time = 0
 end
 
 function Diggory:beforeGravity()
@@ -137,10 +116,12 @@ function Diggory:afterGravity()
 			if below_gem then
 				if below_gem.color ~= "yellow" then
 					local time_to_explode = grid:destroyGem{
+					local time_to_explode, particle_duration = grid:destroyGem{
 						gem = below_gem,
 						credit_to = self.player_num,
 					}
 					delay = math.max(delay, time_to_explode)
+					self.slammy_particle_wait_time = particle_duration
 					go_to_gravity = true
 				end
 			end
@@ -151,6 +132,12 @@ function Diggory:afterGravity()
 	end
 
 	return delay, go_to_gravity
+end
+
+function Diggory:beforeMatch()
+	local ret = self.slammy_particle_wait_time
+	self.slammy_particle_wait_time = 0
+	return ret
 end
 
 function Diggory:afterAllMatches()
