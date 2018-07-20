@@ -210,8 +210,8 @@ end
 function Phase:applyGemTween(dt)
 	local game = self.game
 	local grid = game.grid
-
 	local max_delay = 0
+
 	for gem in grid:gems() do
 		local gem_delay = gem:getAnimFrames()
 		max_delay = math.max(max_delay, gem_delay)
@@ -227,8 +227,18 @@ function Phase:applyGemTween(dt)
 end
 
 function Phase:duringGravity(dt)
-	local duration = self.game.grid:dropColumns()
-	self:setPause(duration or 0)
+	local game = self.game
+	local delay = 0
+
+	for player in game:players() do
+		local player_delay = player:duringTween()
+		delay = math.max(delay, player_delay or 0)
+	end
+
+	local gem_tween_duration = self.game.grid:dropColumns()
+	local delay = math.max(delay, gem_tween_duration or 0)
+
+	self:setPause(delay)
 	self:activatePause("AfterGravity", true)
 end
 
