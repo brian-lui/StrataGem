@@ -181,6 +181,17 @@ function Diggory:afterGravity()
 						credit_to = self.player_num,
 					}
 					delay = math.max(delay, time_to_explode)
+
+					-- shaking
+					for _, i in ipairs{5, 20} do
+						game.queue:add(
+							i,
+							game.uielements.screenshake,
+							game.uielements,
+							1
+						)
+					end
+
 					self.slammy_particle_wait_time = particle_duration
 					go_to_gravity = true
 				end
