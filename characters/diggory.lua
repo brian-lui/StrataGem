@@ -2,8 +2,9 @@
 Passive: Yellow gems cast by Diggory destroy the gem below them, dealing one
 damage. This ability can't destroy other yellows or indestructible gems.
 
-Super: The bottom two rows of your basin break. If any yellows are broken, they
-deal double damage. (Will be changed soon)
+Super: 40% of Diggory’s gems get cracked. Cracked gems break if a match occurs
+adjacent to them. Also Diggory yellows POWER through them and break the next
+gem down.
 --]]
 
 local love = _G.love
@@ -142,32 +143,7 @@ function Diggory:beforeGravity()
 
 	-- destroy last two rows of basin
 	if self.is_supering then
-		self.can_gain_super = false
-
-		for col in grid:cols(self.player_num) do
-			local last_gem = grid[grid.BASIN_END_ROW][col].gem
-			local second_last_gem = grid[grid.BASIN_END_ROW - 1][col].gem
-			
-			if last_gem then
-				local time_to_explode, particle_time = grid:destroyGem{
-					gem = last_gem,
-					credit_to = self.player_num,
-					force_max_alpha = true,
-					extra_damage = last_gem.color == "yellow" and 1 or 0,
-				}
-				delay = math.max(delay, time_to_explode + particle_time)
-			end
-
-			if second_last_gem then
-				local time_to_explode, particle_time = grid:destroyGem{
-					gem = second_last_gem,
-					credit_to = self.player_num,
-					force_max_alpha = true,
-					extra_damage = second_last_gem.color == "yellow" and 1 or 0,
-				}
-				delay = math.max(delay, time_to_explode + particle_time)
-			end
-		end
+		-- add the cracks
 
 		self:emptyMP()
 		self.is_supering = false
@@ -222,10 +198,6 @@ function Diggory:beforeMatch()
 	local ret = self.slammy_particle_wait_time
 	self.slammy_particle_wait_time = 0
 	return ret
-end
-
-function Diggory:afterAllMatches()
-	self.can_gain_super = true
 end
 
 function Diggory:cleanup()
