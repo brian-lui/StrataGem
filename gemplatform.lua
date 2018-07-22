@@ -38,7 +38,6 @@ function GemPlatform:init(params)
 
 	self.width = self.pic.width
 	self.height = self.pic.height
-	self.shadow_x_shift = self.width * 0.05 -- shadow offset x
 	self.shadow_y_shift = self.height * 0.1 -- shadow offset y
 
 	self.REDNESS_PER_FRAME = 0.0625
@@ -67,7 +66,7 @@ function GemPlatform:draw(params)
 		p.y = self.pic.y + self.shake * (f % 5 * 2/3 + f % 11 * 0.25 + f % 17 / 6 - 5)
 	end
 
-	shadow_p.x = (p.x or self.pic.x) + self.shadow_x_shift
+	shadow_p.x = p.x or self.pic.x
 	shadow_p.y = (p.y or self.pic.y) + self.shadow_y_shift
 	shadow_p.rotation = self.pic.rotation
 
