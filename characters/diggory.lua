@@ -43,11 +43,38 @@ Diggory.burst_images = {
 
 Diggory.special_images = {
 	clod = {
-		love.graphics.newImage('images/characters/diggory/clod1.png'),
-		love.graphics.newImage('images/characters/diggory/clod2.png'),
-		love.graphics.newImage('images/characters/diggory/clod3.png'),
-		love.graphics.newImage('images/characters/diggory/clod4.png'),
+		regular = {
+			love.graphics.newImage('images/characters/diggory/clod1.png'),
+			love.graphics.newImage('images/characters/diggory/clod2.png'),
+			love.graphics.newImage('images/characters/diggory/clod3.png'),
+			love.graphics.newImage('images/characters/diggory/clod4.png'),
+		},
+		red = {
+			love.graphics.newImage('images/characters/diggory/rclod1.png'),
+			love.graphics.newImage('images/characters/diggory/rclod2.png'),
+			love.graphics.newImage('images/characters/diggory/rclod3.png'),
+			love.graphics.newImage('images/characters/diggory/rclod4.png'),
+		},
+		blue = {
+			love.graphics.newImage('images/characters/diggory/bclod1.png'),
+			love.graphics.newImage('images/characters/diggory/bclod2.png'),
+			love.graphics.newImage('images/characters/diggory/bclod3.png'),
+			love.graphics.newImage('images/characters/diggory/bclod4.png'),
+		},
+		green = {
+			love.graphics.newImage('images/characters/diggory/gclod1.png'),
+			love.graphics.newImage('images/characters/diggory/gclod2.png'),
+			love.graphics.newImage('images/characters/diggory/gclod3.png'),
+			love.graphics.newImage('images/characters/diggory/gclod4.png'),
+		},
+		yellow = {
+			love.graphics.newImage('images/characters/diggory/yclod1.png'),
+			love.graphics.newImage('images/characters/diggory/yclod2.png'),
+			love.graphics.newImage('images/characters/diggory/yclod3.png'),
+			love.graphics.newImage('images/characters/diggory/yclod4.png'),
+		},
 	},
+	crack = love.graphics.newImage('images/characters/diggory/crack.png'),
 	dustcloud = love.graphics.newImage('images/characters/diggory/dustcloud.png'),
 }
 
