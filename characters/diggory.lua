@@ -97,6 +97,7 @@ function PassiveClouds:remove()
 end
 
 function PassiveClouds.generate(game, owner, x, y, delay)
+	delay = delay or 0
 	local image = owner.special_images.dustcloud
 	local smokes = {
 		left = {
@@ -146,6 +147,112 @@ end
 PassiveClouds = common.class("PassiveClouds", PassiveClouds, Pic)
 
 -------------------------------------------------------------------------------
+-- these appear when super gets activated
+local SuperClouds = {}
+function SuperClouds:init(manager, tbl)
+	Pic.init(self, manager.game, tbl)
+	local counter = self.game.inits.ID.particle
+	manager.allParticles.CharEffects[counter] = self
+	self.manager = manager
+end
+
+function SuperClouds:remove()
+	self.manager.allParticles.CharEffects[self.ID] = nil
+end
+
+function SuperClouds.generate(game, owner, duration, delay)
+	delay = delay or 0
+	local grid = game.grid
+	local FADE_IN_DURATION = 15
+	local FADE_OUT_DURATION = 20
+	local CLOUDS_PER_COL = 10
+	local FRAMES_PER_CLOD = 4
+
+	local cloud_image = owner.special_images.dustcloud
+	local y_start = grid.y[grid.BASIN_END_ROW]
+	local y_end = grid.y[grid.BASIN_END_ROW + 1]
+
+	-- clouds
+	for i = 1, CLOUDS_PER_COL do
+		for col in grid:cols(owner.player_num) do
+			local p = common.instance(SuperClouds, game.particles, {
+				x = grid.x[col] + (math.random() - 0.5) * images.GEM_WIDTH,
+				y = math.random(y_start, y_end),
+				image = cloud_image,
+				draw_order = 4,
+				h_flip = math.random() < 0.5,
+				v_flip = math.random() < 0.5,
+				owner = owner,
+			})
+
+			p.transparency = 0
+			p:wait(delay + i * 3)
+			p:change{duration = FADE_IN_DURATION, transparency = 1}
+			p:wait(duration - FADE_IN_DURATION)
+			p:change{duration = FADE_OUT_DURATION, remove = true}
+		end
+	end
+
+	-- clods
+	for i = FADE_IN_DURATION, duration - FADE_IN_DURATION, FRAMES_PER_CLOD do
+		for col in grid:cols(owner.player_num) do
+			local possible_images = owner.special_images.clod.regular
+			local clod_image = possible_images[math.random(#possible_images)]
+			local x = grid.x[col]
+			local y = (grid.y[grid.BASIN_END_ROW] + grid.y[grid.BASIN_END_ROW + 1]) * 0.5
+
+			local p = common.instance(SuperClouds, game.particles, {
+				x = x,
+				y = y,
+				image = clod_image,
+				draw_order = 2,
+				owner = owner,
+				h_flip = math.random() < 0.5,
+				v_flip = math.random() < 0.5,
+			})
+
+			local x_vel = images.GEM_WIDTH * (math.random() - 0.5) * 12
+			local y_vel = images.GEM_HEIGHT * - (math.random() * 0.5 + 0.5) * 12
+			local gravity = images.GEM_HEIGHT * 10
+			local x_dest1 = x + 1 * x_vel
+			local x_dest2 = x + 1.5 * x_vel
+			local y_func1 = function()
+				return y + p.t * y_vel + p.t^2 * gravity
+			end
+			local y_func2 = function()
+				return y + (p.t + 1) * y_vel + (p.t + 1)^2 * gravity
+			end
+			local rotation_func1 = function()
+				return math.atan2(y_vel + p.t * 2 * gravity, x_vel) - (math.pi * 0.5)
+			end
+			local rotation_func2 = function()
+				return math.atan2(y_vel + (p.t + 1) * 2 * gravity, x_vel) - (math.pi * 0.5)
+			end
+
+			p.transparency = 0
+			p:wait(delay + i)
+			p:change{duration = 0, transparency = 1}
+			p:change{
+				duration = 45,
+				x = x_dest1,
+				y = y_func1,
+				rotation = rotation_func1,
+			}
+			p:change{
+				duration = 15,
+				x = x_dest2,
+				y = y_func2,
+				rotation = rotation_func2,
+				transparency = 0,
+				remove = true,
+			}
+		end
+	end
+end
+
+SuperClouds = common.class("SuperClouds", SuperClouds, Pic)
+
+-------------------------------------------------------------------------------
 -- these are the parabola-ing clods
 local Clod = {}
 function Clod:init(manager, tbl)
@@ -160,6 +267,8 @@ function Clod:remove()
 end
 
 function Clod.generate(game, owner, x, y, color, delay)
+	delay = delay or 0
+
 	-- decide the color
 	if color == "none" or color == nil then color = "regular" end
 	if color == "wild" then
@@ -223,6 +332,7 @@ Clod = common.class("Clod", Clod, Pic)
 -------------------------------------------------------------------------------
 Diggory.fx = {
 	passive_clouds = PassiveClouds,
+	super_clouds = SuperClouds,
 	clod = Clod,
 	--crack = Crack,
 }
@@ -251,6 +361,7 @@ function Diggory:beforeGravity()
 	-- destroy last two rows of basin
 	if self.is_supering then
 		-- add the cracks
+		self.fx.super_clouds.generate(self.game, self, 120, 0)
 
 		self:emptyMP()
 		self.is_supering = false
