@@ -96,7 +96,7 @@ function PassiveClouds:remove()
 	self.manager.allParticles.CharEffects[self.ID] = nil
 end
 
-function PassiveClouds.generate(game, owner, x, y)
+function PassiveClouds.generate(game, owner, x, y, delay)
 	local image = owner.special_images.dustcloud
 	local smokes = {
 		left = {
@@ -122,6 +122,9 @@ function PassiveClouds.generate(game, owner, x, y)
 			owner = owner,
 		})
 		p.scaling = 0.5
+		p.transparency = 0
+		p:wait(delay)
+		p:change{duration = 0, transparency = 1}
 		p:change{
 			duration = 30,
 			x = x + game.stage.width * 0.05 * smoke.sign,
@@ -143,8 +146,85 @@ end
 PassiveClouds = common.class("PassiveClouds", PassiveClouds, Pic)
 
 -------------------------------------------------------------------------------
+-- these are the parabola-ing clods
+local Clod = {}
+function Clod:init(manager, tbl)
+	Pic.init(self, manager.game, tbl)
+	local counter = self.game.inits.ID.particle
+	manager.allParticles.CharEffects[counter] = self
+	self.manager = manager
+end
+
+function Clod:remove()
+	self.manager.allParticles.CharEffects[self.ID] = nil
+end
+
+function Clod.generate(game, owner, x, y, color, delay)
+	-- decide the color
+	if color == "none" or color == nil then color = "regular" end
+	if color == "wild" then
+		local colors = {"red", "blue", "green", "yellow"}
+		color = colors[math.random(#colors)]
+	end
+
+	local possible_images = owner.special_images.clod[color]
+	local image = possible_images[math.random(#possible_images)]
+
+	local p = common.instance(Clod, game.particles, {
+		x = x,
+		y = y,
+		image = image,
+		draw_order = 3,
+		owner = owner,
+		color = color,
+		h_flip = math.random() < 0.5,
+		v_flip = math.random() < 0.5,
+	})
+
+	local x_vel = images.GEM_WIDTH * (math.random() - 0.5) * 16
+	local y_vel = images.GEM_HEIGHT * - (math.random() * 0.5 + 0.5) * 16
+	local gravity = images.GEM_HEIGHT * 10
+	local x_dest1 = x + 1 * x_vel
+	local x_dest2 = x + 1.5 * x_vel
+	local y_func1 = function()
+		return y + p.t * y_vel + p.t^2 * gravity
+	end
+	local y_func2 = function()
+		return y + (p.t + 1) * y_vel + (p.t + 1)^2 * gravity
+	end
+	local rotation_func1 = function()
+		return math.atan2(y_vel + p.t * 2 * gravity, x_vel) - (math.pi * 0.5)
+	end
+	local rotation_func2 = function()
+		return math.atan2(y_vel + (p.t + 1) * 2 * gravity, x_vel) - (math.pi * 0.5)
+	end
+
+	p.transparency = 0
+	p:wait(delay)
+	p:change{duration = 0, transparency = 1}
+	p:change{
+		duration = 60,
+		x = x_dest1,
+		y = y_func1,
+		rotation = rotation_func1,
+	}
+	p:change{
+		duration = 30,
+		x = x_dest2,
+		y = y_func2,
+		rotation = rotation_func2,
+		transparency = 0,
+		remove = true,
+	}
+end
+
+Clod = common.class("Clod", Clod, Pic)
+
+-------------------------------------------------------------------------------
 Diggory.fx = {
 	passive_clouds = PassiveClouds,
+	clod = Clod,
+	--crack = Crack,
 }
 -------------------------------------------------------------------------------
 
@@ -195,19 +275,32 @@ function Diggory:afterGravity()
 			local below_gem = grid[gem.row + 1][gem.column].gem
 			if below_gem then
 				if below_gem.color ~= "yellow" then
-					-- clouds animation
-					self.fx.passive_clouds.generate(
-						game,
-						self,
-						below_gem.x,
-						below_gem.y
-					)
-
 					local time_to_explode, particle_duration = grid:destroyGem{
 						gem = below_gem,
 						credit_to = self.player_num,
 					}
 					delay = math.max(delay, time_to_explode)
+
+					-- clouds animation
+					self.fx.passive_clouds.generate(
+						game,
+						self,
+						below_gem.x,
+						below_gem.y,
+						time_to_explode
+					)
+
+					-- clods animation
+					for _ = 2, 5 do
+						self.fx.clod.generate(
+							game,
+							self,
+							below_gem.x,
+							below_gem.y,
+							"regular",
+							time_to_explode
+						)
+					end
 
 					-- shaking
 					for _, i in ipairs{5, 20} do
