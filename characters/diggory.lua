@@ -335,11 +335,61 @@ end
 Clod = common.class("Clod", Clod, Pic)
 
 -------------------------------------------------------------------------------
+-- these are the cracks for gems
+
+---[[
+local Crack = {}
+function Crack:init(manager, tbl)
+	Pic.init(self, manager.game, tbl)
+	local counter = self.game.inits.ID.particle
+	manager.allParticles.CharEffects[counter] = self
+	self.manager = manager
+end
+
+function Crack:remove()
+	self.manager.allParticles.CharEffects[self.ID] = nil
+	self.owner.crack_images[self.gem] = nil
+end
+
+function Crack:update(dt)
+	Pic.update(self, dt)
+	self.x = self.gem.x
+	self.y = self.gem.y
+end
+
+function Crack.generate(game, owner, gem, delay)
+	local params = {
+		x = gem.x,
+		y = gem.y,
+		image = owner.special_images.crack,
+		owner = owner,
+		draw_order = 1,
+		player_num = owner.player_num,
+		name = "DiggoryCrack",
+		h_flip = math.random() < 0.5,
+		v_flip = math.random() < 0.5,
+		gem = gem,
+		transparency = 0,
+	}
+
+	owner.crack_images[gem] = common.instance(Crack, game.particles, params)
+	owner.crack_images[gem]:wait(delay)
+	owner.crack_images[gem]:change{duration = 0, transparency = 1}
+
+	-- generate clods
+	for _ = 2, 5 do
+		owner.fx.clod.generate(game, owner, gem.x, gem.y, gem.color, delay)
+	end
+end
+
+Crack = common.class("Crack", Crack, Pic)
+
+-------------------------------------------------------------------------------
 Diggory.fx = {
 	passive_clouds = PassiveClouds,
 	super_clouds = SuperClouds,
 	clod = Clod,
-	--crack = Crack,
+	crack = Crack,
 }
 -------------------------------------------------------------------------------
 
@@ -349,6 +399,35 @@ function Diggory:init(...)
 	self.slammy_gems = {}
 	self.slammed_this_turn = false
 	self.slammy_particle_wait_time = 0
+	self.crack_images = {} -- Crack image objects
+	self.crack_gems = {} -- keep track of state
+end
+
+function Diggory:_activateSuper()
+	local game = self.game
+	local grid = game.grid
+
+	local SUPER_DURATION = 180
+	local CRACK_START_TIME = 30
+	local CRACK_ROW_WAIT = 5
+
+	-- super cloud animations
+	self.fx.super_clouds.generate(game, self, SUPER_DURATION, 0)
+
+	-- add cracks
+	local crack_delay = CRACK_START_TIME
+	for row = grid.BASIN_END_ROW, grid.BASIN_START_ROW, -1 do
+		for col in grid:cols(self.player_num) do
+			if grid[row][col].gem then
+				local gem = grid[row][col].gem
+				self.fx.crack.generate(game, self, gem, crack_delay)
+				self.crack_gems[gem] = true
+			end
+		end
+		crack_delay = crack_delay + CRACK_ROW_WAIT
+	end
+
+	self:emptyMP()
 end
 
 function Diggory:beforeGravity()
@@ -363,12 +442,9 @@ function Diggory:beforeGravity()
 		end
 	end
 
-	-- destroy last two rows of basin
+	-- activate super
 	if self.is_supering then
-		-- add the cracks
-		self.fx.super_clouds.generate(self.game, self, 120, 0)
-
-		self:emptyMP()
+		delay = self:_activateSuper()
 		self.is_supering = false
 	end
 
