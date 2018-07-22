@@ -172,6 +172,11 @@ function SuperClouds.generate(game, owner, duration, delay)
 	local y_start = grid.y[grid.BASIN_END_ROW]
 	local y_end = grid.y[grid.BASIN_END_ROW + 1]
 
+	-- screenshake
+	for i = 1, duration, 10 do
+		game.queue:add(i, game.uielements.screenshake, game.uielements, 1)
+	end
+
 	-- clouds
 	for i = 1, CLOUDS_PER_COL do
 		for col in grid:cols(owner.player_num) do
