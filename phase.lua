@@ -309,7 +309,6 @@ function Phase:destroyMatchedGems(dt)
 
 	local explode_delay, particle_duration = grid:destroyMatchedGems(game.scoring_combo)
 
-	--local delay = explode_delay + game.GEM_FADE_FRAMES
 	local delay = explode_delay
 	for player in game:players() do
 		local player_delay = player:duringMatch()
