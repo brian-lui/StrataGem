@@ -5,6 +5,24 @@ function can be required directly when needed.
 
 local utilities = {}
 
+-- shuffles in-place
+-- pass in game.rng if u wanna use the netplay-consistent one
+function utilities.shuffle(tab, good_rng)
+	local size = #tab
+	if good_rng then
+		for i = 1, size do
+			local rand = good_rng:random(i, size)
+			tab[i], tab[rand] = tab[rand], tab[i]
+		end
+	else
+		for i = 1, size do
+			local rand = math.random(i, size)
+			tab[i], tab[rand] = tab[rand], tab[i]
+		end
+	end
+end
+
+-- pairs iterator, but sorted
 function utilities.spairs(tab, ...)
 	local keys,vals,idx = {},{},0
 	for k in pairs(tab) do
@@ -39,31 +57,29 @@ end
 
 local deepcpy_mapping = {}
 local function real_deepcpy(tab)
-  if deepcpy_mapping[tab] ~= nil then
-    return deepcpy_mapping[tab]
-  end
-  local ret = {}
-  deepcpy_mapping[tab] = ret
-  deepcpy_mapping[ret] = ret
-  for k,v in pairs(tab) do
-    if type(k) == "table" then
-      k=real_deepcpy(k)
-    end
-    if type(v) == "table" then
-      v=real_deepcpy(v)
-    end
-    ret[k]=v
-  end
-  return setmetatable(ret, getmetatable(tab))
+	if deepcpy_mapping[tab] ~= nil then
+		return deepcpy_mapping[tab]
+	end
+	local ret = {}
+	deepcpy_mapping[tab] = ret
+	deepcpy_mapping[ret] = ret
+	for k,v in pairs(tab) do
+		if type(k) == "table" then
+			k=real_deepcpy(k)
+		end
+		if type(v) == "table" then
+			v=real_deepcpy(v)
+		end
+		ret[k]=v
+	end
+	return setmetatable(ret, getmetatable(tab))
 end
 
 function utilities.deepcpy(tab)
-  if type(tab) ~= "table" then
-		return tab
-	end
-  local ret = real_deepcpy(tab)
-  deepcpy_mapping = {}
-  return ret
+	if type(tab) ~= "table" then return tab end
+	local ret = real_deepcpy(tab)
+	deepcpy_mapping = {}
+	return ret
 end
 
 return utilities
