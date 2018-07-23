@@ -466,6 +466,41 @@ function Diggory:_activateSuper()
 	return SUPER_DURATION
 end
 
+-- takes destroyed_gems as a list of gems, and flags ownership.
+-- returns all cracked gems that are adjacent to these gems, as a set
+function Diggory:_checkAndFlagCrackedGems(destroyed_gems)
+	local game = self.game
+	local grid = game.grid
+
+	local to_destroy = {}
+
+	for _, destr_gem in pairs(destroyed_gems) do
+		local left_gem = grid[destr_gem.row][destr_gem.column - 1].gem
+		local right_gem = grid[destr_gem.row][destr_gem.column + 1].gem
+		local up_gem = grid[destr_gem.row - 1][destr_gem.column].gem
+		local down_gem = grid[destr_gem.row + 1][destr_gem.column].gem
+
+		for _, gem in pairs{left_gem, right_gem, up_gem, down_gem} do
+			if gem then
+				-- don't flag if it's in a match already
+				local in_a_match = false
+				for _, check in pairs(destroyed_gems) do
+					if check == gem then in_a_match = true end
+				end
+
+				if gem.diggory_cracked and (not in_a_match) and
+				(not gem.indestructible) and (not gem.is_destroyed) and
+				(not (destr_gem.player_num == 3)) then
+					gem:addOwner(destr_gem.player_num)
+					to_destroy[gem] = true
+				end
+			end
+		end
+	end
+
+	return to_destroy
+end
+
 function Diggory:beforeGravity()
 	local game = self.game
 	local grid = game.grid
@@ -559,9 +594,36 @@ function Diggory:afterGravity()
 end
 
 function Diggory:beforeMatch()
+	local grid = self.game.grid
+
 	local ret = self.slammy_particle_wait_time
 	self.slammy_particle_wait_time = 0
+
+	local matched_gems = grid:getMatchedGems()
+	self.cracked_gems_to_destroy = self:_checkAndFlagCrackedGems(matched_gems)
+
 	return ret
+end
+
+function Diggory:afterMatch()
+	local game = self.game
+	local phase = game.phase
+	local grid = game.grid
+	local max_delay, max_particle_duration = 0, 0
+
+	for gem in pairs(self.cracked_gems_to_destroy) do
+		local explode_delay, particle_duration = grid:destroyGem{
+			gem = gem,
+			glow_delay = game.GEM_EXPLODE_FRAMES,
+		}
+		max_delay = math.max(max_delay, explode_delay)
+		max_particle_duration = math.max(max_particle_duration, particle_duration)
+	end
+
+	self.cracked_gems_to_destroy = {}
+
+	phase.damage_particle_duration = math.max(phase.damage_particle_duration, max_particle_duration)
+	return max_delay
 end
 
 function Diggory:cleanup()
