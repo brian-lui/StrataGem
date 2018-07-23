@@ -408,31 +408,54 @@ function Diggory:init(...)
 	self.slammed_this_turn = false
 	self.slammy_particle_wait_time = 0
 	self.crack_images = {} -- Crack image objects
+	self.cracked_gems_to_destroy = {} -- set
 end
 
 function Diggory:_activateSuper()
 	local game = self.game
 	local grid = game.grid
 
-	local SUPER_DURATION = 180
+	local CRACK_GEM_PERCENTAGE = 0.4
+	local SUPER_DURATION = 120
 	local CRACK_START_TIME = 30
-	local CRACK_ROW_WAIT = 5
+	local CRACK_ROW_WAIT = 10
 
 	-- super cloud animations
 	local delay = self.fx.super_animation.generate(game, self, SUPER_DURATION, 0)
 
-	-- add cracks
+	-- determine crack gems and add to table
+	local possible_cracks = {}
+	local this_turn_new_cracks = {}
+	for gem in grid:basinGems(self.player_num) do
+		if gem.color ~= "none" and (not gem.indestructible) and
+		(not gem.diggory_cracked) then
+			possible_cracks[#possible_cracks + 1] = gem
+		end
+	end
+
+	local total_crack_gems = math.ceil(#possible_cracks * CRACK_GEM_PERCENTAGE)
+	shuffle(possible_cracks)
+
+	for i = 1, total_crack_gems do
+		local gem = possible_cracks[i]
+		gem.diggory_cracked = true
+		this_turn_new_cracks[gem] = true
+	end
+
 	-- add alpha to gems
 	for gem in grid:basinGems(self.player_num) do
 		gem.force_max_alpha = true
 	end
 
+	-- add crack animation objects
 	local crack_delay = CRACK_START_TIME
 	for row = grid.BASIN_END_ROW, grid.BASIN_START_ROW, -1 do
 		for col in grid:cols(self.player_num) do
 			if grid[row][col].gem then
 				local gem = grid[row][col].gem
-				self.fx.crack.generate(game, self, gem, crack_delay)
+				if this_turn_new_cracks[gem] then
+					self.fx.crack.generate(game, self, gem, crack_delay)
+				end
 			end
 		end
 		crack_delay = crack_delay + CRACK_ROW_WAIT
