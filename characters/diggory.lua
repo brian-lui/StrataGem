@@ -189,6 +189,7 @@ function SuperAnimation.generate(game, owner, duration, delay)
 				h_flip = math.random() < 0.5,
 				v_flip = math.random() < 0.5,
 				owner = owner,
+				force_max_alpha = true,
 			})
 
 			p.transparency = 0
@@ -215,6 +216,7 @@ function SuperAnimation.generate(game, owner, duration, delay)
 				owner = owner,
 				h_flip = math.random() < 0.5,
 				v_flip = math.random() < 0.5,
+				force_max_alpha = true,
 			})
 
 			local x_vel = images.GEM_WIDTH * (math.random() - 0.5) * 12
@@ -272,7 +274,7 @@ function Clod:remove()
 	self.manager.allParticles.CharEffects[self.ID] = nil
 end
 
-function Clod.generate(game, owner, x, y, color, delay)
+function Clod.generate(game, owner, x, y, color, delay, force_max_alpha)
 	delay = delay or 0
 
 	-- decide the color
@@ -294,6 +296,7 @@ function Clod.generate(game, owner, x, y, color, delay)
 		color = color,
 		h_flip = math.random() < 0.5,
 		v_flip = math.random() < 0.5,
+		force_max_alpha = force_max_alpha,
 	})
 
 	local x_vel = images.GEM_WIDTH * (math.random() - 0.5) * 16
@@ -374,6 +377,7 @@ function Crack.generate(game, owner, gem, delay)
 		v_flip = math.random() < 0.5,
 		gem = gem,
 		transparency = 0,
+		force_max_alpha = true,
 	}
 
 	owner.crack_images[gem] = common.instance(Crack, game.particles, params)
@@ -382,7 +386,7 @@ function Crack.generate(game, owner, gem, delay)
 
 	-- generate clods
 	for _ = 2, 5 do
-		owner.fx.clod.generate(game, owner, gem.x, gem.y, gem.color, delay)
+		owner.fx.clod.generate(game, owner, gem.x, gem.y, gem.color, delay, true)
 	end
 end
 
@@ -419,6 +423,11 @@ function Diggory:_activateSuper()
 	local delay = self.fx.super_animation.generate(game, self, SUPER_DURATION, 0)
 
 	-- add cracks
+	-- add alpha to gems
+	for gem in grid:basinGems(self.player_num) do
+		gem.force_max_alpha = true
+	end
+
 	local crack_delay = CRACK_START_TIME
 	for row = grid.BASIN_END_ROW, grid.BASIN_START_ROW, -1 do
 		for col in grid:cols(self.player_num) do
@@ -456,7 +465,12 @@ function Diggory:beforeGravity()
 end
 
 function Diggory:beforeTween()
-	self.game:brightenScreen(self.player_num)
+	local game = self.game
+	local grid = game.grid
+
+	game:brightenScreen(self.player_num)
+	for _, crack in pairs(self.crack_images) do crack.force_max_alpha = nil end
+	for gem in grid:basinGems(self.player_num) do gem.force_max_alpha = nil end
 end
 
 function Diggory:afterGravity()
