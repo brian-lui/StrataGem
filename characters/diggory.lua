@@ -355,6 +355,9 @@ function Crack:update(dt)
 	Pic.update(self, dt)
 	self.x = self.gem.x
 	self.y = self.gem.y
+	if self.gem.is_destroyed then
+		self:remove()
+	end
 end
 
 function Crack.generate(game, owner, gem, delay)
