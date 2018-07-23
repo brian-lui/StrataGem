@@ -12,6 +12,7 @@ local common = require "class.commons"
 local images = require "images"
 local Pic = require "pic"
 local Character = require "character"
+local shuffle = require "/helpers/utilities".shuffle
 
 local Diggory = {}
 
@@ -148,19 +149,19 @@ PassiveClouds = common.class("PassiveClouds", PassiveClouds, Pic)
 
 -------------------------------------------------------------------------------
 -- these appear when super gets activated
-local SuperClouds = {}
-function SuperClouds:init(manager, tbl)
+local SuperAnimation = {}
+function SuperAnimation:init(manager, tbl)
 	Pic.init(self, manager.game, tbl)
 	local counter = self.game.inits.ID.particle
 	manager.allParticles.CharEffects[counter] = self
 	self.manager = manager
 end
 
-function SuperClouds:remove()
+function SuperAnimation:remove()
 	self.manager.allParticles.CharEffects[self.ID] = nil
 end
 
-function SuperClouds.generate(game, owner, duration, delay)
+function SuperAnimation.generate(game, owner, duration, delay)
 	delay = delay or 0
 	local grid = game.grid
 	local FADE_IN_DURATION = 15
@@ -180,7 +181,7 @@ function SuperClouds.generate(game, owner, duration, delay)
 	-- clouds
 	for i = 1, CLOUDS_PER_COL do
 		for col in grid:cols(owner.player_num) do
-			local p = common.instance(SuperClouds, game.particles, {
+			local p = common.instance(SuperAnimation, game.particles, {
 				x = grid.x[col] + (math.random() - 0.5) * images.GEM_WIDTH,
 				y = math.random(y_start, y_end),
 				image = cloud_image,
@@ -206,7 +207,7 @@ function SuperClouds.generate(game, owner, duration, delay)
 			local x = grid.x[col]
 			local y = (grid.y[grid.BASIN_END_ROW] + grid.y[grid.BASIN_END_ROW + 1]) * 0.5
 
-			local p = common.instance(SuperClouds, game.particles, {
+			local p = common.instance(SuperAnimation, game.particles, {
 				x = x,
 				y = y,
 				image = clod_image,
@@ -255,7 +256,7 @@ function SuperClouds.generate(game, owner, duration, delay)
 	end
 end
 
-SuperClouds = common.class("SuperClouds", SuperClouds, Pic)
+SuperAnimation = common.class("SuperAnimation", SuperAnimation, Pic)
 
 -------------------------------------------------------------------------------
 -- these are the parabola-ing clods
@@ -390,7 +391,7 @@ Crack = common.class("Crack", Crack, Pic)
 -------------------------------------------------------------------------------
 Diggory.fx = {
 	passive_clouds = PassiveClouds,
-	super_clouds = SuperClouds,
+	super_animation = SuperAnimation,
 	clod = Clod,
 	crack = Crack,
 }
@@ -415,7 +416,7 @@ function Diggory:_activateSuper()
 	local CRACK_ROW_WAIT = 5
 
 	-- super cloud animations
-	self.fx.super_clouds.generate(game, self, SUPER_DURATION, 0)
+	local delay = self.fx.super_animation.generate(game, self, SUPER_DURATION, 0)
 
 	-- add cracks
 	local crack_delay = CRACK_START_TIME
