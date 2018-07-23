@@ -408,7 +408,6 @@ function Diggory:init(...)
 	self.slammed_this_turn = false
 	self.slammy_particle_wait_time = 0
 	self.crack_images = {} -- Crack image objects
-	self.crack_gems = {} -- keep track of state
 end
 
 function Diggory:_activateSuper()
@@ -434,7 +433,6 @@ function Diggory:_activateSuper()
 			if grid[row][col].gem then
 				local gem = grid[row][col].gem
 				self.fx.crack.generate(game, self, gem, crack_delay)
-				self.crack_gems[gem] = true
 			end
 		end
 		crack_delay = crack_delay + CRACK_ROW_WAIT
