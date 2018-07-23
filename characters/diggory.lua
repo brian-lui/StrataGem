@@ -462,6 +462,8 @@ function Diggory:_activateSuper()
 	end
 
 	self:emptyMP()
+
+	return SUPER_DURATION
 end
 
 function Diggory:beforeGravity()
