@@ -823,6 +823,7 @@ function Grid:checkMatchedThisRound()
 			matched[2] = true
 		end
 	end
+
 	return matched
 end
 
@@ -867,6 +868,7 @@ end
 	damage: optional if false, don't deal damage
 	extra_damage: optional how much extra damage to do
 	credit_to: optional player_num (to deal damage to player_num's opponent)
+	delay: frames to wait before showing animation
 	glow_delay: optional extra frames to stay in full-glow phase
 	propagate_flags_up: optionally credit above gems to owner. Default true
 	force_max_alpha: optional force gem image to be bright
@@ -878,7 +880,8 @@ function Grid:destroyGem(params)
 	local gem = params.gem
 	local extra_damage = params.extra_damage or 0
 	local glow_delay = params.glow_delay or 0
-	local delay_until_explode = game.GEM_EXPLODE_FRAMES + glow_delay
+	local wait_delay = params.delay or 0
+	local delay_until_explode = game.GEM_EXPLODE_FRAMES + glow_delay + wait_delay
 	local damage_particle_duration = 0
 
 	if gem.is_destroyed or gem.indestructible then return 0, 0 end
@@ -964,7 +967,8 @@ function Grid:destroyGem(params)
 		game = game,
 		gem = gem,
 		glow_duration = glow_delay,
-		force_max_alpha = params.force_max_alpha
+		force_max_alpha = params.force_max_alpha,
+		delay_frames = wait_delay,
 	}
 	particles.gemImage.generate{
 		game = game,
@@ -989,6 +993,7 @@ function Grid:destroyGem(params)
 
 	-- state
 	gem.is_destroyed = true -- in case we try to destroy it again
+	gem.time_to_destruction = delay_until_explode -- for animation uses
 	self[gem.row][gem.column].gem = false
 
 	return delay_until_explode, damage_particle_duration
