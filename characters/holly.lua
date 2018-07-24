@@ -50,10 +50,18 @@ Holly.sounds = {
 
 function Holly:init(...)
 	Character.init(self, ...)
+
+	self.flower_images = {}
+	self.spore_images = {}
 end
 
 function Holly:beforeGravity()
 	-- gain super spore pods
+	--[[
+		spore is set to the gem as gem.holly_spore = self.player_num
+		spore image referenced in self.spore_images
+		spore class remove method has self.owner.spore_images[self.gem] = nil
+	--]]
 end
 
 function Holly:beforeMatch()
@@ -67,7 +75,12 @@ function Holly:duringMatch()
 end
 
 function Holly:afterMatch()
-	-- add a flower per match #
+	-- add a flower per match #:
+	--[[
+		flower is set to the gem as gem.holly_flower = self.player_num
+		flower image referenced in self.flower_images
+		flower class remove method has self.owner.flower_images[self.gem] = nil
+	--]]
 	-- set match # to 0
 end
 
