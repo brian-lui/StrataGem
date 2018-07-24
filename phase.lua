@@ -38,7 +38,6 @@ function Phase:reset()
 		self.INIT_ACTION_TIME = self.INIT_TIME_TO_NEXT
 	end
 	self.time_to_next = self.INIT_ACTION_TIME
-	print("time to next", self.time_to_next, self.game.type)
 end
 
 -------------------------------------------------------------------------------
@@ -67,7 +66,6 @@ function Phase:_pause(dt)
 		self.game.current_phase = self.next_phase
 		self.update_gravity_during_pause = nil
 		self.next_phase = nil
-		--print("New phase: " .. self.game.current_phase)
 	end
 end
 
@@ -303,9 +301,10 @@ function Phase:destroyMatchedGems(dt)
 	local game = self.game
 	local grid = game.grid
 
-	local p1match, p2match = grid:checkMatchedThisRound()
-	if p1match then self.last_match_round[1] = game.scoring_combo + 1 end
-	if p2match then self.last_match_round[2] = game.scoring_combo + 1 end
+	local matched = grid:checkMatchedThisRound()
+
+	if matched[1] then self.last_match_round[1] = game.scoring_combo + 1 end
+	if matched[2] then self.last_match_round[2] = game.scoring_combo + 1 end
 
 	local explode_delay, particle_duration = grid:destroyMatchedGems(game.scoring_combo)
 
