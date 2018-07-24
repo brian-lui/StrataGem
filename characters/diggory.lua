@@ -544,8 +544,9 @@ function Diggory:afterGravity()
 		local below_gem = grid[gem.row + 1][gem.column].gem
 		if below_gem then
 
-			if below_gem.color == "yellow" or below_gem.color == "none" or
-				below_gem.indestructible then
+			if (below_gem.color == "yellow" and not below_gem.diggory_cracked)
+			or below_gem.color == "none"
+			or below_gem.indestructible then
 				-- don't destroy below gem
 				self.slammy_gems[key] = nil
 			else
