@@ -438,7 +438,7 @@ function Diggory:_activateSuper()
 
 	for i = 1, total_crack_gems do
 		local gem = possible_cracks[i]
-		gem.diggory_cracked = true
+		gem.diggory_cracked = self.player_num
 		this_turn_new_cracks[gem] = true
 	end
 
