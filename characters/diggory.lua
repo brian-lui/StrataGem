@@ -359,8 +359,9 @@ function Crack:update(dt)
 	Pic.update(self, dt)
 	self.x = self.gem.x
 	self.y = self.gem.y
-	if self.gem.is_destroyed then
-		self:remove()
+	if self.gem.is_destroyed and not self.is_destroyed then
+		self.game.queue:add(self.gem.time_to_destruction, self.remove, self)
+		self.is_destroyed = true
 	end
 end
 
@@ -405,7 +406,6 @@ function Diggory:init(...)
 	Character.init(self, ...)
 
 	self.slammy_gems = {}
-	self.slammed_this_turn = false
 	self.slammy_particle_wait_time = 0
 	self.crack_images = {} -- Crack image objects
 	self.cracked_gems_to_destroy = {} -- set
@@ -488,9 +488,11 @@ function Diggory:_checkAndFlagCrackedGems(destroyed_gems)
 					if check == gem then in_a_match = true end
 				end
 
-				if gem.diggory_cracked and (not in_a_match) and
-				(not gem.indestructible) and (not gem.is_destroyed) and
-				(not (destr_gem.player_num == 3)) then
+				if gem.diggory_cracked == self.player_num
+				and (not in_a_match) and
+				and (not gem.indestructible) and
+				and (not gem.is_destroyed) and
+				and (not (destr_gem.player_num == 3)) then
 					gem:addOwner(destr_gem.player_num)
 					to_destroy[gem] = true
 				end
@@ -535,59 +537,72 @@ function Diggory:afterGravity()
 	local game = self.game
 	local grid = game.grid
 	local delay = 0
-	local go_to_gravity
+	local go_to_gravity = false
 
 	-- activate passive
-	if not self.slammed_this_turn then
-		for _, gem in pairs(self.slammy_gems) do
-			local below_gem = grid[gem.row + 1][gem.column].gem
-			if below_gem then
-				if below_gem.color ~= "yellow" then
-					local time_to_explode, particle_duration = grid:destroyGem{
-						gem = below_gem,
-						credit_to = self.player_num,
-					}
-					delay = math.max(delay, time_to_explode)
+	for key, gem in pairs(self.slammy_gems) do
+		local below_gem = grid[gem.row + 1][gem.column].gem
+		if below_gem then
 
-					-- clouds animation
-					self.fx.passive_clouds.generate(
+			if below_gem.color == "yellow" or below_gem.color == "none" or
+				below_gem.indestructible then
+				-- don't destroy below gem
+				self.slammy_gems[key] = nil
+			else
+				-- destroy the gem
+				local time_to_explode, particle_duration = grid:destroyGem{
+					gem = below_gem,
+					credit_to = self.player_num,
+				}
+				delay = math.max(delay, time_to_explode)
+
+				-- clouds animation
+				self.fx.passive_clouds.generate(
+					game,
+					self,
+					below_gem.x,
+					below_gem.y,
+					time_to_explode
+				)
+
+				-- clods animation
+				local min_clod, max_clod = 2, 5
+				if below_gem.diggory_cracked then
+					min_clod, max_clod = 20, 50
+				end
+				for _ = min_clod, max_clod do
+					self.fx.clod.generate(
 						game,
 						self,
 						below_gem.x,
 						below_gem.y,
+						"regular",
 						time_to_explode
 					)
-
-					-- clods animation
-					for _ = 2, 5 do
-						self.fx.clod.generate(
-							game,
-							self,
-							below_gem.x,
-							below_gem.y,
-							"regular",
-							time_to_explode
-						)
-					end
-
-					-- shaking
-					for _, i in ipairs{5, 20} do
-						game.queue:add(
-							i,
-							game.uielements.screenshake,
-							game.uielements,
-							1
-						)
-					end
-
-					self.slammy_particle_wait_time = particle_duration
-					go_to_gravity = true
 				end
-			end
-		end
 
-		self.slammy_gems = {}
-		self.slammed_this_turn = true
+				-- shaking
+				for _, i in ipairs{5, 20} do
+					game.queue:add(
+						i,
+						game.uielements.screenshake,
+						game.uielements,
+						1
+					)
+				end
+
+				-- power through if cracked gem, otherwise stop
+				if not below_gem.diggory_cracked then
+					self.slammy_gems[key] = nil
+				end
+
+				self.slammy_particle_wait_time = delay + particle_duration
+
+				go_to_gravity = true
+			end
+		else
+			self.slammy_gems[key] = nil
+		end
 	end
 
 	return delay, go_to_gravity
@@ -627,7 +642,6 @@ function Diggory:afterMatch()
 end
 
 function Diggory:cleanup()
-	self.slammed_this_turn = false
 	Character.cleanup(self)
 end
 
