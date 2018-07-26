@@ -183,7 +183,9 @@ function SmallFire:update(dt)
 		local new_image = self.owner.special_images.fire[image_turns][self.image_index]
 		self:newImageFadeIn(new_image, self.SWAP_FRAMES)
 	end
-	if self.turns_remaining <= 0 and self:isStationary() and not self.fading_out then
+	if self.turns_remaining <= 0
+	and self:isStationary()
+	and not self.fading_out then
 		self.owner.fx.smokes.generate(self.game, self.owner, self.x, self.y)
 		self:_fadeOut()
 	end

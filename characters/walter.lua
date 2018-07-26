@@ -706,7 +706,8 @@ function Walter:_cloudHealingDamage(delay)
 	local additional_delay = 0
 
 	for col in grid:cols() do
-		if self.cloud_turns_remaining[col] > 0 and not self.this_turn_column_healed[col] then
+		if self.cloud_turns_remaining[col] > 0
+		and not self.this_turn_column_healed[col] then
 			local x = grid.x[col]
 			local y = (grid.y[grid.BASIN_START_ROW] + grid.y[grid.BASIN_END_ROW]) * 0.5
 			local y_range = images.GEM_HEIGHT * 4

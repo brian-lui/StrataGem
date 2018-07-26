@@ -267,8 +267,10 @@ function gs_main:mousepressed(x, y)
 		local player = self.me_player
 		if not self.paused then
 			for i = 1, player.hand_size do
-				if player.hand[i].piece and pointIsInRect(x, y, player.hand[i].piece:getRect()) then
-					if self.current_phase == "Action" and player:canPlacePiece() then
+				if player.hand[i].piece
+				and pointIsInRect(x, y, player.hand[i].piece:getRect()) then
+					if self.current_phase == "Action"
+					and player:canPlacePiece() then
 						player.hand[i].piece:select()
 					else
 						self.active_piece = player.hand[i].piece
@@ -312,7 +314,8 @@ function gs_main:mousereleased(x, y)
 		end
 
 		local my_super = self.me_player.super_button
-		if pointIsInRect(x, y, my_super:getRect()) and gs_main.clicked == my_super then
+		if pointIsInRect(x, y, my_super:getRect())
+		and gs_main.clicked == my_super then
 			my_super:action()
 		end
 	end
@@ -322,7 +325,9 @@ end
 function gs_main:mousemoved(x, y)
 	if self.type ~= "Replay" then
 		local player = self.me_player
-		if self.active_piece and self.current_phase == "Action" and player:canPlacePiece() then
+		if self.active_piece
+		and self.current_phase == "Action"
+		and player:canPlacePiece() then
 			self.active_piece:change{x = x, y = y}
 		end
 	end

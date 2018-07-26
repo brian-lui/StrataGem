@@ -335,7 +335,8 @@ function Grid:flagMatchedGems()
 				local column = match.column
 				local gem = self[row][column].gem
 
-				-- special case: chain combos ignore flags from non-original gems, if opponent made a match last turn
+				-- special case: chain combos ignore flags from non-original gems,
+				-- if opponent made a match last turn
 				if self.game.scoring_combo == 0 then
 					if gem.player_num == 1 then
 						this_match_p1 = true

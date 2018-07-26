@@ -489,9 +489,9 @@ function Diggory:_checkAndFlagCrackedGems(destroyed_gems)
 				end
 
 				if gem.diggory_cracked == self.player_num
-				and (not in_a_match) and
-				and (not gem.indestructible) and
-				and (not gem.is_destroyed) and
+				and (not in_a_match)
+				and (not gem.indestructible)
+				and (not gem.is_destroyed)
 				and (not (destr_gem.player_num == 3)) then
 					gem:addOwner(destr_gem.player_num)
 					to_destroy[gem] = true

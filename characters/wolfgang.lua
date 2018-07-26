@@ -807,7 +807,8 @@ function Wolfgang:update(dt)
 	-- glowing bad dogs
 	for dog, turns_remaining in pairs(self.bad_dogs) do
 		local actual_turns_remaining = math.min(turns_remaining + 1, 3) -- lol
-		if bad_dog_anim and self.bad_dog_counter % actual_turns_remaining == 0 then
+		if bad_dog_anim
+		and self.bad_dog_counter % actual_turns_remaining == 0 then
 			self:_badDogAnimation(dog, actual_turns_remaining)
 		end
 		if dog:isStationary() then dog:update(dt) end
@@ -828,11 +829,13 @@ function Wolfgang:actionPhase()
 
 		for gem in piece:getGems() do
 			if gem.color == "wild" then
-				if place_type == "rush" and gem.image == gem.good_dog_image then
+				if place_type == "rush"
+				and gem.image == gem.good_dog_image then
 					gem:newImage(gem.bad_dog_image)
 					self.good_dogs[gem] = nil
 					self.bad_dogs[gem] = self.BAD_DOG_DURATION
-				elseif place_type ~= "rush" and gem.image == gem.bad_dog_image then
+				elseif place_type ~= "rush"
+				and gem.image == gem.bad_dog_image then
 					gem:newImage(gem.good_dog_image)
 					self.good_dogs[gem] = true
 					self.bad_dogs[gem] = nil

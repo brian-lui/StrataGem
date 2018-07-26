@@ -398,7 +398,8 @@ function Hand:canPlacePiece()
 		return false
 	elseif placed_piece == "rushed" or placed_piece == "doubled" then
 		return false
-	elseif placed_piece == "normal" and player.cur_burst < player.current_double_cost then
+	elseif placed_piece == "normal"
+	and player.cur_burst < player.current_double_cost then
 		return false
 	else
 		return true

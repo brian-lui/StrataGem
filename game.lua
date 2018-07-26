@@ -693,7 +693,10 @@ function Game:deserializeState(state_string)
 				local color_abbrev = p1_hand[i]:sub(gem_idx, gem_idx)
 				local color = color_table[color_abbrev]
 
-				if color == "red" or color == "blue" or color == "green" or color == "yellow" then
+				if color == "red"
+				or color == "blue"
+				or color == "green"
+				or color == "yellow" then
 					gem_replace_table[gem_idx] = {color = color}
 				elseif color == "wild" or color == "none" then
 					gem_replace_table[gem_idx] = {
@@ -726,7 +729,10 @@ function Game:deserializeState(state_string)
 				local color_abbrev = p2_hand[i]:sub(gem_idx, gem_idx)
 				local color = color_table[color_abbrev]
 
-				if color == "red" or color == "blue" or color == "green" or color == "yellow" then
+				if color == "red"
+				or color == "blue"
+				or color == "green"
+				or color == "yellow" then
 					gem_replace_table[gem_idx] = {color = color}
 				elseif color == "wild" or color == "none" then
 					gem_replace_table[gem_idx] = {
@@ -1177,7 +1183,8 @@ function Game:_mousereleased(x, y, gamestate)
 	if self.settings_menu_open then
 		for _, button in pairs(gamestate.ui.popup_clickable) do
 			if gamestate.clicked == button then button:released() end
-			if pointIsInRect(x, y, button:getRect()) and gamestate.clicked == button then
+			if pointIsInRect(x, y, button:getRect())
+			and gamestate.clicked == button then
 				button.action()
 				break
 			end
@@ -1185,7 +1192,8 @@ function Game:_mousereleased(x, y, gamestate)
 	else
 		for _, button in pairs(gamestate.ui.clickable) do
 			if gamestate.clicked == button then button:released() end
-			if pointIsInRect(x, y, button:getRect()) and gamestate.clicked == button then
+			if pointIsInRect(x, y, button:getRect())
+			and gamestate.clicked == button then
 				button.action()
 				break
 			end

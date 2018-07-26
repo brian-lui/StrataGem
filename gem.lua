@@ -97,7 +97,10 @@ function Gem:setColor(color, gem_image, exploding_gem, grey_exploding_gem, pop_p
 		self:newImage(new_image)
 	end
 
-	if color ~= "red" and color ~= "blue" and color ~= "green" and color ~= "yellow" then
+	if color ~= "red"
+	and color ~= "blue"
+	and color ~= "green"
+	and color ~= "yellow" then
 		assert(exploding_gem, "No exploding_gem_image for custom color")
 		assert(grey_exploding_gem, "No grey_exploding_gem_image for custom color")
 		assert(pop_particle, "No pop_particle_image for custom color")
