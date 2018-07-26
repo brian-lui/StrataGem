@@ -36,12 +36,41 @@ Holly.super_images = {
 	empty = images.ui_super_empty_green,
 	full = images.ui_super_full_green,
 	glow = images.ui_super_glow_green,
-	overlay = love.graphics.newImage('images/dummy.png'),
+	overlay = love.graphics.newImage('images/characters/holly/hollylogo.png'),
 }
 Holly.burst_images = {
 	partial = images.ui_burst_part_green,
 	full = images.ui_burst_full_green,
 	glow = {images.ui_burst_partglow_green, images.ui_burst_fullglow_green}
+}
+
+Holly.special_images = {
+	red = {
+		flower = love.graphics.newImage('images/characters/holly/redflower.png'),
+		petala = love.graphics.newImage('images/characters/holly/redpetala.png'),
+		petalb = love.graphics.newImage('images/characters/holly/redpetalb.png'),
+		rage = love.graphics.newImage('images/characters/holly/redrage.png'),
+	},
+	blue = {
+		flower = love.graphics.newImage('images/characters/holly/blueflower.png'),
+		petala = love.graphics.newImage('images/characters/holly/bluepetala.png'),
+		petalb = love.graphics.newImage('images/characters/holly/bluepetalb.png'),
+		rage = love.graphics.newImage('images/characters/holly/bluerage.png'),
+	},
+	green = {
+		flower = love.graphics.newImage('images/characters/holly/greenflower.png'),
+		petala = love.graphics.newImage('images/characters/holly/greenpetala.png'),
+		petalb = love.graphics.newImage('images/characters/holly/greenpetalb.png'),
+		rage = love.graphics.newImage('images/characters/holly/greenrage.png'),
+	},
+	yellow = {
+		flower = love.graphics.newImage('images/characters/holly/yellowflower.png'),
+		petala = love.graphics.newImage('images/characters/holly/yellowpetala.png'),
+		petalb = love.graphics.newImage('images/characters/holly/yellowpetalb.png'),
+		rage = love.graphics.newImage('images/characters/holly/yellowrage.png'),
+	},
+	spore_pod = love.graphics.newImage('images/characters/holly/sporepod.png'),
+	stem = love.graphics.newImage('images/characters/holly/stem.png'),
 }
 
 Holly.sounds = {
@@ -56,6 +85,7 @@ function Holly:init(...)
 end
 
 function Holly:beforeGravity()
+	-- Super 1
 	-- gain super spore pods
 	--[[
 		spore is set to the gem as gem.holly_spore = self.player_num
@@ -64,27 +94,36 @@ function Holly:beforeGravity()
 	--]]
 end
 
+
 function Holly:beforeMatch()
+	-- Passive 1
 	-- store a record of number of matches
 end
 
 function Holly:duringMatch()
+	-- Passive 4
 	-- apply flower heal/damage
+
+	-- Super 3
 	--[[ if a match contains both player's spores, grey match. otherwise,
 	if a match contains a spore, force it to be flagged for the opponent]]
 end
 
 function Holly:afterMatch()
+	-- Passive 2
 	-- add a flower per match #:
 	--[[
 		flower is set to the gem as gem.holly_flower = self.player_num
 		flower image referenced in self.flower_images
 		flower class remove method has self.owner.flower_images[self.gem] = nil
 	--]]
+
+	-- Passive 3
 	-- set match # to 0
 end
 
 function Holly:cleanup()
+	-- Super 2
 	-- countdown spores and disappear ones that reach 0 turns remaining
 	Character.cleanup(self)
 end
