@@ -360,7 +360,19 @@ function Crack:update(dt)
 	self.x = self.gem.x
 	self.y = self.gem.y
 	if self.gem.is_destroyed and not self.is_destroyed then
-		self.game.queue:add(self.gem.time_to_destruction, self.remove, self)
+		local game = self.game
+		local end_time = self.gem.time_to_destruction
+		local start_time = math.max(0, end_time - game.GEM_EXPLODE_FRAMES)
+
+		self:wait(end_time)
+		self:change{
+			duration = game.GEM_EXPLODE_FRAMES,
+			scaling = 2,
+			transparency = 0,
+			remove = true,
+		}
+
+		--game.queue:add(end_time, self.remove, self)
 		self.is_destroyed = true
 	end
 end
