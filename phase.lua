@@ -31,7 +31,7 @@ function Phase:reset()
 	self.garbage_this_round = 0
 	self.force_minimum_1_piece = true -- get at least 1 piece per turn
 	self.update_gravity_during_pause = false
-	self.damage_particle_duration = 0 -- for ResolvedMatches phase
+	self.damage_particle_duration = 0 -- for AfterAllMatches phase
 	if self.game.type == "Replay" then
 		self.INIT_ACTION_TIME = self.INIT_TIME_TO_NEXT_REPLAY
 	else
@@ -292,7 +292,7 @@ function Phase:getMatchedGems(dt)
 	else
 		self:setPause(math.max(delay, self.damage_particle_duration))
 		self.damage_particle_duration = 0
-		self:activatePause("ResolvedMatches")
+		self:activatePause("AfterAllMatches")
 	end
 end
 
@@ -316,11 +316,11 @@ function Phase:destroyMatchedGems(dt)
 	local total_delay = math.max(delay, explode_delay + particle_duration)
 
 	self:setPause(delay)
-	self:activatePause("ResolvingMatches")
+	self:activatePause("AfterMatch")
 	self.damage_particle_duration = total_delay
 end
 
-function Phase:resolvingMatches(dt)
+function Phase:afterMatch(dt)
 	local game = self.game
 	local grid = game.grid
 
@@ -343,7 +343,7 @@ function Phase:resolvingMatches(dt)
 	self:activatePause("DuringGravity")
 end
 
-function Phase:resolvedMatches(dt)
+function Phase:afterAllMatches(dt)
 	local game = self.game
 	local grid = game.grid
 
@@ -593,8 +593,8 @@ Phase.lookup = {
 	AfterGravity = Phase.afterGravity,
 	GetMatchedGems = Phase.getMatchedGems,
 	DestroyMatchedGems = Phase.destroyMatchedGems,
-	ResolvingMatches = Phase.resolvingMatches,
-	ResolvedMatches = Phase.resolvedMatches,
+	AfterMatch = Phase.afterMatch,
+	AfterAllMatches = Phase.afterAllMatches,
 	PlatformSpinDelay = Phase.platformSpinDelay,
 	DestroyDamagedPlatforms = Phase.destroyDamagedPlatforms,
 	GarbageRowCreation = Phase.garbageRowCreation,
