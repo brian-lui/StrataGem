@@ -76,6 +76,7 @@ end
 
 -------------------------------------------------------------------------------
 
+-- Start of match phase. Delay is set within function
 function Phase:intro(dt)
 	local game = self.game
 	local ready_delay = 30
@@ -93,6 +94,7 @@ function Phase:intro(dt)
 	self:activatePause("Action")
 end
 
+-- Active phase. Time here is set in self.time_to_next
 function Phase:action(dt)
 	local game = self.game
 	local ai = game.ai
@@ -126,6 +128,7 @@ function Phase:action(dt)
 	end
 end
 
+-- Netplay only: send delta to opponent. Instant
 function Phase:netplaySendDelta(dt)
 	local game = self.game
 	local client = game.client
@@ -159,6 +162,8 @@ function Phase:netplayWaitForDelta(dt)
 	end
 end
 
+-- Deltas are ready and get played.
+-- Delay here is from player.hand:afterActionPhaseUpdate()
 function Phase:resolve(dt)
 	local game = self.game
 
@@ -177,6 +182,8 @@ function Phase:resolve(dt)
 	game.inputs_frozen = true
 end
 
+-- If super(s) was activated, it is played in this phase.
+-- Delay is from character's superSlideInAnim(), doubled if both are supering
 function Phase:superFreeze(dt)
 	local game = self.game
 	local p1delay, p2delay = 0, 0
@@ -192,6 +199,8 @@ function Phase:superFreeze(dt)
 	self:activatePause("BeforeGravity")
 end
 
+-- Player actions before this turn's gems fall. Often used for supers
+-- Delay is from player:beforeGravity()
 function Phase:beforeGravity(dt)
 	local game = self.game
 	local delay = 0
@@ -205,6 +214,8 @@ function Phase:beforeGravity(dt)
 	self:activatePause("GemTween", true)
 end
 
+-- Gems fall from top of screen into intermediate location ABOVE basin.
+-- Delay is max(gem:getAnimFrames(), player:beforeTween())
 function Phase:applyGemTween(dt)
 	local game = self.game
 	local grid = game.grid
@@ -224,6 +235,8 @@ function Phase:applyGemTween(dt)
 	self:activatePause("DuringGravity", true)
 end
 
+-- Gems fall from intermediate location into landing position in basin.
+-- Delay is max(grid:dropColumns(), player:duringTween())
 function Phase:duringGravity(dt)
 	local game = self.game
 	local delay = 0
@@ -240,6 +253,9 @@ function Phase:duringGravity(dt)
 	self:activatePause("AfterGravity", true)
 end
 
+-- Any player effects after gems have landed but before matches.
+-- Player effects can optionally redirect to DuringGravity phase.
+-- Delay is player:afterGravity()
 function Phase:afterGravity(dt)
 	local game = self.game
 	local grid = game.grid
@@ -267,6 +283,16 @@ function Phase:afterGravity(dt)
 	game.debugconsole:saveScreencap()
 end
 
+--[[ Calculate the gem matches for this round.
+If match:
+	goes to DestroyMatchedGems.
+	delay is player:beforeMatch()
+If no match:
+	goes to AfterAllMatches.
+	Delay is max(self.damage_particle_duration, player:beforeMatch())
+	self.damage_particle_duration is set in DestroyMatchedGems phase, and
+	represents time until all damage particles have arrived at platforms
+--]]
 function Phase:getMatchedGems(dt)
 	local game = self.game
 	local grid = game.grid
@@ -296,7 +322,10 @@ function Phase:getMatchedGems(dt)
 	end
 end
 
--- destroy matched gems, and create the gems-being-exploded animation
+-- Destroy matched gems, and create the gems-being-exploded animation.
+-- Only accessed if there was a match this round.
+-- Delay is grid:destroyMatchedGems explode_delay
+-- Also sets self.damage_particle_duration to time until damage particles land
 function Phase:destroyMatchedGems(dt)
 	local game = self.game
 	local grid = game.grid
@@ -320,6 +349,8 @@ function Phase:destroyMatchedGems(dt)
 	self.damage_particle_duration = total_delay
 end
 
+-- Player effects after a match. Only accessed if there was a match this round.
+-- Delay is player:afterMatch()
 function Phase:afterMatch(dt)
 	local game = self.game
 	local grid = game.grid
@@ -343,6 +374,10 @@ function Phase:afterMatch(dt)
 	self:activatePause("DuringGravity")
 end
 
+-- Player effects after all matches finished.
+-- Always accessed once, can be accessed multiple times if garbage makes match.
+-- Player effects can optionally redirect to DuringGravity phase.
+-- Delay is player:afterAllMatches() + self.PLATFORM_SPIN_DELAY (if destroyed)
 function Phase:afterAllMatches(dt)
 	local game = self.game
 	local grid = game.grid
@@ -383,6 +418,12 @@ function Phase:afterAllMatches(dt)
 	self:activatePause(next_phase)
 end
 
+--[[ Destroy fully red playforms.
+Delay is:
+Max of
+	(hand:destroyDamagedPlatforms()	+ consecutive platform destruction delays),
+	game.EXPLODING_PLATFORM_FRAMES,
+--]]
 function Phase:destroyDamagedPlatforms(dt)
 	local game = self.game
 	local grid = game.grid
@@ -406,6 +447,8 @@ function Phase:destroyDamagedPlatforms(dt)
 	self:activatePause("GarbageRowCreation")
 end
 
+-- Instantly create garbage row(s).
+-- Delay is player:whenCreatingGarbageRow()
 function Phase:garbageRowCreation(dt)
 	local game = self.game
 	local grid = game.grid
@@ -424,6 +467,9 @@ function Phase:garbageRowCreation(dt)
 	end
 end
 
+-- Move garbage rows up.
+-- Delay until grid settled.
+-- TODO: change to a fixed frame amount
 function Phase:garbageMoving(dt)
 	local game = self.game
 	local grid = game.grid
@@ -435,6 +481,7 @@ function Phase:garbageMoving(dt)
 	end
 end
 
+-- Instantly get new turn pieces, no delay.
 function Phase:getHandPieces(dt)
 	for player in self.game:players() do
 		player.hand:createNewTurnPieces(self.force_minimum_1_piece)
@@ -444,6 +491,10 @@ function Phase:getHandPieces(dt)
 	self:setPhase("PlatformsMoving")
 end
 
+-- Move platforms and pieces up after creating them.
+-- If garbage was created this round, go to DuringGravity.
+-- Delay is until player.hand:isSettled() then player:beforeCleanup().
+-- TODO: change to a fixed frame amount
 function Phase:platformsMoving(dt)
 	local game = self.game
 	local grid = game.grid
@@ -470,6 +521,8 @@ function Phase:platformsMoving(dt)
 	end
 end
 
+-- Game and player cleanup phase.
+-- Delay is player:cleanup()
 function Phase:cleanup(dt)
 	local game = self.game
 	local grid = game.grid
@@ -519,6 +572,7 @@ function Phase:cleanup(dt)
 	end
 end
 
+-- Netplay only phase, sends state to opponent. No delay
 function Phase:netplaySendState(dt)
 	local game = self.game
 	game.client:writeState()
@@ -526,6 +580,7 @@ function Phase:netplaySendState(dt)
 	self:setPhase("NetplayWaitForState")
 end
 
+-- Netplay only phase, wait for opponent state here.
 function Phase:netplayWaitForState(dt)
 	local game = self.game
 	local client = game.client
@@ -537,6 +592,7 @@ function Phase:netplayWaitForState(dt)
 	end
 end
 
+-- Netplay new turn, runs client:newTurn() in addition to other stuff.
 function Phase:netplayNewTurn(dt)
 	local game = self.game
 	local client = game.client
@@ -552,12 +608,15 @@ function Phase:netplayNewTurn(dt)
 	end
 end
 
+-- Singleplayer new turn, runs game:newTurn().
 function Phase:singleplayerNewTurn(dt)
 	local game = self.game
 	game:newTurn()
 	self:setPhase("Action")
 end
 
+-- Gameover phase.
+-- Currently delay is self.GAMEOVER_DELAY.
 function Phase:gameOver(dt)
 	local game = self.game
 	game.grid:animateGameOver(game.grid:getLoser())
