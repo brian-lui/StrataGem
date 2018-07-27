@@ -340,8 +340,6 @@ Clod = common.class("Clod", Clod, Pic)
 
 -------------------------------------------------------------------------------
 -- these are the cracks for gems
-
----[[
 local Crack = {}
 function Crack:init(manager, tbl)
 	Pic.init(self, manager.game, tbl)
@@ -427,7 +425,7 @@ function Diggory:_activateSuper()
 	local game = self.game
 	local grid = game.grid
 
-	local CRACK_GEM_PERCENTAGE = 0.4
+	local CRACK_GEM_PERCENTAGE = 0.5
 	local SUPER_DURATION = 120
 	local CRACK_START_TIME = 30
 	local CRACK_ROW_WAIT = 10
