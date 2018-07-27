@@ -513,6 +513,29 @@ function Diggory:_checkAndFlagCrackedGems(destroyed_gems)
 	return to_destroy
 end
 
+-- destroys the flagged gems. Put it in a function so we can move it around
+-- updates phase.damage_particle_duration
+function Diggory:_destroyFlaggedGems()
+	local game = self.game
+	local phase = game.phase
+	local grid = game.grid
+	local max_delay, max_particle_duration = 0, 0
+
+	for gem in pairs(self.cracked_gems_to_destroy) do
+		local explode_delay, particle_duration = grid:destroyGem{
+			gem = gem,
+			glow_delay = game.GEM_EXPLODE_FRAMES,
+		}
+		max_delay = math.max(max_delay, explode_delay)
+		max_particle_duration = math.max(max_particle_duration, particle_duration)
+	end
+
+	self.cracked_gems_to_destroy = {}
+
+	phase.damage_particle_duration = math.max(phase.damage_particle_duration, max_particle_duration)
+	return max_delay
+end
+
 function Diggory:beforeGravity()
 	local game = self.game
 	local grid = game.grid
@@ -622,34 +645,18 @@ end
 function Diggory:beforeMatch()
 	local grid = self.game.grid
 
-	local ret = self.slammy_particle_wait_time
+	local delay = self.slammy_particle_wait_time
 	self.slammy_particle_wait_time = 0
 
 	local matched_gems = grid:getMatchedGems()
 	self.cracked_gems_to_destroy = self:_checkAndFlagCrackedGems(matched_gems)
 
-	return ret
+	return delay
 end
 
-function Diggory:afterMatch()
-	local game = self.game
-	local phase = game.phase
-	local grid = game.grid
-	local max_delay, max_particle_duration = 0, 0
-
-	for gem in pairs(self.cracked_gems_to_destroy) do
-		local explode_delay, particle_duration = grid:destroyGem{
-			gem = gem,
-			glow_delay = game.GEM_EXPLODE_FRAMES,
-		}
-		max_delay = math.max(max_delay, explode_delay)
-		max_particle_duration = math.max(max_particle_duration, particle_duration)
-	end
-
-	self.cracked_gems_to_destroy = {}
-
-	phase.damage_particle_duration = math.max(phase.damage_particle_duration, max_particle_duration)
-	return max_delay
+function Diggory:duringMatch()
+	local delay = self:_destroyFlaggedGems()
+	return delay	
 end
 
 function Diggory:cleanup()
