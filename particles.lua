@@ -1315,14 +1315,15 @@ end
 
 --[[ The circular particles on garbage creation
 	mandatory: game, either gem or [x, y, color]. [x, y, color] takes priority
-	optional: num (number of particles), duration, delay_frames, force_max_alpha
+	optional: num (number of particles), duration, delay_frames,
+		force_max_alpha, image
 --]]
 function Dust.generateGarbageCircle(params)
 	local game = params.game
 	local num = params.num or 8
 	local x_dest = params.x or params.gem.x
 	local y_dest = params.y or params.gem.y
-	local image = images.lookup.stardust(params.color or params.gem.color)
+	local image = params.image or images.lookup.stardust(params.color or params.gem.color)
 	local distance = images.GEM_WIDTH * (math.random() + 1)
 	local fade_in_duration = 10
 	local duration = (params.duration or game.GEM_EXPLODE_FRAMES) - fade_in_duration
