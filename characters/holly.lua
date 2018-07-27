@@ -15,6 +15,7 @@ local love = _G.love
 local common = require "class.commons"
 local Character = require "character"
 local images = require "images"
+local shuffle = require "/helpers/utilities".shuffle
 
 local Holly = {}
 
@@ -77,11 +78,142 @@ Holly.sounds = {
 	bgm = "bgm_holly",
 }
 
+
+-------------------------------------------------------------------------------
+-- these are the flowers that appear whenever Holly makes a match
+--[[
+-Flowers appear in a "garbage" way. In addition to dust, also include some
+petala and petalb of the appropriate color.
+
+FLOWERS DANCE WHILE ACTIVE
+
+-A flower consists of two parts. stem (same for all colors) and flower. stem
+should appear with the bottom pixel at the bottom of the square. flower appears
+in the middle of the square.
+
+-Flowers dance while active.
+
+-Blue and Red dance by alternating between [150% height and 75% width], [100%
+height and 100% width], and [75% heigth and 150% width].
+
+-Yellow and Green dance by slowly rotating.
+
+WHEN A FLOWER EXPLODES
+
+-See attached "petal explosion" diagram
+
+Damage sent by flower should be made up of attack particles AND the addition of
+some petala and petalb of the appropriate color.
+--]]
+--[[
+Garbage way:
+	-- garbage circle particles
+	game.particles.dust.generateGarbageCircle{
+		game = game,
+		gem = gem,
+		delay_frames = delay,
+	}
+	game.particles.dust.generateGarbageCircle{
+		game = game,
+		gem = gem,
+		image = petala/petalb,
+		delay_frames = delay,
+		num = 4,
+	}
+
+--]]
+---[[
+local Flower = {}
+function Flower:init(manager, tbl)
+	Pic.init(self, manager.game, tbl)
+	local counter = self.game.inits.ID.particle
+	manager.allParticles.CharEffects[counter] = self
+	self.manager = manager
+end
+
+function Flower:remove()
+	self.manager.allParticles.CharEffects[self.ID] = nil
+	self.owner.flower_images[self.gem] = nil
+end
+
+function Flower:update(dt)
+	Pic.update(self, dt)
+	self.x = self.gem.x
+	self.y = self.gem.y
+	if self.gem.is_destroyed and not self.is_destroyed then
+		local game = self.game
+		local end_time = self.gem.time_to_destruction
+		local start_time = math.max(0, end_time - game.GEM_EXPLODE_FRAMES)
+
+		self:wait(end_time)
+		self:change{
+			duration = game.GEM_EXPLODE_FRAMES,
+			scaling = 2,
+			transparency = 0,
+			remove = true,
+		}
+
+		--game.queue:add(end_time, self.remove, self)
+		self.is_destroyed = true
+	end
+end
+
+function Flower.generate(game, owner, gem, delay)
+	local params = {
+		x = gem.x,
+		y = gem.y,
+		image = owner.special_images.flower,
+		owner = owner,
+		draw_order = 1,
+		player_num = owner.player_num,
+		name = "HollyFlower",
+		h_flip = math.random() < 0.5,
+		v_flip = math.random() < 0.5,
+		gem = gem,
+		transparency = 0,
+		force_max_alpha = true,
+	}
+
+	owner.flower_images[gem] = common.instance(Flower, game.particles, params)
+	owner.flower_images[gem]:wait(delay)
+	owner.flower_images[gem]:change{duration = 0, transparency = 1}
+
+	-- generate garbage appear circle with extra petals
+	game.particles.dust.generateGarbageCircle{
+		game = game,
+		gem = gem,
+		--delay_frames = delay,
+	}
+	game.particles.dust.generateGarbageCircle{
+		game = game,
+		gem = gem,
+		"image = petala",
+		--delay_frames = delay,
+		num = 4,
+	}	
+	game.particles.dust.generateGarbageCircle{
+		game = game,
+		gem = gem,
+		"image = petalb",
+		--delay_frames = delay,
+		num = 4,
+	}	
+end
+
+Flower = common.class("Flower", Flower, Pic)
+--]]
+-------------------------------------------------------------------------------
+Holly.fx = {
+	flower = Flower,
+}
+
+
 function Holly:init(...)
 	Character.init(self, ...)
 
 	self.flower_images = {}
 	self.spore_images = {}
+	self.matches_made = 0
 end
 
 function Holly:beforeGravity()
@@ -96,8 +228,20 @@ end
 
 
 function Holly:beforeMatch()
-	-- Passive 1
-	-- store a record of number of matches
+	local game = self.game
+	local grid = game.grid
+
+	-- Passive: get the number of matches made that belong to us
+	local match_lists = grid:getMatchedGemLists()
+	for _, list in ipairs(match_lists) do
+		local owned_by_me = false
+		for _, gem in ipairs(list) do
+			if gem.player_num == self.player_num then owned_by_me = true end
+		end
+
+		if owned_by_me then self.matches_made = self.matches_made + 1 end
+	end
+	print("HOLLY made " .. self.matches_made .. " matches this round.")
 end
 
 function Holly:duringMatch()
@@ -110,16 +254,31 @@ function Holly:duringMatch()
 end
 
 function Holly:afterMatch()
-	-- Passive 2
-	-- add a flower per match #:
-	--[[
-		flower is set to the gem as gem.holly_flower = self.player_num
-		flower image referenced in self.flower_images
-		flower class remove method has self.owner.flower_images[self.gem] = nil
-	--]]
+	local game = self.game
+	local grid = game.grid
+	local FLOWER_DELAY = 10
+	-- Passive: For each match, a random gem in your basin gains a flower mark
+	-- Get all eligible gems
+	local eligible_gems = {}
+	for gem in grid:basinGems(self.player_num) do
+		if gem.color ~= "none" and not gem.indestructible then
+			eligible_gems[#eligible_gems + 1] = gem
+		end
+	end
+	shuffle(eligible_gems, game.rng)
 
-	-- Passive 3
-	-- set match # to 0
+	-- add the flowers
+	for i = 1, self.matches_made do
+		if eligible_gems[i] then
+			print("HOLLY is adding a flower now.")
+			local gem = eligible_gems[i]
+			gem.holly_flower = self.player_num 
+
+			self.fx.flower.generate(game, self, gem, FLOWER_DELAY)
+		end
+	end
+
+	self.matches_made = 0
 end
 
 function Holly:cleanup()
