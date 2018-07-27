@@ -444,7 +444,7 @@ function Diggory:_activateSuper()
 	end
 
 	local total_crack_gems = math.ceil(#possible_cracks * CRACK_GEM_PERCENTAGE)
-	shuffle(possible_cracks)
+	shuffle(possible_cracks, game.rng)
 
 	for i = 1, total_crack_gems do
 		local gem = possible_cracks[i]
