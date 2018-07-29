@@ -644,11 +644,13 @@ end
 
 function Diggory:beforeMatch()
 	local grid = self.game.grid
+	local delay = 0
 
-	local delay = self.slammy_particle_wait_time
+	local matched_gems, matches = grid:getMatchedGems()
+
+	if matches == 0 then delay = self.slammy_particle_wait_time end
 	self.slammy_particle_wait_time = 0
 
-	local matched_gems = grid:getMatchedGems()
 	self.cracked_gems_to_destroy = self:_checkAndFlagCrackedGems(matched_gems)
 
 	return delay
@@ -656,7 +658,7 @@ end
 
 function Diggory:duringMatch()
 	local delay = self:_destroyFlaggedGems()
-	return delay	
+	return delay
 end
 
 function Diggory:cleanup()
