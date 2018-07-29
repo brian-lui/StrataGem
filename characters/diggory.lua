@@ -576,8 +576,15 @@ function Diggory:afterGravity()
 	for key, gem in pairs(self.slammy_gems) do
 		local below_gem = grid[gem.row + 1][gem.column].gem
 		if below_gem then
+			-- check if below gem is involved in match
+			local match_gems = grid:getMatchedGems()
+			local in_a_match = false
+			for _, match_gem in ipairs(match_gems) do
+				if below_gem == match_gem then in_a_match = true end
+			end
 
 			if (below_gem.color == "yellow" and not below_gem.diggory_cracked)
+			or in_a_match
 			or below_gem.color == "none"
 			or below_gem.indestructible then
 				-- don't destroy below gem
