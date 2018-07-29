@@ -367,11 +367,12 @@ function VersusSplash:update(dt)
 end
 
 function VersusSplash:draw()
+	local darkened = self:isScreenDark()
+
+	VersusSplash.current_background:draw{darkened = darkened}
+
 	self.camera:set(1, 1)
 		self.uielements:setCameraScreenshake(self.private_framecount)
-		local darkened = self:isScreenDark()
-
-		VersusSplash.current_background:draw{darkened = darkened}
 
 		local todraw = {
 			self.p1_shadow_pose, self.p2_shadow_pose,
