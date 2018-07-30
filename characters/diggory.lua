@@ -497,8 +497,8 @@ function Diggory:_checkAndFlagCrackedGems(destroyed_gems)
 				for _, check in pairs(destroyed_gems) do
 					if check == gem then in_a_match = true end
 				end
-
-				if gem.diggory_cracked == self.player_num
+				if gem.diggory_cracked == self.player_num -- it's our crack
+				and destr_gem.player_num == self.player_num -- it's our match
 				and (not in_a_match)
 				and (not gem.indestructible)
 				and (not gem.is_destroyed)
