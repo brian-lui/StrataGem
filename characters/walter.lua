@@ -555,29 +555,26 @@ end
 HealingColumnAura = common.class("HealingColumnAura", HealingColumnAura, Pic)
 
 -------------------------------------------------------------------------------
-local MatchDroplets = {}
-function MatchDroplets:init(manager, tbl)
+local MatchDust = {}
+function MatchDust:init(manager, tbl)
 	Pic.init(self, manager.game, tbl)
 	local counter = self.game.inits.ID.particle
 	manager.allParticles.CharEffects[counter] = self
 	self.manager = manager
 end
 
-function MatchDroplets:remove()
+function MatchDust:remove()
 	self.manager.allParticles.CharEffects[self.ID] = nil
 end
 
-function MatchDroplets.generate(game, owner, match_list)
+function MatchDust.generate(game, owner, match_list)
 	local grid = game.grid
 	local stage = game.stage
 	local TIME_TO_DEST = 120
-	--local dust_color = match_list[1].color
-	--local image = images.lookup.smalldust(dust_color, false)
-	--assert(image, "Invalid color specified for dust")
+	local dust_color = match_list[1].color
+	local image = images.lookup.smalldust(dust_color, false)
+	assert(image, "Invalid color specified for dust")
 
-	local droplet_table = {1, 1, 1, 1, 1, 1, 1, 2, 2, 3}
-
-	-- droplets
 	for i = 1, #match_list do
 		for j = 1, 40 do
 			local row, col = match_list[i].row, match_list[i].column
@@ -586,22 +583,18 @@ function MatchDroplets.generate(game, owner, match_list)
 			local x_dest = grid.x[col]
 			local y_dest = grid.y[owner.CLOUD_ROW]
 
-			local droplet_index = droplet_table[math.random(#droplet_table)]
-			local droplet_image = owner.special_images.drop[droplet_index]
-
 			local params = {
 				x = grid.x[col],
 				y = grid.y[row],
-				image = droplet_image,
-				rotation = math.pi,
+				image = image,
 				col = col,
 				owner = owner,
 				draw_order = 1,
 				player_num = owner.player_num,
-				name = "WalterMatchDroplets",
+				name = "WalterMatchDust",
 			}
 
-			local p = common.instance(MatchDroplets, game.particles, params)
+			local p = common.instance(MatchDust, game.particles, params)
 			p:wait(math.ceil(j * 0.5))
 			p:change{
 				duration = 15,
@@ -619,23 +612,18 @@ function MatchDroplets.generate(game, owner, match_list)
 		end
 	end
 
-	-- vertical droplets
+	-- vertical dust sparklies
 	for _, gem in ipairs(match_list) do
 		for i = 0, 79, 3 do
-			local droplet_index = droplet_table[math.random(#droplet_table)]
-			local droplet_image = owner.special_images.drop[droplet_index]
-
 			local params = {
 				x = grid.x[gem.column] + images.GEM_WIDTH * (math.random()-0.5) * 1.2,
 				y = stage.height * 1.1,
-				--image = images.lookup.smalldust(dust_color),
-				image = droplet_image,
-				rotation = math.pi,
+				image = images.lookup.smalldust(dust_color),
 				draw_order = -2,
 				name = "WalterMatchSparkle",
 			}
 
-			local up = common.instance(MatchDroplets, game.particles, params)
+			local up = common.instance(MatchDust, game.particles, params)
 			up.transparency = 0
 			up:wait(i)
 			up:change{duration = 0, transparency = 1}
@@ -649,7 +637,7 @@ function MatchDroplets.generate(game, owner, match_list)
 	
 	return TIME_TO_DEST
 end
-MatchDroplets = common.class("MatchDroplets", MatchDroplets, Pic)
+MatchDust = common.class("MatchDust", MatchDust, Pic)
 
 -------------------------------------------------------------------------------
 Walter.fx = {
@@ -657,7 +645,7 @@ Walter.fx = {
 	spout = Spout,
 	healingCloud = HealingCloud,
 	healingColumnAura = HealingColumnAura,
-	matchDroplets = MatchDroplets,
+	matchDust = MatchDust,
 }
 -------------------------------------------------------------------------------
 
@@ -780,7 +768,7 @@ function Walter:beforeMatch()
 	for _, list in pairs(gem_list) do
 		if self.player_num == list[1].player_num and list[1].is_in_a_vertical_match then
 			delay = math.max(delay, game.GEM_EXPLODE_FRAMES)
-			frames_until_cloud_forms = self.fx.matchDroplets.generate(game, self, list)
+			frames_until_cloud_forms = self.fx.matchDust.generate(game, self, list)
 		end
 	end
 
