@@ -72,7 +72,7 @@ end
 -- this describes the shape of the curve for the hands.
 function Hand:getx(y)
 	local stage = self.game.stage
-	local sign = self.owner.ID == "P1" and -1 or 1
+	local sign = self.owner.player_num == 1 and -1 or 1
 	if y == nil then print("Invalid y provided to getx!") return nil end
 	local start_x = stage.x_mid + (5.5 * images.GEM_WIDTH) * sign
 	local additional = (((y - stage.height * 0.35) / stage.height) ^ 2) * stage.height

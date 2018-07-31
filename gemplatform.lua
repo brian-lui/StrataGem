@@ -23,7 +23,7 @@ function GemPlatform:init(params)
 		game = self.game,
 		x = self.owner.hand[self.hand_idx].x,
 		y = self.owner.hand[self.hand_idx].y,
-		image = self.owner.ID == "P1" and images.ui_platform_gold or images.ui_platform_silver,
+		image = self.owner.player_num == 1 and images.ui_platform_gold or images.ui_platform_silver,
 		container = self,
 		name = "pic",
 	}
@@ -96,7 +96,7 @@ function GemPlatform:healingGlow()
 end
 
 function GemPlatform:setSpin(angle)
-	local direction = self.owner.ID == "P1" and 1 or -1
+	local direction = self.owner.player_num == 1 and 1 or -1
 	self.spin = angle * direction
 end
 

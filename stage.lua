@@ -18,33 +18,29 @@ function stage:init(game)
 	images.GEM_HEIGHT = images.gems_red:getHeight()
 	self.x_mid = self.width / 2
 	self.y_mid = self.height / 2
-	self.super_click = {
-		P1 = {0, 0, self.width * 0.2, self.height * 0.3}, -- rx, ry, rw, rh
-		P2 = {self.width * 0.8, 0, self.width * 0.2, self.height * 0.3},
-	}
-	self.burst = {P1 = {}, P2 = {}}
-	self.burst.P1.frame = {
+	self.burst = {{}, {}}
+	self.burst[1].frame = {
 		x = self.x_mid - (9.5 * images.GEM_WIDTH),
 		y = self.y_mid - 3 * images.GEM_HEIGHT,
 	}
-	self.burst.P2.frame = {
+	self.burst[2].frame = {
 		x = self.x_mid + (9.5 * images.GEM_WIDTH),
 		y = self.y_mid - 3 * images.GEM_HEIGHT,
 	}
 	local burst_width = images.ui_burst_part_red:getWidth()
 
 	for i = 1, 2 do
-		self.burst.P1[i] = {
-			x = self.burst.P1.frame.x + ((i - 1.5) * burst_width),
-			y = self.burst.P1.frame.y,
-			glow_x = self.burst.P1.frame.x + ((i * 0.5 - 1) * burst_width),
-			glow_y = self.burst.P1.frame.y
+		self.burst[1][i] = {
+			x = self.burst[1].frame.x + ((i - 1.5) * burst_width),
+			y = self.burst[1].frame.y,
+			glow_x = self.burst[1].frame.x + ((i * 0.5 - 1) * burst_width),
+			glow_y = self.burst[1].frame.y
 		}
-		self.burst.P2[i] = {
-			x = self.burst.P2.frame.x + ((1.5 - i) * burst_width),
-			y = self.burst.P2.frame.y,
-			glow_x = self.burst.P2.frame.x + ((1 - i * 0.5) * burst_width),
-			glow_y = self.burst.P2.frame.y
+		self.burst[2][i] = {
+			x = self.burst[2].frame.x + ((1.5 - i) * burst_width),
+			y = self.burst[2].frame.y,
+			glow_x = self.burst[2].frame.x + ((1 - i * 0.5) * burst_width),
+			glow_y = self.burst[2].frame.y
 		}
 	end
 
@@ -75,14 +71,14 @@ function stage:init(game)
 	}
 
 	self.character = {
-		P1 = {
+		{
 			x = self.x_mid - (8.2 * images.GEM_WIDTH),
 			y = self.y_mid - (4.6 * images.GEM_HEIGHT),
 		},
-		P2 = {
+		{
 			x = self.x_mid + (8.2 * images.GEM_WIDTH),
 			y = self.y_mid - (4.6 * images.GEM_HEIGHT),
-		}
+		},
 	}
 
 	self.timer = {x = self.x_mid, y = self.height * 0.3}

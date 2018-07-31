@@ -114,20 +114,13 @@ function Burst:init(game, character)
 	self.SEGMENTS = 2
 	self.GLOW_PERIOD = 120 -- frames for complete glow cycle
 
-	local ID
-	if self.player_num == 1 then
-		ID = "P1"
-	elseif self.player_num == 2 then
-		ID = "P2"
-	else
-		error("invalid player_num provided")
-	end
+	local frame_image = self.player_num == 1 and
+		images.ui_burst_gauge_gold or images.ui_burst_gauge_silver
 
-	local frame_image = self.player_num == 1 and images.ui_burst_gauge_gold or images.ui_burst_gauge_silver
 	Pic:create{
 		game = self.game,
-		x = stage.burst[ID].frame.x,
-		y = stage.burst[ID].frame.y,
+		x = stage.burst[self.player_num].frame.x,
+		y = stage.burst[self.player_num].frame.y,
 		image = frame_image,
 		container = self,
 		name = "burst_frame",
@@ -137,8 +130,8 @@ function Burst:init(game, character)
 	for i = 1, self.SEGMENTS do
 		Pic:create{
 			game = self.game,
-			x = stage.burst[ID][i].x,
-			y = stage.burst[ID][i].y,
+			x = stage.burst[self.player_num][i].x,
+			y = stage.burst[self.player_num][i].y,
 			image = character.burst_images.full,
 			container = self.burst_block,
 			name = i,
@@ -146,8 +139,8 @@ function Burst:init(game, character)
 
 		Pic:create{
 			game = self.game,
-			x = stage.burst[ID][i].x,
-			y = stage.burst[ID][i].y,
+			x = stage.burst[self.player_num][i].x,
+			y = stage.burst[self.player_num][i].y,
 			image = character.burst_images.partial,
 			container = self.burst_partial,
 			name = i,
@@ -155,8 +148,8 @@ function Burst:init(game, character)
 
 		Pic:create{
 			game = self.game,
-			x = stage.burst[ID][i].glow_x,
-			y = stage.burst[ID][i].glow_y,
+			x = stage.burst[self.player_num][i].glow_x,
+			y = stage.burst[self.player_num][i].glow_y,
 			image = character.burst_images.glow[i],
 			container = self.burst_glow,
 			name = i,
@@ -205,7 +198,6 @@ function Burst:update(dt)
 	end
 end
 
--- gs_main:drawUI()
 function Burst:draw(params)
 	self.burst_frame:draw(params)
 	for i = 1, self.SEGMENTS do

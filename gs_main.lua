@@ -129,7 +129,7 @@ function gs_main:drawScreenElements(params)
 
 	-- player sprite
 	for player in self:players() do
-		player.animation:draw{h_flip = player.ID == "P2"} -- sprite
+		player.animation:draw{h_flip = player.player_num == 2} -- sprite
 	end
 end
 

@@ -64,9 +64,9 @@ function Character:init(player_num, game)
 	self.game = game
 	self.player_num = player_num
 	if player_num == 1 then
-		self.ID, self.start_col, self.end_col = "P1", 1, 4
+		self.start_col, self.end_col = 1, 4
 	elseif player_num == 2 then
-		self.ID, self.start_col, self.end_col = "P2", 5, 8
+		self.start_col, self.end_col = 5, 8
 	else
 		love.errhand("Invalid player_num " .. tostring(player_num))
 	end
@@ -110,8 +110,8 @@ function Character:setup()
 	-- character animation placeholder, waiting for animations
 	Pic:create{
 		game = self.game,
-		x = stage.character[self.ID].x,
-		y = stage.character[self.ID].y,
+		x = stage.character[self.player_num].x,
+		y = stage.character[self.player_num].y,
 		image = self.small_image,
 		container = self,
 		name = "animation",
