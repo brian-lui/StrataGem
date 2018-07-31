@@ -383,7 +383,7 @@ function Crack.generate(game, owner, gem, delay)
 		y = gem.y,
 		image = owner.special_images.crack,
 		owner = owner,
-		draw_order = 1,
+		draw_order = 2,
 		player_num = owner.player_num,
 		name = "DiggoryCrack",
 		h_flip = math.random() < 0.5,
