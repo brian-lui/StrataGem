@@ -427,13 +427,13 @@ function Diggory:_activateSuper()
 	local game = self.game
 	local grid = game.grid
 
-	local CRACK_GEM_PERCENTAGE = 0.5
+	local CRACK_GEM_PERCENTAGE = 0.6
 	local SUPER_DURATION = 120
 	local CRACK_START_TIME = 30
 	local CRACK_ROW_WAIT = 10
 
 	-- super cloud animations
-	local delay = self.fx.super_animation.generate(game, self, SUPER_DURATION, 0)
+	self.fx.super_animation.generate(game, self, SUPER_DURATION, 0)
 
 	-- determine crack gems and add to table
 	local possible_cracks = {}
