@@ -139,6 +139,8 @@ function Gem:landedInGrid()
 		self.game.particles.dust.generateYoshi(self.game, self)
 		self.game.sound:newSFX("gemdrop", true)
 	end
+
+	self.is_in_grid = true
 end
 
 -- custom function to handle rotation around pivot

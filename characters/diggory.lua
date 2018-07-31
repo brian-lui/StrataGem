@@ -362,7 +362,6 @@ function Crack:update(dt)
 	if self.gem.is_destroyed and not self.is_destroyed then
 		local game = self.game
 		local end_time = self.gem.time_to_destruction
-		local start_time = math.max(0, end_time - game.GEM_EXPLODE_FRAMES)
 
 		self:wait(end_time)
 		self:change{
@@ -372,7 +371,6 @@ function Crack:update(dt)
 			remove = true,
 		}
 
-		--game.queue:add(end_time, self.remove, self)
 		self.is_destroyed = true
 	end
 end
@@ -406,11 +404,59 @@ end
 Crack = common.class("Crack", Crack, Pic)
 
 -------------------------------------------------------------------------------
+-- these are the UI indicators of yellow passive for gems
+local PassiveSpark = {}
+function PassiveSpark:init(manager, tbl)
+	Pic.init(self, manager.game, tbl)
+	local counter = self.game.inits.ID.particle
+	manager.allParticles.CharEffects[counter] = self
+	self.manager = manager
+end
+
+function PassiveSpark:remove()
+	self.manager.allParticles.CharEffects[self.ID] = nil
+end
+
+function PassiveSpark:update(dt)
+	Pic.update(self, dt)
+	self.x = self.gem.x
+	self.y = self.gem.y
+
+	self.game.particles.dust.generateFalling(
+		self.game,
+		self.gem,
+		(math.random() - 0.5) * images.GEM_WIDTH,
+		(math.random() - 0.5) * images.GEM_HEIGHT
+	)
+
+	if self.gem.is_in_grid or self.gem.is_destroyed then self:remove() end
+end
+
+function PassiveSpark.generate(game, owner, gem)
+	local params = {
+		x = gem.x,
+		y = gem.y,
+		image = images.dummy,
+		owner = owner,
+		draw_order = 3,
+		player_num = owner.player_num,
+		name = "DiggoryPassiveSpark",
+		gem = gem,
+	}
+
+	common.instance(PassiveSpark, game.particles, params)
+end
+
+PassiveSpark = common.class("PassiveSpark", PassiveSpark, Pic)
+
+
+-------------------------------------------------------------------------------
 Diggory.fx = {
 	passive_clouds = PassiveClouds,
 	super_animation = SuperAnimation,
 	clod = Clod,
 	crack = Crack,
+	passive_spark = PassiveSpark,
 }
 -------------------------------------------------------------------------------
 
@@ -547,6 +593,8 @@ function Diggory:beforeGravity()
 	for _, gem in pairs(pending_gems) do
 		if gem.player_num == self.player_num and gem.color == "yellow" then
 			self.slammy_gems[#self.slammy_gems + 1] = gem
+
+			self.fx.passive_spark.generate(game, self, gem)
 		end
 	end
 
