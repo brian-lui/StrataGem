@@ -390,12 +390,15 @@ function Hand:endOfTurnUpdate()
 		local loc = game.stage.burst[self.player_num][idx]
 		local color = self.owner.primary_colors[1]
 
-		game.particles.dust.generateGarbageCircle{
-			game = game,
-			x = loc.x,
-			y = loc.y,
-			color = color,
-		}
+		for i = 0, 40, 10 do
+			game.particles.dust.generateGarbageCircle{
+				game = game,
+				x = loc.x,
+				y = loc.y,
+				color = color,
+				delay_frames = i,
+			}
+		end
 	end
 
 	self.owner.cur_burst = math.min(self.owner.cur_burst + 1, self.owner.MAX_BURST)
