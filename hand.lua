@@ -377,7 +377,7 @@ end
 -- Update function only called at end of turn
 function Hand:endOfTurnUpdate()
 	for i = 1, 5 do
-		assert(self[i].platform, "No platform in position ".. i .." for player ".. self.owner.player_num .."! Turn: ".. self.game.turn)
+		assert(self[i].platform, "No platform in position ".. i .." for player ".. self.owner.player_num .."!")
 		self[i].platform:setFastSpin(false)
 	end
 	self.damage = self.damage + 4
@@ -390,7 +390,7 @@ function Hand:endOfTurnUpdate()
 		local loc = game.stage.burst[self.player_num][idx]
 		local color = self.owner.primary_colors[1]
 
-		for i = 0, 40, 10 do
+		for i = 0, 20, 10 do
 			game.particles.dust.generateGarbageCircle{
 				game = game,
 				x = loc.x,
