@@ -178,6 +178,61 @@ function Burst:_gainBurstAnim(segment_index)
 		}
 	end
 end
+
+-- animation when a burst segment is used
+function Burst:_useBurstAnim(segment_index)
+	local game = self.game
+	local stage = game.stage
+	local color = self.character.primary_colors[1]
+	local x = stage.burst[self.player_num][segment_index].x
+	local y = stage.burst[self.player_num][segment_index].y
+
+	-- Make the pop glowy effect
+	local pop = Pic:create{
+		game = game,
+		x = x,
+		y = y,
+		container = game.global_ui.fx,
+		counter = "particle",
+		name = "burst_pop",
+		image = images["gems_pop_" .. color],
+	}
+
+	pop:change{duration = 15, transparency = 0, scaling = 2, remove = true}
+
+
+	-- Make the starburst effect
+	local starburst_image = images.lookup.smalldust(color, false)
+
+	local starburst_end_xy = function(start_x, start_y)
+		local dist = game.stage.width * 0.1
+		local angle = math.random() * math.pi * 2
+		local end_x = dist * math.cos(angle) + start_x
+		local end_y = dist * math.sin(angle) + start_y
+		return end_x, end_y
+	end
+
+	for _ = 1, math.random(2, 6) do
+		local end_x, end_y = starburst_end_xy(x, y)
+
+		local star = Pic:create{
+			game = game,
+			x = x,
+			y = y,
+			container = game.global_ui.fx,
+			counter = "particle",
+			name = "burst_star",
+			image = starburst_image,
+		}
+
+		star:change{
+			duration = 30,
+			x = end_x,
+			y = end_y,
+			transparency = 0.5,
+			easing = "outCubic",
+			remove = true,
+		}
 	end
 end
 
@@ -187,7 +242,14 @@ function Burst:_burstChanged()
 	if idx % 1 == 0 and self.character.cur_burst > self.previous_burst then
 		self:_gainBurstAnim(idx)
 	end
+
+	-- if burst decreased, run the burst used function
+	if self.character.cur_burst < self.previous_burst then
+		local i = math.floor(self.previous_burst / (self.character.MAX_BURST * 0.5))
+		self:_useBurstAnim(i)
+	end
 end
+
 function Burst:update(dt)
 	self.t = self.t % self.GLOW_PERIOD + 1
 
