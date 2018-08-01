@@ -173,10 +173,12 @@ function Flower:update(dt)
 	self.stem.x = self.gem.x
 	self.stem.y = self.gem.y + self.STEM_DOWNSHIFT
 
-	if self.color == "red" or self.color == "blue" then
-		self:_sizeDance()
-	elseif self.color == "green" or self.color == "yellow" then
-		self:_rotateDance()
+	if not self.is_destroyed then
+		if self.color == "red" or self.color == "blue" then
+			self:_sizeDance()
+		elseif self.color == "green" or self.color == "yellow" then
+			self:_rotateDance()
+		end
 	end
 
 	if self.gem.is_destroyed and not self.is_destroyed then
