@@ -361,9 +361,9 @@ function Crack:update(dt)
 	self.y = self.gem.y
 	if self.gem.is_destroyed and not self.is_destroyed then
 		local game = self.game
-		local end_time = self.gem.time_to_destruction
+		local start_time = self.gem.time_to_destruction
 
-		self:wait(end_time)
+		self:wait(start_time)
 		self:change{
 			duration = game.GEM_EXPLODE_FRAMES,
 			scaling = 2,
@@ -469,6 +469,28 @@ function Diggory:init(...)
 	self.cracked_gems_to_destroy = {} -- set
 end
 
+-- This bypasses Grid:destroyGem to have special animations
+-- returns time until damage particles arrive
+--[[
+function Diggory:_specialGemBreak(gem, delay, force_max_alpha)
+	if gem.is_destroyed or gem.indestructible then return 0 end
+
+	local game = self.game
+	local particles = game.particles
+	local x, y, color = gem.x, gem.y, gem.color
+	local MIN_CLODS, MAX_CLODS = 10, 14
+
+	-- generate cloud 
+	self.fx.passive_clouds.generate(game, self, x, y, delay)
+
+	-- generate 10-14 of the appropriate colored clod
+	for _ = 1, math.random(MIN_CLODS, MAX_CLODS) do
+		self.fx.clod.generate(game, self, x, y, color, delay, force_max_alpha)
+	end
+
+	return dmg_duration
+end
+--]]
 function Diggory:_activateSuper()
 	local game = self.game
 	local grid = game.grid
@@ -568,13 +590,16 @@ function Diggory:_destroyFlaggedGems()
 	local phase = game.phase
 	local grid = game.grid
 	local max_delay, max_particle_duration = 0, 0
+	local AFTER_DESTROY_PAUSE = game.GEM_EXPLODE_FRAMES
 
 	for gem in pairs(self.cracked_gems_to_destroy) do
 		local explode_delay, particle_duration = grid:destroyGem{
 			gem = gem,
-			glow_delay = game.GEM_EXPLODE_FRAMES,
+			delay = game.GEM_EXPLODE_FRAMES,
+			show_exploding_gem = false,
+			show_pop_glow = false,
 		}
-		max_delay = math.max(max_delay, explode_delay)
+		max_delay = math.max(max_delay, explode_delay + AFTER_DESTROY_PAUSE)
 		max_particle_duration = math.max(max_particle_duration, particle_duration)
 	end
 
@@ -644,6 +669,8 @@ function Diggory:afterGravity()
 				local time_to_explode, particle_duration = grid:destroyGem{
 					gem = below_gem,
 					credit_to = self.player_num,
+					show_exploding_gem = false,
+					show_pop_glow = false,
 				}
 				delay = math.max(delay, time_to_explode)
 
@@ -657,17 +684,13 @@ function Diggory:afterGravity()
 				)
 
 				-- clods animation
-				local min_clod, max_clod = 2, 5
-				if below_gem.diggory_cracked then
-					min_clod, max_clod = 20, 50
-				end
-				for _ = min_clod, max_clod do
+				for _ = 10, 14 do
 					self.fx.clod.generate(
 						game,
 						self,
 						below_gem.x,
 						below_gem.y,
-						"regular",
+						below_gem.color,
 						time_to_explode
 					)
 				end
