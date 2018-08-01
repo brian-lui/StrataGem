@@ -873,6 +873,11 @@ end
 	glow_delay: optional extra frames to stay in full-glow phase
 	propagate_flags_up: optionally credit above gems to owner. Default true
 	force_max_alpha: optional force gem image to be bright
+
+	(optional animation bools)
+	show_exploding_gem: if false, don't show the exploding gem particle
+	show_pop_glow: if false, don't show the behind-gem glow
+	show_dust_fountain: if false, don't create the dust fountain
 --]]
 
 function Grid:destroyGem(params)
@@ -947,30 +952,36 @@ function Grid:destroyGem(params)
 			end
 		end
 
-		particles.dust.generateBigFountain{
-			game = game,
-			gem = gem,
-			delay_frames = delay_until_explode,
-			force_max_alpha = params.force_max_alpha,
-		}
+		if params.show_dust_fountain ~= false then
+			particles.dust.generateBigFountain{
+				game = game,
+				gem = gem,
+				delay_frames = delay_until_explode,
+				force_max_alpha = params.force_max_alpha,
+			}
+		end
 
-		particles.popParticles.generate{
-			game = game,
-			gem = gem,
-			delay_frames = game.GEM_EXPLODE_FRAMES,
-			glow_duration = glow_delay,
-			force_max_alpha = params.force_max_alpha,
-		}
+		if params.show_pop_glow ~= false then
+			particles.popParticles.generate{
+				game = game,
+				gem = gem,
+				delay_frames = game.GEM_EXPLODE_FRAMES,
+				glow_duration = glow_delay,
+				force_max_alpha = params.force_max_alpha,
+			}
+		end
 	end
 
 	-- animations
-	particles.explodingGem.generate{
-		game = game,
-		gem = gem,
-		glow_duration = glow_delay,
-		force_max_alpha = params.force_max_alpha,
-		delay_frames = wait_delay,
-	}
+	if params.show_exploding_gem ~= false then
+		particles.explodingGem.generate{
+			game = game,
+			gem = gem,
+			glow_duration = glow_delay,
+			force_max_alpha = params.force_max_alpha,
+			delay_frames = wait_delay,
+		}
+	end
 	particles.gemImage.generate{
 		game = game,
 		gem = gem,
