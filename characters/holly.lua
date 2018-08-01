@@ -13,6 +13,7 @@ turns.
 
 local love = _G.love
 local common = require "class.commons"
+local Pic = require "pic"
 local Character = require "character"
 local images = require "images"
 local shuffle = require "/helpers/utilities".shuffle
@@ -82,22 +83,6 @@ Holly.sounds = {
 -------------------------------------------------------------------------------
 -- these are the flowers that appear whenever Holly makes a match
 --[[
--Flowers appear in a "garbage" way. In addition to dust, also include some
-petala and petalb of the appropriate color.
-
-FLOWERS DANCE WHILE ACTIVE
-
--A flower consists of two parts. stem (same for all colors) and flower. stem
-should appear with the bottom pixel at the bottom of the square. flower appears
-in the middle of the square.
-
--Flowers dance while active.
-
--Blue and Red dance by alternating between [150% height and 75% width], [100%
-height and 100% width], and [75% heigth and 150% width].
-
--Yellow and Green dance by slowly rotating.
-
 WHEN A FLOWER EXPLODES
 
 -See attached "petal explosion" diagram
@@ -105,30 +90,30 @@ WHEN A FLOWER EXPLODES
 Damage sent by flower should be made up of attack particles AND the addition of
 some petala and petalb of the appropriate color.
 --]]
---[[
-Garbage way:
-	-- garbage circle particles
-	game.particles.dust.generateGarbageCircle{
-		game = game,
-		gem = gem,
-		delay_frames = delay,
-	}
-	game.particles.dust.generateGarbageCircle{
-		game = game,
-		gem = gem,
-		image = petala/petalb,
-		delay_frames = delay,
-		num = 4,
-	}
 
---]]
----[[
 local Flower = {}
 function Flower:init(manager, tbl)
 	Pic.init(self, manager.game, tbl)
 	local counter = self.game.inits.ID.particle
 	manager.allParticles.CharEffects[counter] = self
 	self.manager = manager
+
+	self.STEM_DOWNSHIFT = 12 -- gem center 39px, stem center 24 + 27px
+
+	self.SIZE_DANCE_SPEED = 15 -- frames for each phase
+	self.SIZE_DANCE_PHASE = 0
+	self.size_dance_frame = 0 
+
+	self.ROTATE_DANCE_SPEED = math.pi / 15 -- movement each frame
+
+	Pic:create{
+		game = manager.game,
+		x = self.x,
+		y = self.y + self.STEM_DOWNSHIFT,
+		image = self.owner.special_images.stem,
+		container = self,
+		name = "stem",
+	}
 end
 
 function Flower:remove()
@@ -136,41 +121,107 @@ function Flower:remove()
 	self.owner.flower_images[self.gem] = nil
 end
 
+--[[ I want to do this inelegant way so we don't use Pic:change()
+	Phase 0: x/y from 1.0/1.0 to 1.5/0.75
+	Phase 1: x/y from 1.5/0.75 to 1.0/1.0
+	Phase 2: x/y from 1.0/1.0 to 0.75/1.5
+	Phase 3: x/y from 0.75/1.5 to 1.0/1.0 --]]
+function Flower:_sizeDance()
+	local x_step, y_step
+	if self.SIZE_DANCE_PHASE == 0 then
+		x_step = 0.5 / self.SIZE_DANCE_SPEED
+		y_step = -0.25 / self.SIZE_DANCE_SPEED
+	elseif self.SIZE_DANCE_PHASE == 1 then
+		x_step = -0.5 / self.SIZE_DANCE_SPEED
+		y_step = 0.25 / self.SIZE_DANCE_SPEED
+	elseif self.SIZE_DANCE_PHASE == 2 then
+		x_step = -0.25 / self.SIZE_DANCE_SPEED
+		y_step = 0.5 / self.SIZE_DANCE_SPEED
+	elseif self.SIZE_DANCE_PHASE == 3 then
+		x_step = 0.25 / self.SIZE_DANCE_SPEED
+		y_step = -0.5 / self.SIZE_DANCE_SPEED
+	end
+
+	self.x_scaling = self.x_scaling + x_step
+	self.y_scaling = self.y_scaling + y_step
+
+	self.size_dance_frame = self.size_dance_frame + 1
+	if self.size_dance_frame >= self.SIZE_DANCE_SPEED then
+		self.size_dance_frame = 0
+		self.SIZE_DANCE_PHASE = (self.SIZE_DANCE_PHASE + 1) % 4
+
+		if self.SIZE_DANCE_PHASE == 0 then
+			self.x_scaling, self.y_scaling = 1, 1
+		elseif self.SIZE_DANCE_PHASE == 1 then
+			self.x_scaling, self.y_scaling = 1.5, 0.75
+		elseif self.SIZE_DANCE_PHASE == 2 then
+			self.x_scaling, self.y_scaling = 1, 1
+		elseif self.SIZE_DANCE_PHASE == 3 then
+			self.x_scaling, self.y_scaling = 0.75, 1.5
+		end
+	end
+end
+
+function Flower:_rotateDance()
+	self.rotation = (self.rotation + self.ROTATE_DANCE_SPEED) % (math.pi * 2)
+end
+
 function Flower:update(dt)
 	Pic.update(self, dt)
 	self.x = self.gem.x
 	self.y = self.gem.y
+	self.stem.x = self.gem.x
+	self.stem.y = self.gem.y + self.STEM_DOWNSHIFT
+
+	if self.color == "red" or self.color == "blue" then
+		self:_sizeDance()
+	elseif self.color == "green" or self.color == "yellow" then
+		self:_rotateDance()
+	end
+
 	if self.gem.is_destroyed and not self.is_destroyed then
 		local game = self.game
-		local end_time = self.gem.time_to_destruction
-		local start_time = math.max(0, end_time - game.GEM_EXPLODE_FRAMES)
+		local start_time = self.gem.time_to_destruction
 
-		self:wait(end_time)
+		self:wait(start_time)
 		self:change{
+			duration = game.GEM_EXPLODE_FRAMES,
+			x_scaling = 2,
+			y_scaling = 2,
+			transparency = 0,
+			remove = true,
+		}
+
+		self.stem:wait(start_time)
+		self.stem:change{
 			duration = game.GEM_EXPLODE_FRAMES,
 			scaling = 2,
 			transparency = 0,
 			remove = true,
 		}
 
-		--game.queue:add(end_time, self.remove, self)
 		self.is_destroyed = true
 	end
 end
 
 function Flower.generate(game, owner, gem, delay)
+	local color = gem.color
+	assert(color == "red" or color == "blue" or color == "green" or color == "yellow",
+		"Tried to generate flower on non-default color gem!")
+
 	local params = {
 		x = gem.x,
 		y = gem.y,
-		image = owner.special_images.flower,
+		image = owner.special_images[color].flower,
 		owner = owner,
-		draw_order = 1,
+		draw_order = 2,
+		color = color,
 		player_num = owner.player_num,
 		name = "HollyFlower",
-		h_flip = math.random() < 0.5,
-		v_flip = math.random() < 0.5,
 		gem = gem,
 		transparency = 0,
+		x_scaling = 1,
+		y_scaling = 1,
 		force_max_alpha = true,
 	}
 
@@ -182,26 +233,31 @@ function Flower.generate(game, owner, gem, delay)
 	game.particles.dust.generateGarbageCircle{
 		game = game,
 		gem = gem,
-		--delay_frames = delay,
+		delay_frames = delay,
 	}
 	game.particles.dust.generateGarbageCircle{
 		game = game,
 		gem = gem,
-		"image = petala",
-		--delay_frames = delay,
+		image = owner.special_images[color].petala,
+		delay_frames = delay,
 		num = 4,
 	}	
 	game.particles.dust.generateGarbageCircle{
 		game = game,
 		gem = gem,
-		"image = petalb",
-		--delay_frames = delay,
+		image = owner.special_images[color].petalb,
+		delay_frames = delay,
 		num = 4,
 	}	
 end
 
+function Flower:draw()
+	self.stem:draw()
+	Pic.draw(self)
+end
+
 Flower = common.class("Flower", Flower, Pic)
---]]
+
 -------------------------------------------------------------------------------
 Holly.fx = {
 	flower = Flower,
