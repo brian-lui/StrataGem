@@ -113,6 +113,7 @@ function Burst:init(game, character)
 	self.t = 0
 	self.SEGMENTS = 2
 	self.GLOW_PERIOD = 120 -- frames for complete glow cycle
+	self.previous_burst = 0 -- for animations. we coded this bad lol
 
 	local frame_image = self.player_num == 1 and
 		images.ui_burst_gauge_gold or images.ui_burst_gauge_silver
@@ -161,6 +162,32 @@ function Burst.create(game, character)
 	return common.instance(Burst, game, character)
 end
 
+-- animation when a burst segment gets full
+function Burst:_gainBurstAnim(segment_index)
+	local game = self.game
+	local loc = game.stage.burst[self.player_num][segment_index]
+	local color = self.character.primary_colors[1]
+
+	for i = 0, 20, 10 do
+		game.particles.dust.generateGarbageCircle{
+			game = game,
+			x = loc.x,
+			y = loc.y,
+			color = color,
+			delay_frames = i,
+		}
+	end
+end
+	end
+end
+
+function Burst:_burstChanged()
+	-- if full segment created, run the full segment function
+	local idx = (self.character.cur_burst) / (self.character.MAX_BURST * 0.5)
+	if idx % 1 == 0 and self.character.cur_burst > self.previous_burst then
+		self:_gainBurstAnim(idx)
+	end
+end
 function Burst:update(dt)
 	self.t = self.t % self.GLOW_PERIOD + 1
 
@@ -196,7 +223,14 @@ function Burst:update(dt)
 	for i = 1, self.SEGMENTS do
 		self.burst_glow[i].transparency = full_segs_int == i and glow_amount or 0
 	end
+
+	-- triggers for segment-related
+	if self.previous_burst ~= self.character.cur_burst then
+		self:_burstChanged()
+	end
+	self.previous_burst = self.character.cur_burst
 end
+
 
 function Burst:draw(params)
 	self.burst_frame:draw(params)

@@ -382,25 +382,6 @@ function Hand:endOfTurnUpdate()
 	end
 	self.damage = self.damage + 4
 	self.turn_start_damage = self.damage
-
-	-- garbage appear if a full burst was created
-	local idx = (self.owner.cur_burst + 1) / (self.owner.MAX_BURST * 0.5)
-	if idx % 1 == 0 then
-		local game = self.game
-		local loc = game.stage.burst[self.player_num][idx]
-		local color = self.owner.primary_colors[1]
-
-		for i = 0, 20, 10 do
-			game.particles.dust.generateGarbageCircle{
-				game = game,
-				x = loc.x,
-				y = loc.y,
-				color = color,
-				delay_frames = i,
-			}
-		end
-	end
-
 	self.owner.cur_burst = math.min(self.owner.cur_burst + 1, self.owner.MAX_BURST)
 end
 
