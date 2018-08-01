@@ -18,6 +18,10 @@ local Diggory = {}
 
 Diggory.large_image = love.graphics.newImage('images/portraits/diggory.png')
 Diggory.small_image = love.graphics.newImage('images/portraits/diggorysmall.png')
+Diggory.action_image = love.graphics.newImage('images/portraits/action_diggory.png')
+Diggory.shadow_image = love.graphics.newImage('images/portraits/shadow_diggory.png')
+Diggory.super_fuzz_image = love.graphics.newImage('images/ui/superfuzzyellow.png')
+
 Diggory.character_name = "Diggory"
 Diggory.MAX_MP = 48
 Diggory.SUPER_COST = 48

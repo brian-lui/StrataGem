@@ -22,6 +22,10 @@ local Holly = {}
 
 Holly.large_image = love.graphics.newImage('images/portraits/holly.png')
 Holly.small_image = love.graphics.newImage('images/portraits/hollysmall.png')
+Holly.action_image = love.graphics.newImage('images/portraits/action_holly.png')
+Holly.shadow_image = love.graphics.newImage('images/portraits/shadow_holly.png')
+Holly.super_fuzz_image = love.graphics.newImage('images/ui/superfuzzgreen.png')
+
 Holly.character_name = "Holly"
 Holly.meter_gain = {
 	red = 4,

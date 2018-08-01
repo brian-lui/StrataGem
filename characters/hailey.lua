@@ -7,6 +7,10 @@ local Hailey = {}
 
 Hailey.large_image = love.graphics.newImage('images/portraits/hailey.png')
 Hailey.small_image = love.graphics.newImage('images/portraits/haileysmall.png')
+Hailey.action_image = love.graphics.newImage('images/portraits/action_hailey.png')
+Hailey.shadow_image = love.graphics.newImage('images/portraits/shadow_hailey.png')
+Hailey.super_fuzz_image = love.graphics.newImage('images/ui/superfuzzblue.png')
+
 Hailey.character_name = "Hailey"
 Hailey.meter_gain = {
 	red = 4,
