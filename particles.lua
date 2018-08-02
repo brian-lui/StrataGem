@@ -153,7 +153,7 @@ end
 -------------------------------------------------------------------------------
 -- Damage particles generated when a player makes a match
 local DamageParticle = {}
-function DamageParticle:init(manager, gem)
+function DamageParticle:init(manager, gem, player_num)
 	local image = images.lookup.particle_freq(gem.color)
 	if not image then
 		image = images.lookup.particle_freq(randomStandardColor())
@@ -163,7 +163,7 @@ function DamageParticle:init(manager, gem)
 		manager.game,
 		{x = gem.x, y = gem.y, image = image, transparency = 0}
 	)
-	self.player_num = gem.player_num
+	self.player_num = player_num
 	local counter = self.game.inits.ID.particle
 	manager.allParticles.Damage[counter] = self
 	self.manager = manager
@@ -175,8 +175,10 @@ function DamageParticle:remove()
 end
 
 -- player.hand.damage is the damage before this round's match(es) is scored
-function DamageParticle.generate(game, gem, delay_frames, force_max_alpha)
-	local gem_creator = game:playerByIndex(gem.player_num)
+-- player_num_override is to force ownership for a player, for animation only
+function DamageParticle.generate(game, gem, delay_frames, force_max_alpha, player_num_override)
+	local player_num = player_num_override or gem.player_num
+	local gem_creator = game:playerByIndex(player_num)
 	local player = gem_creator.enemy
 	local frames_taken = 0
 
@@ -187,7 +189,7 @@ function DamageParticle.generate(game, gem, delay_frames, force_max_alpha)
 	local x3, y3 = 0.5 * (x1 + x4), 0.5 * (y1 + y4)
 
 	for _ = 1, 3 do
-		local created_particles = game.particles:getCount("created", "Damage", gem.player_num)
+		local created_particles = game.particles:getCount("created", "Damage", player_num)
 		local final_loc = (player.hand.turn_start_damage + created_particles/3)/4 + 1
 		local angle = math.random() * math.pi * 2
 		local x2 = x1 + math.cos(angle) * dist * 0.5
@@ -195,7 +197,7 @@ function DamageParticle.generate(game, gem, delay_frames, force_max_alpha)
 		local curve = love.math.newBezierCurve(x1, y1, x2, y2, x3, y3, x4, y4)
 
 		-- create damage particle
-		local p = common.instance(DamageParticle, game.particles, gem)
+		local p = common.instance(DamageParticle, game.particles, gem, player_num)
 		p.force_max_alpha = force_max_alpha
 
 		local duration = game.DAMAGE_PARTICLE_TO_PLATFORM_FRAMES + _ * 3
@@ -267,7 +269,7 @@ function DamageParticle.generate(game, gem, delay_frames, force_max_alpha)
 			)
 		end
 
-		game.particles:incrementCount("created", "Damage", gem.player_num)
+		game.particles:incrementCount("created", "Damage", player_num)
 
 		frames_taken = math.max(frames_taken, game.DAMAGE_PARTICLE_TO_PLATFORM_FRAMES + 9 + drop_duration)
 	end
