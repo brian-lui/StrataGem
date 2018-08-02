@@ -230,6 +230,17 @@ function Gem:getAnimFrames()
 	return f
 end
 
+--[[
+add an onDestroy() method that gets called from grid:destroyGem()
+it will be called as func(gem, delay_until_explode, ...)
+adds as a 2-item table for both players
+just adds one func, don't be so fancy with multiple funcs geez
+--]]
+function Gem:addDestroyFunc(player_num, func, ...)
+	self.onDestroy = {}
+	self.onDestroy[player_num] = {func = func, args = {...}}
+end
+
 -- If true, always shown brightened
 function Gem:setMaxAlpha(bool)
 	if bool ~= false then bool = true end

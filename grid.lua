@@ -859,6 +859,7 @@ function Grid:destroyMatchedGems(combo_bonus)
 end
 
 --[[ removes a gem from the grid, and plays all of the associated animations
+	also runs the onDestroy() method if present
 	returns:
 		delay_until_explode - frames until the explosion happens
 	on explosion frame, damage particles are generated, then:
@@ -1007,6 +1008,21 @@ function Grid:destroyGem(params)
 	gem.is_destroyed = true -- in case we try to destroy it again
 	gem.time_to_destruction = delay_until_explode -- for animation uses
 	self[gem.row][gem.column].gem = false
+
+	-- run onDestroy if present
+	if gem.onDestroy then
+		local p1tbl, p2tbl = gem.onDestroy[1], gem.onDestroy[2]
+
+		if p1tbl then
+			local d = p1tbl.func(gem, delay_until_explode, unpack(p1tbl.args))
+			damage_particle_duration = math.max(damage_particle_duration, d)
+		end
+
+		if p2tbl then
+			local d = p2tbl.func(gem, delay_until_explode, unpack(p2tbl.args))
+			damage_particle_duration = math.max(damage_particle_duration, d)
+		end
+	end
 
 	return delay_until_explode, damage_particle_duration
 end
