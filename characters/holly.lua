@@ -283,6 +283,41 @@ function Holly:init(...)
 	self.matches_made = 0
 end
 
+-- callback activated from grid:destroyGem
+function Holly._onFlowerDestroy(gem, delay, self)
+	local damage_particle_duration = 0
+	local game = self.game
+
+	-- slightly delay if it's not a grey match
+	if gem.player_num == 1 or gem.player_num == 2 then
+		delay = delay + game.GEM_EXPLODE_FRAMES
+	end
+
+	-- deal 1 damage
+	self.enemy:addDamage(1, delay)
+	local d = game.particles.damage.generate(
+		game,
+		gem,
+		delay,
+		nil,
+		self.player_num
+	)
+	local damage_particle_duration = math.max(damage_particle_duration, d)
+
+	-- heal 1 damage
+	self:healDamage(1, delay)
+	local h = game.particles.healing.generate{
+		game = game,
+		x = gem.x,
+		y = gem.y,
+		owner = self,
+	}
+	local damage_particle_duration = math.max(damage_particle_duration, h)
+	game.queue:add(delay, game.sound.newSFX, game.sound, "healing")
+
+	return damage_particle_duration
+end
+
 function Holly:beforeGravity()
 	-- Super 1
 	-- gain super spore pods
@@ -336,9 +371,9 @@ function Holly:afterMatch()
 	-- add the flowers
 	for i = 1, self.matches_made do
 		if eligible_gems[i] then
-			print("HOLLY is adding a flower now.")
 			local gem = eligible_gems[i]
 			gem.holly_flower = self.player_num 
+			gem:addDestroyFunc(self.player_num, self._onFlowerDestroy, self)
 
 			self.fx.flower.generate(game, self, gem, FLOWER_DELAY)
 		end
