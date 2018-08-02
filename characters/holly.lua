@@ -126,26 +126,26 @@ function Flower:remove()
 end
 
 --[[ I want to do this inelegant way so we don't use Pic:change()
-	Phase 0: x/y from 1.0/1.0 to 1.5/0.75
-	Phase 1: x/y from 1.5/0.75 to 1.0/1.0
-	Phase 2: x/y from 1.0/1.0 to 0.75/1.5
-	Phase 3: x/y from 0.75/1.5 to 1.0/1.0 --]]
+	Phase 0: x/y from 1.0/1.0 to 1.05/0.95
+	Phase 1: x/y from 1.05/0.95 to 1.0/1.0
+	Phase 2: x/y from 1.0/1.0 to 0.95/1.05
+	Phase 3: x/y from 0.95/1.05 to 1.0/1.0 --]]
 function Flower:_sizeDance()
+	local SMALL_STEP, LARGE_STEP = 0.05, 0.05
 	local x_step, y_step
 	if self.SIZE_DANCE_PHASE == 0 then
-		x_step = 0.5 / self.SIZE_DANCE_SPEED
-		y_step = -0.25 / self.SIZE_DANCE_SPEED
+		x_step = LARGE_STEP / self.SIZE_DANCE_SPEED
+		y_step = -SMALL_STEP / self.SIZE_DANCE_SPEED
 	elseif self.SIZE_DANCE_PHASE == 1 then
-		x_step = -0.5 / self.SIZE_DANCE_SPEED
-		y_step = 0.25 / self.SIZE_DANCE_SPEED
+		x_step = -LARGE_STEP / self.SIZE_DANCE_SPEED
+		y_step = SMALL_STEP / self.SIZE_DANCE_SPEED
 	elseif self.SIZE_DANCE_PHASE == 2 then
-		x_step = -0.25 / self.SIZE_DANCE_SPEED
-		y_step = 0.5 / self.SIZE_DANCE_SPEED
+		x_step = -SMALL_STEP / self.SIZE_DANCE_SPEED
+		y_step = LARGE_STEP / self.SIZE_DANCE_SPEED
 	elseif self.SIZE_DANCE_PHASE == 3 then
-		x_step = 0.25 / self.SIZE_DANCE_SPEED
-		y_step = -0.5 / self.SIZE_DANCE_SPEED
+		x_step = SMALL_STEP / self.SIZE_DANCE_SPEED
+		y_step = -LARGE_STEP / self.SIZE_DANCE_SPEED
 	end
-
 	self.x_scaling = self.x_scaling + x_step
 	self.y_scaling = self.y_scaling + y_step
 
@@ -157,11 +157,11 @@ function Flower:_sizeDance()
 		if self.SIZE_DANCE_PHASE == 0 then
 			self.x_scaling, self.y_scaling = 1, 1
 		elseif self.SIZE_DANCE_PHASE == 1 then
-			self.x_scaling, self.y_scaling = 1.5, 0.75
+			self.x_scaling, self.y_scaling = 1 + LARGE_STEP, 1 - SMALL_STEP
 		elseif self.SIZE_DANCE_PHASE == 2 then
 			self.x_scaling, self.y_scaling = 1, 1
 		elseif self.SIZE_DANCE_PHASE == 3 then
-			self.x_scaling, self.y_scaling = 0.75, 1.5
+			self.x_scaling, self.y_scaling = 1 - SMALL_STEP, 1 + LARGE_STEP
 		end
 	end
 end
@@ -269,6 +269,7 @@ Holly.fx = {
 	flower = Flower,
 }
 
+-------------------------------------------------------------------------------
 
 function Holly:init(...)
 	Character.init(self, ...)
@@ -287,7 +288,6 @@ function Holly:beforeGravity()
 		spore class remove method has self.owner.spore_images[self.gem] = nil
 	--]]
 end
-
 
 function Holly:beforeMatch()
 	local game = self.game
