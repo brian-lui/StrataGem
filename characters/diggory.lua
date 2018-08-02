@@ -306,8 +306,8 @@ function Clod.generate(game, owner, x, y, color, delay, force_max_alpha)
 	})
 
 	local x_vel = images.GEM_WIDTH * (math.random() - 0.5) * 16
-	local y_vel = images.GEM_HEIGHT * - (math.random() * 0.5 + 0.5) * 16
-	local gravity = images.GEM_HEIGHT * 10
+	local y_vel = images.GEM_HEIGHT * - (math.random() * 0.5 + 0.5) * 20
+	local gravity = images.GEM_HEIGHT * 12
 	local x_dest1 = x + 1 * x_vel
 	local x_dest2 = x + 1.5 * x_vel
 	local y_func1 = function()
@@ -473,28 +473,6 @@ function Diggory:init(...)
 	self.cracked_gems_to_destroy = {} -- set
 end
 
--- This bypasses Grid:destroyGem to have special animations
--- returns time until damage particles arrive
---[[
-function Diggory:_specialGemBreak(gem, delay, force_max_alpha)
-	if gem.is_destroyed or gem.indestructible then return 0 end
-
-	local game = self.game
-	local particles = game.particles
-	local x, y, color = gem.x, gem.y, gem.color
-	local MIN_CLODS, MAX_CLODS = 10, 14
-
-	-- generate cloud 
-	self.fx.passive_clouds.generate(game, self, x, y, delay)
-
-	-- generate 10-14 of the appropriate colored clod
-	for _ = 1, math.random(MIN_CLODS, MAX_CLODS) do
-		self.fx.clod.generate(game, self, x, y, color, delay, force_max_alpha)
-	end
-
-	return dmg_duration
-end
---]]
 function Diggory:_activateSuper()
 	local game = self.game
 	local grid = game.grid
@@ -688,7 +666,7 @@ function Diggory:afterGravity()
 				)
 
 				-- clods animation
-				for _ = 10, 14 do
+				for _ = 1, math.random(25, 40) do
 					self.fx.clod.generate(
 						game,
 						self,
