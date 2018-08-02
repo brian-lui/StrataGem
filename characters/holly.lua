@@ -108,7 +108,7 @@ function Flower:init(manager, tbl)
 	self.SIZE_DANCE_PHASE = 0
 	self.size_dance_frame = 0 
 
-	self.ROTATE_DANCE_SPEED = math.pi / 15 -- movement each frame
+	self.ROTATE_DANCE_SPEED = math.pi / 240 -- movement each frame
 
 	Pic:create{
 		game = manager.game,
