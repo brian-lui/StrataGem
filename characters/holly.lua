@@ -303,13 +303,9 @@ function Holly:beforeMatch()
 
 		if owned_by_me then self.matches_made = self.matches_made + 1 end
 	end
-	print("HOLLY made " .. self.matches_made .. " matches this round.")
 end
 
 function Holly:duringMatch()
-	-- Passive 4
-	-- apply flower heal/damage
-
 	-- Super 3
 	--[[ if a match contains both player's spores, grey match. otherwise,
 	if a match contains a spore, force it to be flagged for the opponent]]
@@ -318,12 +314,16 @@ end
 function Holly:afterMatch()
 	local game = self.game
 	local grid = game.grid
-	local FLOWER_DELAY = 10
-	-- Passive: For each match, a random gem in your basin gains a flower mark
+	local FLOWER_DELAY = 20
+
+	-- Passive: For each match, a random gem in your basin gains a flower mark:
 	-- Get all eligible gems
 	local eligible_gems = {}
 	for gem in grid:basinGems(self.player_num) do
-		if gem.color ~= "none" and not gem.indestructible then
+		if gem.color ~= "none"
+		and gem.color ~= "wild"
+		and not gem.indestructible
+		and not gem.holly_flower then
 			eligible_gems[#eligible_gems + 1] = gem
 		end
 	end
