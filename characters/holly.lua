@@ -118,6 +118,10 @@ function Flower:init(manager, tbl)
 		container = self,
 		name = "stem",
 	}
+
+	self.stem.transparency = 0
+	self.stem:wait(delay)
+	self.stem:change{duration = 0, transparency = 1}
 end
 
 function Flower:remove()
