@@ -106,7 +106,7 @@ function Flower:init(manager, tbl)
 
 	self.SIZE_DANCE_SPEED = 15 -- frames for each phase
 	self.SIZE_DANCE_PHASE = 0
-	self.size_dance_frame = 0 
+	self.size_dance_frame = 0
 
 	self.ROTATE_DANCE_SPEED = math.pi / 240 -- movement each frame
 
@@ -119,8 +119,8 @@ function Flower:init(manager, tbl)
 		name = "stem",
 	}
 
-	self.stem.transparency = 0
-	self.stem:wait(delay)
+	self.stem:change{duration = 0, transparency = 0}
+	self.stem:wait(tbl.stem_appear_delay)
 	self.stem:change{duration = 0, transparency = 1}
 end
 
@@ -176,6 +176,8 @@ end
 
 function Flower:update(dt)
 	Pic.update(self, dt)
+	self.stem:update(dt)
+
 	self.x = self.gem.x
 	self.y = self.gem.y
 	self.stem.x = self.gem.x
@@ -233,6 +235,7 @@ function Flower.generate(game, owner, gem, delay)
 		x_scaling = 1,
 		y_scaling = 1,
 		force_max_alpha = true,
+		stem_appear_delay = delay,
 	}
 
 	owner.flower_images[gem] = common.instance(Flower, game.particles, params)
@@ -251,14 +254,14 @@ function Flower.generate(game, owner, gem, delay)
 		image = owner.special_images[color].petala,
 		delay_frames = delay,
 		num = 4,
-	}	
+	}
 	game.particles.dust.generateGarbageCircle{
 		game = game,
 		gem = gem,
 		image = owner.special_images[color].petalb,
 		delay_frames = delay,
 		num = 4,
-	}	
+	}
 end
 
 function Flower:draw()
