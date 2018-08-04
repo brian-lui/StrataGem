@@ -62,6 +62,11 @@ Walter.special_images = {
 		love.graphics.newImage('images/characters/walter/spout2.png'),
 		love.graphics.newImage('images/characters/walter/spout3.png'),
 	},
+	bubble = {
+		love.graphics.newImage('images/characters/walter/bubble1.png'),
+		love.graphics.newImage('images/characters/walter/bubble2.png'),
+		love.graphics.newImage('images/characters/walter/bubble3.png'),
+	},
 }
 
 Walter.sounds = {
@@ -555,28 +560,32 @@ end
 HealingColumnAura = common.class("HealingColumnAura", HealingColumnAura, Pic)
 
 -------------------------------------------------------------------------------
-local MatchDust = {}
-function MatchDust:init(manager, tbl)
+local MatchBubbles = {}
+function MatchBubbles:init(manager, tbl)
 	Pic.init(self, manager.game, tbl)
 	local counter = self.game.inits.ID.particle
 	manager.allParticles.CharEffects[counter] = self
 	self.manager = manager
 end
 
-function MatchDust:remove()
+function MatchBubbles:remove()
 	self.manager.allParticles.CharEffects[self.ID] = nil
 end
 
-function MatchDust.generate(game, owner, match_list)
+function MatchBubbles.generate(game, owner, match_list)
 	local grid = game.grid
 	local stage = game.stage
 	local TIME_TO_DEST = 120
-	local dust_color = match_list[1].color
-	local image = images.lookup.smalldust(dust_color, false)
-	assert(image, "Invalid color specified for dust")
+
+	local bubble_func = function()
+		local image_table = {1, 1, 1, 1, 1, 1, 1, 2, 2, 3}
+		local image_index = image_table[math.random(#image_table)]
+		local bubble_image = owner.special_images.bubble[image_index]
+		return bubble_image
+	end
 
 	for i = 1, #match_list do
-		for j = 1, 40 do
+		for j = 1, 30 do
 			local row, col = match_list[i].row, match_list[i].column
 			local x_start = grid.x[col] + images.GEM_WIDTH * (math.random()-0.5) * 3
 			local y_start = grid.y[row] + images.GEM_HEIGHT * (math.random()-0.5) * 2
@@ -586,15 +595,15 @@ function MatchDust.generate(game, owner, match_list)
 			local params = {
 				x = grid.x[col],
 				y = grid.y[row],
-				image = image,
+				image = bubble_func(),
 				col = col,
 				owner = owner,
 				draw_order = 1,
 				player_num = owner.player_num,
-				name = "WalterMatchDust",
+				name = "WalterMatchBubbles",
 			}
 
-			local p = common.instance(MatchDust, game.particles, params)
+			local p = common.instance(MatchBubbles, game.particles, params)
 			p:wait(math.ceil(j * 0.5))
 			p:change{
 				duration = 15,
@@ -614,16 +623,16 @@ function MatchDust.generate(game, owner, match_list)
 
 	-- vertical dust sparklies
 	for _, gem in ipairs(match_list) do
-		for i = 0, 79, 3 do
+		for i = 0, 59, 3 do
 			local params = {
 				x = grid.x[gem.column] + images.GEM_WIDTH * (math.random()-0.5) * 1.2,
 				y = stage.height * 1.1,
-				image = images.lookup.smalldust(dust_color),
+				image = bubble_func(),
 				draw_order = -2,
 				name = "WalterMatchSparkle",
 			}
 
-			local up = common.instance(MatchDust, game.particles, params)
+			local up = common.instance(MatchBubbles, game.particles, params)
 			up.transparency = 0
 			up:wait(i)
 			up:change{duration = 0, transparency = 1}
@@ -634,10 +643,10 @@ function MatchDust.generate(game, owner, match_list)
 			}
 		end
 	end
-	
+
 	return TIME_TO_DEST
 end
-MatchDust = common.class("MatchDust", MatchDust, Pic)
+MatchBubbles = common.class("MatchBubbles", MatchBubbles, Pic)
 
 -------------------------------------------------------------------------------
 Walter.fx = {
@@ -645,7 +654,7 @@ Walter.fx = {
 	spout = Spout,
 	healingCloud = HealingCloud,
 	healingColumnAura = HealingColumnAura,
-	matchDust = MatchDust,
+	matchBubbles = MatchBubbles,
 }
 -------------------------------------------------------------------------------
 
@@ -768,7 +777,7 @@ function Walter:beforeMatch()
 	for _, list in pairs(gem_list) do
 		if self.player_num == list[1].player_num and list[1].is_in_a_vertical_match then
 			delay = math.max(delay, game.GEM_EXPLODE_FRAMES)
-			frames_until_cloud_forms = self.fx.matchDust.generate(game, self, list)
+			frames_until_cloud_forms = self.fx.matchBubbles.generate(game, self, list)
 		end
 	end
 
