@@ -318,6 +318,27 @@ function Holly._onFlowerDestroy(gem, delay, self)
 	local damage_particle_duration = math.max(damage_particle_duration, h)
 	game.queue:add(delay, game.sound.newSFX, game.sound, "healing")
 
+	for i = 1, math.random(2, 4) do
+		game.particles.dust.generateLeafFloat{
+			game = game,
+			x = gem.x,
+			y = gem.y,
+			image = self.special_images[gem.color].petala,
+			y_dist = images.GEM_WIDTH * 0.5,
+			x_drift = images.GEM_WIDTH,
+			delay = i,
+		}
+		game.particles.dust.generateLeafFloat{
+			game = game,
+			x = gem.x,
+			y = gem.y,
+			image = self.special_images[gem.color].petalb,
+			y_dist = images.GEM_WIDTH * 0.5,
+			x_drift = images.GEM_WIDTH,
+			delay = i,
+		}
+	end
+
 	return damage_particle_duration
 end
 
