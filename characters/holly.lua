@@ -253,6 +253,7 @@ function Flower.generate(game, owner, gem, delay)
 		gem = gem,
 		image = owner.special_images[color].petala,
 		delay_frames = delay,
+		rotation = math.random() * math.pi * 2,
 		num = 4,
 	}
 	game.particles.dust.generateGarbageCircle{
@@ -260,6 +261,7 @@ function Flower.generate(game, owner, gem, delay)
 		gem = gem,
 		image = owner.special_images[color].petalb,
 		delay_frames = delay,
+		rotation = math.random() * math.pi * 2,
 		num = 4,
 	}
 end
