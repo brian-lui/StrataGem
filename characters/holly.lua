@@ -175,13 +175,13 @@ function Flower:_rotateDance()
 end
 
 function Flower:update(dt)
-	Pic.update(self, dt)
+	self.stem.x = self.gem.x
+	self.stem.y = self.gem.y + self.STEM_DOWNSHIFT
 	self.stem:update(dt)
 
 	self.x = self.gem.x
 	self.y = self.gem.y
-	self.stem.x = self.gem.x
-	self.stem.y = self.gem.y + self.STEM_DOWNSHIFT
+	Pic.update(self, dt)
 
 	if not self.is_destroyed then
 		if self.color == "red" or self.color == "blue" then
