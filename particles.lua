@@ -1362,6 +1362,112 @@ function Dust.generateGarbageCircle(params)
 		}
 	end
 end
+
+--[[ An animation type for like, a leaf floating downwards.
+	Takes mandatory arguments for: game, x, y, image, y_dist (in pixels)
+
+	Takes optional arguments for:
+	x_drift (in pixels, default is equal to y_distance)
+	travel_duration (default is 180 frames)
+	init_shoot_dist (in pixels, default is 20 pixels)
+	init_shoot_duration (default is 8 frames)
+	init_shoot_type (default is "random", or else no shoot. Can add more later)
+	init_shoot_easing (default is "outCubic" )
+	swings (number of times it swings, default 5)
+	fade_out_duration (default is 20 frames)
+	delay: how many frames to delay the animation
+	force_max_alpha
+--]]
+function Dust.generateLeafFloat(params)
+	assert(params.game and params.x and params.y and params.image and params.y_dist,
+		"Manadatory game/x/y/image/y_dist not provided!")
+
+	local game = params.game
+	local x, y, image = params.x, params.y, params.image
+	local y_dist = params.y_dist
+	local x_drift = params.x_drift or y_dist
+	local travel_duration = (params.travel_duration or 180) *
+		(1 + (math.random() - 0.5) * 0.5)
+	local init_shoot_dist = params.init_shoot_dist or 30
+	local init_shoot_duration = params.init_shoot_duration or 8
+	local init_shoot_type = params.init_shoot_type or "random"
+	local init_shoot_easing = params.init_shoot_easing or "outCubic"
+	local swings = params.swings or 5
+	local fade_out_duration = params.fade_out_duration or 20
+	local delay = params.delay or 0
+
+	local p = common.instance(Dust, game.particles, x, y, image, "OverDust")
+
+	p.force_max_alpha = params.force_max_alpha
+
+	if delay > 0 then
+		p:change{transparency = 0}
+		p:wait(delay)
+		p:change{duration = 0, transparency = 1}
+	end
+
+	local last_x, last_y = x, y
+	if init_shoot_type == "random" then
+		local angle = math.random() * math.pi * 2
+		local init_x = init_shoot_dist * math.cos(angle) * math.random()
+		local init_y = init_shoot_dist * math.sin(angle) * math.random()
+		p:change{
+			duration = init_shoot_duration,
+			x = last_x + init_x,
+			y = last_y + init_y,
+			easing = init_shoot_easing,
+		}
+		last_x, last_y = last_x + init_x, last_y + init_y
+	end
+
+	local swing_duration = travel_duration / swings
+	local y_per_swing = (y_dist + (y - last_y)) / (swings - 0.5)
+	local sign = math.random() < 0.5 and 1 or -1
+
+	-- first swing
+	local x1, y1 = last_x, last_y
+	local x2, y2 = last_x + x_drift * sign * 0.5, last_y + y_per_swing * 0.5
+	local x3, y3 = last_x + x_drift * sign * 0.5, last_y - y_per_swing * 0.5
+	local curve = love.math.newBezierCurve(x1, y1, x2, y2, x3, y3)
+	p:change{
+		duration = swing_duration,
+		curve = curve,
+		rotation = math.pi * 0.5 * sign,
+	}
+	last_x, last_y = x3, y3
+
+	for i = 2, swings - 1 do
+		sign = sign * -1
+		x1, y1 = last_x, last_y
+		x2, y2 = last_x + x_drift * sign, last_y + y_per_swing * 2
+		x3, y3 = last_x + x_drift * sign, last_y + y_per_swing
+		local curve = love.math.newBezierCurve(x1, y1, x2, y2, x3, y3)
+		p:change{
+			duration = swing_duration,
+			curve = curve,
+			rotation = math.pi * sign,
+		}
+		last_x, last_y = x3, y3
+	end
+
+	-- last swing
+	sign = sign * -1
+	x1, y1 = last_x, last_y
+	x2, y2 = last_x + x_drift * sign * 0.5, last_y + y_per_swing * 2
+	x3, y3 = last_x + x_drift * sign * 0.5, last_y + y_per_swing
+	local curve = love.math.newBezierCurve(x1, y1, x2, y2, x3, y3)
+	p:change{
+		duration = swing_duration,
+		curve = curve,
+		rotation = 0,
+	}
+
+	-- fadeout
+	p:change{duration = fade_out_duration, transparency = 0, remove = true}
+
+	return delay + travel_duration + fade_out_duration
+end
+
 Dust = common.class("Dust", Dust, Pic)
 
 -------------------------------------------------------------------------------
