@@ -622,12 +622,12 @@ function Diggory:afterGravity()
 	-- If any friendly gem made a match, don't activate it
 	-- check up to the gem below the slammy gem
 	local function _colHasFriendlyMatch(slammy_gem, player_num)
-		local last_row = math.min(slammy_gem.row, grid.BASIN_END_ROW)
+		local last_row = math.min(slammy_gem.row + 1, grid.BASIN_END_ROW)
 		for row = grid.PENDING_START_ROW, last_row do
 			local gem = grid[row][slammy_gem.column].gem
 			if gem then
 				for _, match in ipairs(match_gems) do
-					if gem == match_gem and gem.player_num == match.player_num then
+					if gem == match and gem.player_num == match.player_num then
 						return true
 					end
 				end
