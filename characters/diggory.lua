@@ -23,8 +23,6 @@ Diggory.shadow_image = love.graphics.newImage('images/portraits/shadow_diggory.p
 Diggory.super_fuzz_image = love.graphics.newImage('images/ui/superfuzzyellow.png')
 
 Diggory.character_name = "Diggory"
-Diggory.MAX_MP = 48
-Diggory.SUPER_COST = 48
 Diggory.meter_gain = {
 	red = 4,
 	blue = 4,
