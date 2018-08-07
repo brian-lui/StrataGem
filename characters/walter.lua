@@ -647,7 +647,7 @@ function MatchBubbles.generate(game, owner, match_list)
 		end
 	end
 
-	return TIME_TO_DEST
+	return TIME_TO_DEST - 15 
 end
 MatchBubbles = common.class("MatchBubbles", MatchBubbles, Pic)
 
