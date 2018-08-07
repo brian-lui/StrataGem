@@ -277,7 +277,7 @@ local function shuffleHands(game)
 	end
 end
 
-local my_guy = "heath"
+local my_guy = "diggory"
 local cpu_guy = "heath"
 local function resetGame(game)
 	game:start{
@@ -294,6 +294,10 @@ local function resetGame(game)
 	elseif cpu_guy == "walter" then
 		cpu_guy = "wolfgang"
 	elseif cpu_guy == "wolfgang" then
+		cpu_guy = "diggory"
+	elseif cpu_guy == "diggory" then
+		cpu_guy = "holly"
+	elseif cpu_guy == "holly" then
 		cpu_guy = "heath"
 	end
 
@@ -303,6 +307,10 @@ local function resetGame(game)
 		elseif my_guy == "walter" then
 			my_guy = "wolfgang"
 		elseif my_guy == "wolfgang" then
+			my_guy = "diggory"
+		elseif my_guy == "diggory" then
+			my_guy = "holly"
+		elseif my_guy == "holly" then
 			my_guy = "heath"
 		end
 	end
