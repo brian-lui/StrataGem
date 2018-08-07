@@ -584,6 +584,7 @@ function MatchBubbles.generate(game, owner, match_list)
 		return bubble_image
 	end
 
+	-- "gather" bubbles
 	for i = 1, #match_list do
 		for j = 1, 30 do
 			local row, col = match_list[i].row, match_list[i].column
@@ -604,11 +605,13 @@ function MatchBubbles.generate(game, owner, match_list)
 			}
 
 			local p = common.instance(MatchBubbles, game.particles, params)
-			p:wait(math.ceil(j * 0.5))
+			p.transparency = 0
+			p:wait(j)
 			p:change{
 				duration = 15,
 				x = x_start,
 				y = y_start,
+				transparency = 1,
 				easing = "inCubic",
 			}
 			p:change{
