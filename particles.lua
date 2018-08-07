@@ -1388,7 +1388,7 @@ function Dust.generateLeafFloat(params)
 		"Mandatory game/x/y/image/y_dist not provided!")
 
 	local game = params.game
-	local x = params.
+	local x = params.x
 	local y = params.y
 	local image = params.image
 	local y_dist = params.y_dist
@@ -1434,15 +1434,15 @@ function Dust.generateLeafFloat(params)
 	local y_per_swing = y_dist / (swings - 0.5)
 
 	local sign = math.random() < 0.5 and 1 or -1
-	
+
 	local x_move = function()
 		return x_drift * 1 + (math.random() - 0.5) * 0.2
 	end
-	
+
 	local y_move = function()
 		return y_per_swing * 1 + (math.random() - 0.5) * 0.2
 	end
-	
+
 	local tween_type = function()
 		local choices = {"inQuad", "linear", "inSine"}
 		local rand = math.random(#choices)
@@ -1467,7 +1467,7 @@ function Dust.generateLeafFloat(params)
 	last_x, last_y = x3, y3
 
 	-- intermediate swings
-	for i = 2, swings - 1 do
+	for _ = 2, swings - 1 do
 		sign = sign * -1
 		x1 = last_x
 		y1 = last_y
@@ -1494,7 +1494,7 @@ function Dust.generateLeafFloat(params)
 	y2 = last_y + y_move() * 2
 	x3 = last_x + x_move() * sign * 0.5
 	y3 = last_y + y_move()
-	
+
 	curve = love.math.newBezierCurve(x1, y1, x2, y2, x3, y3)
 
 	p:change{
