@@ -1369,7 +1369,7 @@ end
 	Takes optional arguments for:
 	x_drift (in pixels, default is equal to y_distance)
 	travel_duration (default is 180 frames)
-	init_shoot_dist (in pixels, default is 20 pixels)
+	init_shoot_dist (in pixels, default is stage.height * 0.1)
 	init_shoot_duration (default is 8 frames)
 	init_shoot_type (default is "random", or else no shoot. Can add more later)
 	init_shoot_easing (default is "outCubic" )
@@ -1377,18 +1377,25 @@ end
 	fade_out_duration (default is 20 frames)
 	delay: how many frames to delay the animation
 	force_max_alpha
+
+	Need all three of the following, to have image swapping:
+	swap_image
+	swap_tween - how to tween the swap: y_scaling, x_scaling
+	swap_period - swap period of each swap
 --]]
 function Dust.generateLeafFloat(params)
 	assert(params.game and params.x and params.y and params.image and params.y_dist,
-		"Manadatory game/x/y/image/y_dist not provided!")
+		"Mandatory game/x/y/image/y_dist not provided!")
 
 	local game = params.game
-	local x, y, image = params.x, params.y, params.image
+	local x = params.
+	local y = params.y
+	local image = params.image
 	local y_dist = params.y_dist
 	local x_drift = params.x_drift or y_dist
 	local travel_duration = (params.travel_duration or 180) *
 		(1 + (math.random() - 0.5) * 0.5)
-	local init_shoot_dist = params.init_shoot_dist or 30
+	local init_shoot_dist = params.init_shoot_dist or game.stage.height * 0.1
 	local init_shoot_duration = params.init_shoot_duration or 8
 	local init_shoot_type = params.init_shoot_type or "random"
 	local init_shoot_easing = params.init_shoot_easing or "outCubic"
@@ -1407,63 +1414,108 @@ function Dust.generateLeafFloat(params)
 	end
 
 	local last_x, last_y = x, y
+
 	if init_shoot_type == "random" then
 		local angle = math.random() * math.pi * 2
 		local init_x = init_shoot_dist * math.cos(angle) * math.random()
 		local init_y = init_shoot_dist * math.sin(angle) * math.random()
+
 		p:change{
 			duration = init_shoot_duration,
 			x = last_x + init_x,
 			y = last_y + init_y,
 			easing = init_shoot_easing,
 		}
+
 		last_x, last_y = last_x + init_x, last_y + init_y
 	end
 
 	local swing_duration = travel_duration / swings
-	local y_per_swing = (y_dist + (y - last_y)) / (swings - 0.5)
+	local y_per_swing = y_dist / (swings - 0.5)
+
 	local sign = math.random() < 0.5 and 1 or -1
+	
+	local x_move = function()
+		return x_drift * 1 + (math.random() - 0.5) * 0.2
+	end
+	
+	local y_move = function()
+		return y_per_swing * 1 + (math.random() - 0.5) * 0.2
+	end
+	
+	local tween_type = function()
+		local choices = {"inQuad", "linear", "inSine"}
+		local rand = math.random(#choices)
+		return choices[rand]
+	end
 
 	-- first swing
-	local x1, y1 = last_x, last_y
-	local x2, y2 = last_x + x_drift * sign * 0.5, last_y + y_per_swing * 0.5
-	local x3, y3 = last_x + x_drift * sign * 0.5, last_y - y_per_swing * 0.5
+	local x1 = last_x
+	local y1 = last_y
+	local x2 = last_x + x_move() * sign * 0.5
+	local y2 = last_y + y_move() * 0.5
+	local x3 = last_x + x_move() * sign * 0.5
+	local y3 = last_y - y_move() * 0.5
 	local curve = love.math.newBezierCurve(x1, y1, x2, y2, x3, y3)
+
 	p:change{
 		duration = swing_duration,
 		curve = curve,
-		rotation = math.pi * 0.5 * sign,
+		easing = tween_type(),
 	}
+
 	last_x, last_y = x3, y3
 
+	-- intermediate swings
 	for i = 2, swings - 1 do
 		sign = sign * -1
-		x1, y1 = last_x, last_y
-		x2, y2 = last_x + x_drift * sign, last_y + y_per_swing * 2
-		x3, y3 = last_x + x_drift * sign, last_y + y_per_swing
-		local curve = love.math.newBezierCurve(x1, y1, x2, y2, x3, y3)
+		x1 = last_x
+		y1 = last_y
+		x2 = last_x + x_move() * sign
+		y2 = last_y + y_move() * 2
+		x3 = last_x + x_move() * sign
+		y3 = last_y + y_move()
+		curve = love.math.newBezierCurve(x1, y1, x2, y2, x3, y3)
+
 		p:change{
 			duration = swing_duration,
 			curve = curve,
-			rotation = math.pi * sign,
+			easing = tween_type(),
 		}
+
 		last_x, last_y = x3, y3
 	end
 
 	-- last swing
 	sign = sign * -1
-	x1, y1 = last_x, last_y
-	x2, y2 = last_x + x_drift * sign * 0.5, last_y + y_per_swing * 2
-	x3, y3 = last_x + x_drift * sign * 0.5, last_y + y_per_swing
-	local curve = love.math.newBezierCurve(x1, y1, x2, y2, x3, y3)
+	x1 = last_x
+	y1 = last_y
+	x2 = last_x + x_move() * sign * 0.5
+	y2 = last_y + y_move() * 2
+	x3 = last_x + x_move() * sign * 0.5
+	y3 = last_y + y_move()
+	
+	curve = love.math.newBezierCurve(x1, y1, x2, y2, x3, y3)
+
 	p:change{
 		duration = swing_duration,
 		curve = curve,
-		rotation = 0,
+		easing = tween_type(),
 	}
 
 	-- fadeout
 	p:change{duration = fade_out_duration, transparency = 0, remove = true}
+
+
+	-- custom update, if params.swap_image and params.swap_period provided
+	if params.swap_image and params.swap_tween and params.swap_period then
+		local update_func = function(leaf)
+			Pic.update(leaf)
+			-- blah blah
+		end
+
+		-- p.update = update_func
+	end
 
 	return delay + travel_duration + fade_out_duration
 end
