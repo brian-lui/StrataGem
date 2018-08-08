@@ -1509,12 +1509,32 @@ function Dust.generateLeafFloat(params)
 
 	-- custom update, if params.swap_image and params.swap_period provided
 	if params.swap_image and params.swap_tween and params.swap_period then
-		local update_func = function(leaf)
-			Pic.update(leaf)
-			-- blah blah
-		end
+		local tw = params.swap_tween
+		p.tween_sign = -1 -- -1 for shrink, 1 for expand
+		p.swap_image = params.swap_image
+		p.tween_per_frame = 1 / params.swap_period		
+		p[tw] = 1
 
-		-- p.update = update_func
+		-- "squishing" animation
+		p.update = function(leaf, dt)
+			Pic.update(leaf, dt)
+
+			leaf[tw] = leaf[tw] + leaf.tween_sign * leaf.tween_per_frame
+
+			if leaf[tw] <= 0 then
+				leaf.tween_sign = 1
+				leaf[tw] = 0
+				local img = leaf.swap_image
+				leaf.swap_image = leaf.image
+				leaf:newImage(img)
+			elseif leaf[tw] >= 1 then
+				leaf.tween_sign = -1
+				leaf[tw] = 1
+				local img = leaf.swap_image
+				leaf.swap_image = leaf.image
+				leaf:newImage(img)
+			end
+		end
 	end
 
 	return delay + travel_duration + fade_out_duration
