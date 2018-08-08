@@ -573,10 +573,68 @@ function Diggory:_destroyFlaggedGems()
 		max_particle_duration = math.max(max_particle_duration, particle_duration)
 	end
 
-	self.cracked_gems_to_destroy = {}
+	if not to_destroy then self.cracked_gems_to_destroy = {} end
 
 	phase.damage_particle_duration = math.max(phase.damage_particle_duration, max_particle_duration)
 	return max_delay
+end
+
+-- destroy a gem using "clod" animation, not regular explode animation
+function Diggory:_clodDestroyGem(gem, delay)
+	local game = self.game
+	local grid = game.grid
+	delay = delay or 0
+	
+	local time_to_explode, particle_duration = grid:destroyGem{
+		gem = gem,
+		credit_to = self.player_num,
+		show_exploding_gem = false,
+		show_pop_glow = false,
+		delay = delay,
+	}
+
+	-- clouds animation
+	self.fx.passive_clouds.generate(game, self, gem.x, gem.y, time_to_explode)
+
+	-- clods animation
+	local color_func
+	if gem.color == "red"
+	or gem.color == "blue"
+	or gem.color == "green"
+	or gem.color == "yellow" then
+		color_func = function() return gem.color end
+	elseif gem.color == "wild" then
+		color_func = function()
+			local colors = {"red", "blue", "green", "yellow"}
+			local rand = math.random(#colors)
+			return colors[rand]
+		end
+	else
+		error("Invalid color provided for Diggory _clodDestroyGem!")
+	end
+
+	for _ = 1, math.random(25, 40) do
+		self.fx.clod.generate(
+			game,
+			self,
+			gem.x,
+			gem.y,
+			color_func(),
+			time_to_explode
+		)
+	end
+
+	-- shaking
+	for _, i in ipairs{5, 20} do
+		game.queue:add(
+			i + delay,
+			game.uielements.screenshake,
+			game.uielements,
+			1
+		)
+	end
+
+	return time_to_explode, particle_duration
 end
 
 function Diggory:beforeGravity()
@@ -649,33 +707,7 @@ function Diggory:afterGravity()
 				self.slammy_gems[key] = nil
 			else
 				-- destroy the gem
-				local time_to_explode, particle_duration = grid:destroyGem{
-					gem = below_gem,
-					credit_to = self.player_num,
-					show_exploding_gem = false,
-					show_pop_glow = false,
-				}
-				delay = math.max(delay, time_to_explode)
-
-				-- clouds animation
-				self.fx.passive_clouds.generate(
-					game,
-					self,
-					below_gem.x,
-					below_gem.y,
-					time_to_explode
-				)
-
-				-- clods animation
-				for _ = 1, math.random(25, 40) do
-					self.fx.clod.generate(
-						game,
-						self,
-						below_gem.x,
-						below_gem.y,
-						below_gem.color,
-						time_to_explode
-					)
+				local time_to_explode, particle_duration = self:_clodDestroyGem(below_gem)
 				end
 
 				-- shaking
