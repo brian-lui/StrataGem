@@ -518,7 +518,7 @@ end
 
 -- takes destroyed_gems as a list of gems, and flags ownership.
 -- returns all cracked gems that are adjacent to these gems, as a set
-function Diggory:_checkAndFlagCrackedGems(destroyed_gems)
+function Diggory:_getCrackedGemsToDestroy(destroyed_gems)
 	local game = self.game
 	local grid = game.grid
 
@@ -555,14 +555,14 @@ end
 
 -- destroys the flagged gems. Put it in a function so we can move it around
 -- updates phase.damage_particle_duration
-function Diggory:_destroyFlaggedGems()
+function Diggory:_destroyFlaggedGems(to_destroy)
 	local game = self.game
 	local phase = game.phase
 	local grid = game.grid
 	local max_delay, max_particle_duration = 0, 0
 	local AFTER_DESTROY_PAUSE = game.GEM_EXPLODE_FRAMES
 
-	for gem in pairs(self.cracked_gems_to_destroy) do
+	for gem in pairs(to_destroy or self.cracked_gems_to_destroy) do
 		local explode_delay, particle_duration = grid:destroyGem{
 			gem = gem,
 			delay = game.GEM_EXPLODE_FRAMES,
@@ -708,16 +708,23 @@ function Diggory:afterGravity()
 			else
 				-- destroy the gem
 				local time_to_explode, particle_duration = self:_clodDestroyGem(below_gem)
+
+				-- get the gems adjacent to the below gem
+				local left_gem = grid[below_gem.row][below_gem.column - 1].gem
+				local right_gem = grid[below_gem.row][below_gem.column + 1].gem
+				local down_gem = grid[below_gem.row + 1][below_gem.column].gem
+
+				-- destroy adjacent cracked gems
+				local check_gems = {}
+				if left_gem then check_gems[#check_gems + 1] = left_gem end
+				if right_gem then check_gems[#check_gems + 1] = right_gem end
+				if down_gem then check_gems[#check_gems + 1] = down_gem end
+				
+				if #check_gems > 0 then
+					local to_destroy = self:_getCrackedGemsToDestroy(check_gems)
+					self:_destroyFlaggedGems(to_destroy)
 				end
 
-				-- shaking
-				for _, i in ipairs{5, 20} do
-					game.queue:add(
-						i,
-						game.uielements.screenshake,
-						game.uielements,
-						1
-					)
 				end
 
 				-- power through if cracked gem, otherwise stop
@@ -746,7 +753,7 @@ function Diggory:beforeMatch()
 	if matches == 0 then delay = self.slammy_particle_wait_time end
 	self.slammy_particle_wait_time = 0
 
-	self.cracked_gems_to_destroy = self:_checkAndFlagCrackedGems(matched_gems)
+	self.cracked_gems_to_destroy = self:_getCrackedGemsToDestroy(matched_gems)
 
 	return delay
 end
