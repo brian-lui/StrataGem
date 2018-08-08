@@ -725,6 +725,18 @@ function Diggory:afterGravity()
 					self:_destroyFlaggedGems(to_destroy)
 				end
 
+				-- crack a gem that's to the left or right of the destroyed gem
+				local new_cracks = {}
+
+				if left_gem then new_cracks[#new_cracks + 1] = left_gem end
+				if right_gem then new_cracks[#new_cracks + 1] = right_gem end
+				
+				if #new_cracks > 0 then
+					local CRACK_DELAY = time_to_explode + delay + 15
+					local rand = game.rng:random(#new_cracks)
+					to_crack = new_cracks[rand]
+					to_crack.diggory_cracked = self.player_num
+					self.fx.crack.generate(game, self, to_crack, crack_delay)
 				end
 
 				-- power through if cracked gem, otherwise stop
@@ -733,7 +745,7 @@ function Diggory:afterGravity()
 				end
 
 				self.slammy_particle_wait_time = delay + particle_duration
-
+				delay = delay + time_to_explode
 				go_to_gravity = true
 			end
 		else
