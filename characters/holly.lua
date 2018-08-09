@@ -9,6 +9,15 @@ row of any of the opponent’s columns. (So 2 spores randomly appearing in 2 of 
 possible spaces.) If the opponent breaks a spore through matching, all
 the damage (including combo damage) is reflected. Spores disappear after three
 turns.
+
+Animations:
+Spore Pods appear on stems the same way a flower does, but instead of dancing,
+they shake left and right. (rapidly tween back and forth like 5 pixels total.)
+Also, while they are on screen, they drop spore.png in the same way that gems
+drop dust when held or rotated.
+
+When spore pods explode, they should shoot spores the same way gems shoot dust.
+lots of spores. thanks.
 --]]
 
 local love = _G.love
@@ -402,6 +411,11 @@ end
 function Holly:beforeGravity()
 	-- Super 1
 	-- gain super spore pods
+	--[[
+		2 spores appear randomly in either the topmost row or second top most
+		row of any of the opponent’s columns. (So 2 spores randomly appearing in 2 of 8
+		possible spaces.)
+	--]]
 	--[[
 		spore is set to the gem as gem.holly_spore = self.player_num
 		spore image referenced in self.spore_images
