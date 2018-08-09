@@ -274,8 +274,66 @@ end
 Flower = common.class("Flower", Flower, Pic)
 
 -------------------------------------------------------------------------------
+-- extra damage petals, follows the bezier to the second platform slowly
+local DamagePetal = {}
+function DamagePetal:init(manager, tbl)
+	Pic.init(self, manager.game, tbl)
+	local counter = self.game.inits.ID.particle
+	manager.allParticles.CharEffects[counter] = self
+	self.manager = manager
+end
+
+function DamagePetal:remove()
+	self.manager.allParticles.CharEffects[self.ID] = nil
+end
+
+function DamagePetal.generate(game, owner, gem, delay)
+	local TRAVEL_TIME = 60
+	local x1, y1 = gem.x, gem.y
+	local x4, y4 = owner.enemy.hand[2].x, owner.enemy.hand[2].y
+	local dist = ((x4 - x1) ^ 2 + (y4 - y1) ^ 2) ^ 0.5
+	local x3, y3 = 0.5 * (x1 + x4), 0.5 * (y1 + y4)
+
+	local images = {
+		owner.special_images[gem.color].petala,
+		owner.special_images[gem.color].petalb,
+	}
+
+	for _, image in ipairs(images) do
+		for i = 1, 4 do
+			local angle = math.random() * math.pi * 2
+			local x2 = x1 + math.cos(angle) * dist * 0.5
+			local y2 = y1 + math.sin(angle) * dist * 0.5
+
+			local curve = love.math.newBezierCurve(x1, y1, x2, y2, x3, y3, x4, y4)
+
+			local params = {
+				x = x1,
+				y = y1,
+				image = image,
+				draw_order = 2,
+				owner = owner,
+			}
+
+			local p = common.instance(DamagePetal, game.particles, params)
+
+			if delay then
+				p.transparency = 0
+				p:wait(delay)
+				p:change{duration = 0, transparency = 1}
+			end
+
+			p:change{duration = TRAVEL_TIME + i * 5, curve = curve, remove = true}
+		end
+	end
+end
+
+DamagePetal = common.class("DamagePetal", DamagePetal, Pic)
+
+-------------------------------------------------------------------------------
 Holly.fx = {
 	flower = Flower,
+	damagePetal = DamagePetal,
 }
 
 -------------------------------------------------------------------------------
@@ -308,6 +366,9 @@ function Holly._onFlowerDestroy(gem, delay, self)
 		self.player_num
 	)
 	local damage_particle_duration = math.max(damage_particle_duration, d)
+
+	-- extra petal damage particles
+	self.fx.damagePetal.generate(game, self, gem, delay)
 
 	-- heal 1 damage
 	self:healDamage(1, delay)
