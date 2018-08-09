@@ -699,13 +699,10 @@ function Diggory:afterGravity()
 		local col_has_match = _colHasFriendlyMatch(gem, self.player_num)
 		local below_gem = grid[gem.row + 1][gem.column].gem
 		if below_gem then
-			if (below_gem.color == "yellow" and not below_gem.diggory_cracked)
-			or col_has_match
+			if not(col_has_match
+			or (below_gem.color == "yellow" and not below_gem.diggory_cracked)
 			or below_gem.color == "none"
-			or below_gem.indestructible then
-				-- don't destroy below gem
-				self.slammy_gems[key] = nil
-			else
+			or below_gem.indestructible) then
 				-- destroy the gem
 				local time_to_explode, particle_duration = self:_clodDestroyGem(below_gem)
 
@@ -739,18 +736,14 @@ function Diggory:afterGravity()
 					self.fx.crack.generate(game, self, to_crack, crack_delay)
 				end
 
-				-- power through if cracked gem, otherwise stop
-				if not below_gem.diggory_cracked then
-					self.slammy_gems[key] = nil
-				end
-
+				self.slammy_gems[key] = nil
 				self.slammy_particle_wait_time = delay + particle_duration
 				delay = delay + time_to_explode
 				go_to_gravity = true
 			end
-		else
-			self.slammy_gems[key] = nil
 		end
+
+		self.slammy_gems[key] = nil
 	end
 
 	return delay, go_to_gravity
