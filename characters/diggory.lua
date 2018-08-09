@@ -559,23 +559,18 @@ function Diggory:_destroyFlaggedGems(to_destroy)
 	local game = self.game
 	local phase = game.phase
 	local grid = game.grid
-	local max_delay, max_particle_duration = 0, 0
+	local max_delay, max_particle_t = 0, 0
 	local AFTER_DESTROY_PAUSE = game.GEM_EXPLODE_FRAMES
 
 	for gem in pairs(to_destroy or self.cracked_gems_to_destroy) do
-		local explode_delay, particle_duration = grid:destroyGem{
-			gem = gem,
-			delay = game.GEM_EXPLODE_FRAMES,
-			show_exploding_gem = false,
-			show_pop_glow = false,
-		}
-		max_delay = math.max(max_delay, explode_delay + AFTER_DESTROY_PAUSE)
-		max_particle_duration = math.max(max_particle_duration, particle_duration)
+		local explode_t, particle_t = self:_clodDestroyGem(gem, game.GEM_EXPLODE_FRAMES)
+		max_delay = math.max(max_delay, explode_t + AFTER_DESTROY_PAUSE)
+		max_particle_t = math.max(max_particle_t, particle_t)
 	end
 
 	if not to_destroy then self.cracked_gems_to_destroy = {} end
 
-	phase.damage_particle_duration = math.max(phase.damage_particle_duration, max_particle_duration)
+	phase.damage_particle_duration = math.max(phase.damage_particle_duration, max_particle_t)
 	return max_delay
 end
 
