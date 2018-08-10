@@ -401,7 +401,7 @@ function Holly._onFlowerDestroy(gem, delay, self)
 			x_drift = images.GEM_WIDTH,
 			swap_image = self.special_images[gem.color].petalb,
 			swap_tween = "y_scaling",
-			swap_period = 50,
+			swap_period = 30,
 		}
 	end
 
@@ -441,8 +441,11 @@ end
 
 function Holly:duringMatch()
 	-- Super 3
-	--[[ if a match contains both player's spores, grey match. otherwise,
-	if a match contains a spore, force it to be flagged for the opponent]]
+	--[[
+	count number of matches of both player's spores.
+	If match owner's opponent has more spores than you, reflect it.
+	flag them with gem.holly_reflected for future animation use
+	--]]
 end
 
 function Holly:afterMatch()
