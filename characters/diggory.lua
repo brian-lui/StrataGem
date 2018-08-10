@@ -379,11 +379,12 @@ function Crack.generate(game, owner, gem, delay)
 		h_flip = math.random() < 0.5,
 		v_flip = math.random() < 0.5,
 		gem = gem,
-		transparency = 0,
 		force_max_alpha = true,
 	}
 
+	print("crack delay", delay)
 	owner.crack_images[gem] = common.instance(Crack, game.particles, params)
+	owner.crack_images[gem]:change{duration = 0, transparency = 0}
 	owner.crack_images[gem]:wait(delay)
 	owner.crack_images[gem]:change{duration = 0, transparency = 1}
 
@@ -701,23 +702,13 @@ function Diggory:afterGravity()
 				-- destroy the gem
 				local time_to_explode, particle_duration = self:_clodDestroyGem(below_gem)
 
-				-- get the gems adjacent to the below gem
-				local left_gem = grid[below_gem.row][below_gem.column - 1].gem
-				local right_gem = grid[below_gem.row][below_gem.column + 1].gem
-				local down_gem = grid[below_gem.row + 1][below_gem.column].gem
-
 				-- destroy adjacent cracked gems
-				local check_gems = {}
-				if left_gem then check_gems[#check_gems + 1] = left_gem end
-				if right_gem then check_gems[#check_gems + 1] = right_gem end
-				if down_gem then check_gems[#check_gems + 1] = down_gem end
-				
-				if #check_gems > 0 then
-					local to_destroy = self:_getCrackedGemsToDestroy(check_gems)
-					self:_destroyFlaggedGems(to_destroy)
-				end
+				local to_destroy = self:_getCrackedGemsToDestroy({below_gem})
+				if #to_destroy > 0 then self:_destroyFlaggedGems(to_destroy) end
 
 				-- crack a gem that's to the left or right of the destroyed gem
+				local left_gem = grid[below_gem.row][below_gem.column - 1].gem
+				local right_gem = grid[below_gem.row][below_gem.column + 1].gem
 				local new_cracks = {}
 
 				if left_gem and not left_gem.diggory_cracked then
@@ -733,7 +724,7 @@ function Diggory:afterGravity()
 					local rand = game.rng:random(#new_cracks)
 					to_crack = new_cracks[rand]
 					to_crack.diggory_cracked = self.player_num
-					self.fx.crack.generate(game, self, to_crack, crack_delay)
+					self.fx.crack.generate(game, self, to_crack, CRACK_DELAY)
 				end
 
 				self.slammy_gems[key] = nil
