@@ -720,8 +720,13 @@ function Diggory:afterGravity()
 				-- crack a gem that's to the left or right of the destroyed gem
 				local new_cracks = {}
 
-				if left_gem then new_cracks[#new_cracks + 1] = left_gem end
-				if right_gem then new_cracks[#new_cracks + 1] = right_gem end
+				if left_gem and not left_gem.diggory_cracked then
+					new_cracks[#new_cracks + 1] = left_gem
+				end
+
+				if right_gem and not right_gem.diggory_cracked then
+					new_cracks[#new_cracks + 1] = right_gem
+				end
 				
 				if #new_cracks > 0 then
 					local CRACK_DELAY = time_to_explode + delay + 15
