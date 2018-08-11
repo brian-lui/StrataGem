@@ -1512,7 +1512,7 @@ function Dust.generateLeafFloat(params)
 		local tw = params.swap_tween
 		p.tween_sign = -1 -- -1 for shrink, 1 for expand
 		p.swap_image = params.swap_image
-		p.tween_per_frame = 1 / params.swap_period		
+		p.tween_per_frame = 1 / params.swap_period
 		p[tw] = 1
 
 		-- "squishing" animation

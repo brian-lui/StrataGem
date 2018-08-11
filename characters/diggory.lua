@@ -670,18 +670,20 @@ function Diggory:afterGravity()
 	local grid = game.grid
 	local delay = 0
 	local go_to_gravity = false
-	
+
 	local match_gems = grid:getMatchedGems()
 
 	-- If any friendly gem made a match, don't activate it
 	-- check up to the gem below the slammy gem
-	local function _colHasFriendlyMatch(slammy_gem, player_num)
+	local function _colHasFriendlyMatch(slammy_gem)
 		local last_row = math.min(slammy_gem.row + 1, grid.BASIN_END_ROW)
 		for row = grid.PENDING_START_ROW, last_row do
 			local gem = grid[row][slammy_gem.column].gem
 			if gem then
 				for _, match in ipairs(match_gems) do
-					if gem == match and gem.player_num == match.player_num then
+					if gem == match
+					and gem.player_num == match.player_num
+					and self.player_num == gem.player_num then
 						return true
 					end
 				end
@@ -691,8 +693,11 @@ function Diggory:afterGravity()
 	end
 
 	-- activate passive
+	local destroyed_gems = {}
+	local explode_delay = 0
+
 	for key, gem in pairs(self.slammy_gems) do
-		local col_has_match = _colHasFriendlyMatch(gem, self.player_num)
+		local col_has_match = _colHasFriendlyMatch(gem)
 		local below_gem = grid[gem.row + 1][gem.column].gem
 		if below_gem then
 			if not(col_has_match
@@ -706,38 +711,41 @@ function Diggory:afterGravity()
 				local to_destroy = self:_getCrackedGemsToDestroy({below_gem})
 				if #to_destroy > 0 then self:_destroyFlaggedGems(to_destroy) end
 
-				-- crack a gem that's to the left or right of the destroyed gem
-				local left_gem = grid[below_gem.row][below_gem.column - 1].gem
-				local right_gem = grid[below_gem.row][below_gem.column + 1].gem
-				local new_cracks = {}
-
-				if left_gem and not left_gem.diggory_cracked then
-					new_cracks[#new_cracks + 1] = left_gem
-				end
-
-				if right_gem and not right_gem.diggory_cracked then
-					new_cracks[#new_cracks + 1] = right_gem
-				end
-				
-				if #new_cracks > 0 then
-					local CRACK_DELAY = time_to_explode + delay + 15
-					local rand = game.rng:random(#new_cracks)
-					to_crack = new_cracks[rand]
-					to_crack.diggory_cracked = self.player_num
-					self.fx.crack.generate(game, self, to_crack, CRACK_DELAY)
-				end
+				destroyed_gems[#destroyed_gems + 1] = below_gem
 
 				self.slammy_gems[key] = nil
 				self.slammy_particle_wait_time = delay + particle_duration
-				delay = delay + time_to_explode
+
+				explode_delay = math.max(explode_delay, time_to_explode)
 				go_to_gravity = true
 			end
 		end
-
-		self.slammy_gems[key] = nil
 	end
 
-	return delay, go_to_gravity
+	-- crack a gem that's to the left or right of the destroyed gem
+	for _, gem in ipairs(destroyed_gems) do
+		local left_gem = grid[gem.row][gem.column - 1].gem
+		local right_gem = grid[gem.row][gem.column + 1].gem
+		local new_cracks = {}
+
+		if left_gem and not left_gem.diggory_cracked then
+			new_cracks[#new_cracks + 1] = left_gem
+		end
+
+		if right_gem and not right_gem.diggory_cracked then
+			new_cracks[#new_cracks + 1] = right_gem
+		end
+
+		if #new_cracks > 0 then
+			local CRACK_DELAY = explode_delay + delay + 15
+			local rand = game.rng:random(#new_cracks)
+			local to_crack = new_cracks[rand]
+			to_crack.diggory_cracked = self.player_num
+			self.fx.crack.generate(game, self, to_crack, CRACK_DELAY)
+		end
+	end
+
+	return delay + explode_delay, go_to_gravity
 end
 
 function Diggory:beforeMatch()
