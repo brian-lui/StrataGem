@@ -713,13 +713,14 @@ function Diggory:afterGravity()
 
 				destroyed_gems[#destroyed_gems + 1] = below_gem
 
-				self.slammy_gems[key] = nil
 				self.slammy_particle_wait_time = delay + particle_duration
 
 				explode_delay = math.max(explode_delay, time_to_explode)
 				go_to_gravity = true
 			end
 		end
+
+		self.slammy_gems[key] = nil
 	end
 
 	-- crack a gem that's to the left or right of the destroyed gem
