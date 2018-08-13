@@ -891,6 +891,21 @@ function Grid:destroyGem(params)
 	local delay_until_explode = game.GEM_EXPLODE_FRAMES + glow_delay + wait_delay
 	local damage_particle_duration = 0
 
+	-- run onDestroy if present
+	if gem.onDestroy then
+		local p1tbl, p2tbl = gem.onDestroy[1], gem.onDestroy[2]
+
+		if p1tbl then
+			local d = p1tbl.func(gem, delay_until_explode, unpack(p1tbl.args))
+			damage_particle_duration = math.max(damage_particle_duration, d)
+		end
+
+		if p2tbl then
+			local d = p2tbl.func(gem, delay_until_explode, unpack(p2tbl.args))
+			damage_particle_duration = math.max(damage_particle_duration, d)
+		end
+	end
+
 	if gem.is_destroyed or gem.indestructible then return 0, 0 end
 	if params.credit_to then gem:setOwner(params.credit_to) end
 
@@ -1008,21 +1023,6 @@ function Grid:destroyGem(params)
 	gem.is_destroyed = true -- in case we try to destroy it again
 	gem.time_to_destruction = delay_until_explode -- for animation uses
 	self[gem.row][gem.column].gem = false
-
-	-- run onDestroy if present
-	if gem.onDestroy then
-		local p1tbl, p2tbl = gem.onDestroy[1], gem.onDestroy[2]
-
-		if p1tbl then
-			local d = p1tbl.func(gem, delay_until_explode, unpack(p1tbl.args))
-			damage_particle_duration = math.max(damage_particle_duration, d)
-		end
-
-		if p2tbl then
-			local d = p2tbl.func(gem, delay_until_explode, unpack(p2tbl.args))
-			damage_particle_duration = math.max(damage_particle_duration, d)
-		end
-	end
 
 	return delay_until_explode, damage_particle_duration
 end
