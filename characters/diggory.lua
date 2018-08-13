@@ -563,10 +563,34 @@ function Diggory:_destroyFlaggedGems(to_destroy)
 	local max_delay, max_particle_t = 0, 0
 	local AFTER_DESTROY_PAUSE = game.GEM_EXPLODE_FRAMES
 
-	for gem in pairs(to_destroy or self.cracked_gems_to_destroy) do
-		local explode_t, particle_t = self:_clodDestroyGem(gem, game.GEM_EXPLODE_FRAMES)
-		max_delay = math.max(max_delay, explode_t + AFTER_DESTROY_PAUSE)
-		max_particle_t = math.max(max_particle_t, particle_t)
+	local delay = game.GEM_EXPLODE_FRAMES
+	local keep_on_cracking = true
+
+	local cracked_gems = to_destroy or self.cracked_gems_to_destroy
+	local adjacent_cracked_gems = {}
+
+	while keep_on_cracking do
+		keep_on_cracking = false
+		for gem in pairs(cracked_gems) do
+			if not gem.is_destroyed then
+
+				-- add adjacent cracked gems
+				local adjacents = self:_getCrackedGemsToDestroy({gem})
+				for adj in pairs(adjacents) do
+					adjacent_cracked_gems[adj] = true
+				end
+
+				-- explode current cracked gem
+				local explode_t, particle_t = self:_clodDestroyGem(gem, delay)
+
+				max_delay = math.max(max_delay, explode_t + AFTER_DESTROY_PAUSE)
+				max_particle_t = math.max(max_particle_t, particle_t)
+				keep_on_cracking = true
+			end
+		end
+
+		delay = delay + game.GEM_EXPLODE_FRAMES
+		cracked_gems = adjacent_cracked_gems
 	end
 
 	if not to_destroy then self.cracked_gems_to_destroy = {} end
