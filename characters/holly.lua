@@ -428,7 +428,7 @@ function Holly:beforeMatch()
 	local grid = game.grid
 
 	-- Passive: get the number of matches made that belong to us
-	local match_lists = grid:getMatchedGemLists()
+	local match_lists = grid.matched_gem_lists
 	for _, list in ipairs(match_lists) do
 		local owned_by_me = false
 		for _, gem in ipairs(list) do

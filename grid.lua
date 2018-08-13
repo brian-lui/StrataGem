@@ -89,6 +89,8 @@ function Grid:reset()
 			self[row][col] = {gem = false, owner = 0}
 		end
 	end
+
+	self.matched_gems, self.matched_gem_lists = {}, {}
 end
 
 function Grid:gems(player_num)
@@ -243,6 +245,7 @@ function Grid:_getRawMatches(min_length)
 	return ret
 end
 
+--[[
 -- Returns a list of gems which are part of matches, and the total number of
 -- matches (not number of matched gems).
 function Grid:getMatchedGems(minimumLength)
@@ -297,7 +300,60 @@ function Grid:getMatchedGemLists(min_length)
 	end
 	return ret
 end
+--]]
 
+-- updates grid.matched_gems and grid.matched_gem_lists
+function Grid:updateMatchedGems(min_length)
+	local matches = self:_getRawMatches(minimumLength or 3)
+	local gem_set = {}
+
+	for _, match in pairs(matches) do
+		if match.is_a_horizontal_match then
+			for i = 1, match.length do
+				local r, c = match.row, match.column + i - 1
+				local this_gem = self[r][c].gem
+				if this_gem then gem_set[this_gem] = true end
+			end
+		elseif match.is_a_vertical_match then
+			for i = 1, match.length do
+				local r, c = match.row + i - 1, match.column
+				local this_gem = self[r][c].gem
+				if this_gem then gem_set[this_gem] = true end
+			end
+		else
+			print("Warning: a match was created that was neither horizontal nor vertical")
+		end
+	end
+
+	self.matched_gems = {}
+	for gem in pairs(gem_set) do
+		self.matched_gems[#self.matched_gems + 1] = gem
+	end
+
+	self.matched_gem_lists = {}
+	for _, match in pairs(matches) do
+		local gem_list = {}
+		if match.is_a_horizontal_match then
+			for i = 1, match.length do
+				local gem = self[match.row][match.column + i - 1].gem
+				if gem then gem_list[#gem_list+1] = gem end
+			end
+		elseif match.is_a_vertical_match then
+			for i = 1, match.length do
+				local gem = self[match.row + i - 1][match.column].gem
+				if gem then gem_list[#gem_list+1] = gem end
+			end
+		else
+			print("Warning: a match was created that was neither horizontal nor vertical")
+		end
+		self.matched_gem_lists[#self.matched_gem_lists+1] = gem_list
+	end
+end
+
+-- clears grid.matched_gems and grid.matched_gem_lists
+function Grid:clearMatchedGems()
+	self.matched_gems, self.matched_gem_lists = {}, {}
+end
 
 --[[ If any gem in a set is owned by a player, make all other gems in its match
 	also owned by that player (may be owned by both players).
@@ -442,7 +498,7 @@ end
 
 -- get score of simulated piece placements
 function Grid:getScore(matching_number)
-	return #self:getMatchedGems(matching_number or 3)
+	return #self.matched_gems
 end
 
 function Grid:removeAllGemOwners(player_num)
@@ -813,10 +869,9 @@ end
 
 -- Which players made a match this turn
 function Grid:checkMatchedThisRound()
-	local gem_table = self:getMatchedGems()
 	local matched = {false, false}
-	for i = 1, #gem_table do
-		local player_num = gem_table[i].player_num
+	for i = 1, #self.matched_gems do
+		local player_num = self.matched_gems[i].player_num
 		if player_num == 1 or player_num == 3 then
 			matched[1] = true
 		end
@@ -833,7 +888,7 @@ function Grid:destroyMatchedGems(combo_bonus)
 	local p1_remaining_damage, p2_remaining_damage = combo_bonus, combo_bonus
 	local delay_until_explode, damage_particle_duration = 0, 0
 
-	for _, gem in pairs(self:getMatchedGems()) do
+	for _, gem in pairs(self.matched_gems) do
 		local extra_damage = 0
 		if p1_remaining_damage > 0 and gem.player_num == 1 then
 			extra_damage = 1

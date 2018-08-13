@@ -259,7 +259,10 @@ end
 function Phase:afterGravity(dt)
 	local game = self.game
 	local grid = game.grid
+
 	game.particles.wordEffects.clear(game.particles)
+
+	grid:updateMatchedGems() -- also sets is_a_horizontal/vertical_match flags
 
 	local delay = 0
 	local next_phase = "GetMatchedGems"
@@ -296,8 +299,8 @@ If no match:
 function Phase:getMatchedGems(dt)
 	local game = self.game
 	local grid = game.grid
-	local _, matches = grid:getMatchedGems() -- also sets is_a_horizontal/vertical_match flags for matches
-	if matches > 0 then grid:flagMatchedGems() end
+
+	if #grid.matched_gems > 0 then grid:flagMatchedGems() end
 
 	local delay = 0
 
@@ -312,7 +315,7 @@ function Phase:getMatchedGems(dt)
 		local player_delay = player:beforeMatch()
 		delay = math.max(delay, player_delay or 0)
 	end
-	if matches > 0 then
+	if #grid.matched_gems > 0 then
 		self:setPause(delay)
 		self:activatePause("DestroyMatchedGems")
 	else
@@ -343,6 +346,8 @@ function Phase:destroyMatchedGems(dt)
 		delay = math.max(delay, player_delay or 0)
 	end
 	local total_delay = math.max(delay, explode_delay + particle_duration)
+
+	grid:clearMatchedGems()
 
 	self:setPause(delay)
 	self:activatePause("AfterMatch")

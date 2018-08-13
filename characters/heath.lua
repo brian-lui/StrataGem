@@ -488,9 +488,8 @@ end
 function Heath:beforeMatch()
 	local game = self.game
 	local grid = game.grid
-	local gem_table = grid:getMatchedGems()
 
-	for _, gem in pairs(gem_table) do
+	for _, gem in pairs(grid.matched_gems) do
 		local top_gem = gem.row == grid:getFirstEmptyRow(gem.column) + 1
 		if self.player_num == gem.player_num
 		and gem.is_in_a_horizontal_match

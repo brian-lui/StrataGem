@@ -671,7 +671,7 @@ function Diggory:afterGravity()
 	local delay = 0
 	local go_to_gravity = false
 
-	local match_gems = grid:getMatchedGems()
+	local match_gems = grid.matched_gems
 
 	-- If any friendly gem made a match, don't activate it
 	-- check up to the gem below the slammy gem
@@ -753,9 +753,9 @@ function Diggory:beforeMatch()
 	local grid = self.game.grid
 	local delay = 0
 
-	local matched_gems, matches = grid:getMatchedGems()
+	local matched_gems = grid.matched_gems
 
-	if matches == 0 then delay = self.slammy_particle_wait_time end
+	if #matched_gems == 0 then delay = self.slammy_particle_wait_time end
 	self.slammy_particle_wait_time = 0
 
 	self.cracked_gems_to_destroy = self:_getCrackedGemsToDestroy(matched_gems)
