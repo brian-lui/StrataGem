@@ -645,7 +645,7 @@ function Wolfgang:_getSuperArrivalLocation()
 		if gem.color ~= "wild" and gem.color ~= "none" then
 			local grid_clone = deepcpy(grid)
 			grid_clone[r][c].gem.color = "wild"
-			grid_clone:updatedMatchedGems()
+			grid_clone:updateMatchedGems()
 			if #grid_clone.matched_gems > #grid.matched_gems then
 				possible_gems[#possible_gems + 1] = gem
 			end
