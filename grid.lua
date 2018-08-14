@@ -185,6 +185,7 @@ function Grid:simulateScore(piece, coords)
 	local grid_clone = deepcpy(self)
 	grid_clone:simulatePlacePiece(piece, coords)
 	grid_clone:simulateGravity()
+	grid_clone:updateMatchedGems()
 	if not grid_clone:getScore() then print ("nil score") end
 	return grid_clone:getScore()
 end
