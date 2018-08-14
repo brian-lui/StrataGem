@@ -145,30 +145,44 @@ function Character:update(dt) end
 -- to pause for the animation.
 -------------------------------------------------------------------------------
 function Character:actionPhase(dt) end
+
 function Character:beforeGravity() end
+
 function Character:beforeTween() end
+
 function Character:duringTween() end
+
 function Character:afterGravity() end
+
 function Character:beforeMatch() end -- before gems are matched
-function Character:duringMatch() end -- while matches are exploding
-function Character:afterMatch() end -- after each match
+
+function Character:duringMatch() end -- right after matches are destroyed
+
+function Character:afterMatch() end -- after each match finished
+
 function Character:whenCreatingGarbageRow() end -- at garbage row creation
-function Character:afterAllMatches()
+
 -- after all chain combos finished.
 -- Can be called multiple times in a turn if garbage is created
-end
+function Character:afterAllMatches()end
+
 function Character:beforeCleanup() end
+
 function Character:cleanup()
 	self.is_supering = false
 	self.game:brightenScreen(self.player_num)
 end
-function Character:customGemTable() -- custom gem frequency and gem replacement
-	-- first arg is frequency: {red = 1, blue = 2, green = 3, ...}
-	-- second arg is replacement: {{color = "red", image = dog.png}, ...}
-	-- accepts functions that return the tables too
+
+--[[ custom gem frequency and gem replacement
+first arg is frequency: {red = 1, blue = 2, green = 3, ...}
+second arg is replacement: {{color = "red", image = dog.png}, ...}
+accepts functions that return the tables too --]]
+function Character:customGemTable()
 	local gem_freq_table, gem_replace_table = nil, nil
 	return gem_freq_table, gem_replace_table
 end
+
+function Character:onGemDestroy(gem) end -- callback when gem is destroyed
 
 -------------------------------------------------------------------------------
 

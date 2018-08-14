@@ -947,6 +947,8 @@ function Grid:destroyGem(params)
 	local delay_until_explode = game.GEM_EXPLODE_FRAMES + glow_delay + wait_delay
 	local damage_particle_duration = 0
 
+	for player in game:players() do player:onGemDestroy(gem) end
+
 	-- run onDestroy if present
 	if gem.onDestroy then
 		local p1tbl, p2tbl = gem.onDestroy[1], gem.onDestroy[2]
