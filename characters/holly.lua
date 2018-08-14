@@ -412,6 +412,8 @@ Holly.fx = {
 function Holly:init(...)
 	Character.init(self, ...)
 
+	self.SPORE_TURNS = 3 -- how many turns until spores leave
+
 	self.flower_images = {}
 	self.spore_images = {}
 	self.matches_made = 0
@@ -581,8 +583,23 @@ function Holly:afterMatch()
 end
 
 function Holly:cleanup()
-	-- Super 2
-	-- countdown spores and disappear ones that reach 0 turns remaining
+	local game = self.game
+	local grid = game.grid
+	local delay = 0
+
+	-- Count down spores
+	for gem in grid:gems() do
+		if gem.holly_spore and gem.holly_spore.owner == self.player_num then
+			gem.holly_spore.turns_remaining = gem.holly_spore.turns_remaining - 1
+
+			if gem.holly_spore.turns_remaining <= 0 then
+				delay = game.GEM_EXPLODE_FRAMES
+				self.spore_images[gem]:leavePlay(delay)
+				gem.holly_spore = nil
+			end
+		end
+	end
+
 	Character.cleanup(self)
 end
 
