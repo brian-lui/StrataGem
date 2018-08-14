@@ -95,15 +95,6 @@ Holly.sounds = {
 
 -------------------------------------------------------------------------------
 -- these are the flowers that appear whenever Holly makes a match
---[[
-WHEN A FLOWER EXPLODES
-
--See attached "petal explosion" diagram
-
-Damage sent by flower should be made up of attack particles AND the addition of
-some petala and petalb of the appropriate color.
---]]
-
 local Flower = {}
 function Flower:init(manager, tbl)
 	Pic.init(self, manager.game, tbl)
@@ -283,6 +274,76 @@ end
 Flower = common.class("Flower", Flower, Pic)
 
 -------------------------------------------------------------------------------
+-- these are the spores that appear for Holly's super
+local Spore = {}
+function Spore:init(manager, tbl)
+	Pic.init(self, manager.game, tbl)
+	local counter = self.game.inits.ID.particle
+	manager.allParticles.CharEffects[counter] = self
+	self.manager = manager
+end
+
+function Spore:remove()
+	self.manager.allParticles.CharEffects[self.ID] = nil
+	self.owner.spore_images[self.gem] = nil
+end
+
+-- remove through either gem destroyed, or timer expiry
+function Spore:leavePlay(delay)
+	self:wait(delay)
+	self:change{
+		duration = self.game.GEM_EXPLODE_FRAMES,
+		x_scaling = 2,
+		y_scaling = 2,
+		transparency = 0,
+		remove = true,
+	}
+
+	self.is_destroyed = true
+end
+
+function Spore:update(dt)
+	self.x = self.gem.x
+	self.y = self.gem.y
+	Pic.update(self, dt)
+
+	if self.gem.is_destroyed and not self.is_destroyed then
+		local delay = self.gem.time_to_destruction
+		self:leavePlay(delay)
+	end
+end
+
+function Spore.generate(game, owner, gem, delay)
+	local params = {
+		x = gem.x,
+		y = gem.y,
+		image = owner.special_images.spore_pod,
+		owner = owner,
+		draw_order = 2,
+		player_num = owner.player_num,
+		name = "HollySpore",
+		gem = gem,
+		transparency = 0,
+		x_scaling = 1,
+		y_scaling = 1,
+		force_max_alpha = true,
+	}
+
+	owner.spore_images[gem] = common.instance(Spore, game.particles, params)
+	owner.spore_images[gem]:wait(delay)
+	owner.spore_images[gem]:change{duration = 0, transparency = 1}
+
+	-- generate garbage appear circle with extra petals
+	game.particles.dust.generateGarbageCircle{
+		game = game,
+		gem = gem,
+		delay_frames = delay,
+	}
+end
+
+Spore = common.class("Spore", Spore, Pic)
+
+-------------------------------------------------------------------------------
 -- extra damage petals, follows the bezier to the second platform slowly
 local DamagePetal = {}
 function DamagePetal:init(manager, tbl)
@@ -342,6 +403,7 @@ DamagePetal = common.class("DamagePetal", DamagePetal, Pic)
 -------------------------------------------------------------------------------
 Holly.fx = {
 	flower = Flower,
+	spore = Spore,
 	damagePetal = DamagePetal,
 }
 
@@ -409,18 +471,56 @@ function Holly._onFlowerDestroy(gem, delay, self)
 end
 
 function Holly:beforeGravity()
-	-- Super 1
-	-- gain super spore pods
-	--[[
-		2 spores appear randomly in either the topmost row or second top most
-		row of any of the opponent’s columns. (So 2 spores randomly appearing in 2 of 8
-		possible spaces.)
-	--]]
-	--[[
-		spore is set to the gem as gem.holly_spore = self.player_num
-		spore image referenced in self.spore_images
-		spore class remove method has self.owner.spore_images[self.gem] = nil
-	--]]
+	local game = self.game
+	local grid = game.grid
+	local delay = 0
+
+	if self.is_supering then
+		-- select the places to put spores
+		local top_gems = {}
+		for col in grid:cols(self.enemy.player_num) do
+			this_col = {}
+			for row = grid.BASIN_START_ROW, grid.BASIN_END_ROW do
+				local first = grid[row][col].gem
+				if first then
+					if not first.holly_spore then
+						top_gems[#top_gems + 1] = first
+					end
+
+					local second = grid[row + 1][col].gem
+					if second and not second.holly_spore then
+						top_gems[#top_gems + 1] = second
+					end
+
+					break
+				end
+			end
+		end
+
+		shuffle(top_gems, game.rng)
+
+		local spore_places = {top_gems[1], top_gems[2]}
+
+		-- place the spores
+		for _, gem in ipairs(spore_places) do
+			gem.holly_spore = {
+				owner = self.player_num,
+				turns_remaining = self.SPORE_TURNS,
+			}
+			self.fx.spore.generate(game, self, gem, 0)
+		end
+
+		delay = 30
+		self:emptyMP()
+		self.is_supering = false
+		self.supered_this_turn = true
+	end
+
+	return delay
+end
+
+function Holly:beforeTween()
+	self.game:brightenScreen(self.player_num)
 end
 
 function Holly:beforeMatch()
