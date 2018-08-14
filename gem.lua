@@ -237,7 +237,7 @@ adds as a 2-item table for both players
 just adds one func, don't be so fancy with multiple funcs geez
 --]]
 function Gem:addDestroyFunc(player_num, func, ...)
-	self.onDestroy = {}
+	self.onDestroy = self.onDestroy or {}
 	self.onDestroy[player_num] = {func = func, args = {...}}
 end
 
