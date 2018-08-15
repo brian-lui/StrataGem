@@ -137,37 +137,46 @@ end
 function Character:deserializeSpecials()
 end
 
--- called every frame
+-- Called every frame
 function Character:update(dt) end
 
 -------------------------------------------------------------------------------
--- All these abilities can optionally return the number of frames
--- to pause for the animation.
--------------------------------------------------------------------------------
+-- No return values accepted
 function Character:actionPhase(dt) end
 
+-- Delay accepted as return value
 function Character:beforeGravity() end
 
+-- Delay accepted as return value
 function Character:beforeTween() end
 
+-- Delay accepted as return value
 function Character:duringTween() end
 
+-- (delay, whether to go to gravity phase) accepted as return values
 function Character:afterGravity() end
 
-function Character:beforeMatch() end -- before gems are matched
+-- Before gems are matched. delay accepted as return value
+function Character:beforeMatch() end
 
-function Character:duringMatch() end -- right after matches are destroyed
+-- Right after matches are destroyed. delay accepted as return value
+function Character:duringMatch() end 
 
-function Character:afterMatch() end -- after each match finished
+-- After each match round finished. delay accepted as return value
+function Character:afterMatch() end 
 
-function Character:whenCreatingGarbageRow() end -- at garbage row creation
+ -- At garbage row creation. delay accepted as return value
+function Character:whenCreatingGarbageRow() end
 
--- after all chain combos finished.
--- Can be called multiple times in a turn if garbage is created
-function Character:afterAllMatches()end
+-- After all chain combos finished.
+-- Note: can be called multiple times in a turn if garbage is created.
+-- (delay, whether to go to gravity phase) accepted as return values
+function Character:afterAllMatches() end
 
+-- (delay, whether to go to gravity phase) accepted as return values
 function Character:beforeCleanup() end
 
+-- delay accepted as return value
 function Character:cleanup()
 	self.is_supering = false
 	self.game:brightenScreen(self.player_num)
