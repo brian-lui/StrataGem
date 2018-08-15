@@ -419,8 +419,11 @@ function Holly:init(...)
 	self.matches_made = 0
 end
 
--- callback activated from grid:destroyGem
-function Holly._onFlowerDestroy(gem, delay, self)
+-- Activates flower destruction
+function Holly:onGemDestroy(gem, delay)
+	if not gem.holly_flower then return end
+	assert(self.flower_images[gem], "Tried to destroy non-existent flower!")
+
 	local damage_particle_duration = 0
 	local game = self.game
 
@@ -573,8 +576,6 @@ function Holly:afterMatch()
 		if eligible_gems[i] then
 			local gem = eligible_gems[i]
 			gem.holly_flower = self.player_num 
-			gem:addDestroyFunc(self.player_num, self._onFlowerDestroy, self)
-
 			self.fx.flower.generate(game, self, gem, FLOWER_DELAY)
 		end
 	end
