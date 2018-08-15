@@ -182,7 +182,8 @@ function Character:customGemTable()
 	return gem_freq_table, gem_replace_table
 end
 
-function Character:onGemDestroy(gem) end -- callback when gem is destroyed
+-- callback when gem is destroyed. passes in time to gem explosion
+function Character:onGemDestroy(gem, delay) end
 
 -------------------------------------------------------------------------------
 
