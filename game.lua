@@ -330,8 +330,45 @@ function Game:playerByIndex(i)
 	return p[i]
 end
 
+--[[ priority:
+1) Whoever has the highest basin has priority
+2) If that's same, whoever has more gems in basin
+3) If that's same, coin flip
+--]]
 function Game:players()
-	local p = {self.p1, self.p2}
+	local grid = self.grid
+	local p1_highest_row, p2_highest_row = math.huge, math.huge
+	local p1_total_gems, p2_total_gems = 0, 0
+
+	for gem in grid:basinGems(1) do
+		p1_highest_row = math.min(p1_highest_row, gem.row)
+		p1_total_gems = p1_total_gems + 1
+	end
+	for gem in grid:basinGems(2) do
+		p2_highest_row = math.min(p2_highest_row, gem.row)
+		p2_total_gems = p2_total_gems + 1
+	end
+
+	local p
+	if p1_highest_row > p2_highest_row then
+		p = {self.p1, self.p2}
+	elseif p1_highest_row < p2_highest_row then
+		p = {self.p2, self.p1}
+	else -- if equal tallest row
+		if p1_total_gems > p2_total_gems then
+			p = {self.p1, self.p2}
+		elseif p1_total_gems < p2_total_gems then
+			p = {self.p2, self.p1}
+		else -- if number of gems is equal too
+			local coinflip = self.rng:random() < 0.5
+			if coinflip then
+				p = {self.p1, self.p2}
+			else
+				p = {self.p2, self.p1}
+			end
+		end
+	end
+
 	local i = 0
 	return function()
 		i = i + 1
