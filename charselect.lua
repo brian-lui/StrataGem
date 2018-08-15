@@ -165,7 +165,8 @@ function Charselect:_createCharacterButtons()
 		and name ~= "walter"
 		and name ~= "wolfgang"
 		and name ~= "diggory"
-		and name ~= "holly" then
+		and name ~= "holly"
+		and name ~= "gail" then
 			data.action = function() end
 			data.RGB = {0.35, 0.35, 0.35}
 		end
