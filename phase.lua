@@ -516,12 +516,15 @@ function Phase:platformsMoving(dt)
 			self:setPhase("DuringGravity")
 		else
 			local delay = 0
+			local next_phase = "Cleanup"
+
 			for player in game:players() do
-				local player_delay = player:beforeCleanup()
+				local player_delay, go_to_gravity = player:beforeCleanup()
 				delay = math.max(delay, player_delay or 0)
+				if go_to_gravity then next_phase = "DuringGravity" end
 			end
 			self:setPause(delay)
-			self:activatePause("Cleanup")
+			self:activatePause(next_phase)
 		end
 	end
 end
