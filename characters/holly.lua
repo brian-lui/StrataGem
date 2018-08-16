@@ -7,17 +7,8 @@ one damage.
 Super: 2 spores appear randomly in either the topmost row or second top most
 row of any of the opponent’s columns. (So 2 spores randomly appearing in 2 of 8
 possible spaces.) If the opponent breaks a spore through matching, all
-the damage (including combo damage) is reflected. Spores disappear after three
+the damage (including combo damage) is reflected. SporePods disappear after three
 turns.
-
-Animations:
-Spore Pods appear on stems the same way a flower does, but instead of dancing,
-they shake left and right. (rapidly tween back and forth like 5 pixels total.)
-Also, while they are on screen, they drop spore.png in the same way that gems
-drop dust when held or rotated.
-
-When spore pods explode, they should shoot spores the same way gems shoot dust.
-lots of spores. thanks.
 --]]
 
 local love = _G.love
@@ -85,6 +76,7 @@ Holly.special_images = {
 		rage = love.graphics.newImage('images/characters/holly/yellowrage.png'),
 	},
 	spore_pod = love.graphics.newImage('images/characters/holly/sporepod.png'),
+	spore = love.graphics.newImage('images/characters/holly/sporepod.png'),
 	stem = love.graphics.newImage('images/characters/holly/stem.png'),
 }
 
@@ -218,8 +210,7 @@ end
 
 function Flower.generate(game, owner, gem, delay)
 	local color = gem.color
-	assert(color == "red" or color == "blue" or color == "green" or color == "yellow",
-		"Tried to generate flower on non-default color gem!")
+	assert(gem:isDefaultColor(), "Tried to create flower on non-default color gem!")
 
 	local params = {
 		x = gem.x,
@@ -267,14 +258,181 @@ function Flower.generate(game, owner, gem, delay)
 end
 
 function Flower:draw()
-	self.stem:draw()
+	if self.stem then self.stem:draw() end
 	Pic.draw(self)
 end
 
 Flower = common.class("Flower", Flower, Pic)
 
 -------------------------------------------------------------------------------
--- these are the spores that appear for Holly's super
+-- these are the spore pods that appear for Holly's super
+local SporePod = {}
+function SporePod:init(manager, tbl)
+	local game = manager.game
+	local stage = game.stage
+
+	Pic.init(self, manager.game, tbl)
+	local counter = self.game.inits.ID.particle
+	manager.allParticles.CharEffects[counter] = self
+	self.manager = manager
+
+	self.STEM_DOWNSHIFT = 12 -- gem center 39px, stem center 24 + 27px
+
+	self.SHAKE_PIXELS = stage.width * 0.004
+	self.SHAKE_PER_FRAME = stage.width * 0.001
+	self.SHAKE_DIRECTION = 1
+	self.draw_x_shift = 0
+
+	self.FRAMES_PER_SPORE = 10
+	self.spore_framecount = 0
+
+	Pic:create{
+		game = manager.game,
+		x = self.x,
+		y = self.y + self.STEM_DOWNSHIFT,
+		image = self.owner.special_images.stem,
+		container = self,
+		name = "stem",
+	}
+
+	self.stem:change{duration = 0, transparency = 0}
+	self.stem:wait(tbl.stem_appear_delay)
+	self.stem:change{duration = 0, transparency = 1}
+end
+
+function SporePod:remove()
+	self.manager.allParticles.CharEffects[self.ID] = nil
+	self.owner.spore_pod_images[self.gem] = nil
+end
+
+-- remove through either gem destroyed, or timer expiry
+function SporePod:leavePlay(delay)
+	local game = self.game
+
+	self:wait(delay)
+	self:change{
+		duration = game.GEM_EXPLODE_FRAMES,
+		x_scaling = 2,
+		y_scaling = 2,
+		transparency = 0,
+		remove = true,
+	}
+
+	self.stem:wait(delay)
+	self.stem:change{
+		duration = game.GEM_EXPLODE_FRAMES,
+		scaling = 2,
+		transparency = 0,
+		remove = true,
+	}
+
+	game.particles.dust.generateBigFountain{
+		game = game,
+		gem = self.gem,
+		image = self.owner.special_images.spore_pod,
+		num = 240,
+		delay_frames = delay,
+	}
+
+	self.is_destroyed = true
+end
+
+function SporePod:_shake()
+	self.draw_x_shift = self.SHAKE_DIRECTION * self.SHAKE_PER_FRAME +
+		self.draw_x_shift
+
+	if self.draw_x_shift > self.SHAKE_PIXELS then
+		self.SHAKE_DIRECTION = -1
+	elseif self.draw_x_shift < -self.SHAKE_PIXELS then
+		self.SHAKE_DIRECTION = 1
+	end
+end
+
+function SporePod:_dropSporePod()
+	self.spore_framecount = self.spore_framecount + 1
+	if self.spore_framecount >= self.FRAMES_PER_SPORE then
+		self.spore_framecount = 0
+		self.owner.fx.spore.generate(self.game, self)
+	end		
+end
+
+function SporePod:update(dt)
+	self.stem.x = self.gem.x
+	self.stem.y = self.gem.y + self.STEM_DOWNSHIFT
+	self.stem:update(dt)
+
+	self.x = self.gem.x
+	self.y = self.gem.y
+	Pic.update(self, dt)
+
+	if not self.is_destroyed then
+		self:_shake()
+		self:_dropSporePod()
+	end
+
+	if self.gem.is_destroyed and not self.is_destroyed then
+		local delay = self.gem.time_to_destruction
+		self:leavePlay(delay)
+	end
+end
+
+function SporePod.generate(game, owner, gem, delay)
+	local color = gem.color
+	assert(gem:isDefaultColor(), "Tried to create spore pod on non-default color gem!")
+
+	local params = {
+		x = gem.x,
+		y = gem.y,
+		image = owner.special_images.spore_pod,
+		owner = owner,
+		draw_order = 2,
+		player_num = owner.player_num,
+		name = "HollySporePod",
+		gem = gem,
+		transparency = 0,
+		x_scaling = 1,
+		y_scaling = 1,
+		force_max_alpha = true,
+	}
+
+	owner.spore_pod_images[gem] = common.instance(SporePod, game.particles, params)
+	owner.spore_pod_images[gem]:wait(delay)
+	owner.spore_pod_images[gem]:change{duration = 0, transparency = 1}
+
+	-- generate garbage appear circle with extra petals
+	game.particles.dust.generateGarbageCircle{
+		game = game,
+		gem = gem,
+		delay_frames = delay,
+	}
+	game.particles.dust.generateGarbageCircle{
+		game = game,
+		gem = gem,
+		image = owner.special_images[color].petala,
+		delay_frames = delay,
+		rotation = math.random() * math.pi * 2,
+		num = 4,
+	}
+	game.particles.dust.generateGarbageCircle{
+		game = game,
+		gem = gem,
+		image = owner.special_images[color].petalb,
+		delay_frames = delay,
+		rotation = math.random() * math.pi * 2,
+		num = 4,
+	}
+end
+
+function SporePod:draw()
+	if self.stem then self.stem:draw() end
+	Pic.draw(self, {x = self.draw_x_shift + self.x})
+end
+
+SporePod = common.class("SporePod", SporePod, Pic)
+
+
+-------------------------------------------------------------------------------
+-- Spores generated from spore pods
 local Spore = {}
 function Spore:init(manager, tbl)
 	Pic.init(self, manager.game, tbl)
@@ -285,59 +443,39 @@ end
 
 function Spore:remove()
 	self.manager.allParticles.CharEffects[self.ID] = nil
-	self.owner.spore_images[self.gem] = nil
 end
 
--- remove through either gem destroyed, or timer expiry
-function Spore:leavePlay(delay)
-	self:wait(delay)
-	self:change{
-		duration = self.game.GEM_EXPLODE_FRAMES,
-		x_scaling = 2,
-		y_scaling = 2,
-		transparency = 0,
-		remove = true,
-	}
+function Spore.generate(game, spore_pod)
+	local owner = spore_pod.owner
 
-	self.is_destroyed = true
-end
+	local DURATION = 60
+	local ROTATION = 6
+	local FALL_DIST = 0.13 * game.stage.height
 
-function Spore:update(dt)
-	self.x = self.gem.x
-	self.y = self.gem.y
-	Pic.update(self, dt)
+	local x = spore_pod.x + (math.random() - 0.5) * spore_pod.width 
+	local y = spore_pod.y + (math.random() - 0.5) * spore_pod.height
 
-	if self.gem.is_destroyed and not self.is_destroyed then
-		local delay = self.gem.time_to_destruction
-		self:leavePlay(delay)
-	end
-end
-
-function Spore.generate(game, owner, gem, delay)
 	local params = {
-		x = gem.x,
-		y = gem.y,
-		image = owner.special_images.spore_pod,
+		name = "spore",
+		x = x,
+		y = y,
+		image = owner.special_images.spore,
+		draw_order = 3,
 		owner = owner,
-		draw_order = 2,
-		player_num = owner.player_num,
-		name = "HollySpore",
-		gem = gem,
-		transparency = 0,
-		x_scaling = 1,
-		y_scaling = 1,
-		force_max_alpha = true,
 	}
 
-	owner.spore_images[gem] = common.instance(Spore, game.particles, params)
-	owner.spore_images[gem]:wait(delay)
-	owner.spore_images[gem]:change{duration = 0, transparency = 1}
-
-	-- generate garbage appear circle with extra petals
-	game.particles.dust.generateGarbageCircle{
-		game = game,
-		gem = gem,
-		delay_frames = delay,
+	local p = common.instance(Spore, game.particles, params)
+	p:change{
+		duration = DURATION,
+		rotation = ROTATION,
+		y = p.y + FALL_DIST,
+	}
+	p:change{
+		duration = DURATION * 0.3,
+		rotation = ROTATION * 1.3,
+		transparency = 0,
+		y = p.y + 1.3 * FALL_DIST,
+		remove = true,
 	}
 end
 
@@ -403,6 +541,7 @@ DamagePetal = common.class("DamagePetal", DamagePetal, Pic)
 -------------------------------------------------------------------------------
 Holly.fx = {
 	flower = Flower,
+	spore_pod = SporePod,
 	spore = Spore,
 	damagePetal = DamagePetal,
 }
@@ -412,10 +551,10 @@ Holly.fx = {
 function Holly:init(...)
 	Character.init(self, ...)
 
-	self.SPORE_TURNS = 3 -- how many turns until spores leave
+	self.SPORE_TURNS = 3 -- how many turns until spore pods leave
 
 	self.flower_images = {}
-	self.spore_images = {}
+	self.spore_pod_images = {}
 	self.matches_made = 0
 end
 
@@ -481,20 +620,22 @@ function Holly:beforeGravity()
 	local delay = 0
 
 	if self.is_supering then
-		-- select the places to put spores
+		-- select the places to put spore pods
 		local top_gems = {}
 		for col in grid:cols(self.enemy.player_num) do
 			this_col = {}
 			for row = grid.BASIN_START_ROW, grid.BASIN_END_ROW do
 				local first = grid[row][col].gem
 				if first then
-					if not first.holly_spore then
+					if first:isDefaultColor() and not first.holly_spore then
 						top_gems[#top_gems + 1] = first
 					end
 
 					local second = grid[row + 1][col].gem
-					if second and not second.holly_spore then
-						top_gems[#top_gems + 1] = second
+					if second then
+						if second:isDefaultColor() and not second.holly_spore then
+							top_gems[#top_gems + 1] = second
+						end
 					end
 
 					break
@@ -512,7 +653,7 @@ function Holly:beforeGravity()
 				owner = self.player_num,
 				turns_remaining = self.SPORE_TURNS,
 			}
-			self.fx.spore.generate(game, self, gem, 0)
+			self.fx.spore_pod.generate(game, self, gem, 0)
 		end
 
 		delay = 30
@@ -595,7 +736,7 @@ function Holly:cleanup()
 
 			if gem.holly_spore.turns_remaining <= 0 then
 				delay = game.GEM_EXPLODE_FRAMES
-				self.spore_images[gem]:leavePlay(delay)
+				self.spore_pod_images[gem]:leavePlay(delay)
 				gem.holly_spore = nil
 			end
 		end
