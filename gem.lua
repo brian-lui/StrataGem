@@ -236,4 +236,9 @@ function Gem:setMaxAlpha(bool)
 	self.force_max_alpha = bool
 end
 
+-- Returns whether the gem is either red, blue, green, or yellow
+function Gem:isDefaultColor()
+	return self.color == "red" or self.color == "blue" or
+		self.color == "green" or self.color == "yellow"
+end
 return common.class("Gem", Gem, Pic)
