@@ -1127,7 +1127,7 @@ end
 --[[ called when a gem is destroyed (usually through a match)
 	mandatory: game, either gem or [x, y, color]. [x, y, color] takes priority
 	optional: num (#particles, default 24), duration (default 30),
-		delay_frames, force_max_alpha
+		delay_frames, force_max_alpha, image
 --]]
 function Dust.generateBigFountain(params)
 	local game = params.game
@@ -1135,7 +1135,7 @@ function Dust.generateBigFountain(params)
 	local x = params.x or params.gem.x
 	local y = params.y or params.gem.y
 	local color = params.color or params.gem.color
-	local image = images.lookup.smalldust(color)
+	local image = params.image or images.lookup.smalldust(color)
 	local duration = params.duration or 30
 	local rotation = duration / 60
 
