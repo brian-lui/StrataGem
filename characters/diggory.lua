@@ -618,10 +618,7 @@ function Diggory:_clodDestroyGem(gem, delay)
 
 	-- clods animation
 	local color_func
-	if gem.color == "red"
-	or gem.color == "blue"
-	or gem.color == "green"
-	or gem.color == "yellow" then
+	if gem:isDefaultColor() then
 		color_func = function() return gem.color end
 	elseif gem.color == "wild" then
 		color_func = function()

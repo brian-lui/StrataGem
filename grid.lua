@@ -1059,8 +1059,7 @@ function Grid:animateGameOver(loser_num)
 			if self[row][col].gem then
 				local gem = self[row][col].gem
 				local image
-				if gem.color == "red" or gem.color == "blue" or	gem.color == "green" or
-				gem.color == "yellow" then
+				if gem:isDefaultColor() then
 					image = images["gems_grey_" .. gem.color]
 				else
 					image = gem.grey_exploding_gem_image

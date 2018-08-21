@@ -921,13 +921,7 @@ function Wolfgang:beforeMatch()
 			local total_x, total_y = 0, 0 -- for calculating average
 			for _, gem in ipairs(list) do
 				if gem.column ~= list[1].column then is_vertical = false end
-
-				if gem.color == "red"
-				or gem.color == "blue"
-				or gem.color == "green"
-				or gem.color == "yellow" then
-					color = gem.color
-				end
+				if gem:isDefaultColor() then color = gem.color end
 				total_x = total_x + gem.x
 				total_y = total_y + gem.y
 			end

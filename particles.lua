@@ -142,10 +142,6 @@ function Particles:reset()
 	self.next_tinystar_frame, self.next_star_frame = 0, 0
 end
 
-local function isStandardColor(color)
-	return color == "red" or color == "blue" or color == "green" or color == "yellow"
-end
-
 local function randomStandardColor()
 	local colors = {"red", "blue", "green", "yellow"}
 	return colors[math.random(#colors)]
@@ -284,7 +280,7 @@ DamageParticle = common.class("DamageParticle", DamageParticle, Pic)
 local DamageTrailParticle = {}
 function DamageTrailParticle:init(manager, gem)
 	local image
-	if isStandardColor(gem.color) then
+	if gem:isDefaultColor() then
 		image = images["particles_trail_" .. gem.color]
 	else
 		image = images["particles_trail_" .. randomStandardColor()]
@@ -374,7 +370,7 @@ function SuperParticle.generate(game, gem, num_particles, delay_frames, force_ma
 
 		local image
 		-- create particle
-		if isStandardColor(gem.color) then
+		if gem:isDefaultColor() then
 			image = images["particles_super_" .. gem.color]
 		else
 			image = images["particles_super_" .. randomStandardColor()]
@@ -666,7 +662,7 @@ function PopParticles.generate(params)
 	local y = params.y or params.gem.y
 	local image = params.image
 	if not image then
-		if isStandardColor(params.gem.color) then
+		if params.gem:isDefaultColor() then
 			image = images["gems_pop_" .. params.gem.color]
 		else
 			image = params.gem.pop_particle_image or images.dummy
@@ -726,14 +722,14 @@ function ExplodingGem:init(params)
 				print("Warning! player_num 0 gem destroyed!")
 			end
 
-			if isStandardColor(gem.color) then
+			if gem:isDefaultColor() then
 				image = images["gems_grey_" .. gem.color]
 			else
 				image = gem.grey_exploding_gem_image
 				assert(image, "No grey_exploding_gem_image for custom gem")
 			end
 		else
-			if isStandardColor(gem.color) then
+			if gem:isDefaultColor() then
 				image = images["gems_explode_" .. gem.color]
 			else
 				image = gem.exploding_gem_image
@@ -1232,7 +1228,10 @@ function Dust.generateStarFountain(params)
 		-- create trails
 		for frames = 1, 3 do
 			local trail_image
-			if isStandardColor(color) then
+			if color == "red"
+			or color == "blue"
+			or color == "green"
+			or color == "yellow" then
 				trail_image = images["particles_trail_" .. color]
 			else
 				trail_image = images["particles_trail_" .. randomStandardColor()]

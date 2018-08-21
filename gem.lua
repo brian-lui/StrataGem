@@ -78,6 +78,7 @@ function Gem.random(game, gem_table)
 	end
 
 	local rand = game.rng:random(num)
+
 	return rand_table[rand]
 end
 
