@@ -246,63 +246,6 @@ function Grid:_getRawMatches(min_length)
 	return ret
 end
 
---[[
--- Returns a list of gems which are part of matches, and the total number of
--- matches (not number of matched gems).
-function Grid:getMatchedGems(minimumLength)
-	local matches = self:_getRawMatches(minimumLength or 3)
-	local gem_set = {}
-
-	for _, match in pairs(matches) do
-		if match.is_a_horizontal_match then
-			for i = 1, match.length do
-				local r, c = match.row, match.column + i - 1
-				local this_gem = self[r][c].gem
-				if this_gem then gem_set[this_gem] = true end
-			end
-		elseif match.is_a_vertical_match then
-			for i = 1, match.length do
-				local r, c = match.row + i - 1, match.column
-				local this_gem = self[r][c].gem
-				if this_gem then gem_set[this_gem] = true end
-			end
-		else
-			print("Warning: a match was created that was neither horizontal nor vertical")
-		end
-	end
-
-	local gem_table = {}
-	for gem in pairs(gem_set) do gem_table[#gem_table+1] = gem end
-
-	return gem_table, #matches
-end
-
--- same as above, but returns in the format {list1, list2, ...}
--- e.g. {{gem1, gem2, gem3}, {gem4, gem5, gem6, gem7}}
-function Grid:getMatchedGemLists(min_length)
-	local matches = self:_getRawMatches(min_length or 3)
-	local ret = {}
-	for _, match in pairs(matches) do
-		local gem_list = {}
-		if match.is_a_horizontal_match then
-			for i = 1, match.length do
-				local gem = self[match.row][match.column + i - 1].gem
-				if gem then gem_list[#gem_list+1] = gem end
-			end
-		elseif match.is_a_vertical_match then
-			for i = 1, match.length do
-				local gem = self[match.row + i - 1][match.column].gem
-				if gem then gem_list[#gem_list+1] = gem end
-			end
-		else
-			print("Warning: a match was created that was neither horizontal nor vertical")
-		end
-		ret[#ret+1] = gem_list
-	end
-	return ret
-end
---]]
-
 -- updates grid.matched_gems and grid.matched_gem_lists
 function Grid:updateMatchedGems(min_length)
 	local matches = self:_getRawMatches(minimumLength or 3)
@@ -362,7 +305,6 @@ end
 	will be flagged incorrectly.
 	Also sets .is_in_a_horizontal_match and/or .is_in_a_vertical_match attributes of gems
 --]]
-
 function Grid:flagMatchedGems()
 	local matches = self:_getRawMatches()
 	local gem_flags = {} -- a set
