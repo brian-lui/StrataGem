@@ -567,6 +567,8 @@ function Phase:cleanup(dt)
 	grid:setAllGemOwners(0)
 	grid:setAllGemReadOnlyFlags(false)
 
+	game.tie_priority = game.rng:random(2)
+
 	for player in game:players() do player.hand:endOfTurnUpdate() end
 
 	if game.type == "Singleplayer" then game.ai:clearDeltas() end
@@ -595,7 +597,10 @@ function Phase:netplayWaitForState(dt)
 
 	if client.their_state then
 		assert(client.our_state == client.their_state, "States don't match! Ours:\n"
-			.. client.our_state .. "\nTheirs:\n" .. client.their_state)
+			.. client.our_state .. "\nTheirs:\n" .. client.their_state .. 
+			"\nOur version:" .. string.format("Version %d.%d.%d - %s", love.getVersion()) ..
+			"\nOur OS:" .. love.system.getOS()
+		)
 		self:setPhase("NetplayNewTurn")
 	end
 end

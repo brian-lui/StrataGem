@@ -121,6 +121,8 @@ function Game:reset()
 	self.grid:reset()
 	self.particles:reset()
 	self.uielements:clearScreenUIColor()
+
+	self.tie_priority = self.rng:random(2) -- Who has ability priority in a tie
 end
 
 -- takes a string
@@ -360,8 +362,7 @@ function Game:players()
 		elseif p1_total_gems < p2_total_gems then
 			p = {self.p2, self.p1}
 		else -- if number of gems is equal too
-			local coinflip = self.rng:random() < 0.5
-			if coinflip then
+			if self.tie_priority == 1 then
 				p = {self.p1, self.p2}
 			else
 				p = {self.p2, self.p1}
