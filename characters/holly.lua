@@ -76,7 +76,7 @@ Holly.special_images = {
 		rage = love.graphics.newImage('images/characters/holly/yellowrage.png'),
 	},
 	spore_pod = love.graphics.newImage('images/characters/holly/sporepod.png'),
-	spore = love.graphics.newImage('images/characters/holly/sporepod.png'),
+	spore = love.graphics.newImage('images/characters/holly/spore.png'),
 	stem = love.graphics.newImage('images/characters/holly/stem.png'),
 }
 
@@ -278,8 +278,8 @@ function SporePod:init(manager, tbl)
 
 	self.STEM_DOWNSHIFT = 12 -- gem center 39px, stem center 24 + 27px
 
-	self.SHAKE_PIXELS = stage.width * 0.004
-	self.SHAKE_PER_FRAME = stage.width * 0.001
+	self.SHAKE_PIXELS = stage.width * 0.001
+	self.SHAKE_PER_FRAME = stage.width * 0.0005
 	self.SHAKE_DIRECTION = 1
 	self.draw_x_shift = 0
 
@@ -329,7 +329,7 @@ function SporePod:leavePlay(delay)
 	game.particles.dust.generateBigFountain{
 		game = game,
 		gem = self.gem,
-		image = self.owner.special_images.spore_pod,
+		image = self.owner.special_images.spore,
 		num = 240,
 		delay_frames = delay,
 	}
