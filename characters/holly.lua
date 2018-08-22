@@ -283,7 +283,7 @@ function SporePod:init(manager, tbl)
 	self.SHAKE_DIRECTION = 1
 	self.draw_x_shift = 0
 
-	self.FRAMES_PER_SPORE = 10
+	self.FRAMES_PER_SPORE = 5
 	self.spore_framecount = 0
 
 	Pic:create{
