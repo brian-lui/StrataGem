@@ -443,7 +443,7 @@ end
 function Spore.generateFalling(game, spore_pod)
 	local owner = spore_pod.owner
 
-	local DURATION = 60
+	local DURATION = 40
 	local ROTATION = 6
 	local FALL_DIST = 0.13 * game.stage.height
 
