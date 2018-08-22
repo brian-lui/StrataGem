@@ -326,13 +326,7 @@ function SporePod:leavePlay(delay)
 		remove = true,
 	}
 
-	game.particles.dust.generateBigFountain{
-		game = game,
-		gem = self.gem,
-		image = self.owner.special_images.spore,
-		num = 240,
-		delay_frames = delay,
-	}
+	self.owner.fx.spore.generateStarburst(self.game, self)
 
 	self.is_destroyed = true
 end
@@ -352,7 +346,7 @@ function SporePod:_dropSporePod()
 	self.spore_framecount = self.spore_framecount + 1
 	if self.spore_framecount >= self.FRAMES_PER_SPORE then
 		self.spore_framecount = 0
-		self.owner.fx.spore.generate(self.game, self)
+		self.owner.fx.spore.generateFalling(self.game, self)
 	end		
 end
 
@@ -445,7 +439,8 @@ function Spore:remove()
 	self.manager.allParticles.CharEffects[self.ID] = nil
 end
 
-function Spore.generate(game, spore_pod)
+-- regular falling spore
+function Spore.generateFalling(game, spore_pod)
 	local owner = spore_pod.owner
 
 	local DURATION = 60
@@ -477,6 +472,52 @@ function Spore.generate(game, spore_pod)
 		y = p.y + 1.3 * FALL_DIST,
 		remove = true,
 	}
+end
+
+-- starburst spore
+function Spore.generateStarburst(game, spore_pod, delay)
+	local SPORE_NUM = 2400
+
+	local owner = spore_pod.owner
+	local x, y = spore_pod.x, spore_pod.y
+	
+	local starburst_end_xy = function(start_x, start_y)
+		local dist = game.stage.width * 0.1 * (0.5 + math.random())
+		local angle = math.random() * math.pi * 2
+		local end_x = dist * math.cos(angle) + start_x
+		local end_y = dist * math.sin(angle) + start_y
+		return end_x, end_y
+	end
+
+	for _ = 1, SPORE_NUM do
+		local end_x, end_y = starburst_end_xy(x, y)
+
+		local params = {
+			name = "spore",
+			x = x,
+			y = y,
+			image = owner.special_images.spore,
+			draw_order = 3,
+			owner = owner,
+		}
+
+		local p = common.instance(Spore, game.particles, params)		
+
+		if delay then
+			p.transparency = 0
+			p:wait(delay)
+			p:change{duration = 0, transparency = 1}
+		end
+
+		p:change{
+			duration = 40,
+			x = end_x,
+			y = end_y,
+			transparency = 0.5,
+			easing = "outCubic",
+			remove = true,
+		}
+	end
 end
 
 Spore = common.class("Spore", Spore, Pic)
