@@ -447,8 +447,8 @@ function Spore.generateFalling(game, spore_pod)
 	local ROTATION = 6
 	local FALL_DIST = 0.13 * game.stage.height
 
-	local x = spore_pod.x + (math.random() - 0.5) * spore_pod.width 
-	local y = spore_pod.y + (math.random() - 0.5) * spore_pod.height
+	local x = spore_pod.x + (math.random() - 0.5) * spore_pod.width * 0.75
+	local y = spore_pod.y + (math.random() - 0.5) * spore_pod.height * 0.75
 
 	local params = {
 		name = "spore",
