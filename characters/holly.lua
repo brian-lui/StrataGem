@@ -118,7 +118,7 @@ end
 
 function Flower:remove()
 	self.manager.allParticles.CharEffects[self.ID] = nil
-	self.owner.flower_images[self.gem] = nil
+	self.owner.flowers[self.gem] = nil
 end
 
 --[[ I want to do this inelegant way so we don't use Pic:change()
@@ -233,9 +233,9 @@ function Flower.generate(game, owner, gem, delay)
 		stem_appear_delay = delay,
 	}
 
-	owner.flower_images[gem] = common.instance(Flower, game.particles, params)
-	owner.flower_images[gem]:wait(delay)
-	owner.flower_images[gem]:change{duration = 0, transparency = 1}
+	owner.flowers[gem] = common.instance(Flower, game.particles, params)
+	owner.flowers[gem]:wait(delay)
+	owner.flowers[gem]:change{duration = 0, transparency = 1}
 
 	-- generate garbage appear circle with extra petals
 	game.particles.dust.generateGarbageCircle{
@@ -306,7 +306,7 @@ end
 
 function SporePod:remove()
 	self.manager.allParticles.CharEffects[self.ID] = nil
-	self.owner.spore_pod_images[self.gem] = nil
+	self.owner.spore_pods[self.gem] = nil
 end
 
 -- remove through either gem destroyed, or timer expiry
@@ -393,9 +393,9 @@ function SporePod.generate(game, owner, gem, delay)
 		force_max_alpha = true,
 	}
 
-	owner.spore_pod_images[gem] = common.instance(SporePod, game.particles, params)
-	owner.spore_pod_images[gem]:wait(delay)
-	owner.spore_pod_images[gem]:change{duration = 0, transparency = 1}
+	owner.spore_pods[gem] = common.instance(SporePod, game.particles, params)
+	owner.spore_pods[gem]:wait(delay)
+	owner.spore_pods[gem]:change{duration = 0, transparency = 1}
 
 	-- generate garbage appear circle with extra petals
 	game.particles.dust.generateGarbageCircle{
@@ -599,8 +599,8 @@ function Holly:init(...)
 
 	self.SPORE_TURNS = 3 -- how many turns until spore pods leave
 
-	self.flower_images = {}
-	self.spore_pod_images = {}
+	self.flowers = {} -- flower image objects
+	self.spore_pods = {} -- spore pod image objects
 	self.matches_made = 0
 end
 
@@ -668,7 +668,8 @@ function Holly:beforeMatch()
 	local grid = game.grid
 	local delay = 0
 
-	-- Passive: get the number of matches made that belong to us
+	-- Get the number of matches made that belong to us
+	-- This determines how many flowers will be generated
 	local match_lists = grid.matched_gem_lists
 	for _, list in ipairs(match_lists) do
 		local owned_by_me = false
@@ -678,6 +679,22 @@ function Holly:beforeMatch()
 
 		if owned_by_me then self.matches_made = self.matches_made + 1 end
 	end
+
+	-- Check if any of the matched gems have a flower on them
+	-- If so, remove the flower and remove them from the matched list
+	local to_unmatch = {}
+	for i = #grid.matched_gems, 1, -1 do
+		local gem = grid.matched_gems[i]
+		if gem.holly_flower then
+			assert(self.flowers[gem], "Tried to remove non-existent flower!")
+			gem.holly_flower = nil
+			self.flowers[gem]:leavePlay()
+			to_unmatch[#to_unmatch + 1] = gem
+		end
+	end
+
+	for _, unmatch in ipairs(to_unmatch) do grid:clearMatchedGem(unmatch) end
+
 	-- Super reflect.
 	-- Also flags them with gem.holly_reflected for future animation use
 	for _, list in ipairs(grid.matched_gem_lists) do
@@ -756,7 +773,7 @@ function Holly:cleanup()
 
 			if gem.holly_spore.turns_remaining <= 0 then
 				delay = game.GEM_EXPLODE_FRAMES
-				self.spore_pod_images[gem]:leavePlay(delay)
+				self.spore_pods[gem]:leavePlay(delay)
 				gem.holly_spore = nil
 			end
 		end
