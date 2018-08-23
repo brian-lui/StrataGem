@@ -666,6 +666,7 @@ end
 function Holly:beforeMatch()
 	local game = self.game
 	local grid = game.grid
+	local delay = 0
 
 	-- Passive: get the number of matches made that belong to us
 	local match_lists = grid.matched_gem_lists
@@ -677,15 +678,39 @@ function Holly:beforeMatch()
 
 		if owned_by_me then self.matches_made = self.matches_made + 1 end
 	end
-end
+	-- Super reflect.
+	-- Also flags them with gem.holly_reflected for future animation use
+	for _, list in ipairs(grid.matched_gem_lists) do
+		local our_spores, their_spores = 0, 0
 
-function Holly:duringMatch()
-	-- Super 3
-	--[[
-	count number of matches of both player's spores.
-	If match owner's opponent has more spores than you, reflect it.
-	flag them with gem.holly_reflected for future animation use
-	--]]
+		-- count number of matches of both player's spores
+		for _, gem in ipairs(list) do
+			if gem.holly_spore then
+				if gem.holly_spore.owner == self.player_num then
+					our_spores = our_spores + 1
+				elseif gem.holly_spore.owner == self.enemy.player_num then
+					their_spores = their_spores + 1
+				else
+					error("Invalid gem.holly_spore.owner")
+				end
+			end
+		end
+
+		-- if you have more spores than opponent, reflect it
+		if our_spores > their_spores then
+			delay = 60
+			for _, gem in ipairs(list) do
+				if gem.holly_spore then
+					assert(self.spore_pods[gem], "Tried to remove non-existent spore!")
+					self.spore_pods[gem]:leavePlay()
+				end
+				gem.holly_reflected = true
+				gem:setOwner(self.player_num)
+			end
+		end
+	end
+
+	return delay
 end
 
 function Holly:afterMatch()
