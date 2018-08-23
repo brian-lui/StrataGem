@@ -744,10 +744,11 @@ function Holly:afterMatch()
 	-- Passive: For each match, a random gem in your basin gains a flower mark:
 	-- Get all eligible gems
 	local eligible_gems = {}
-	for gem in grid:basinGems(self.player_num) do
+	for gem in grid:basinGems(self.enemy.player_num) do
 		if gem.color ~= "none"
 		and gem.color ~= "wild"
 		and not gem.indestructible
+		and not gem.holly_spore
 		and not gem.holly_flower then
 			eligible_gems[#eligible_gems + 1] = gem
 		end
