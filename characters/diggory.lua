@@ -456,10 +456,11 @@ Diggory.fx = {
 function Diggory:init(...)
 	Character.init(self, ...)
 
-	self.slammy_gems = {}
 	self.slammy_particle_wait_time = 0
-	self.crack_images = {} -- Crack image objects
 	self.cracked_gems_to_destroy = {} -- set
+
+	self.slammy_gems = {}
+	self.crack_images = {} -- Crack image objects
 end
 
 function Diggory:_activateSuper()
@@ -791,6 +792,54 @@ end
 
 function Diggory:cleanup()
 	Character.cleanup(self)
+end
+
+
+-------------------------------------------------------------------------------
+-- Store the locations of all the cracks (gamestate)
+function Diggory:serializeSpecials()
+	local game = self.game
+	local grid = game.grid
+	local ret = ""
+
+	for gem in grid:gems() do
+		if gem.diggory_cracked == self.player_num then
+			local column = tostring(gem.column)
+			local row = tostring(gem.row)
+			if #row == 1 then row = "0" .. row end
+
+			ret = ret .. row .. column .. ","
+		end
+	end
+
+	return ret
+end
+
+-- Clear all cracks and crack image objects
+-- Then apply cracks to gems in the crack locations
+function Diggory:deserializeSpecials(str)
+	local game = self.game
+	local grid = game.grid
+
+	self.slammy_gems = {}
+
+	for _, crack in pairs(self.crack_images) do crack:remove() end
+
+	local cracks = {}
+	for s in (str):gmatch("(.-),") do table.insert(cracks, s) end
+
+	for _, coords in pairs(cracks) do
+		local row = tonumber(coords:sub(1, 2))
+		local col = tonumber(coords:sub(3))
+
+		print("Adding crack to row, col:", row, col)
+
+		local gem = grid[row][col].gem
+		assert(gem, "No gem found in Diggory crack location!")
+
+		gem.diggory_cracked = self.player_num
+		self.fx.crack.generate(game, self, gem, 0)
+	end
 end
 
 
