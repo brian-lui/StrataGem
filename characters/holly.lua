@@ -443,7 +443,7 @@ end
 function Spore.generateFalling(game, spore_pod)
 	local owner = spore_pod.owner
 
-	local DURATION = 40
+	local DURATION = 160
 	local ROTATION = 6
 	local FALL_DIST = 0.13 * game.stage.height
 
@@ -477,6 +477,7 @@ end
 -- starburst spore
 function Spore.generateStarburst(game, spore_pod, delay)
 	local SPORE_NUM = 2400
+	local DURATION = 160
 
 	local owner = spore_pod.owner
 	local x, y = spore_pod.x, spore_pod.y
@@ -510,7 +511,7 @@ function Spore.generateStarburst(game, spore_pod, delay)
 		end
 
 		p:change{
-			duration = 40,
+			duration = DURATION,
 			x = end_x,
 			y = end_y,
 			transparency = 0.5,
