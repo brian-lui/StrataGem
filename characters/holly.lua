@@ -669,13 +669,17 @@ function Holly:beforeGravity()
 			for row = grid.BASIN_START_ROW, grid.BASIN_END_ROW do
 				local first = grid[row][col].gem
 				if first then
-					if first:isDefaultColor() and not first.holly_spore then
+					if first:isDefaultColor()
+					and not first.holly_spore
+					and not first.holly_flower then
 						top_gems[#top_gems + 1] = first
 					end
 
 					local second = grid[row + 1][col].gem
 					if second then
-						if second:isDefaultColor() and not second.holly_spore then
+						if second:isDefaultColor()
+						and not second.holly_spore
+						and not second.holly_flower then
 							top_gems[#top_gems + 1] = second
 						end
 					end
