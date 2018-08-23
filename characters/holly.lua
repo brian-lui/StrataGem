@@ -604,62 +604,6 @@ function Holly:init(...)
 	self.matches_made = 0
 end
 
--- Activates flower destruction
-function Holly:onGemDestroy(gem, delay)
-	if not gem.holly_flower then return end
-	assert(self.flower_images[gem], "Tried to destroy non-existent flower!")
-
-	local damage_particle_duration = 0
-	local game = self.game
-
-	-- slightly delay if it's not a grey match
-	if gem.player_num == 1 or gem.player_num == 2 then
-		delay = delay + game.GEM_EXPLODE_FRAMES
-	end
-
-	-- deal 1 damage
-	self.enemy:addDamage(1, delay)
-	local d = game.particles.damage.generate(
-		game,
-		gem,
-		delay,
-		nil,
-		self.player_num
-	)
-	local damage_particle_duration = math.max(damage_particle_duration, d)
-
-	-- extra petal damage particles
-	self.fx.damagePetal.generate(game, self, gem, delay)
-
-	-- heal 1 damage
-	self:healDamage(1, delay)
-	local h = game.particles.healing.generate{
-		game = game,
-		x = gem.x,
-		y = gem.y,
-		owner = self,
-	}
-	local damage_particle_duration = math.max(damage_particle_duration, h)
-	game.queue:add(delay, game.sound.newSFX, game.sound, "healing")
-
-	for i = 1, math.random(4, 8) do
-		game.particles.dust.generateLeafFloat{
-			game = game,
-			x = gem.x,
-			y = gem.y,
-			image = self.special_images[gem.color].petala,
-			delay = i,
-			y_dist = images.GEM_WIDTH * 0.5,
-			x_drift = images.GEM_WIDTH,
-			swap_image = self.special_images[gem.color].petalb,
-			swap_tween = "y_scaling",
-			swap_period = 30,
-		}
-	end
-
-	return damage_particle_duration
-end
-
 function Holly:beforeGravity()
 	local game = self.game
 	local grid = game.grid
