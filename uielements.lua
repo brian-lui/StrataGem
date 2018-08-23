@@ -164,6 +164,7 @@ end
 
 -- animation when a burst segment gets full
 function Burst:_gainBurstAnim(segment_index)
+	if not segment_index then return end -- game deserialize hack
 	local game = self.game
 	local loc = game.stage.burst[self.player_num][segment_index]
 	local color = self.character.primary_colors[1]
@@ -181,6 +182,8 @@ end
 
 -- animation when a burst segment is used
 function Burst:_useBurstAnim(segment_index)
+	if not segment_index then return end -- game deserialize hack
+	
 	local game = self.game
 	local stage = game.stage
 	local color = self.character.primary_colors[1]
