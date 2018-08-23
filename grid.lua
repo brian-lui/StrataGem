@@ -294,6 +294,32 @@ function Grid:updateMatchedGems(min_length)
 	end
 end
 
+-- removes a gem from the matched_gems and matched_gem_lists
+function Grid:clearMatchedGem(remove_gem)
+	for i = #self.matched_gems, 1, -1 do
+		if remove_gem == self.matched_gems[i] then
+			table.remove(self.matched_gems, i)
+			break
+		end
+	end
+
+	for _, list in ipairs(self.matched_gem_lists) do
+		for i = #list, 1, -1 do
+			if remove_gem == list[i] then
+				table.remove(list, i)
+				break
+			end
+		end
+	end
+
+	-- remove matches with no gems in them
+	for i = #self.matched_gem_lists, 1, -1 do
+		if #self.matched_gem_lists[i] == 0 then
+			table.remove(self.matched_gem_lists, i)
+		end
+	end
+end
+
 -- clears grid.matched_gems and grid.matched_gem_lists
 function Grid:clearMatchedGems()
 	self.matched_gems, self.matched_gem_lists = {}, {}
