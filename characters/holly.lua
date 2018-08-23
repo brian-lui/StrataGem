@@ -166,6 +166,30 @@ function Flower:_rotateDance()
 	self.rotation = (self.rotation + self.ROTATE_DANCE_SPEED) % (math.pi * 2)
 end
 
+function Flower:leavePlay(delay)
+	local game = self.game
+	delay = delay or 0
+
+	self:wait(delay)
+	self:change{
+		duration = game.GEM_EXPLODE_FRAMES,
+		x_scaling = 2,
+		y_scaling = 2,
+		transparency = 0,
+		remove = true,
+	}
+
+	self.stem:wait(delay)
+	self.stem:change{
+		duration = game.GEM_EXPLODE_FRAMES,
+		scaling = 2,
+		transparency = 0,
+		remove = true,
+	}
+
+	self.is_destroyed = true
+end
+
 function Flower:update(dt)
 	self.stem.x = self.gem.x
 	self.stem.y = self.gem.y + self.STEM_DOWNSHIFT
@@ -184,27 +208,7 @@ function Flower:update(dt)
 	end
 
 	if self.gem.is_destroyed and not self.is_destroyed then
-		local game = self.game
-		local start_time = self.gem.time_to_destruction
-
-		self:wait(start_time)
-		self:change{
-			duration = game.GEM_EXPLODE_FRAMES,
-			x_scaling = 2,
-			y_scaling = 2,
-			transparency = 0,
-			remove = true,
-		}
-
-		self.stem:wait(start_time)
-		self.stem:change{
-			duration = game.GEM_EXPLODE_FRAMES,
-			scaling = 2,
-			transparency = 0,
-			remove = true,
-		}
-
-		self.is_destroyed = true
+		self:leavePlay(self.gem.time_to_destruction)
 	end
 end
 
