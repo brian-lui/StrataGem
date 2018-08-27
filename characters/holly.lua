@@ -332,7 +332,7 @@ function SporePod:leavePlay(delay)
 		remove = true,
 	}
 
-	self.owner.fx.spore.generateStarburst(self.game, self)
+	self.owner.fx.spore.generateStarburst(self.game, self, delay)
 
 	self.is_destroyed = true
 end
@@ -721,7 +721,7 @@ function Holly:beforeMatch()
 			for _, gem in ipairs(list) do
 				if gem.holly_spore then
 					assert(self.spore_pods[gem], "Tried to remove non-existent spore!")
-					self.spore_pods[gem]:leavePlay()
+					self.spore_pods[gem]:leavePlay(delay + game.GEM_EXPLODE_FRAMES)
 				end
 				gem.holly_reflected = true
 				gem:setOwner(self.player_num)
