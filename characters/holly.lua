@@ -496,7 +496,7 @@ function Spore.generateStarburst(game, spore_pod, delay)
 		return end_x, end_y
 	end
 
-	for _ = 1, SPORE_NUM do
+	for i = 1, SPORE_NUM do
 		local end_x, end_y = starburst_end_xy(x, y)
 
 		local params = {
@@ -522,6 +522,11 @@ function Spore.generateStarburst(game, spore_pod, delay)
 			y = end_y,
 			transparency = 0.5,
 			easing = "outCubic",
+		}
+
+		p:change{
+			duration = math.floor(i * 0.04),
+			transparency = 0,
 			remove = true,
 		}
 	end
