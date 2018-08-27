@@ -480,7 +480,7 @@ end
 
 -- starburst spore
 function Spore.generateStarburst(game, spore_pod, delay)
-	local SPORE_NUM = 2400
+	local SPORE_NUM = 1200
 	local DURATION = 160
 
 	local owner = spore_pod.owner
