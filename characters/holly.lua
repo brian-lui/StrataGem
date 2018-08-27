@@ -191,15 +191,18 @@ function Flower:leavePlay(delay)
 end
 
 function Flower:update(dt)
-	self.stem.x = self.gem.x
-	self.stem.y = self.gem.y + self.STEM_DOWNSHIFT
-	self.stem:update(dt)
-
-	self.x = self.gem.x
-	self.y = self.gem.y
-	Pic.update(self, dt)
+	if self.gem.is_destroyed and not self.is_destroyed then
+		self:leavePlay(self.gem.time_to_destruction)
+	end
 
 	if not self.is_destroyed then
+		self.stem.x = self.gem.x
+		self.stem.y = self.gem.y + self.STEM_DOWNSHIFT
+		self.stem:update(dt)
+
+		self.x = self.gem.x
+		self.y = self.gem.y
+
 		if self.color == "red" or self.color == "blue" then
 			self:_sizeDance()
 		elseif self.color == "green" or self.color == "yellow" then
@@ -207,9 +210,7 @@ function Flower:update(dt)
 		end
 	end
 
-	if self.gem.is_destroyed and not self.is_destroyed then
-		self:leavePlay(self.gem.time_to_destruction)
-	end
+	Pic.update(self, dt)
 end
 
 function Flower.generate(game, owner, gem, delay)
@@ -312,6 +313,7 @@ end
 -- remove through either gem destroyed, or timer expiry
 function SporePod:leavePlay(delay)
 	local game = self.game
+	delay = delay or game.GEM_EXPLODE_FRAMES
 
 	self:wait(delay)
 	self:change{
@@ -355,23 +357,23 @@ function SporePod:_dropSporePod()
 end
 
 function SporePod:update(dt)
-	self.stem.x = self.gem.x
-	self.stem.y = self.gem.y + self.STEM_DOWNSHIFT
-	self.stem:update(dt)
-
-	self.x = self.gem.x
-	self.y = self.gem.y
-	Pic.update(self, dt)
-
-	if not self.is_destroyed then
-		self:_shake()
-		self:_dropSporePod()
-	end
-
 	if self.gem.is_destroyed and not self.is_destroyed then
 		local delay = self.gem.time_to_destruction
 		self:leavePlay(delay)
 	end
+
+	if not self.is_destroyed then
+		self.stem.x = self.gem.x
+		self.stem.y = self.gem.y + self.STEM_DOWNSHIFT
+		self.stem:update(dt)
+
+		self.x = self.gem.x
+		self.y = self.gem.y
+		self:_shake()
+		self:_dropSporePod()
+	end
+
+	Pic.update(self, dt)
 end
 
 function SporePod.generate(game, owner, gem, delay)
