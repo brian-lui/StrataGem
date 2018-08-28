@@ -35,6 +35,18 @@ Hailey.burst_images = {
 	glow = {images.ui_burst_partglow_blue, images.ui_burst_fullglow_blue}
 }
 
+Hailey.special_images = {
+	free_rush = love.graphics.newImage('images/characters/hailey/freerush.png'),
+	hold_text = love.graphics.newImage('images/characters/hailey/holdtext.png'),
+	hold_zone = love.graphics.newImage('images/characters/hailey/holdzone.png'),
+	hold_zone_window = love.graphics.newImage('images/characters/hailey/holdzonewindow.png'),
+	ice_block = love.graphics.newImage('images/characters/hailey/iceblock.png'),
+	ice_gem = love.graphics.newImage('images/characters/hailey/icegem.png'),
+	snow_dust = love.graphics.newImage('images/characters/hailey/snowdust.png'),
+	snowflake = love.graphics.newImage('images/characters/hailey/snowflake.png'),
+	super_platform = love.graphics.newImage('images/characters/hailey/superplatform.png'),
+}
+
 Hailey.sounds = {
 	bgm = "bgm_hailey",
 }
