@@ -883,7 +883,7 @@ function Grid:destroyMatchedGems(combo_bonus)
 end
 
 --[[ removes a gem from the grid, and plays all of the associated animations
-	also calls player:onGemDestroy(gem)
+	also calls player:onGemDestroyStart(gem)
 	returns:
 		delay_until_explode - frames until the explosion happens
 	on explosion frame, damage particles are generated, then:
@@ -916,11 +916,17 @@ function Grid:destroyGem(params)
 	local damage_particle_duration = 0
 
 	for player in game:players() do 
-		local dur = player:onGemDestroy(gem, delay_until_explode)
+		local dur = player:onGemDestroyStart(gem, delay_until_explode)
 		damage_particle_duration = dur or damage_particle_duration
 	end
 
-	if gem.is_destroyed or gem.indestructible then return 0, 0 end
+	if gem.is_destroyed or gem.indestructible then
+		for player in game:players() do 
+			player:onGemDestroyEnd(gem, delay_until_explode)
+		end		
+		return 0, 0
+	end
+	
 	if params.credit_to then gem:setOwner(params.credit_to) end
 
 	local player = game:playerByIndex(gem.player_num)
@@ -1037,6 +1043,11 @@ function Grid:destroyGem(params)
 	gem.is_destroyed = true -- in case we try to destroy it again
 	gem.time_to_destruction = delay_until_explode -- for animation uses
 	self[gem.row][gem.column].gem = false
+
+	for player in game:players() do 
+		local dur = player:onGemDestroyEnd(gem, delay_until_explode)
+		damage_particle_duration = dur or damage_particle_duration
+	end
 
 	return delay_until_explode, damage_particle_duration
 end
