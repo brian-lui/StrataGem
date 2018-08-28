@@ -1,3 +1,17 @@
+--[[ Color: blue
+Passive: Hailey can freeze a gem in her "hold zone". Gems in the hold zone stay
+there until used. Placing a gem in the hold zone does not take up your turn,
+but can only be done once per turn. You can also swap gems in the hold zone.
+(The hold gem goes to the platform the other gem was on.) You cannot interact
+with the hold zone after you've placed your gem in the basin.
+
+Super: Activating super creates a 1x1 ice gem in a special platform that can be
+rushed for free. The ice gem out prioritizes all other falling gems and freezes
+gems in a 3x1 area with the gem that touches the ice gem in the middle space.
+Frozen gems cannot be broken except by the casting Hailey. Lasts 3 turns before
+thawing. Play this in place of your normal gems.
+--]]
+
 local love = _G.love
 local common = require "class.commons"
 local Character = require "character"
@@ -51,8 +65,57 @@ Hailey.sounds = {
 	bgm = "bgm_hailey",
 }
 
+
+--[[
+HoldZone class:
+Hold zone initially appears WITHOUT holdzonewindow on top, with holdtext placed
+below it. When a gem is dragged into it, holdzonewindow fades on top of the
+holdzone, along with a SNOW POOF. holdtext stays on top. holdzonewindow fades
+out when the gem is picked up again.
+
+SnowDrift class:
+"snowdust and snowflake periodically appear, much like dust falling from
+grabbed gems. UNLIKE dust, it travels very slow, about 80 pixels before fading.
+It also travels in a random direction, not just down. Also it should appear at
+about 50% the rate of dust falling from grabbed gem. The ratio of dust to flake
+should be 70 dust / 30 flake.
+
+SnowPoof class:
+Similar to snow drift, BUT all of the particles appear AT ONCE. The amount that
+appears is "a handfull" and instead of about 80 pixels, it travels about 120
+pixels.
+
+SuperPlatform class
+When you click super, the superplatform slides in from off screen from the left
+(right for P2) and ends up in the position as seen in haileyui. It also rotates
+just like the regular star platforms.
+Superplatform has constant snowdrift.
+
+IceGem class
+Icegem rides on top of the platform (but doesn't rotate of course)  When you
+grab the icegem, it should snow poof and begin to snow drift as you hold it.
+FREE RUSH should appear on the opponent's side, in the same location as "drop
+gems here" from the beginning of the game. When you drop it, the affected gems
+snowpoof and iceblock fades on top.
+--]]
+
 function Hailey:init(...)
 	Character.init(self, ...)
+
+	-- Passive 1: create hold zone
+
+	-- refer to Wolfgang:init(...) as a reference
+end
+
+function Hailey:actionPhase()
+	-- Passive 2: check for interaction with hold zone
+--[[
+Passive: Hailey can freeze a gem in her "hold zone". Gems in the hold zone stay
+there until used. Placing a gem in the hold zone does not take up your turn,
+but can only be done once per turn. You can also swap gems in the hold zone.
+(The hold gem goes to the platform the other gem was on.) You cannot interact
+with the hold zone after you've placed your gem in the basin.
+--]]
 end
 
 return common.class("Hailey", Hailey, Character)
