@@ -482,7 +482,7 @@ end
 
 -- starburst spore
 function Spore.generateStarburst(game, spore_pod, delay)
-	local SPORE_NUM = 1200
+	local SPORE_NUM = 1000
 	local DURATION = 160
 
 	local owner = spore_pod.owner
@@ -689,6 +689,7 @@ function Holly:beforeMatch()
 
 	-- Check if any of the matched gems have a flower on them
 	-- If so, remove the flower and remove them from the matched list
+	-- This happens before destroyGem, so it doesn't activate onGemDestroy
 	local to_unmatch = {}
 	for i = #grid.matched_gems, 1, -1 do
 		local gem = grid.matched_gems[i]
@@ -788,5 +789,24 @@ function Holly:cleanup()
 
 	Character.cleanup(self)
 end
+
+function Holly:onGemDestroyStart(gem, delay)
+	if (gem.holly_flower == self.player_num) and (not gem.indestructible) then
+		gem.indestructible = true
+		gem.need_to_remove_flower = true
+	end
+end
+
+function Holly:onGemDestroyEnd(gem, delay)
+	if (gem.holly_flower == self.player_num) and gem.need_to_remove_flower then
+		assert(self.flowers[gem], "Tried to remove non-existent flower!")
+
+		gem.need_to_remove_flower = nil
+		gem.indestructible = nil
+		gem.holly_flower = nil
+		self.flowers[gem]:leavePlay(delay)
+	end
+end
+
 
 return common.class("Holly", Holly, Character)
