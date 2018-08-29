@@ -618,7 +618,7 @@ function Holly:beforeGravity()
 
 	if self.is_supering then
 		-- select the places to put spore pods
-		local top_gems = {}
+		local top_gems_first_row, top_gems_second_row = {}, {}
 		for col in grid:cols(self.enemy.player_num) do
 			this_col = {}
 			for row = grid.BASIN_START_ROW, grid.BASIN_END_ROW do
@@ -627,7 +627,7 @@ function Holly:beforeGravity()
 					if first:isDefaultColor()
 					and not first.holly_spore
 					and not first.holly_flower then
-						top_gems[#top_gems + 1] = first
+						top_gems_first_row[#top_gems_first_row + 1] = first
 					end
 
 					local second = grid[row + 1][col].gem
@@ -635,7 +635,7 @@ function Holly:beforeGravity()
 						if second:isDefaultColor()
 						and not second.holly_spore
 						and not second.holly_flower then
-							top_gems[#top_gems + 1] = second
+							top_gems_second_row[#top_gems_second_row + 1] = second
 						end
 					end
 
@@ -644,9 +644,17 @@ function Holly:beforeGravity()
 			end
 		end
 
-		shuffle(top_gems, game.rng)
+		shuffle(top_gems_first_row, game.rng)
+		shuffle(top_gems_second_row, game.rng)
 
-		local spore_places = {top_gems[1], top_gems[2]}
+		local spore_places
+		if #top_gems_first_row >= 2 then
+			spore_places = {top_gems_first_row[1], top_gems_first_row[2]}
+		elseif #top_gems_first_row == 1 then
+			spore_places = {top_gems_first_row[1], top_gems_second_row[1]}
+		else
+			spore_places = {top_gems_second_row[1], top_gems_second_row[2]}
+		end
 
 		-- place the spores
 		for _, gem in ipairs(spore_places) do
