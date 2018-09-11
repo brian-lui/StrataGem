@@ -55,8 +55,8 @@ local soundfiles = {
 	},
 	bgm_walter = {
 		filename = "music/walter.ogg",
-		loop_from = 72.923,
-		loop_to = 1.846,
+		loop_from = 80.000,
+		loop_to = 8.000,
 	},
 	bgm_wolfgang = {
 		filename = "music/wolfgang.ogg",
