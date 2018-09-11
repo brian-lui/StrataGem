@@ -34,17 +34,18 @@ end
 
 function love.draw()
 	love.graphics.push("all")
-	if game.draw then
-		local drawspace = game.inits.drawspace
-		drawspace.tlfres.beginRendering(drawspace.width, drawspace.height)
-		game:draw()
-		drawspace.tlfres.endRendering()
-	end
+		if game.draw then
+			local drawspace = game.inits.drawspace
+			drawspace.tlfres.beginRendering(drawspace.width, drawspace.height)
+			game:draw()
+			drawspace.tlfres.endRendering()
+		end
 	love.graphics.pop()
 end
 
 function love.update(dt)
 	(game.update or __NOP__)(game, dt)
+	--game.update(game, dt)
 end
 
 function love.keypressed(key)

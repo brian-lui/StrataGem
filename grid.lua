@@ -187,6 +187,7 @@ function Grid:simulateScore(piece, coords)
 	grid_clone:simulateGravity()
 	grid_clone:updateMatchedGems()
 	if not grid_clone:getScore() then print ("nil score") end
+
 	return grid_clone:getScore()
 end
 

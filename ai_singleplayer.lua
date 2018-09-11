@@ -4,6 +4,7 @@ singleplayer game.
 --]]
 
 local common = require "class.commons"
+local deepcpy = require "/helpers/utilities".deepcpy
 local ai_singleplayer = {}
 
 --[[
@@ -78,36 +79,51 @@ local function playSuper(self, super_params)
 end
 
 -- returns a scoring for all possible pieces and their placements
-local function generateScoreMatrices(grid, player)
+function ai_singleplayer:_generateScoreMatrices(grid, player)
+	-- only calculate if there's enough time left
+	local MAX_TIME = self.game.time_step * 0.25
+	local time_used = 0
 	local piece_list = enumeratePieces(player)
+	local finished_loading = true
 
-	-- rotate all pieces in hand by 1
-	local function rotateAll()
-		for i = 1, player.hand_size do
-			if player.hand[i].piece then
-				player.hand[i].piece:ai_rotate()
-			end
+	-- initialize the matrix if it doesn't exist
+	if not self.matrices then
+		self.matrices = {}
+		for rotation = 1, 4 do
+			self.matrices[rotation] = {}
+			for i = 1, # piece_list do self.matrices[rotation][i] = {} end
 		end
 	end
 
-	local matrix = {}
+	-- function to rotate all pieces in hand by 1
+	local function rotateAll()
+		for i = 1, player.hand_size do
+			if player.hand[i].piece then player.hand[i].piece:ai_rotate() end
+		end
+	end
+
 	for rotation = 1, 4 do -- a matrix for each orientation
 		rotateAll(player)
-		matrix[rotation] = {}
 		for i = 1, #piece_list do -- i: total number of valid pieces
 			local piece = piece_list[i]
-			matrix[rotation][i] = {}
 			local start_col = player.start_col
 			local end_col = player.end_col
 			if piece.is_horizontal then end_col = end_col - 1 end
-			for col = start_col, end_col do -- j: total valid columns
-				matrix[rotation][i][col] = grid:simulateScore(piece, getCoords(piece, col))
+
+			for col = start_col, end_col do
+				if not self.matrices[rotation][i][col] and time_used < MAX_TIME then
+					local start_time = love.timer.getTime()
+					self.matrices[rotation][i][col] = grid:simulateScore(piece, getCoords(piece, col))
+					local end_time = love.timer.getTime()
+
+					time_used = time_used + (end_time - start_time)
+					if time_used >= MAX_TIME then finished_loading = false end
+				end
 			end
 		end
 	end
-	-- return values correspond to the piece rotation index values
-	local v1, h1, v2, h2 = matrix[1], matrix[2], matrix[3], matrix[4]
-	return {v1, h1, v2, h2}
+
+	return finished_loading
 end
 
 -- this currently always plays the highest possible scoring match
@@ -116,72 +132,83 @@ function ai_singleplayer:evaluateActions()
 	local game = self.game
 	local player = self.player
 
+	if not self.grid_snapshot then self.grid_snapshot = deepcpy(game.grid) end
+	local grid = self.grid_snapshot
+
 	-- play super if available, using params
 	if player:canUseSuper() then
 		local super_params = nil -- TODO
 		playSuper(self, super_params)
+		self.grid_snapshot = nil
+		self.finished = true
 	else
 		-- Get a set of moves that yield the highest score
-		local matrices = generateScoreMatrices(game.grid, player)
-		local maximum_score = 0
-		local possible_moves = {}
-		for rot = 1, 4 do
-			local h_adj = (rot+1) % 2
-			for pc = 1, #matrices[rot] do
-				for col = player.start_col, player.end_col - h_adj do
-					local score = matrices[rot][pc][col]
-					if score > maximum_score then -- Make a fresh table
-						maximum_score = score
-						possible_moves = {{
-							rotation = rot,
-							piece_idx = pc,
-							column = col,
-						}}
-					elseif score == maximum_score then	-- Add to current table
-						possible_moves[#possible_moves+1] = {
-							rotation = rot,
-							piece_idx = pc,
-							column = col,
-						}
+		local finished_loading = self:_generateScoreMatrices(grid, player)
+
+		if finished_loading then
+			local maximum_score = 0
+			local possible_moves = {}
+			for rot = 1, 4 do
+				local h_adj = (rot+1) % 2
+				for pc = 1, #self.matrices[rot] do
+					for col = player.start_col, player.end_col - h_adj do
+						local score = self.matrices[rot][pc][col]
+						if score > maximum_score then -- Make a fresh table
+							maximum_score = score
+							possible_moves = {{
+								rotation = rot,
+								piece_idx = pc,
+								column = col,
+							}}
+						elseif score == maximum_score then	-- Add to current table
+							possible_moves[#possible_moves+1] = {
+								rotation = rot,
+								piece_idx = pc,
+								column = col,
+							}
+						end
 					end
 				end
 			end
-		end
 
-		if maximum_score > 0 then
-			local selected = possible_moves[math.random(#possible_moves)]
-			local piece = enumeratePieces(player)[selected.piece_idx]
-			for _ = 1, selected.rotation do piece:rotate() end
+			if maximum_score > 0 then
+				local selected = possible_moves[math.random(#possible_moves)]
+				local piece = enumeratePieces(player)[selected.piece_idx]
+				for _ = 1, selected.rotation do piece:rotate() end
 
-			placePiece(
-				self,
-				piece,
-				getCoords(piece, selected.column)
-			)
-		elseif player.cur_burst >= player.RUSH_COST and
-		game.grid:getFirstEmptyRow(1) >= game.grid.RUSH_ROW then
-			local piece = selectRandomPiece(player)
-			if piece.is_horizontal then piece:rotate() end -- Vertical rush
+				placePiece(
+					self,
+					piece,
+					getCoords(piece, selected.column)
+				)
+			elseif player.cur_burst >= player.RUSH_COST and
+			grid:getFirstEmptyRow(1) >= grid.RUSH_ROW then
+				local piece = selectRandomPiece(player)
+				if piece.is_horizontal then piece:rotate() end -- Vertical rush
 
-			placePiece(
-				self,
-				piece,
-				{player.enemy.start_col, player.enemy.start_col},
-				"rush"
-			)
-		else
-			-- random play
-			local piece = selectRandomPiece(player)
-			local coords = getCoords(piece, selectRandomColumn(piece, player))
+				placePiece(
+					self,
+					piece,
+					{player.enemy.start_col, player.enemy.start_col},
+					"rush"
+				)
+			else
+				-- random play
+				local piece = selectRandomPiece(player)
+				local coords = getCoords(piece, selectRandomColumn(piece, player))
 
-			placePiece(
-				self,
-				piece,
-				coords
-			)
+				placePiece(
+					self,
+					piece,
+					coords
+				)
+			end
+
+			self.matrices = nil
+			self.grid_snapshot = nil
+			self.finished = true
 		end
 	end
-	self.finished = true
 end
 
 -- for replays
