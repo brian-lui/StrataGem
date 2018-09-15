@@ -250,4 +250,12 @@ function Character:canUseSuper()
 		(self.CAN_SUPER_AND_PLAY_PIECE or not self.dropped_piece)
 end
 
+function Character:canUsePassive()
+	return false
+end
+
+function Character:isFurtherActionPossible()
+	return self:canPlacePiece() or self:canUseSuper() or self:canUsePassive()
+end
+
 return common.class("Character", Character)
