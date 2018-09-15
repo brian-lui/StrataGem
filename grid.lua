@@ -777,10 +777,21 @@ function Grid:updateGrid()
 	end
 end
 
+--[[
 -- If the only pieces placed are a rush and a normal, reverse their falling order
+-- If doublecast was played, it has top priority
+
+	Row		No rush, or double and rush:	Rush:
+	1 		Rush
+	2		Rush
+	3		Double							Normal
+	4		Double							Normal
+	5		Normal							Rush
+	6		Normal							Rush
+--]]
 function Grid:updateRushPriority()
 	local gem_list = self:getPendingGems()
-	local doublecast = false
+	local p1_doublecast, p2_doublecast = false, false
 	local p1_normal, p1_rush = false, false
 	local p2_normal, p2_rush = false, false
 
@@ -788,13 +799,17 @@ function Grid:updateRushPriority()
 		assert(gem.row >= 1 and gem.row <= 6, "Invalid pending gem row")
 		assert(gem.column >= 1 and gem.column <= 8, "Invalid pending gem col")
 
-		if gem.row == 1 or gem.row == 2 then -- doublecast
-			doublecast = true
-		elseif gem.row == 3 or gem.row == 4 then -- rush
+		if gem.row == 1 or gem.row == 2 then -- rush
 			if gem.column >= 1 and gem.column <= 4 then
 				p2_rush = true
 			elseif gem.column >= 5 and gem.column <= 8 then
 				p1_rush = true
+			end
+		elseif gem.row == 3 or gem.row == 4 then -- doublecast
+			if gem.column >= 1 and gem.column <= 4 then
+				p1_doublecast = true
+			elseif gem.column >= 5 and gem.column <= 8 then
+				p2_doublecast = true
 			end
 		elseif gem.row == 5 or gem.row == 6 then -- normal
 			if gem.column >= 1 and gem.column <= 4 then
@@ -806,7 +821,7 @@ function Grid:updateRushPriority()
 	end
 
 	-- No adjustment if any doublecast was played
-	if doublecast then return end
+	if p1_doublecast or p2_doublecast then return end
 
 	-- it's tricky to move them because of overlap, so we have to store them
 	if (p1_normal and p2_rush) or (p1_rush and p2_normal) then
@@ -814,10 +829,10 @@ function Grid:updateRushPriority()
 
 		-- store the gems and delete from grid first
 		for _, gem in ipairs(gem_list) do
-			if gem.row == 3 or gem.row == 4 then
+			if gem.row == 1 or gem.row == 2 then
 				rush_gems[#rush_gems+1] = gem
 				self[gem.row][gem.column].gem = false
-				gem.row = gem.row + 2
+				gem.row = gem.row + 4
 				gem.y = self.y[gem.row]
 			elseif gem.row == 5 or gem.row == 6 then
 				normal_gems[#normal_gems+1] = gem

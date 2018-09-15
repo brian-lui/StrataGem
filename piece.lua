@@ -473,7 +473,7 @@ function Piece:dropIntoBasin(coords, received_from_opponent)
 		if in_own_col then -- doublecast
 			assert(player.cur_burst >= player.current_double_cost, "No meter for doublecast")
 
-			row_adj = 0
+			row_adj = 2
 			player.cur_burst = player.cur_burst - player.current_double_cost
 			player.dropped_piece = "doubled"
 			for i = 1, #self.gems do self.gems[i].place_type = "double" end
@@ -490,7 +490,7 @@ function Piece:dropIntoBasin(coords, received_from_opponent)
 			player.dropped_piece = "normal"
 		else -- rush
 			assert(player.cur_burst >= player.current_rush_cost, "No meter for rush")
-			row_adj = 2
+			row_adj = 0
 			player.cur_burst = player.cur_burst - player.current_rush_cost
 			player.dropped_piece = "rushed"
 			for i = 1, #self.gems do self.gems[i].place_type = "rush" end
