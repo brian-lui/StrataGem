@@ -31,8 +31,7 @@ local gems = {
 }
 local words = {
 	"doublecast", "rush", "ready", "go", "gameoverthanks", "norush",
-	"doublecastcloudh", "doublecastcloudv", "rushcloudh",
-	"rushcloudv", "gostar",
+	"doublecastcloudh", "doublecastcloudv", "gostar",
 	"p1_grab", "p1_any", "p1_gem", "p1_dropgemshere",
 	"p2_grab", "p2_any", "p2_gem", "p2_dropgemshere",
 	"taptorotate",
@@ -54,6 +53,8 @@ local ui = {
 	"burst_partglow_red", "burst_partglow_blue", "burst_partglow_green", "burst_partglow_yellow",
 	"burst_fullglow_red", "burst_fullglow_blue", "burst_fullglow_green", "burst_fullglow_yellow",
 	"warning",
+
+	"rushball",
 }
 
 local particles = {

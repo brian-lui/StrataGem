@@ -1739,25 +1739,37 @@ end
 -- the glow cloud behind a rush piece.
 -- called from anims.putPendingOnTop, and from anims.update
 function WordEffects.generateRushCloud(game, gem1, gem2, is_horizontal)
-	local todraw = is_horizontal and images.words_rushcloudh or images.words_rushcloudv
-	local p = common.instance(
-		WordEffects,
-		game.particles,
-		(gem1.x + gem2.x) * 0.5,
-		(gem1.y + gem2.y) * 0.5,
-		todraw
-	)
-	p.transparency = 0
-	p:change{
-		duration = 20,
-		transparency = 1,
-		easing = "inCubic",
-	}
-	p.update = function(_self, dt)
-		Pic.update(_self, dt)
-		_self.x, _self.y = (gem1.x + gem2.x) * 0.5, (gem1.y + gem2.y) * 0.5
+	local PULSE_FRAMES = 6
+
+	for _, gem in ipairs{gem1, gem2} do
+		local p = common.instance(
+			WordEffects,
+			game.particles,
+			gem.x,
+			gem.y,
+			images.ui_rushball
+		)
+		p.transparency = 0
+		p:change{
+			duration = 20,
+			transparency = 1,
+			easing = "inCubic",
+		}
+
+		p.update = function(_self, dt)
+			Pic.update(_self, dt)
+			_self.x, _self.y = gem.x, gem.y
+
+			if _self:isStationary() then
+				if _self.transparency == 1 then
+					_self:change{duration = PULSE_FRAMES, transparency = 0.5}
+				else
+					_self:change{duration = PULSE_FRAMES, transparency = 1}
+				end
+			end
+		end
+		p.cloud = true
 	end
-	p.cloud = true
 end
 
 -- falling stars accompanying Ready at start of match. Called from Words.Ready
