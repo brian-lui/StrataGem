@@ -127,6 +127,12 @@ function Character:serializeSuperDeltaParams()
 	return ""
 end
 
+-- For netplay: how to serialize the passive ability parameters
+function Character:serializePassiveDeltaParams()
+	return ""
+end
+
+
 -- For netplay: how to serialize the character specials, for gamestate
 -- Do NOT use _ character! That will overload the gamestate deserializer
 function Character:serializeSpecials()

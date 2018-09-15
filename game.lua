@@ -425,6 +425,7 @@ Actions can be:
 	1) Play first piece
 	2) Play second piece (doublecast)
 	3) Play super + super parameters. Mutually exclusive with 1/2
+	4) Use passive ability, if available
 Encoding:
 	0) Default string is "N_", for no action.
 	1) Pc1_ID[piece hand position]_[piece rotation index]_[first gem column]_
@@ -432,6 +433,10 @@ Encoding:
 	2) Same as above, e.g. Pc2_60_2_3_
 	3) S_[parameters]_
 		e.g. S__, S_58390496405_
+	4) P_[parameters]_
+		e.g. P__, P_2405248524_
+	5) ACT_[T/F]_ (whether further actions are possible)
+		e.g. ACT_T_, ACT_F_
 	Concatenate to get final string, e.g.:
 		Pc1_59_3_2_Pc2_60_1_3_
 		Pc1_59_3_2_
@@ -474,6 +479,12 @@ function Game:serializeSuper(current_delta)
 	local serial = player:serializeSuperDeltaParams()
 
 	return "S_" .. serial .. "_"
+end
+
+function Game:serializePassive(current_delta)
+	local serial = player:serializePassiveDeltaParams()
+
+	return "P_" .. serial .. "_"
 end
 
 -- takes a delta and plays it to the game
