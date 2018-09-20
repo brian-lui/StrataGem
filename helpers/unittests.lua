@@ -402,7 +402,7 @@ end
 
 
 local function printSaveDirectory(game)
-	print(love.filesystem.getSaveDirectory())
+	print("Debug folder is at: " .. love.filesystem.getSaveDirectory())
 end
 
 local function skipToTurnEnd(game)

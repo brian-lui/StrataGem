@@ -13,7 +13,7 @@ local __NOP__ = function () end
 local game
 
 function love.load()
-	print(love.filesystem.getSaveDirectory())
+	print("Debug folder is at: " .. love.filesystem.getSaveDirectory())
 	love.window.setTitle("StrataGem!")
 	game = common.instance(require "game")
 
