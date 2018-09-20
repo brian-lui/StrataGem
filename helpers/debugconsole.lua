@@ -46,6 +46,12 @@ function DebugConsole:replacePrint()
 	end
 end
 
+-- writes output to the debug instead of to screen
+function DebugConsole:writeLog(...)
+	local write = table.concat({...}, ", ")
+	love.filesystem.append("debug.txt", write .. "\n")
+end
+
 function DebugConsole:setDisplay(params)
 	for k, v in pairs(params) do self[k] = v end
 end

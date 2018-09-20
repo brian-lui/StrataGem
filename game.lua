@@ -74,6 +74,9 @@ function Game:init()
 		fx = {},
 		fades = {},
 	}
+	self.debugconsole = common.instance(require "/helpers/debugconsole", self)
+	self.debugconsole:setDefaultDisplayParams()
+	self.debugconsole:replacePrint()
 	self.quotes = require "/quotes/quotes"
 	self.camera = common.instance(require "/libraries/camera")
 	self.inits = require "/helpers/inits"
@@ -94,9 +97,6 @@ function Game:init()
 	self.queue = common.instance(Queue, self)
 	self.statemanager = common.instance(require "/libraries/statemanager", self)
 	self:switchState("gs_title")
-	self.debugconsole = common.instance(require "/helpers/debugconsole", self)
-	self.debugconsole:setDefaultDisplayParams()
-	self.debugconsole:replacePrint()
 	self:reset()
 end
 
@@ -249,6 +249,8 @@ function Game:writeReplayHeader()
 
 	text = table.concat(text) .. "\n"
 	love.filesystem.append(self.replay_save_location, text)
+
+	love.filesystem.append("debug.txt", text) -- TODO: remove later
 end
 
 function Game:writeDeltas()
