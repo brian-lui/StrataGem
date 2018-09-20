@@ -521,6 +521,8 @@ function Piece:dropIntoBasin(coords, received_from_opponent)
 			if v.place_type == "normal" then v:tweenDown(true) end
 		end
 	end
+
+	player:updateFurtherAction()
 end
 
 function Piece:getGems()

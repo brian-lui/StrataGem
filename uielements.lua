@@ -442,6 +442,8 @@ function Super:action()
 		else
 			word:change{duration = 0, transparency = 0, scaling = 1}
 		end
+
+		character:updateFurtherAction()
 	end
 end
 

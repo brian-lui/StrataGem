@@ -59,6 +59,7 @@ Character.is_supering = false
 Character.super_params = {}
 Character.can_gain_super = true -- set false to gain no meter from matches
 Character.CAN_SUPER_AND_PLAY_PIECE = false -- this is always false now
+Character.is_further_action_possible = true
 
 function Character:init(player_num, game)
 	self.game = game
@@ -185,6 +186,7 @@ function Character:beforeCleanup() end
 -- delay accepted as return value
 function Character:cleanup()
 	self.is_supering = false
+	self.is_further_action_possible = true	
 	self.game:brightenScreen(self.player_num)
 end
 
@@ -260,8 +262,14 @@ function Character:canUsePassive()
 	return false
 end
 
-function Character:isFurtherActionPossible()
-	return self:canPlacePiece() or self:canUseSuper() or self:canUsePassive()
+function Character:updateFurtherAction()
+	if self:canPlacePiece() or self:canUsePassive() then
+		self.is_further_action_possible = true
+	elseif self:canUseSuper() then
+		self.is_further_action_possible = self.is_supering and "super" or true
+	else
+		self.is_further_action_possible = false
+	end
 end
 
 return common.class("Character", Character)
