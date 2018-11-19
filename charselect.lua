@@ -165,8 +165,7 @@ function Charselect:_createCharacterButtons()
 		and name ~= "walter"
 		and name ~= "wolfgang"
 		and name ~= "diggory"
-		and name ~= "holly"
-		and name ~= "gail" then
+		and name ~= "holly" then
 			data.action = function() end
 			data.RGB = {0.35, 0.35, 0.35}
 		end
@@ -310,7 +309,6 @@ function Charselect:_createUIImages()
 	-- large portrait shadow
 	Pic:create{
 		game = game,
-		name = "maincharacter",
 		image = images.dummy,
 		x = stage.width * 0.275,
 		y = stage.height * 0.45,
@@ -338,7 +336,6 @@ function Charselect:_createUIImages()
 	-- large portrait with dummy pic
 	Pic:create{
 		game = game,
-		name = "maincharacter",
 		image = images.dummy,
 		x = stage.width * 0.25,
 		y = stage.height * 0.45,

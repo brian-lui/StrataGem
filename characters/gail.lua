@@ -63,7 +63,7 @@ Gail.super_images = {
 	empty = images.ui_super_empty_yellow,
 	full = images.ui_super_full_yellow,
 	glow = images.ui_super_glow_yellow,
-	overlay = love.graphics.newImage('images/gaillogo.png'),
+	overlay = love.graphics.newImage('images/characters/gail/gaillogo.png'),
 }
 Gail.burst_images = {
 	partial = images.ui_burst_part_yellow,
