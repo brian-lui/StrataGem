@@ -11,7 +11,7 @@ Anyway this is in Love2D 11.1.
 ## How to run the game
 
 Windows:
-1. Download the binary [here](https://github.com/brian-lui/StrataGem/BINARIES/StrataGem! v0.7 Windows.zip)
+1. Download the binary [here](https://github.com/brian-lui/StrataGem/BINARIES/StrataGem!%20v0.7%20Windows.zip)
 2. Unzip the file
 3. Run StrataGem.exe
 
