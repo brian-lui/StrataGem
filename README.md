@@ -9,6 +9,13 @@ Debug mode is enabled by default. If you're coming from elsewhere and want to tu
 Anyway this is in Love2D 11.1.
 
 ## How to run the game
+
+Windows:
+1. Download the binary [here](https://github.com/brian-lui/StrataGem/BINARIES/StrataGem! v0.7 Windows.zip)
+2. Unzip the file
+3. Run StrataGem.exe
+
+Other:
 1. Download and install Love2D 11.1, available for download [here](https://love2d.org)
 2. Create a shortcut/link to the executable
 3. Download the master zip file [here](https://github.com/brian-lui/StrataGem/archive/master.zip)
