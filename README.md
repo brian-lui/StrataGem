@@ -11,12 +11,17 @@ Anyway this is in Love2D 11.1.
 ## How to run the game
 
 Windows:
-1. Download the binary [here](https://github.com/brian-lui/StrataGem/blob/master/BINARIES/StrataGem!%20v0.7%20Windows.zip)
+1. Download the executable [here](https://github.com/brian-lui/StrataGem/blob/master/BINARIES/StrataGem!%20v0.7%20Windows.zip)
 2. Unzip the file
 3. Run StrataGem.exe
 
-Other:
-1. Download and install Love2D 11.1, available for download [here](https://love2d.org)
+Mac:
+1. Download the executable [here](https://github.com/brian-lui/StrataGem/blob/master/BINARIES/StrataGem!%20v.07%20Mac.zip)
+2. Unzip the file
+3. Run StrataGem.app
+
+Linux:
+1. Download and install Love2D 11.2, available for download [here](https://love2d.org)
 2. Create a shortcut/link to the executable
 3. Download the master zip file [here](https://github.com/brian-lui/StrataGem/archive/master.zip)
 4. Unzip the file, it will be unzipped to the folder StrataGem-master
