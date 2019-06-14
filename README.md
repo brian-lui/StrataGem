@@ -8,6 +8,8 @@ Debug mode is enabled by default. If you're coming from elsewhere and want to tu
 
 Anyway this is in Love2D 11.1.
 
+Please enjoy the soundtrack from our talented musician Mitchel Wong [here](https://soundcloud.com/mitchelwong)!
+
 ## How to run the game
 
 Windows:
