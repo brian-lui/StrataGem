@@ -91,8 +91,8 @@ function Charselect:init(game, gamestate)
 		"Invalid gamestate name '" .. gamestate.name .. "' provided!")
 	self.game = game
 	self.gamestate = gamestate
-	self.selectable_chars = {"heath", "walter", "gail", "holly",
-		"wolfgang", "hailey", "buzz", "ivy", "joy", "mort", "diggory", "damon"}
+	self.selectable_chars = {"heath", "walter", "diggory", "holly",
+		"wolfgang", "hailey", "buzz", "ivy", "joy", "mort", "gail", "damon"}
 	self.gamestate.ui = {
 		clickable = {},
 		static = {},
