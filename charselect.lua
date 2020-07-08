@@ -100,6 +100,8 @@ function Charselect:init(game, gamestate)
 		popup_static = {},
 	}
 
+	self.details_displayed = false
+
 	if gamestate.name == "Multiplayer" then
 		self.lobby = common.instance(Lobby, game, self)
 	end
@@ -146,7 +148,7 @@ function Charselect:_createCharacterButtons()
 			easing = "inOutSine",
 			pushed_sfx = "buttoncharacter",
 			action = function()
-				if self.my_character ~= char then
+				if self.my_character ~= char and not self.details_displayed then
 					self.my_character = char
 					self.displayed_character_shadow:newImage(images["portraits_shadow_"..char])
 					self.displayed_character:newImage(images["portraits_action_"..char])
@@ -181,7 +183,7 @@ function Charselect:_createUIButtons()
 	local start_action
 	if gamestate.name == "Singleplayer" then
 		start_action = function()
-			if self.my_character then
+			if self.my_character and not self.details_displayed then
 				game:start{
 					gametype = gamestate.gametype,
 					char1 = self.my_character,
@@ -196,7 +198,7 @@ function Charselect:_createUIButtons()
 		end
 	elseif gamestate.name == "Multiplayer" then
 		start_action = function()
-			if self.my_character and not game.client.queuing then
+			if self.my_character and not game.client.queuing and not self.details_displayed then
 				local queue_details = {
 					character = self.my_character,
 					background = game.background:idx_to_str(self.game_background),
@@ -235,8 +237,13 @@ function Charselect:_createUIButtons()
 		end_y = stage.height * 0.9,
 		easing = "outQuad",
 		action = function()
-			if self.my_character then
-				print("Some details!")
+			if self.my_character and not self.details_displayed then
+				self.character_details[self.my_character]:change{
+					duration = 20,
+					y = stage.height * 0.5,
+					easing = "outCubic",
+				}
+				self.details_displayed = self.my_character
 			end
 		end,
 	}
@@ -245,10 +252,24 @@ function Charselect:_createUIButtons()
 	if gamestate.name == "Singleplayer" then
 		back_action = function()
 			game:switchState("gs_title")
+			if self.details_displayed then
+				self.character_details[self.details_displayed]:change{
+					duration = 0,
+					y = stage.height * -0.5
+				}
+				self.details_displayed = false
+			end
 		end
 	elseif gamestate.name == "Multiplayer" then
 		back_action = function()
 			self.lobby:goBack()
+			if self.details_displayed then
+				self.character_details[self.details_displayed]:change{
+					duration = 0,
+					y = stage.height * -0.5
+				}
+				self.details_displayed = false
+			end
 		end
 	end
 
@@ -407,6 +428,28 @@ function Charselect:_createUIImages()
 		transparency = 0.5,
 		easing = "linear",
 	}
+
+	-- character details
+	local actual_chars = {"heath", "walter", "wolfgang", "diggory", "holly"}
+	self.character_details = {}
+
+	for _, name in ipairs(actual_chars) do
+		self.character_details[name] = self:_createButton{
+			name = "details" .. name,
+			image = images["charselect_details_" .. name],
+			image_pushed = images["charselect_details_" .. name],
+			end_x = stage.width * 0.5,
+			end_y = stage.height * -0.5,
+			action = function()
+				self.character_details[name]:change{
+					duration = 0,
+					y = stage.height * -0.5
+				}
+
+				self.details_displayed = false
+			end,
+		}
+	end
 end
 
 function Charselect:enter()
@@ -474,6 +517,7 @@ function Charselect:draw()
 	self.displayed_character_text:draw{darkened = darkened}
 	for _, v in spairs(gamestate.ui.static) do v:draw{darkened = darkened} end
 	for _, v in pairs(gamestate.ui.clickable) do v:draw{darkened = darkened} end
+	for _, v in spairs(self.character_details) do v:draw{darkened = darkened} end
 	game:_drawSettingsMenu(self.gamestate)
 
 	if gamestate.name == "Multiplayer" then

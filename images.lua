@@ -100,6 +100,9 @@ local charselect = {
 
 	"thumbnail_colors", "thumbnail_starfall", "thumbnail_cloud",
 	"thumbnail_rabbitsnowstorm", "thumbnail_checkmate",
+
+	"details_heath", "details_walter", "details_diggory", "details_holly",
+	"details_wolfgang",
 }
 
 local vs = {
