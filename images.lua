@@ -14,7 +14,8 @@ local buttons = {
 	"details", "detailspush", "start", "startpush", "backgroundleft",
 	"backgroundright", "lobbycreatenew", "lobbyqueueranked",
 	"lobbycancelsearch", "pause", "stop", "settings", "settingspush", "yes",
-	"yespush", "no", "nopush", "quit", "quitpush",
+	"yespush", "no", "nopush", "quit", "quitpush", "tutorial", "tutorialpush",
+	"tutorialleft", "tutorialleftpush", "tutorialright", "tutorialrightpush",
 }
 
 local unclickables = {
