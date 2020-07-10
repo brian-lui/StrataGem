@@ -87,8 +87,9 @@ function stage:init(game)
 	self.basin = {x = self.x_mid, y = self.height * 0.658}
 	self.settings_button = {
 		gs_main = {x = self.x_mid, y = self.height * 0.957},
-		Title = {x = self.width * 0.92, y = self.height * 0.91},
-		Lobby = {x = self.width * 0.92, y = self.height * 0.91}, -- now unused
+		Title = {x = self.width * 0.95, y = self.height * 0.91},
+		Lobby = {x = self.width * 0.95, y = self.height * 0.91}, -- now unused
+		Tutorial = {x = self.width * 0.95, y = self.height * 0.91},
 	}
 	self.settings_locations = {
 		frame = {x = self.width * 0.5, y = self.height * 0.5},
