@@ -63,6 +63,20 @@ function Title:init()
 			self:switchState("gs_multiplayerselect")
 		end,
 	})
+	Title.createButton(self, {
+		name = "tutorial",
+		image = images.buttons_tutorial,
+		image_pushed = images.buttons_tutorialpush,
+		duration = 60,
+		end_x = stage.width * 0.85,
+		start_y = stage.height * 1.2,
+		end_y = stage.height * 0.8,
+		start_transparency = 0,
+		easing = "inQuart",
+		action = function()
+			self:switchState("gs_tutorial")
+		end,
+	})
 	Title.createImage(self, {
 		name = "logo",
 		image = images.unclickables_titlelogo,

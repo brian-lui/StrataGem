@@ -34,46 +34,38 @@ function Tutorial:init()
 	self:_createSettingsMenu(Tutorial)
 
 	Tutorial.createButton(self, {
-		name = "vscpu",
-		image = images.buttons_vscpu,
-		image_pushed = images.buttons_vscpupush,
-		duration = 60,
-		end_x = stage.width * 0.35,
-		start_y = stage.height * 1.2,
-		end_y = stage.height * 0.8,
-		start_transparency = 0,
+		name = "left_button",
+		image = images.buttons_tutorialleft,
+		image_pushed = images.buttons_tutorialleftpush,
+		end_x = stage.width * 0.1,
+		end_y = stage.height * 0.5,
+		pushed_sfx = "buttonback",
 		easing = "inQuart",
 		action = function()
-			self:switchState("gs_singleplayerselect")
+			--self:switchState("gs_singleplayerselect")
 		end,
 	})
 	Tutorial.createButton(self, {
-		name = "netplay",
-		image = images.buttons_netplay,
-		image_pushed = images.buttons_netplaypush,
-		duration = 60,
-		end_x = stage.width * 0.65,
-		start_y = stage.height * 1.2,
-		end_y = stage.height * 0.8,
-		start_transparency = 0,
-		easing = "inQuart",
+		name = "right_button",
+		image = images.buttons_tutorialright,
+		image_pushed = images.buttons_tutorialrightpush,
+		end_x = stage.width * 0.9,
+		end_y = stage.height * 0.5,
+		pushed_sfx = "buttonback",
 		action = function()
-			self:switchState("gs_multiplayerselect")
+			--self:switchState("gs_multiplayerselect")
 		end,
 	})
-	Tutorial.createImage(self, {
-		name = "logo",
-		image = images.unclickables_Tutoriallogo,
-		duration = 45,
-		end_x = stage.width * 0.5,
-		start_y = 0,
-		end_y = stage.height * 0.35,
-		start_transparency = 0,
-		easing = "linear",
-		exit_func = function()
-			if self.sound:getCurrentBGM() ~= "bgm_menu" then
-				self.sound:newBGM("bgm_menu", true)
-			end
+	-- back button
+	Tutorial.createButton(self, {
+		name = "back",
+		image = images.buttons_back,
+		image_pushed = images.buttons_backpush,
+		end_x = stage.width * 0.05,
+		end_y = stage.height * 0.09,
+		pushed_sfx = "buttonback",
+		action = function()
+			self:switchState("gs_title")
 		end,
 	})
 end
