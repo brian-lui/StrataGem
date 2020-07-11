@@ -100,6 +100,11 @@ function stage:init(game)
 		confirm_quit_button = {x = self.width * 0.5, y = self.height * 0.5},
 		cancel_quit_button = {x = self.width * 0.5, y = self.height * 0.65},
 	}
+
+	self.tutorial_locations = {
+		left_button = {x = self.width * 0.1, y = self.height * 0.5},
+		right_button = {x = self.width * 0.9, y = self.height * 0.5},
+	}
 end
 
 function stage:isOnLeft()

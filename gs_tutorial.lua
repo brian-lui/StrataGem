@@ -30,30 +30,78 @@ function Tutorial:init()
 		static = {},
 		popup_clickable = {},
 		popup_static = {},
+		pages = {},
 	}
+
 	self:_createSettingsMenu(Tutorial)
+
+	Tutorial.total_pages = 3
+	for i = 1, Tutorial.total_pages do
+		Tutorial.ui.pages[i] = Tutorial.createImage(self, {
+			name = "tutorial" .. i,
+			duration = 0,
+			image = images["tutorial_page" .. i],
+			end_x = stage.width * 0.5,
+			end_y = stage.height * 0.5,
+			end_transparency = 0,
+		})
+	end
 
 	Tutorial.createButton(self, {
 		name = "left_button",
 		image = images.buttons_tutorialleft,
 		image_pushed = images.buttons_tutorialleftpush,
-		end_x = stage.width * 0.1,
-		end_y = stage.height * 0.5,
+		end_x = stage.tutorial_locations.left_button.x,
+		end_y = stage.tutorial_locations.left_button.y,
 		pushed_sfx = "buttonback",
 		easing = "inQuart",
 		action = function()
-			--self:switchState("gs_singleplayerselect")
+			if Tutorial.current_page == 1 then return end
+
+			local previous_page = Tutorial.current_page
+			Tutorial.current_page = Tutorial.current_page - 1
+
+			Tutorial.ui.clickable.right_button:change{
+				x = stage.tutorial_locations.right_button.x
+			}
+
+			if Tutorial.current_page == 1 then
+				Tutorial.ui.clickable.left_button:change{x = stage.width * -1}
+			end
+
+			Tutorial.ui.pages[previous_page]:change{transparency = 0}
+			-- remove all previous page animation things
+
+			Tutorial.ui.pages[Tutorial.current_page]:change{transparency = 1}
+			-- add current page animations
 		end,
 	})
 	Tutorial.createButton(self, {
 		name = "right_button",
 		image = images.buttons_tutorialright,
 		image_pushed = images.buttons_tutorialrightpush,
-		end_x = stage.width * 0.9,
-		end_y = stage.height * 0.5,
+		end_x = stage.tutorial_locations.right_button.x,
+		end_y = stage.tutorial_locations.right_button.y,
 		pushed_sfx = "buttonback",
 		action = function()
-			--self:switchState("gs_multiplayerselect")
+			if Tutorial.current_page == Tutorial.total_pages then return end
+
+			local previous_page = Tutorial.current_page
+			Tutorial.current_page = Tutorial.current_page + 1
+
+			Tutorial.ui.clickable.left_button:change{
+				x = stage.tutorial_locations.left_button.x
+			}
+
+			if Tutorial.current_page == Tutorial.total_pages then
+				Tutorial.ui.clickable.right_button:change{x = stage.width * -1}
+			end
+
+			Tutorial.ui.pages[previous_page]:change{transparency = 0}
+			-- remove all previous page animation things
+
+			Tutorial.ui.pages[Tutorial.current_page]:change{transparency = 1}
+			-- add current page animations
 		end,
 	})
 	-- back button
@@ -68,6 +116,10 @@ function Tutorial:init()
 			self:switchState("gs_title")
 		end,
 	})
+
+	Tutorial.current_page = 1
+	Tutorial.ui.pages[1]:change{transparency = 1}
+	Tutorial.ui.clickable.left_button:change{x = stage.width * -1}
 end
 
 function Tutorial:enter()
