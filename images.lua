@@ -113,6 +113,11 @@ local vs = {
 	"smallword_buzz", "smallword_ivy", "smallword_joy", "smallword_mort",
 	--"smallword_damon",
 }
+
+local tutorial = {
+	"page1", "page2", "page3",
+}
+
 -- categories to create, in the form [key] = {category}
 -- assumes that key is the same as pathname
 -- e.g. buttons = buttons will create
@@ -127,6 +132,7 @@ local categories = {
 	portraits = portraits,
 	charselect = charselect,
 	vs = vs,
+	tutorial = tutorial,
 }
 
 local images = {
