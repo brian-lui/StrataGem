@@ -11,6 +11,7 @@
 
 local common = require "class.commons"
 local images = require "images"
+local Pic = require "pic"
 
 local Tutorial = {name = "Tutorial"}
 
@@ -47,10 +48,56 @@ function Tutorial:init()
 		})
 	end
 
+	Tutorial.moving_images = {}
 	Tutorial.actionsOnPageEnter = {}
-	Tutorial.actionsOnPageLeave = {}
-	Tutorial.actionsOnPageLeave[2] = function() print("left page 2! test") end
-	Tutorial.actionsOnPageEnter[3] = function() print("entered page 3! test") end
+	Tutorial.actionsOnPageEnter[3] = function()
+		Tutorial.moving_images.red_gem = Pic:create{
+			game = self,
+			x = stage.width * 0.4,
+			y = stage.width * 0.3,
+			image = images.gems_red,
+		}
+		Tutorial.moving_images.green_gem = Pic:create{
+			game = self,
+			x = stage.width * 0.4 + images.GEM_WIDTH,
+			y = stage.width * 0.3,
+			image = images.gems_green,
+		}
+
+		Tutorial.moving_images.red_gem:wait(40)
+		Tutorial.moving_images.green_gem:wait(40)
+
+		Tutorial.moving_images.red_gem:change{
+			duration = 60,
+			x = stage.width * 0.5,
+			y = stage.width * 0.1,
+		}
+		Tutorial.moving_images.green_gem:change{
+			duration = 60,
+			x = stage.width * 0.5 + images.GEM_WIDTH,
+			y = stage.width * 0.1,
+		}
+
+		Tutorial.moving_images.red_gem:wait(40)
+		Tutorial.moving_images.green_gem:wait(40)
+
+		Tutorial.moving_images.red_gem:change{
+			duration = 80,
+			y = stage.width * 0.3,
+		}
+		Tutorial.moving_images.green_gem:change{
+			duration = 80,
+			y = stage.width * 0.3,
+		}
+
+		Tutorial.moving_images.green_gem:change{
+			duration = 15,
+			y = stage.width * 0.3 + images.GEM_HEIGHT,
+		}
+
+		Tutorial.moving_images.red_gem:wait(40)
+		Tutorial.moving_images.green_gem:wait(25)
+	end
 
 	Tutorial.createButton(self, {
 		name = "left_button",
@@ -74,14 +121,12 @@ function Tutorial:init()
 				Tutorial.ui.clickable.left_button:change{x = stage.width * -1}
 			end
 
+			Tutorial.moving_images = {}
 			Tutorial.ui.pages[previous_page]:change{transparency = 0}
-			if Tutorial.actionsOnPageLeave[previous_page] then
-				Tutorial.actionsOnPageLeave[previous_page]()
-			end
-
 			Tutorial.ui.pages[Tutorial.current_page]:change{transparency = 1}
+
 			if Tutorial.actionsOnPageEnter[Tutorial.current_page] then
-				Tutorial.actionsOnPageEnter[Tutorial.current_page]()
+				Tutorial.actionsOnPageEnter[Tutorial.current_page](self)
 			end
 		end,
 	})
@@ -106,14 +151,12 @@ function Tutorial:init()
 				Tutorial.ui.clickable.right_button:change{x = stage.width * -1}
 			end
 
+			Tutorial.moving_images = {}
 			Tutorial.ui.pages[previous_page]:change{transparency = 0}
-			if Tutorial.actionsOnPageLeave[previous_page] then
-				Tutorial.actionsOnPageLeave[previous_page]()
-			end
-
 			Tutorial.ui.pages[Tutorial.current_page]:change{transparency = 1}
+
 			if Tutorial.actionsOnPageEnter[Tutorial.current_page] then
-				Tutorial.actionsOnPageEnter[Tutorial.current_page]()
+				Tutorial.actionsOnPageEnter[Tutorial.current_page](self)
 			end
 		end,
 	})
@@ -178,6 +221,8 @@ function Tutorial:update(dt)
 	for _, tbl in pairs(Tutorial.ui) do
 		for _, v in pairs(tbl) do v:update(dt) end
 	end
+
+	for _, v in pairs(Tutorial.moving_images) do v:update(dt) end
 end
 
 function Tutorial:draw()
@@ -185,6 +230,7 @@ function Tutorial:draw()
 	Tutorial.current_background:draw{darkened = darkened}
 	for _, v in pairs(Tutorial.ui.static) do v:draw{darkened = darkened} end
 	for _, v in pairs(Tutorial.ui.clickable) do v:draw{darkened = darkened} end
+	for _, v in pairs(Tutorial.moving_images) do v:draw{darkened = darkened} end
 	self:_drawSettingsMenu(Tutorial)
 	self:_drawGlobals()
 end
