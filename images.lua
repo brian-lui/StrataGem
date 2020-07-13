@@ -115,7 +115,7 @@ local vs = {
 }
 
 local tutorial = {
-	"page1", "page2", "page3",
+	"page1", "page2", "page3", "page4", "page5",
 }
 
 -- categories to create, in the form [key] = {category}
