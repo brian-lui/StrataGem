@@ -614,6 +614,14 @@ local function skipSplashScreen(game)
 	game:switchState("gs_main")
 end
 
+local screenshot_num = 0
+local function takeScreenshot(game)
+	screenshot_num = screenshot_num + 1
+	local filename = "manualshot" .. screenshot_num .. ".png"
+	love.graphics.captureScreenshot(filename)
+	print("Saved file: " .. filename)
+end
+
 local Unittests = {
 	f1 = saveGamestate,
 	f2 = loadGamestate,
@@ -644,7 +652,7 @@ local Unittests = {
 	z = toggleDebugDisplay,
 	x = toggleSlowdown,
 	c = skipSplashScreen,
-	--v = ,
+	v = takeScreenshot,
 	b = makeAGarbage,
 	n = changeLayout,
 	m = glowDestroyTest,
