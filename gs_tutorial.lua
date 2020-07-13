@@ -36,6 +36,8 @@ function Tutorial:init()
 
 	self:_createSettingsMenu(Tutorial)
 
+	Tutorial.moving_images = {}
+	Tutorial.actionsOnPageEnter = {}
 	Tutorial.ANIMATION_CYCLE_TIME = 360
 
 	Tutorial.animationReset = function()
@@ -56,57 +58,6 @@ function Tutorial:init()
 			end_y = stage.height * 0.5,
 			end_transparency = 0,
 		})
-	end
-
-	-- animations for tutorial pages
-	Tutorial.moving_images = {}
-	Tutorial.actionsOnPageEnter = {}
-
-	Tutorial.actionsOnPageEnter[3] = function()
-		Tutorial.moving_images.red_gem = Pic:create{
-			game = self,
-			x = stage.width * 0.4,
-			y = stage.width * 0.3,
-			image = images.gems_red,
-		}
-		Tutorial.moving_images.green_gem = Pic:create{
-			game = self,
-			x = stage.width * 0.4 + images.GEM_WIDTH,
-			y = stage.width * 0.3,
-			image = images.gems_green,
-		}
-
-		Tutorial.moving_images.red_gem:wait(40)
-		Tutorial.moving_images.green_gem:wait(40)
-
-		Tutorial.moving_images.red_gem:change{
-			duration = 60,
-			x = stage.width * 0.5,
-			y = stage.width * 0.1,
-		}
-		Tutorial.moving_images.green_gem:change{
-			duration = 60,
-			x = stage.width * 0.5 + images.GEM_WIDTH,
-			y = stage.width * 0.1,
-		}
-
-		Tutorial.moving_images.red_gem:wait(40)
-		Tutorial.moving_images.green_gem:wait(40)
-
-		Tutorial.moving_images.red_gem:change{
-			duration = 80,
-			y = stage.width * 0.3,
-		}
-		Tutorial.moving_images.green_gem:change{
-			duration = 80,
-			y = stage.width * 0.3,
-		}
-
-		Tutorial.moving_images.green_gem:change{
-			duration = 15,
-			y = stage.width * 0.3 + images.GEM_HEIGHT,
-		}
-
 	end
 
 	Tutorial.createButton(self, {
@@ -180,6 +131,53 @@ function Tutorial:init()
 	Tutorial.current_page = 1
 	Tutorial.ui.pages[1]:change{transparency = 1}
 	Tutorial.ui.clickable.left_button:change{x = stage.width * -1}
+
+	-- animations for tutorial pages
+	Tutorial.actionsOnPageEnter[3] = function()
+		Tutorial.moving_images.red_gem = Pic:create{
+			game = self,
+			x = stage.width * 0.4,
+			y = stage.width * 0.3,
+			image = images.gems_red,
+		}
+		Tutorial.moving_images.green_gem = Pic:create{
+			game = self,
+			x = stage.width * 0.4 + images.GEM_WIDTH,
+			y = stage.width * 0.3,
+			image = images.gems_green,
+		}
+
+		Tutorial.moving_images.red_gem:wait(40)
+		Tutorial.moving_images.green_gem:wait(40)
+
+		Tutorial.moving_images.red_gem:change{
+			duration = 60,
+			x = stage.width * 0.5,
+			y = stage.width * 0.1,
+		}
+		Tutorial.moving_images.green_gem:change{
+			duration = 60,
+			x = stage.width * 0.5 + images.GEM_WIDTH,
+			y = stage.width * 0.1,
+		}
+
+		Tutorial.moving_images.red_gem:wait(40)
+		Tutorial.moving_images.green_gem:wait(40)
+
+		Tutorial.moving_images.red_gem:change{
+			duration = 80,
+			y = stage.width * 0.3,
+		}
+		Tutorial.moving_images.green_gem:change{
+			duration = 80,
+			y = stage.width * 0.3,
+		}
+
+		Tutorial.moving_images.green_gem:change{
+			duration = 15,
+			y = stage.width * 0.3 + images.GEM_HEIGHT,
+		}
+	end
 end
 
 function Tutorial:enter()
