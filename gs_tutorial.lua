@@ -36,6 +36,16 @@ function Tutorial:init()
 
 	self:_createSettingsMenu(Tutorial)
 
+	Tutorial.ANIMATION_CYCLE_TIME = 360
+
+	Tutorial.animationReset = function()
+		Tutorial.current_animation_time = 0
+		Tutorial.moving_images = {}
+		if Tutorial.actionsOnPageEnter[Tutorial.current_page] then
+			Tutorial.actionsOnPageEnter[Tutorial.current_page](self)
+		end
+	end
+
 	Tutorial.total_pages = 5
 	for i = 1, Tutorial.total_pages do
 		Tutorial.ui.pages[i] = Tutorial.createImage(self, {
@@ -121,13 +131,9 @@ function Tutorial:init()
 				Tutorial.ui.clickable.left_button:change{x = stage.width * -1}
 			end
 
-			Tutorial.moving_images = {}
 			Tutorial.ui.pages[previous_page]:change{transparency = 0}
 			Tutorial.ui.pages[Tutorial.current_page]:change{transparency = 1}
-
-			if Tutorial.actionsOnPageEnter[Tutorial.current_page] then
-				Tutorial.actionsOnPageEnter[Tutorial.current_page](self)
-			end
+			Tutorial.animationReset()
 		end,
 	})
 	Tutorial.createButton(self, {
@@ -151,13 +157,9 @@ function Tutorial:init()
 				Tutorial.ui.clickable.right_button:change{x = stage.width * -1}
 			end
 
-			Tutorial.moving_images = {}
 			Tutorial.ui.pages[previous_page]:change{transparency = 0}
 			Tutorial.ui.pages[Tutorial.current_page]:change{transparency = 1}
-
-			if Tutorial.actionsOnPageEnter[Tutorial.current_page] then
-				Tutorial.actionsOnPageEnter[Tutorial.current_page](self)
-			end
+			Tutorial.animationReset()
 		end,
 	})
 	-- back button
@@ -180,6 +182,8 @@ end
 
 function Tutorial:enter()
 	Tutorial.clicked = nil
+	Tutorial.current_animation_time = 0
+
 	self.uielements:clearScreenUIColor()
 	self.settings_menu_open = false
 	if self.sound:getCurrentBGM() ~= "bgm_menu" then
@@ -223,6 +227,11 @@ function Tutorial:update(dt)
 	end
 
 	for _, v in pairs(Tutorial.moving_images) do v:update(dt) end
+
+	Tutorial.current_animation_time = Tutorial.current_animation_time + 1
+	if Tutorial.current_animation_time >= Tutorial.ANIMATION_CYCLE_TIME then
+		Tutorial.animationReset()
+	end
 end
 
 function Tutorial:draw()
