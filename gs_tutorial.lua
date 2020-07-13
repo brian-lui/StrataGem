@@ -39,6 +39,7 @@ function Tutorial:init()
 	Tutorial.moving_images = {}
 	Tutorial.pageActions = {}
 	Tutorial.ANIMATION_CYCLE_TIME = 360
+	Tutorial.TOTAL_PAGES = 17
 
 	Tutorial.animationReset = function()
 		Tutorial.current_animation_time = 0
@@ -48,7 +49,7 @@ function Tutorial:init()
 		end
 	end
 
-	Tutorial.TOTAL_PAGES = 6
+	-- create the tutorial page images
 	for i = 1, Tutorial.TOTAL_PAGES do
 		Tutorial.ui.pages[i] = Tutorial.createImage(self, {
 			name = "tutorial" .. i,

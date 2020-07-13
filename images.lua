@@ -114,9 +114,8 @@ local vs = {
 	--"smallword_damon",
 }
 
-local tutorial = {
-	"page1", "page2", "page3", "page4", "page5", "page6",
-}
+local tutorial = {}
+for i = 1, 17 do tutorial[i] = "page" .. i end
 
 -- categories to create, in the form [key] = {category}
 -- assumes that key is the same as pathname
