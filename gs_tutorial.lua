@@ -37,19 +37,19 @@ function Tutorial:init()
 	self:_createSettingsMenu(Tutorial)
 
 	Tutorial.moving_images = {}
-	Tutorial.actionsOnPageEnter = {}
+	Tutorial.pageActions = {}
 	Tutorial.ANIMATION_CYCLE_TIME = 360
 
 	Tutorial.animationReset = function()
 		Tutorial.current_animation_time = 0
 		Tutorial.moving_images = {}
-		if Tutorial.actionsOnPageEnter[Tutorial.current_page] then
-			Tutorial.actionsOnPageEnter[Tutorial.current_page](self)
+		if Tutorial.pageActions[Tutorial.current_page] then
+			Tutorial.pageActions[Tutorial.current_page](self)
 		end
 	end
 
-	Tutorial.total_pages = 6
-	for i = 1, Tutorial.total_pages do
+	Tutorial.TOTAL_PAGES = 6
+	for i = 1, Tutorial.TOTAL_PAGES do
 		Tutorial.ui.pages[i] = Tutorial.createImage(self, {
 			name = "tutorial" .. i,
 			duration = 0,
@@ -96,7 +96,7 @@ function Tutorial:init()
 		end_y = stage.tutorial_locations.right_button.y,
 		pushed_sfx = "buttonback",
 		action = function()
-			if Tutorial.current_page == Tutorial.total_pages then return end
+			if Tutorial.current_page == Tutorial.TOTAL_PAGES then return end
 
 			local previous_page = Tutorial.current_page
 			Tutorial.current_page = Tutorial.current_page + 1
@@ -105,7 +105,7 @@ function Tutorial:init()
 				x = stage.tutorial_locations.left_button.x
 			}
 
-			if Tutorial.current_page == Tutorial.total_pages then
+			if Tutorial.current_page == Tutorial.TOTAL_PAGES then
 				Tutorial.ui.clickable.right_button:change{x = stage.width * -1}
 			end
 
@@ -133,7 +133,7 @@ function Tutorial:init()
 	Tutorial.ui.clickable.left_button:change{x = stage.width * -1}
 
 	-- animations for tutorial pages
-	Tutorial.actionsOnPageEnter[3] = function()
+	Tutorial.pageActions[3] = function()
 		Tutorial.moving_images.red_gem = Pic:create{
 			game = self,
 			x = stage.width * 0.4,
