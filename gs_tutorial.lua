@@ -46,7 +46,7 @@ function Tutorial:init()
 		end
 	end
 
-	Tutorial.total_pages = 5
+	Tutorial.total_pages = 6
 	for i = 1, Tutorial.total_pages do
 		Tutorial.ui.pages[i] = Tutorial.createImage(self, {
 			name = "tutorial" .. i,
@@ -58,8 +58,10 @@ function Tutorial:init()
 		})
 	end
 
+	-- animations for tutorial pages
 	Tutorial.moving_images = {}
 	Tutorial.actionsOnPageEnter = {}
+
 	Tutorial.actionsOnPageEnter[3] = function()
 		Tutorial.moving_images.red_gem = Pic:create{
 			game = self,
@@ -105,8 +107,6 @@ function Tutorial:init()
 			y = stage.width * 0.3 + images.GEM_HEIGHT,
 		}
 
-		Tutorial.moving_images.red_gem:wait(40)
-		Tutorial.moving_images.green_gem:wait(25)
 	end
 
 	Tutorial.createButton(self, {
@@ -136,6 +136,7 @@ function Tutorial:init()
 			Tutorial.animationReset()
 		end,
 	})
+
 	Tutorial.createButton(self, {
 		name = "right_button",
 		image = images.buttons_tutorialright,
@@ -162,6 +163,7 @@ function Tutorial:init()
 			Tutorial.animationReset()
 		end,
 	})
+
 	-- back button
 	Tutorial.createButton(self, {
 		name = "back",
@@ -182,7 +184,7 @@ end
 
 function Tutorial:enter()
 	Tutorial.clicked = nil
-	Tutorial.current_animation_time = 0
+	Tutorial.animationReset()
 
 	self.uielements:clearScreenUIColor()
 	self.settings_menu_open = false
