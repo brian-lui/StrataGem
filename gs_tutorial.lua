@@ -35,7 +35,7 @@ function Tutorial:init()
 
 	self:_createSettingsMenu(Tutorial)
 
-	Tutorial.total_pages = 3
+	Tutorial.total_pages = 5
 	for i = 1, Tutorial.total_pages do
 		Tutorial.ui.pages[i] = Tutorial.createImage(self, {
 			name = "tutorial" .. i,
@@ -46,6 +46,11 @@ function Tutorial:init()
 			end_transparency = 0,
 		})
 	end
+
+	Tutorial.actionsOnPageEnter = {}
+	Tutorial.actionsOnPageLeave = {}
+	Tutorial.actionsOnPageLeave[2] = function() print("left page 2! test") end
+	Tutorial.actionsOnPageEnter[3] = function() print("entered page 3! test") end
 
 	Tutorial.createButton(self, {
 		name = "left_button",
@@ -70,10 +75,14 @@ function Tutorial:init()
 			end
 
 			Tutorial.ui.pages[previous_page]:change{transparency = 0}
-			-- remove all previous page animation things
+			if Tutorial.actionsOnPageLeave[previous_page] then
+				Tutorial.actionsOnPageLeave[previous_page]()
+			end
 
 			Tutorial.ui.pages[Tutorial.current_page]:change{transparency = 1}
-			-- add current page animations
+			if Tutorial.actionsOnPageEnter[Tutorial.current_page] then
+				Tutorial.actionsOnPageEnter[Tutorial.current_page]()
+			end
 		end,
 	})
 	Tutorial.createButton(self, {
@@ -98,10 +107,14 @@ function Tutorial:init()
 			end
 
 			Tutorial.ui.pages[previous_page]:change{transparency = 0}
-			-- remove all previous page animation things
+			if Tutorial.actionsOnPageLeave[previous_page] then
+				Tutorial.actionsOnPageLeave[previous_page]()
+			end
 
 			Tutorial.ui.pages[Tutorial.current_page]:change{transparency = 1}
-			-- add current page animations
+			if Tutorial.actionsOnPageEnter[Tutorial.current_page] then
+				Tutorial.actionsOnPageEnter[Tutorial.current_page]()
+			end
 		end,
 	})
 	-- back button
