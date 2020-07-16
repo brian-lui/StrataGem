@@ -92,7 +92,7 @@ function Charselect:init(game, gamestate)
 	self.game = game
 	self.gamestate = gamestate
 	self.selectable_chars = {"heath", "walter", "diggory", "holly",
-		"wolfgang", "hailey", "buzz", "ivy", "joy", "mort", "gail", "damon"}
+		"wolfgang", "hailey", "gail", "ivy", "joy", "mort", "buzz", "damon"}
 	self.gamestate.ui = {
 		clickable = {},
 		static = {},
@@ -167,7 +167,8 @@ function Charselect:_createCharacterButtons()
 		and name ~= "walter"
 		and name ~= "wolfgang"
 		and name ~= "diggory"
-		and name ~= "holly" then
+		and name ~= "holly"
+		and name ~= "gail" then
 			data.action = function() end
 			data.RGB = {0.35, 0.35, 0.35}
 		end
@@ -430,7 +431,7 @@ function Charselect:_createUIImages()
 	}
 
 	-- character details
-	local actual_chars = {"heath", "walter", "wolfgang", "diggory", "holly"}
+	local actual_chars = {"heath", "walter", "wolfgang", "diggory", "holly", "gail"}
 	self.character_details = {}
 
 	for _, name in ipairs(actual_chars) do

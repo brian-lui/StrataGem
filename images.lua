@@ -103,7 +103,7 @@ local charselect = {
 	"thumbnail_rabbitsnowstorm", "thumbnail_checkmate",
 
 	"details_heath", "details_walter", "details_diggory", "details_holly",
-	"details_wolfgang",
+	"details_wolfgang", "details_gail",
 }
 
 local vs = {
