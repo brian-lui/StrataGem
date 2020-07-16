@@ -85,9 +85,9 @@ Gail.sounds = {
 
 function Gail:init(...)
 	Character.init(self, ...)
+	self.should_activate_passive = true
 
 	--[[
-	self.should_activate_passive = true
 	self.should_activate_tornado = true
 	self.tornado_gems = {}
 	--]]
@@ -129,22 +129,84 @@ function Gail:afterAllMatches()
 end
 
 function Gail:beforeCleanup()
---[[ Passive 1
-if self.should_activate_passive:
-	find highest gem in all enemy columns
-	if #highest gems == 1:
-		flag gem as owned by self
-		if next column over is valid:
-			move gem one column over
-			go_to_gravity_phase = true
+	local delay = 0
+	local go_to_gravity_phase = false
 
-self.should_activate_passive = false
---]]
+	-- activate passive wind blow
+	if self.should_activate_passive then
+		local grid = self.game.grid
+		local columns = {}
+
+		-- get column with highest gem
+		local top_row = 1000
+		for i = 1, grid.COLUMNS do
+			columns[i] = grid:getFirstEmptyRow(i)
+			if columns[i] < top_row then top_row = columns[i] end
+		end
+
+		-- check whether there's more than one column with the highest gem row
+		local num_top_gem_cols = 0
+		for i = 1, #columns do
+			if columns[i] == top_row then
+				num_top_gem_cols = num_top_gem_cols + 1
+			end
+		end
+
+		if num_top_gem_cols == 1 and top_row < grid.BOTTOM_ROW then
+			local to_move_gem
+
+			-- locate the gem
+			for i = 1, #columns do
+				if columns[i] == top_row then
+					to_move_gem = grid[top_row + 1][i].gem
+					break
+				end
+			end
+
+			local sign
+			if self.player_num == 1 then
+				sign = 1
+			elseif self.player_num == 2 then
+				sign = -1
+			else
+				error("Gail has an invalid player_num. Sad!")
+			end
+
+			local dest_row = to_move_gem.row
+			local dest_col = to_move_gem.column + (1 * sign)
+
+			-- only move gem if there's no gem already there,
+			-- and if it won't go out of bounds
+			local empty_move_spot = not grid[dest_row][dest_col].gem
+			local in_bounds
+			if self.player_num == 1 then
+				in_bounds = to_move_gem.column ~= grid.COLUMNS
+			elseif self.player_num == 2 then
+				in_bounds = to_move_gem.column ~= 1
+			end
+
+			-- flag and move the gem
+			if empty_move_spot and in_bounds then
+				to_move_gem:setOwner(self.player_num, false)
+
+				local move_delay
+				grid:moveGem(to_move_gem, dest_row, dest_col)
+				move_delay = grid:moveGemAnim(to_move_gem, dest_row, dest_col)
+				delay = delay + move_delay
+				go_to_gravity_phase = true
+			end
+		end
+
+		self.should_activate_passive = false
+	end
+
+	return delay, go_to_gravity_phase
 end
 
 function Gail:cleanup()
+	self.should_activate_passive = true
 	--[[
-	self.should_activate_passive, self.should_activate_tornado = false, false
+	self.should_activate_tornado
 	--]]
 end
 return common.class("Gail", Gail, Character)
