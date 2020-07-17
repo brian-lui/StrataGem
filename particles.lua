@@ -3,7 +3,7 @@ This module contains all the pre-defined animated objects for non-character
 images. Particles are objects that are displayed on-screen but do not affect
 the gamestate.
 
-There should never be gamestate code that depends on particles, except for 
+There should never be gamestate code that depends on particles, except for
 code that uses particle duration to calculate delay times.
 --]]
 

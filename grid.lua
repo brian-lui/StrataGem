@@ -931,18 +931,18 @@ function Grid:destroyGem(params)
 	local delay_until_explode = game.GEM_EXPLODE_FRAMES + glow_delay + wait_delay
 	local damage_particle_duration = 0
 
-	for player in game:players() do 
+	for player in game:players() do
 		local dur = player:onGemDestroyStart(gem, delay_until_explode)
 		damage_particle_duration = dur or damage_particle_duration
 	end
 
 	if gem.is_destroyed or gem.indestructible then
-		for player in game:players() do 
+		for player in game:players() do
 			player:onGemDestroyEnd(gem, delay_until_explode)
-		end		
+		end
 		return 0, 0
 	end
-	
+
 	if params.credit_to then gem:setOwner(params.credit_to) end
 
 	local player = game:playerByIndex(gem.player_num)

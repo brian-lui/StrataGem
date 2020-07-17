@@ -289,9 +289,6 @@ end
 
 function Boom._generateBoom(game, owner, x, y, delay_frames)
 	delay_frames = delay_frames or 0
-	local grid = game.grid
-	local stage = game.stage
-
 	local booms = {}
 	for i = 1, 3 do
 		booms[i] = common.instance(Boom, game.particles, {
