@@ -93,6 +93,71 @@ function Gail:init(...)
 	--]]
 end
 
+-------------------------------------------------------------------------------
+local Leaf = {}
+function Leaf:init(manager, tbl)
+	Pic.init(self, manager.game, tbl)
+	local counter = self.game.inits.ID.particle
+	manager.allParticles.CharEffects[counter] = self
+	self.manager = manager
+end
+
+function Leaf:remove()
+	self.manager.allParticles.CharEffects[self.ID] = nil
+end
+
+function Leaf.generate(game, owner, delay)
+	local stage = game.stage
+	local x, dest_x
+	if owner.player_num == 1 then
+		x = stage.width * math.random() * 0.5
+		dest_x = x + stage.width * 0.2
+	else
+		x = stage.width * (math.random() * 0.5 + 0.5)
+		dest_x = x - stage.width * 0.2
+	end
+
+
+	local y = stage.height * math.random() * 0.5
+
+	local leaf_image
+	local rnd = math.random()
+	if rnd > 0.9 then
+		leaf_image = owner.special_images.leaf1
+	elseif rnd > 0.8 then
+		leaf_image = owner.special_images.leaf2
+	else
+		leaf_image = owner.special_images.poof
+	end
+
+	local params = {
+		x = x,
+		y = y,
+		image = leaf_image,
+		transparency = 0,
+		owner = owner,
+		player_num = owner.player_num,
+		name = "GailLeaf",
+	}
+
+	local p = common.instance(Leaf, game.particles, params)
+
+	p:wait(delay)
+	p:change{duration = 5, transparency = 1}
+	p:change{duration = 30, x = dest_x, easing = "inQuad", remove = true}
+end
+
+Leaf = common.class("Leaf", Leaf, Pic)
+
+-------------------------------------------------------------------------------
+
+Gail.fx = {
+	leaf = Leaf,
+}
+
+-------------------------------------------------------------------------------
+
+
 --[[ Super 1
 	Find lowest column in all own columns
 	If more than one: select randomly
@@ -135,6 +200,7 @@ function Gail:beforeCleanup()
 	-- activate passive wind blow
 	if self.should_activate_passive then
 		local grid = self.game.grid
+		local stage = self.game.stage
 		local columns = {}
 
 		-- get column with highest gem
@@ -189,12 +255,19 @@ function Gail:beforeCleanup()
 			if empty_move_spot and in_bounds then
 				to_move_gem:setOwner(self.player_num, false)
 
-				local move_delay
 				grid:moveGem(to_move_gem, dest_row, dest_col)
-				move_delay = grid:moveGemAnim(to_move_gem, dest_row, dest_col)
-				delay = delay + move_delay
+				grid:moveGemAnim(to_move_gem, dest_row, dest_col)
+				delay = 120
 				go_to_gravity_phase = true
-			end
+
+				-- "poof" leaf animations
+				for i = 0, 110, 10 do
+					for _ = 1, 12 do
+						self.fx.leaf.generate(self.game, self, i)
+					end
+				end
+
+		end
 		end
 
 		self.should_activate_passive = false
