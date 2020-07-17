@@ -11,9 +11,11 @@ topmost grabbed gem to the bottommost).
 
 
 Passive Animations:
-When the wind blows, 12 (poof or leaf) should appear somewhere on the upper
-half of the gail side of the screen, and travel across the screen in a slight
-upside down arch. (see image) every 10 frames for 120 frames. FOR POOF,
+When the wind blows, 4 (poof or leaf) appears along either the top half of the
+leftmost border, or the left half of the topmost border. Then, they follow a 
+slightly curved diagonally path across the screen.
+
+Every 10 frames for 120 frames. FOR POOF,
 randomly switch Y or X axis, no other animation. For leaf, do the leaf
 animation. The ratio is 4:1 poof to leaf.
 
@@ -95,60 +97,68 @@ function Gail:init(...)
 end
 
 -------------------------------------------------------------------------------
-local Leaf = {}
-function Leaf:init(manager, tbl)
+local Leaves = {}
+function Leaves:init(manager, tbl)
 	Pic.init(self, manager.game, tbl)
 	local counter = self.game.inits.ID.particle
 	manager.allParticles.CharEffects[counter] = self
 	self.manager = manager
 end
 
-function Leaf:remove()
+function Leaves:remove()
 	self.manager.allParticles.CharEffects[self.ID] = nil
 end
 
-function Leaf.generate(game, owner, delay)
+--[[
+TODO:
+When the wind blows, 4 (poof or leaf) appears along either the top half of the
+leftmost border, or the left half of the topmost border. Then, they follow a
+slightly curved diagonally path across the screen.
+--]]
+function Leaves.generate(game, owner, delay)
 	local stage = game.stage
-	local x, dest_x
-	if owner.player_num == 1 then
-		x = stage.width * math.random() * 0.5
-		dest_x = x + stage.width * 0.2
-	else
-		x = stage.width * (math.random() * 0.5 + 0.5)
-		dest_x = x - stage.width * 0.2
+	for _ = 1, 4 do
+		local x, dest_x
+		if owner.player_num == 1 then
+			x = stage.width * math.random() * 0.5
+			dest_x = x + stage.width * 0.2
+		else
+			x = stage.width * (math.random() * 0.5 + 0.5)
+			dest_x = x - stage.width * 0.2
+		end
+
+
+		local y = stage.height * math.random() * 0.5
+
+		local leaf_image
+		local rnd = math.random()
+		if rnd > 0.9 then
+			leaf_image = owner.special_images.leaf1
+		elseif rnd > 0.8 then
+			leaf_image = owner.special_images.leaf2
+		else
+			leaf_image = owner.special_images.poof
+		end
+
+		local params = {
+			x = x,
+			y = y,
+			image = leaf_image,
+			transparency = 0,
+			owner = owner,
+			player_num = owner.player_num,
+			name = "GailLeaves",
+		}
+
+		local p = common.instance(Leaves, game.particles, params)
+
+		p:wait(delay)
+		p:change{duration = 5, transparency = 1}
+		p:change{duration = 30, x = dest_x, easing = "inQuad", remove = true}
 	end
-
-
-	local y = stage.height * math.random() * 0.5
-
-	local leaf_image
-	local rnd = math.random()
-	if rnd > 0.9 then
-		leaf_image = owner.special_images.leaf1
-	elseif rnd > 0.8 then
-		leaf_image = owner.special_images.leaf2
-	else
-		leaf_image = owner.special_images.poof
-	end
-
-	local params = {
-		x = x,
-		y = y,
-		image = leaf_image,
-		transparency = 0,
-		owner = owner,
-		player_num = owner.player_num,
-		name = "GailLeaf",
-	}
-
-	local p = common.instance(Leaf, game.particles, params)
-
-	p:wait(delay)
-	p:change{duration = 5, transparency = 1}
-	p:change{duration = 30, x = dest_x, easing = "inQuad", remove = true}
 end
 
-Leaf = common.class("Leaf", Leaf, Pic)
+Leaves = common.class("Leaves", Leaves, Pic)
 
 -------------------------------------------------------------------------------
 local GemBorderPoofs = {}
@@ -209,7 +219,7 @@ GemBorderPoofs = common.class("GemBorderPoofs", GemBorderPoofs, Pic)
 
 
 Gail.fx = {
-	leaf = Leaf,
+	leaves = Leaves,
 	gemBorderPoofs = GemBorderPoofs,
 }
 
@@ -325,11 +335,9 @@ function Gail:beforeCleanup()
 				delay = 120
 				go_to_gravity_phase = true
 
-				-- "poof" leaf animations
+				-- curved descent leaf animations
 				for i = 0, 110, 10 do
-					for _ = 1, 12 do
-						self.fx.leaf.generate(self.game, self, i)
-					end
+					self.fx.leaves.generate(self.game, self, i)
 				end
 
 				-- gem border "poof" animations
