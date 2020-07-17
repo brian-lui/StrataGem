@@ -1,7 +1,8 @@
 --[[ Color: yellow
-Passive: At end of turn, the highest gem "blows" one column over away from the
-casting Gail. Matches made in this way are attributed to the blowing Gail. If
-there is no clear highest gem, nothing is blown.
+Passive: Only considers opponent's four columns.
+At end of turn, the highest row of gems "blows" one column over away from the
+casting Gail. If there are multiple gems then all possible gems are blown.
+Matches made in this way are attributed to the blowing Gail.
 
 Super: A tornado grabs up to the top 4 gems of Gail's lowest column (random on
 tie) and then drops the gems into the opponent's lowest column at a rate of one
@@ -254,10 +255,17 @@ function Gail:beforeCleanup()
 	local delay = 0
 	local go_to_gravity_phase = false
 
+	--[[
+	TODO:
+		Only considers opponent's four columns.
+		p1: check col 7, then 6, then 5 (generalize the loop)
+		p2: check col 2, then 3, then 4
+		Blow all blowable gems.
+		Each gem gets the poof animation. But only ONE leafblow animation.
+	--]]
 	-- activate passive wind blow
 	if self.should_activate_passive then
 		local grid = self.game.grid
-		local stage = self.game.stage
 		local columns = {}
 
 		-- get column with highest gem
