@@ -150,9 +150,66 @@ end
 Leaf = common.class("Leaf", Leaf, Pic)
 
 -------------------------------------------------------------------------------
+local GemBorderPoofs = {}
+function GemBorderPoofs:init(manager, tbl)
+	Pic.init(self, manager.game, tbl)
+	local counter = self.game.inits.ID.particle
+	manager.allParticles.CharEffects[counter] = self
+	self.manager = manager
+end
+
+function GemBorderPoofs:remove()
+	self.manager.allParticles.CharEffects[self.ID] = nil
+end
+
+function GemBorderPoofs.generate(game, owner, gem)
+	local total_poofs = math.random(2, 4)
+
+	for _ = 1, total_poofs do
+		local x, y
+		local rnd = math.random()
+		if rnd > 0.75 then -- top
+			x = gem.x + (math.random() - 0.5) * gem.width
+			y = gem.y - (0.5 * gem.height)
+		elseif rnd > 0.5 then -- bottom
+			x = gem.x + (math.random() - 0.5) * gem.width
+			y = gem.y + (0.5 * gem.height)
+		elseif rnd > 0.25 then -- left
+			x = gem.x - (0.5 * gem.width)
+			y = gem.y + (math.random() - 0.5) * gem.height
+		else -- right
+			x = gem.x + (0.5 * gem.width)
+			y = gem.y + (math.random() - 0.5) * gem.height
+		end
+
+		local params = {
+			x = x,
+			y = y,
+			image = owner.special_images.poof,
+			owner = owner,
+			player_num = owner.player_num,
+			scaling = 0,
+			h_flip = math.random() > 0.5 and true or false,
+			v_flip = math.random() > 0.5 and true or false,
+			name = "GailGemBorderPoofs",
+		}
+
+		local p = common.instance(GemBorderPoofs, game.particles, params)
+
+		p:change{duration = 10, scaling = 1}
+		p:change{duration = 40, scaling = 2, transparency = 0, remove = true}
+	end
+end
+
+GemBorderPoofs = common.class("GemBorderPoofs", GemBorderPoofs, Pic)
+
+-------------------------------------------------------------------------------
+
+
 
 Gail.fx = {
 	leaf = Leaf,
+	gemBorderPoofs = GemBorderPoofs,
 }
 
 -------------------------------------------------------------------------------
@@ -251,11 +308,11 @@ function Gail:beforeCleanup()
 				in_bounds = to_move_gem.column ~= 1
 			end
 
-			-- flag and move the gem
 			if empty_move_spot and in_bounds then
+				-- flag gem
 				to_move_gem:setOwner(self.player_num, false)
 
-				grid:moveGem(to_move_gem, dest_row, dest_col)
+				-- move gem animation
 				grid:moveGemAnim(to_move_gem, dest_row, dest_col)
 				delay = 120
 				go_to_gravity_phase = true
@@ -267,7 +324,12 @@ function Gail:beforeCleanup()
 					end
 				end
 
-		end
+				-- gem border "poof" animations
+				self.fx.gemBorderPoofs.generate(self.game, self, to_move_gem)
+
+				-- move gem
+				grid:moveGem(to_move_gem, dest_row, dest_col)
+			end
 		end
 
 		self.should_activate_passive = false
