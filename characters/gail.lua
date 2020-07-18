@@ -215,15 +215,12 @@ GemBorderPoofs = common.class("GemBorderPoofs", GemBorderPoofs, Pic)
 
 -------------------------------------------------------------------------------
 
-
-
 Gail.fx = {
 	leaves = Leaves,
 	gemBorderPoofs = GemBorderPoofs,
 }
 
 -------------------------------------------------------------------------------
-
 
 --[[ Super 1
 	Find lowest column in all own columns
@@ -232,9 +229,48 @@ Gail.fx = {
 	Select up to 4 of the top gems in that column
 	Move them to the tornado, starting from the top gem
 --]]
+function Gail:_activateSuper()
+	--[[
+	local game = self.game
+	local grid = game.grid
+
+	local explode_delay, particle_delay = 0, 0
+
+	-- find highest column
+	local col, start_row = -1, grid.BOTTOM_ROW
+	for i in grid:cols(self.player_num) do
+		local rows =  grid:getFirstEmptyRow(i) + 1
+		if rows <= start_row then col, start_row = i, rows end
+	end
+
+	if col ~= -1 then
+		for row = grid.BOTTOM_ROW, start_row, -1 do
+			local delay = (grid.BOTTOM_ROW - row) * self.SPOUT_SPEED +
+				self.FOAM_APPEAR_DURATION - game.GEM_EXPLODE_FRAMES
+			local gem = grid[row][col].gem
+			gem:setOwner(self.player_num)
+			local cur_explode_delay, cur_particle_delay = grid:destroyGem{
+				gem = gem,
+				super_meter = false,
+				glow_delay = delay,
+				force_max_alpha = true,
+			}
+			explode_delay = math.max(explode_delay, cur_explode_delay)
+			particle_delay = math.max(particle_delay, cur_particle_delay)
+		end
+
+		self.fx.foam.generate(self.game, self, col)
+		self.fx.spout.generate(self.game, self, col)
+	end
+
+	self:emptyMP()
+
+	return explode_delay + particle_delay
+	--]]
+end
+
 function Gail:beforeGravity()
 --[[
-
 	Super: A tornado grabs up to the top 4 gems of Gail's lowest column (random on
 tie) and then drops the gems into the opponent's lowest column at a rate of one
 gem per turn for (up to) 4 turns. (The order of gems dropped should be the
