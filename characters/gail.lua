@@ -318,7 +318,7 @@ function Gail:beforeCleanup()
 						to_move_gem:setOwner(self.player_num, false)
 
 						-- move gem animation
-						grid:moveGemAnim(to_move_gem, dest_row, dest_col)
+						grid:moveGemAnim(to_move_gem, dest_row, dest_col, 30)
 						delay = 120
 						go_to_gravity_phase = true
 
