@@ -9,20 +9,6 @@ tie) and then drops the gems into the opponent's lowest column at a rate of one
 gem per turn for (up to) 4 turns. (The order of gems dropped should be the
 topmost grabbed gem to the bottommost).
 
-
-Passive Animations:
-When the wind blows, 4 (poof or leaf) appears along either the top half of the
-leftmost border, or the left half of the topmost border. Then, they follow a 
-slightly curved diagonally path across the screen.
-
-Every 10 frames for 120 frames. FOR POOF,
-randomly switch Y or X axis, no other animation. For leaf, do the leaf
-animation. The ratio is 4:1 poof to leaf.
-
-AFFECTED GEMS should have 2 to 4 poofs (randomly swapped x and y axis) appear
-along the border of the gem, with some poofs appearing in front of the gem,
-and some appearing in front.
-
 Super Animations:
 Tornado fades between Tornado 1 and 2, just like Walter fountain. Poofs (random
 x and y) constantly appear and follow SWIRL PATTERN (see attached image)
@@ -109,12 +95,6 @@ function Leaves:remove()
 	self.manager.allParticles.CharEffects[self.ID] = nil
 end
 
---[[
-TODO:
-When the wind blows, 4 (poof or leaf) appears along either the top half of the
-leftmost border, or the left half of the topmost border. Then, they follow a
-slightly curved diagonally path across the screen.
---]]
 function Leaves.generate(game, owner, delay)
 	local stage = game.stage
 	for _ = 1, 4 do
@@ -284,86 +264,76 @@ function Gail:beforeCleanup()
 	local delay = 0
 	local go_to_gravity_phase = false
 
-	--[[
-	TODO:
-		Only considers opponent's four columns.
-		p1: check col 7, then 6, then 5 (generalize the loop)
-		p2: check col 2, then 3, then 4
-		Blow all blowable gems.
-		Each gem gets the poof animation. But only ONE leafblow animation.
-	--]]
 	-- activate passive wind blow
 	if self.should_activate_passive then
 		local grid = self.game.grid
+
+		local check_columns = {}
 		local columns = {}
+		local to_move_gems = {}
 
-		-- get column with highest gem
-		local top_row = 1000
-		for i = 1, grid.COLUMNS do
-			columns[i] = grid:getFirstEmptyRow(i)
-			if columns[i] < top_row then top_row = columns[i] end
+		if self.player_num == 1 then
+			check_columns = {8, 7, 6, 5}
+		elseif self.player_num == 2 then
+			check_columns = {1, 2, 3, 4}
+		else
+			error("Gail has invalid player_num!")
 		end
 
-		-- check whether there's more than one column with the highest gem row
-		local num_top_gem_cols = 0
-		for i = 1, #columns do
-			if columns[i] == top_row then
-				num_top_gem_cols = num_top_gem_cols + 1
+		-- get top row
+		local top_row = grid.BOTTOM_ROW
+		for _, col in ipairs(check_columns) do
+			columns[col] = grid:getFirstEmptyRow(col)
+			if columns[col] < top_row then top_row = columns[col] end
+			print("first empty row", top_row)
+		end
+
+		-- get column(s) with highest gem
+		for _ , col in ipairs(check_columns) do
+			if columns[col] == top_row then
+				to_move_gems[#to_move_gems + 1] = grid[top_row + 1][col].gem
 			end
 		end
 
-		if num_top_gem_cols == 1 and top_row < grid.BOTTOM_ROW then
-			local to_move_gem
+		if top_row ~= grid.BOTTOM_ROW then
+			for i = 1, #to_move_gems do
+				local to_move_gem = to_move_gems[i]
 
-			-- locate the gem
-			for i = 1, #columns do
-				if columns[i] == top_row then
-					to_move_gem = grid[top_row + 1][i].gem
-					break
+				if (to_move_gem.column ~= 1) and (to_move_gem.column ~= 8) then
+					local sign
+					if self.player_num == 1 then
+						sign = 1
+					elseif self.player_num == 2 then
+						sign = -1
+					else
+						error("Gail has an invalid player_num. Sad!")
+					end
+
+					local dest_row = to_move_gem.row
+					local dest_col = to_move_gem.column + (1 * sign)
+
+					-- only move gem if there's no gem already there
+					if not grid[dest_row][dest_col].gem then
+						-- flag gem
+						to_move_gem:setOwner(self.player_num, false)
+
+						-- move gem animation
+						grid:moveGemAnim(to_move_gem, dest_row, dest_col)
+						delay = 120
+						go_to_gravity_phase = true
+
+						-- curved descent leaf animations
+						for frame = 0, 110, 10 do
+							self.fx.leaves.generate(self.game, self, frame)
+						end
+
+						-- gem border "poof" animations
+						self.fx.gemBorderPoofs.generate(self.game, self, to_move_gem)
+
+						-- move gem
+						grid:moveGem(to_move_gem, dest_row, dest_col)
+					end
 				end
-			end
-
-			local sign
-			if self.player_num == 1 then
-				sign = 1
-			elseif self.player_num == 2 then
-				sign = -1
-			else
-				error("Gail has an invalid player_num. Sad!")
-			end
-
-			local dest_row = to_move_gem.row
-			local dest_col = to_move_gem.column + (1 * sign)
-
-			-- only move gem if there's no gem already there,
-			-- and if it won't go out of bounds
-			local empty_move_spot = not grid[dest_row][dest_col].gem
-			local in_bounds
-			if self.player_num == 1 then
-				in_bounds = to_move_gem.column ~= grid.COLUMNS
-			elseif self.player_num == 2 then
-				in_bounds = to_move_gem.column ~= 1
-			end
-
-			if empty_move_spot and in_bounds then
-				-- flag gem
-				to_move_gem:setOwner(self.player_num, false)
-
-				-- move gem animation
-				grid:moveGemAnim(to_move_gem, dest_row, dest_col)
-				delay = 120
-				go_to_gravity_phase = true
-
-				-- curved descent leaf animations
-				for i = 0, 110, 10 do
-					self.fx.leaves.generate(self.game, self, i)
-				end
-
-				-- gem border "poof" animations
-				self.fx.gemBorderPoofs.generate(self.game, self, to_move_gem)
-
-				-- move gem
-				grid:moveGem(to_move_gem, dest_row, dest_col)
 			end
 		end
 
