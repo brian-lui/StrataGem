@@ -568,11 +568,11 @@ end
 
 -- animation part of moving gem to a row/column
 -- can call this from player functions
-function Grid:moveGemAnim(gem, row, column)
+function Grid:moveGemAnim(gem, row, column, duration)
 	local target_x, target_y = self.x[column], self.y[row]
 	local dist = ((target_x - gem.x) ^ 2 + (target_y - gem.y) ^ 2) ^ 0.5
 	local speed = self.DROP_SPEED + self.DROP_MULTIPLE_SPEED * self.game.scoring_combo
-	local duration = math.abs(dist / speed)
+	local duration = duration or math.abs(dist / speed)
 	local exit_func = target_y > gem.y and {gem.landedInGrid, gem} or nil
 	-- only call landing function if it was moving downwards
 
