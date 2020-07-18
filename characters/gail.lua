@@ -202,6 +202,7 @@ function GemBorderPoofs.generate(game, owner, gem)
 			scaling = 0,
 			h_flip = math.random() > 0.5 and true or false,
 			v_flip = math.random() > 0.5 and true or false,
+			draw_order = math.random() > 0.5 and 1 or -1,
 			name = "GailGemBorderPoofs",
 		}
 
