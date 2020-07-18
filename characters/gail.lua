@@ -118,17 +118,35 @@ slightly curved diagonally path across the screen.
 function Leaves.generate(game, owner, delay)
 	local stage = game.stage
 	for _ = 1, 4 do
-		local x, dest_x
+		local x1, x2, x3, y1, y2, y3
+
+		local sign
 		if owner.player_num == 1 then
-			x = stage.width * math.random() * 0.5
-			dest_x = x + stage.width * 0.2
+			sign = 1
+		elseif owner.player_num == 2 then
+			sign = -1
 		else
-			x = stage.width * (math.random() * 0.5 + 0.5)
-			dest_x = x - stage.width * 0.2
+			error("Invalid owner.player_num!")
 		end
 
+		-- starting x, y
+		if math.random() > 0.5 then -- left side
+			x1 = 0.5 * (1 - sign) * stage.width
+			y1 = math.random() * stage.height * 0.5
+		else
+			x1 = ((math.random() * 0.5) + (0.25 * (1 - sign))) * stage.width
+			y1 = 0
+		end
 
-		local y = stage.height * math.random() * 0.5
+		-- ending x, y
+		x3 = ((math.random() * 0.5) + (0.25 * (1 + sign))) * stage.width
+		y3 = ((math.random() * 0.5) + 0.5) * stage.height
+
+		-- bezier intermediate x, y
+		x2 = x1
+		y2 = y3
+
+		local curve = love.math.newBezierCurve(x1, y1, x2, y2, x3, y3)
 
 		local leaf_image
 		local rnd = math.random()
@@ -141,8 +159,8 @@ function Leaves.generate(game, owner, delay)
 		end
 
 		local params = {
-			x = x,
-			y = y,
+			x = x1,
+			y = y1,
 			image = leaf_image,
 			transparency = 0,
 			owner = owner,
@@ -154,7 +172,7 @@ function Leaves.generate(game, owner, delay)
 
 		p:wait(delay)
 		p:change{duration = 5, transparency = 1}
-		p:change{duration = 30, x = dest_x, easing = "inQuad", remove = true}
+		p:change{duration = 45, curve = curve, remove = true}
 	end
 end
 
