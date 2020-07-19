@@ -64,8 +64,10 @@ Gail.special_images = {
 	leaf1 = love.graphics.newImage('images/characters/gail/leaf1.png'),
 	leaf2 = love.graphics.newImage('images/characters/gail/leaf2.png'),
 	poof = love.graphics.newImage('images/characters/gail/poof.png'),
-	tornado1 = love.graphics.newImage('images/characters/gail/tornado1.png'),
-	tornado2 = love.graphics.newImage('images/characters/gail/tornado2.png'),
+	tornado = {
+		love.graphics.newImage('images/characters/gail/tornado1.png'),
+		love.graphics.newImage('images/characters/gail/tornado2.png'),
+	}
 }
 
 Gail.sounds = {
@@ -75,12 +77,132 @@ Gail.sounds = {
 function Gail:init(...)
 	Character.init(self, ...)
 	self.should_activate_passive = true
+	local game = self.game
+	local stage = game.stage
 
-	--[[
-	self.should_activate_tornado = true
+	self.should_activate_tornado = false
 	self.tornado_gems = {}
-	--]]
+
+	-- init tornado image
+	self.tornado_anim = self.fx.tornado.create(game, self)
+
+	-- TODO: just testing anim
+	self.tornado_anim:appear(stage.width * 0.8, stage.height * 0.8)
 end
+
+
+-------------------------------------------------------------------------------
+-- The tornado for super
+local Tornado = {}
+function Tornado:init(manager, tbl)
+	Pic.init(self, manager.game, tbl)
+	local counter = self.game.inits.ID.particle
+	manager.allParticles.CharEffects[counter] = self
+	self.manager = manager
+	self.game = manager.game
+end
+
+function Tornado:remove()
+	self.manager.allParticles.CharEffects[self.ID] = nil
+end
+
+function Tornado:appear(x, y)
+	self:change{duration = 0, x = x, y = y}
+	self:change{duration = 10, transparency = 1}
+end
+
+function Tornado:disappear()
+	self:change{duration = 10, transparency = 0}
+	self:change{duration = 0, x = self.tornado_init_x, y = self.tornado_init_y}
+end
+
+function Tornado:acquireGem(gem)
+end
+
+function Tornado:releaseGem(column)
+end
+
+-- Tornado initially appears offscreen
+function Tornado.create(game, owner)
+	local params = {
+		init_x = game.stage.x_mid,
+		init_y = game.stage.height * 2,
+		x = game.stage.x_mid,
+		y = game.stage.height * 2,
+		h_flip = owner.player_num == 2,
+		image = owner.special_images.tornado[1],
+		image_index = 1,
+		SWAP_FRAMES = 30,
+		frames_until_swap = 15,
+		POOF_FRAMES = 15,
+		frames_until_poof = 8,
+		owner = owner,
+		transparency = 0,
+		player_num = owner.player_num,
+		name = "GailTornado",
+	}
+
+	return common.instance(Tornado, game.particles, params)
+end
+
+function Tornado:update(dt)
+	Pic.update(self, dt)
+	self.frames_until_swap = self.frames_until_swap - 1
+	if self.frames_until_swap <= 0 then
+		self.frames_until_swap = self.SWAP_FRAMES
+		local num_tornados = #self.owner.special_images.tornado
+		self.image_index = self.image_index % num_tornados + 1
+		local new_image = self.owner.special_images.tornado[self.image_index]
+		self:newImageFadeIn(new_image, self.SWAP_FRAMES)
+	end
+
+	self.frames_until_poof = self.frames_until_poof - 1
+	if self.frames_until_poof <= 0 then
+		self.frames_until_poof = self.POOF_FRAMES
+		self.owner.fx.tornadoPoof.generate(self.owner.game, self.owner, self)
+	end
+end
+
+Tornado = common.class("Tornado", Tornado, Pic)
+
+-------------------------------------------------------------------------------
+-- Poofs that regularly come out of the tornado
+local TornadoPoof = {}
+function TornadoPoof:init(manager, tbl)
+	Pic.init(self, manager.game, tbl)
+	local counter = self.game.inits.ID.particle
+	manager.allParticles.CharEffects[counter] = self
+	self.manager = manager
+end
+
+function TornadoPoof:remove()
+	self.manager.allParticles.CharEffects[self.ID] = nil
+end
+
+function TornadoPoof.generate(game, owner, tornado)
+	local x = tornado.x + (math.random() - 0.5) * tornado.width
+	local y = tornado.y + (math.random() - 0.5) * tornado.height
+
+	local params = {
+		x = x,
+		y = y,
+		image = owner.special_images.poof,
+		owner = owner,
+		player_num = owner.player_num,
+		scaling = 0,
+		h_flip = math.random() > 0.5 and true or false,
+		v_flip = math.random() > 0.5 and true or false,
+		draw_order = math.random() > 0.5 and 2 or -2,
+		name = "GailTornadoPoof",
+	}
+
+	local p = common.instance(TornadoPoof, game.particles, params)
+
+	p:change{duration = 10, scaling = 1}
+	p:change{duration = 40, scaling = 2, transparency = 0, remove = true}
+end
+
+TornadoPoof = common.class("TornadoPoof", TornadoPoof, Pic)
 
 -------------------------------------------------------------------------------
 local Leaves = {}
@@ -216,6 +338,8 @@ GemBorderPoofs = common.class("GemBorderPoofs", GemBorderPoofs, Pic)
 -------------------------------------------------------------------------------
 
 Gail.fx = {
+	tornado = Tornado,
+	tornadoPoof = TornadoPoof,
 	leaves = Leaves,
 	gemBorderPoofs = GemBorderPoofs,
 }
