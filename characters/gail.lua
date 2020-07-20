@@ -129,7 +129,6 @@ function Tornado.create(game, owner)
 		init_y = game.stage.height * 2,
 		x = game.stage.x_mid,
 		y = game.stage.height * 2,
-		h_flip = owner.player_num == 2,
 		image = owner.special_images.tornado[1],
 		image_index = 1,
 		SWAP_FRAMES = 30,
@@ -251,13 +250,10 @@ function Leaves.generate(game, owner, delay)
 		local curve = love.math.newBezierCurve(x1, y1, x2, y2, x3, y3)
 
 		local leaf_image
-		local rnd = math.random()
-		if rnd > 0.9 then
+		if math.random() > 0.5 then
 			leaf_image = owner.special_images.leaf1
-		elseif rnd > 0.8 then
-			leaf_image = owner.special_images.leaf2
 		else
-			leaf_image = owner.special_images.poof
+			leaf_image = owner.special_images.leaf2
 		end
 
 		local params = {
@@ -272,15 +268,23 @@ function Leaves.generate(game, owner, delay)
 
 		local p = common.instance(Leaves, game.particles, params)
 
+		local rotation = math.random() * 10
+
 		p:wait(delay)
 		p:change{duration = 5, transparency = 1}
-		p:change{duration = 45, curve = curve, remove = true}
+		p:change{
+			duration = 45,
+			curve = curve,
+			rotation = rotation,
+			remove = true,
+		}
 	end
 end
 
 Leaves = common.class("Leaves", Leaves, Pic)
 
 -------------------------------------------------------------------------------
+-- currently unused, previously would appear when gem moves
 local GemBorderPoofs = {}
 function GemBorderPoofs:init(manager, tbl)
 	Pic.init(self, manager.game, tbl)
@@ -406,18 +410,18 @@ The drop from tornado happens in AfterAllMatches phase.
 --]]
 end
 
---[[ Super 2
-if self.should_activate_tornado:
-	Determine lowest column in all enemy columns
-	If more than one: select randomly
-	if tornado[1]:
-		Pop tornado[1] gem
-		Flag gem as owned by Gail
-		Move gem into enemy's lowest column
-self.should_activate_tornado = false
---]]
-function Gail:afterAllMatches()
 
+function Gail:afterAllMatches()
+	--[[ Super 2
+	if self.should_activate_tornado:
+		Determine lowest column in all enemy columns
+		If more than one: select randomly
+		if tornado[1]:
+			Pop tornado[1] gem
+			Flag gem as owned by Gail
+			Move gem into enemy's lowest column
+	self.should_activate_tornado = false
+	--]]
 end
 
 function Gail:beforeCleanup()
@@ -478,17 +482,15 @@ function Gail:beforeCleanup()
 						to_move_gem:setOwner(self.player_num, false)
 
 						-- move gem animation
+						-- TODO: This is bugged because the gem doesn't immediately animate in this phase
 						grid:moveGemAnim(to_move_gem, dest_row, dest_col, 30)
-						delay = 120
+						delay = 60
 						go_to_gravity_phase = true
 
 						-- curved descent leaf animations
 						for frame = 0, 110, 10 do
 							self.fx.leaves.generate(self.game, self, frame)
 						end
-
-						-- gem border "poof" animations
-						self.fx.gemBorderPoofs.generate(self.game, self, to_move_gem)
 
 						-- move gem
 						grid:moveGem(to_move_gem, dest_row, dest_col)
@@ -505,8 +507,12 @@ end
 
 function Gail:cleanup()
 	self.should_activate_passive = true
+	self.should_activate_tornado = true
 	--[[
-	self.should_activate_tornado
+	if tornado has at least one gem:
+		move the tornado to the appropriate column
+	else:
+		disappear it
 	--]]
 end
 return common.class("Gail", Gail, Character)
