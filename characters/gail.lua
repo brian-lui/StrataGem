@@ -82,6 +82,7 @@ function Gail:init(...)
 
 	self.should_activate_tornado = false
 	self.tornado_gems = {}
+	self.moving_gems = {} -- for passive gem update
 
 	-- init tornado image
 	self.tornado_anim = self.fx.tornado.create(game, self)
@@ -482,8 +483,9 @@ function Gail:beforeCleanup()
 						-- flag gem
 						to_move_gem:setOwner(self.player_num, false)
 
+						self.moving_gems[to_move_gem] = true
+
 						-- move gem animation
-						-- TODO: This is bugged because the gem doesn't immediately animate in this phase
 						grid:moveGemAnim(to_move_gem, dest_row, dest_col, 30)
 						delay = 60
 						go_to_gravity_phase = true
@@ -519,4 +521,18 @@ function Gail:cleanup()
 		disappear it
 	--]]
 end
+
+function Gail:update(dt)
+	--[[ Update the position of gems being moved by passive.
+		Gems normally only update when phase.lua calls grid:updateGravity(dt)
+		This forces them to update every frame.
+	--]]
+	for gem in pairs(self.moving_gems) do
+		gem:update(dt)
+		if gem:isStationary() then
+			self.moving_gems[gem] = nil
+		end
+	end
+end
+
 return common.class("Gail", Gail, Character)
