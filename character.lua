@@ -167,10 +167,10 @@ function Character:afterGravity() end
 function Character:beforeMatch() end
 
 -- Right after matches are destroyed. delay accepted as return value
-function Character:duringMatch() end 
+function Character:duringMatch() end
 
 -- After each match round finished. delay accepted as return value
-function Character:afterMatch() end 
+function Character:afterMatch() end
 
  -- At garbage row creation. delay accepted as return value
 function Character:whenCreatingGarbageRow() end
