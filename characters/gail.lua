@@ -435,6 +435,7 @@ function Gail:beforeCleanup()
 		local check_columns = {}
 		local columns = {}
 		local to_move_gems = {}
+		local should_create_leaves = false
 
 		if self.player_num == 1 then
 			check_columns = {8, 7, 6, 5}
@@ -486,16 +487,19 @@ function Gail:beforeCleanup()
 						grid:moveGemAnim(to_move_gem, dest_row, dest_col, 30)
 						delay = 60
 						go_to_gravity_phase = true
-
-						-- curved descent leaf animations
-						for frame = 0, 110, 10 do
-							self.fx.leaves.generate(self.game, self, frame)
-						end
+						should_create_leaves = true
 
 						-- move gem
 						grid:moveGem(to_move_gem, dest_row, dest_col)
 					end
 				end
+			end
+		end
+
+		-- curved descent leaf animations
+		if should_create_leaves then
+			for frame = 0, 110, 10 do
+				self.fx.leaves.generate(self.game, self, frame)
 			end
 		end
 
