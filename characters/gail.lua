@@ -27,6 +27,7 @@ local common = require "class.commons"
 local Character = require "character"
 local images = require "images"
 local Pic = require "pic"
+local reverseTable = require "/helpers/utilities".reverseTable
 
 local Gail = {}
 
@@ -351,54 +352,66 @@ Gail.fx = {
 
 -------------------------------------------------------------------------------
 
---[[ Super 1
-	Find lowest column in all own columns
-	If more than one: select randomly
-
-	Select up to 4 of the top gems in that column
-	Move them to the tornado, starting from the top gem
---]]
+--[[ Find lowest column non-empty in all own columns, select randomly if more
+	than one. Put up to 4 of the top gems in that column into the tornado. --]]
 function Gail:_activateSuper()
-	--[[
 	local game = self.game
 	local grid = game.grid
 
-	local explode_delay, particle_delay = 0, 0
+	local MAX_GEMS_PICKED_UP = 4
+	local delay = 0
 
-	-- find highest column
-	local col, start_row = -1, grid.BOTTOM_ROW
+	-- find lowest column for the tornado to pick up gems from
+	local lowest_row = 0
 	for i in grid:cols(self.player_num) do
-		local rows =  grid:getFirstEmptyRow(i) + 1
-		if rows <= start_row then col, start_row = i, rows end
+		print("testing col", i)
+		local row = grid:getFirstEmptyRow(i) + 1
+		if row > lowest_row and row ~= grid.BASIN_END_ROW + 1 then
+			lowest_row = row -- ignore empty columns
+		end
+		print("row is", row, "lowest row is now", lowest_row)
 	end
 
-	if col ~= -1 then
-		for row = grid.BOTTOM_ROW, start_row, -1 do
-			local delay = (grid.BOTTOM_ROW - row) * self.SPOUT_SPEED +
-				self.FOAM_APPEAR_DURATION - game.GEM_EXPLODE_FRAMES
-			local gem = grid[row][col].gem
-			gem:setOwner(self.player_num)
-			local cur_explode_delay, cur_particle_delay = grid:destroyGem{
-				gem = gem,
-				super_meter = false,
-				glow_delay = delay,
-				force_max_alpha = true,
-			}
-			explode_delay = math.max(explode_delay, cur_explode_delay)
-			particle_delay = math.max(particle_delay, cur_particle_delay)
+	if lowest_row ~= 0 then -- exclude totally empty basin
+		local lowest_cols = {}
+		for i in grid:cols(self.player_num) do
+			local row = grid:getFirstEmptyRow(i) + 1
+			if row == lowest_row then lowest_cols[#lowest_cols + 1] = i end
 		end
 
-		self.fx.foam.generate(self.game, self, col)
-		self.fx.spout.generate(self.game, self, col)
+		local rand = game.rng:random(#lowest_cols)
+		local selected_col = lowest_cols[rand]
+
+		-- pick up the gems
+		local temp_gems = {} -- Top gem is in index 1, and so on
+
+		for _ = 1, MAX_GEMS_PICKED_UP do
+			local gem_row = grid:getFirstEmptyRow(selected_col) + 1
+			local gem = grid[gem_row][selected_col].gem
+			if gem then
+				temp_gems[#temp_gems + 1] = gem
+				grid[gem_row][selected_col].gem = false
+			end
+		end
+
+		-- append to existing tornado gems, preserving LIFO
+		for i = #temp_gems, 1, -1 do
+			self.tornado_gems[#self.tornado_gems + 1] = temp_gems[i]
+		end
 	end
 
-	self:emptyMP()
-
-	return explode_delay + particle_delay
-	--]]
+	return delay
 end
 
 function Gail:beforeGravity()
+	local delay = 0
+
+	if self.is_supering then
+		delay = self:_activateSuper()
+		self.is_supering = false
+	end
+
+	return delay
 --[[
 	Super: A tornado grabs up to the top 4 gems of Gail's lowest column (random on
 tie) and then drops the gems into the opponent's lowest column at a rate of one
@@ -451,7 +464,6 @@ function Gail:beforeCleanup()
 		for _, col in ipairs(check_columns) do
 			columns[col] = grid:getFirstEmptyRow(col)
 			if columns[col] < top_row then top_row = columns[col] end
-			print("first empty row", top_row)
 		end
 
 		-- get column(s) with highest gem
