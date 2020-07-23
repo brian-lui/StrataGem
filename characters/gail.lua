@@ -376,21 +376,27 @@ function Gail:_activateSuper()
 		local rand = game.rng:random(#lowest_cols)
 		local selected_col = lowest_cols[rand]
 
-		-- pick up the gems
-		local temp_gems = {} -- Top gem is in index 1, and so on
+		-- tornado appearance location
+		--local tornado_origin_x = 
+		--local tornado_origin_y =
 
-		for _ = 1, MAX_GEMS_PICKED_UP do
-			local gem_row = grid:getFirstEmptyRow(selected_col) + 1
-			local gem = grid[gem_row][selected_col].gem
-			if gem then
-				temp_gems[#temp_gems + 1] = gem
-				grid[gem_row][selected_col].gem = false
+		-- identify the gems
+		local temp_gems = {} -- Top gem is in index 1, and so on
+		for i = 1, MAX_GEMS_PICKED_UP do
+			local gem_row = grid:getFirstEmptyRow(selected_col) + i
+			if gem_row <= grid.BASIN_END_ROW then
+				local gem = grid[gem_row][selected_col].gem
+				if gem then temp_gems[#temp_gems + 1] = gem end
 			end
 		end
 
 		-- append to existing tornado gems, preserving LIFO
 		for i = #temp_gems, 1, -1 do
-			self.tornado_gems[#self.tornado_gems + 1] = temp_gems[i]
+			local gem = temp_gems[i]
+			if not gem.indestructible then
+				self.tornado_gems[#self.tornado_gems + 1] = gem
+				grid[gem.row][gem.column].gem = false
+			end
 		end
 	end
 
