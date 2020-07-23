@@ -435,6 +435,8 @@ function Gail:_activateSuper()
 		delay = delay + MOVE_TO_TOP
 	end
 
+	self:emptyMP()
+
 	return delay
 end
 
@@ -538,6 +540,9 @@ The drop from tornado happens in AfterAllMatches phase.
 --]]
 end
 
+function Gail:beforeTween()
+	self.game:brightenScreen(self.player_num)
+end
 
 function Gail:afterAllMatches()
 	--[[ Super 2
