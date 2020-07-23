@@ -85,6 +85,8 @@ function Gail:init(...)
 
 	-- init tornado image
 	self.tornado_anim = self.fx.tornado.create(game, self)
+	self.TORNADO_HEIGHT = self.tornado_anim.image:getHeight()
+	self.TORNADO_WIDTH = self.tornado_anim.image:getWidth()
 end
 
 
@@ -104,13 +106,19 @@ function Tornado:remove()
 end
 
 function Tornado:appear(x, y)
+	local APPEAR_DURATION = 10
 	self:change{duration = 0, x = x, y = y}
-	self:change{duration = 10, transparency = 1}
+	self:change{duration = APPEAR_DURATION, transparency = 1}
+
+	return APPEAR_DURATION
 end
 
 function Tornado:disappear()
-	self:change{duration = 10, transparency = 0}
+	local DISAPPEAR_DURATION = 10
+	self:change{duration = DISAPPEAR_DURATION, transparency = 0}
 	self:change{duration = 0, x = self.tornado_init_x, y = self.tornado_init_y}
+
+	return DISAPPEAR_DURATION
 end
 
 function Tornado:acquireGem(gem)
@@ -351,10 +359,21 @@ Gail.fx = {
 	than one. Put up to 4 of the top gems in that column into the tornado. --]]
 function Gail:_activateSuper()
 	local game = self.game
+	local stage = game.stage
 	local grid = game.grid
 
 	local MAX_GEMS_PICKED_UP = 4
 	local delay = 0
+
+	local TORNADO_TOP_Y = grid.y[10]
+	local AT_GEM_DELAY = 10 -- pause at each gem
+	local MOVE_TO_NEXT_GEM = 10 -- time taken to move to next gem
+	local MOVE_TO_TOP = 30 -- time taken to move to top of screen
+
+	-- time taken to move to first gem. Subtract MOVE_TO_NEXT GEM because
+	-- the code makes it move to the first gem twice lol
+	local MOVE_TO_FIRST = 30 - MOVE_TO_NEXT_GEM
+
 
 	-- find lowest column for the tornado to pick up gems from
 	local lowest_row = 0
@@ -375,9 +394,13 @@ function Gail:_activateSuper()
 		local rand = game.rng:random(#lowest_cols)
 		local selected_col = lowest_cols[rand]
 
-		-- tornado appearance location
-		--local tornado_origin_x = 
-		--local tornado_origin_y =
+		-- tornado appears
+		local disappear_delay = self.tornado_anim:disappear()
+
+		local start_x = grid.x[selected_col]
+		local start_y = stage.height + self.TORNADO_HEIGHT
+		local appear_delay = self.tornado_anim:appear(start_x, start_y)
+		delay = delay + disappear_delay + appear_delay
 
 		-- identify the gems
 		local temp_gems = {} -- Top gem is in index 1, and so on
@@ -389,14 +412,27 @@ function Gail:_activateSuper()
 			end
 		end
 
+		-- move tornado to "last" gem (first to get picked up)
+		local first_gem_y = temp_gems[#temp_gems].y
+		self.tornado_anim:change{y = first_gem_y, duration = MOVE_TO_FIRST}
+		delay = delay + MOVE_TO_FIRST
+
 		-- append to existing tornado gems, preserving LIFO
 		for i = #temp_gems, 1, -1 do
 			local gem = temp_gems[i]
+			self.tornado_anim:change{y = gem.y, duration = MOVE_TO_NEXT_GEM}
+			self.tornado_anim:wait(AT_GEM_DELAY)
+			delay = delay + MOVE_TO_NEXT_GEM + AT_GEM_DELAY
+
+			-- move tornado to the new place and pause there
 			if not gem.indestructible then
 				self.tornado_gems[#self.tornado_gems + 1] = gem
 				grid[gem.row][gem.column].gem = false
 			end
 		end
+
+		self.tornado_anim:change{y = TORNADO_TOP_Y, duration = MOVE_TO_TOP}
+		delay = delay + MOVE_TO_TOP
 	end
 
 	return delay
