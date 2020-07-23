@@ -302,7 +302,6 @@ function Splatter:remove()
 end
 
 function Splatter.generate(game, owner, x, y, image, delay_frames)
-	local stage = game.stage
 	local params = {
 		x = x,
 		y = y,

@@ -78,7 +78,6 @@ function Gail:init(...)
 	Character.init(self, ...)
 	self.should_activate_passive = true
 	local game = self.game
-	local stage = game.stage
 
 	self.should_activate_tornado = false
 	self.tornado_gems = {}
