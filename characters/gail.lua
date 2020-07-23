@@ -403,6 +403,86 @@ function Gail:_activateSuper()
 	return delay
 end
 
+-- returns the animation time and whether to go to gravity phase
+function Gail:_activatePassive()
+	local grid = self.game.grid
+
+	local check_columns = {}
+	local columns = {}
+	local to_move_gems = {}
+	local should_create_leaves = false
+	local animation_delay = 0
+	local go_to_gravity_phase = false
+
+	if self.player_num == 1 then
+		check_columns = {8, 7, 6, 5}
+	elseif self.player_num == 2 then
+		check_columns = {1, 2, 3, 4}
+	else
+		error("Gail has invalid player_num!")
+	end
+
+	-- get top row
+	local top_row = grid.BOTTOM_ROW
+	for _, col in ipairs(check_columns) do
+		columns[col] = grid:getFirstEmptyRow(col)
+		if columns[col] < top_row then top_row = columns[col] end
+	end
+
+	-- get column(s) with highest gem
+	for _ , col in ipairs(check_columns) do
+		if columns[col] == top_row then
+			to_move_gems[#to_move_gems + 1] = grid[top_row + 1][col].gem
+		end
+	end
+
+	if top_row ~= grid.BOTTOM_ROW then
+		for i = 1, #to_move_gems do
+			local to_move_gem = to_move_gems[i]
+
+			if (to_move_gem.column ~= 1) and (to_move_gem.column ~= 8) then
+				local sign
+				if self.player_num == 1 then
+					sign = 1
+				elseif self.player_num == 2 then
+					sign = -1
+				else
+					error("Gail has an invalid player_num. Sad!")
+				end
+
+				local dest_row = to_move_gem.row
+				local dest_col = to_move_gem.column + (1 * sign)
+
+				-- only move gem if there's no gem already there
+				if not grid[dest_row][dest_col].gem then
+					-- flag gem
+					to_move_gem:setOwner(self.player_num, false)
+
+					self.moving_gems[to_move_gem] = true
+
+					-- move gem animation
+					grid:moveGemAnim(to_move_gem, dest_row, dest_col, 30, 30)
+					animation_delay = 60
+					go_to_gravity_phase = true
+					should_create_leaves = true
+
+					-- move gem
+					grid:moveGem(to_move_gem, dest_row, dest_col)
+				end
+			end
+		end
+	end
+
+	-- curved descent leaf animations
+	if should_create_leaves then
+		for frame = 0, 110, 10 do
+			self.fx.leaves.generate(self.game, self, frame)
+		end
+	end
+
+	return animation_delay, go_to_gravity_phase
+end
+
 function Gail:beforeGravity()
 	local delay = 0
 
@@ -444,79 +524,7 @@ function Gail:beforeCleanup()
 
 	-- activate passive wind blow
 	if self.should_activate_passive then
-		local grid = self.game.grid
-
-		local check_columns = {}
-		local columns = {}
-		local to_move_gems = {}
-		local should_create_leaves = false
-
-		if self.player_num == 1 then
-			check_columns = {8, 7, 6, 5}
-		elseif self.player_num == 2 then
-			check_columns = {1, 2, 3, 4}
-		else
-			error("Gail has invalid player_num!")
-		end
-
-		-- get top row
-		local top_row = grid.BOTTOM_ROW
-		for _, col in ipairs(check_columns) do
-			columns[col] = grid:getFirstEmptyRow(col)
-			if columns[col] < top_row then top_row = columns[col] end
-		end
-
-		-- get column(s) with highest gem
-		for _ , col in ipairs(check_columns) do
-			if columns[col] == top_row then
-				to_move_gems[#to_move_gems + 1] = grid[top_row + 1][col].gem
-			end
-		end
-
-		if top_row ~= grid.BOTTOM_ROW then
-			for i = 1, #to_move_gems do
-				local to_move_gem = to_move_gems[i]
-
-				if (to_move_gem.column ~= 1) and (to_move_gem.column ~= 8) then
-					local sign
-					if self.player_num == 1 then
-						sign = 1
-					elseif self.player_num == 2 then
-						sign = -1
-					else
-						error("Gail has an invalid player_num. Sad!")
-					end
-
-					local dest_row = to_move_gem.row
-					local dest_col = to_move_gem.column + (1 * sign)
-
-					-- only move gem if there's no gem already there
-					if not grid[dest_row][dest_col].gem then
-						-- flag gem
-						to_move_gem:setOwner(self.player_num, false)
-
-						self.moving_gems[to_move_gem] = true
-
-						-- move gem animation
-						grid:moveGemAnim(to_move_gem, dest_row, dest_col, 30)
-						delay = 60
-						go_to_gravity_phase = true
-						should_create_leaves = true
-
-						-- move gem
-						grid:moveGem(to_move_gem, dest_row, dest_col)
-					end
-				end
-			end
-		end
-
-		-- curved descent leaf animations
-		if should_create_leaves then
-			for frame = 0, 110, 10 do
-				self.fx.leaves.generate(self.game, self, frame)
-			end
-		end
-
+		delay, go_to_gravity_phase = self:_activatePassive()
 		self.should_activate_passive = false
 	end
 
