@@ -27,7 +27,6 @@ local common = require "class.commons"
 local Character = require "character"
 local images = require "images"
 local Pic = require "pic"
-local reverseTable = require "/helpers/utilities".reverseTable
 
 local Gail = {}
 
@@ -87,9 +86,6 @@ function Gail:init(...)
 
 	-- init tornado image
 	self.tornado_anim = self.fx.tornado.create(game, self)
-
-	-- TODO: just testing anim
-	self.tornado_anim:appear(stage.width * 0.8, stage.height * 0.8)
 end
 
 
@@ -364,12 +360,10 @@ function Gail:_activateSuper()
 	-- find lowest column for the tornado to pick up gems from
 	local lowest_row = 0
 	for i in grid:cols(self.player_num) do
-		print("testing col", i)
 		local row = grid:getFirstEmptyRow(i) + 1
 		if row > lowest_row and row ~= grid.BASIN_END_ROW + 1 then
 			lowest_row = row -- ignore empty columns
 		end
-		print("row is", row, "lowest row is now", lowest_row)
 	end
 
 	if lowest_row ~= 0 then -- exclude totally empty basin
@@ -460,9 +454,8 @@ function Gail:_activatePassive()
 
 					self.moving_gems[to_move_gem] = true
 
-					-- move gem animation
-					grid:moveGemAnim(to_move_gem, dest_row, dest_col, 30, 30)
-					animation_delay = 60
+					grid:moveGemAnim(to_move_gem, dest_row, dest_col, 40, 30)
+					animation_delay = 70
 					go_to_gravity_phase = true
 					should_create_leaves = true
 
