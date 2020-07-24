@@ -163,7 +163,8 @@ function Tornado:update(dt)
 	self.frames_until_poof = self.frames_until_poof - 1
 	if self.frames_until_poof <= 0 then
 		self.frames_until_poof = self.POOF_FRAMES
-		self.owner.fx.tornadoPoof.generate(self.owner.game, self.owner, self)
+		self.owner.fx.tornadoMovePoof.generate(self.owner.game, self.owner, self)
+		self.owner.fx.tornadoFloatPoof.generate(self.owner.game, self.owner, self)
 	end
 end
 
@@ -171,19 +172,19 @@ Tornado = common.class("Tornado", Tornado, Pic)
 
 -------------------------------------------------------------------------------
 -- Poofs that regularly come out of the tornado
-local TornadoPoof = {}
-function TornadoPoof:init(manager, tbl)
+local TornadoMovePoof = {}
+function TornadoMovePoof:init(manager, tbl)
 	Pic.init(self, manager.game, tbl)
 	local counter = self.game.inits.ID.particle
 	manager.allParticles.CharEffects[counter] = self
 	self.manager = manager
 end
 
-function TornadoPoof:remove()
+function TornadoMovePoof:remove()
 	self.manager.allParticles.CharEffects[self.ID] = nil
 end
 
-function TornadoPoof.generate(game, owner, tornado)
+function TornadoMovePoof.generate(game, owner, tornado)
 	local starting_pos = math.random() > 0.5 and "left" or "right"
 	local sign = math.random() > 0.5 and 1 or -1
 	local image = owner.special_images.poof
@@ -203,7 +204,7 @@ function TornadoPoof.generate(game, owner, tornado)
 		h_flip = h_flip,
 		v_flip = v_flip,
 		draw_order = 2,
-		name = "GailTornadoPoof",
+		name = "GailTornadoMovePoof",
 	}
 	local p2_params = {
 		x = x,
@@ -215,11 +216,11 @@ function TornadoPoof.generate(game, owner, tornado)
 		h_flip = h_flip,
 		v_flip = v_flip,
 		draw_order = -2,
-		name = "GailTornadoPoof",
+		name = "GailTornadoMovePoof",
 	}
 
-	local p_over = common.instance(TornadoPoof, game.particles, p1_params)
-	local p_under = common.instance(TornadoPoof, game.particles, p2_params)
+	local p_over = common.instance(TornadoMovePoof, game.particles, p1_params)
+	local p_under = common.instance(TornadoMovePoof, game.particles, p2_params)
 
 	local SEGMENT_TIME = 10
 	local FADE_TIME = 5
@@ -255,7 +256,46 @@ function TornadoPoof.generate(game, owner, tornado)
 	p_under:change{duration = FADE_TIME, transparency = sign * 0.5 + 0.5, remove = true}
 end
 
-TornadoPoof = common.class("TornadoPoof", TornadoPoof, Pic)
+TornadoMovePoof = common.class("TornadoMovePoof", TornadoMovePoof, Pic)
+
+-------------------------------------------------------------------------------
+-- Poofs that regularly come out of the tornado
+local TornadoFloatPoof = {}
+function TornadoFloatPoof:init(manager, tbl)
+	Pic.init(self, manager.game, tbl)
+	local counter = self.game.inits.ID.particle
+	manager.allParticles.CharEffects[counter] = self
+	self.manager = manager
+end
+
+function TornadoFloatPoof:remove()
+	self.manager.allParticles.CharEffects[self.ID] = nil
+end
+
+function TornadoFloatPoof.generate(game, owner, tornado)
+	local x = tornado.x + (math.random() - 0.5) * tornado.width
+	local y = tornado.y + (math.random() - 0.5) * tornado.height
+
+	local params = {
+		x = x,
+		y = y,
+		image = owner.special_images.poof,
+		owner = owner,
+		player_num = owner.player_num,
+		scaling = 0,
+		h_flip = math.random() > 0.5 and true or false,
+		v_flip = math.random() > 0.5 and true or false,
+		draw_order = math.random() > 0.5 and 2 or -2,
+		name = "GailTornadoFloatPoof",
+	}
+
+	local p = common.instance(TornadoFloatPoof, game.particles, params)
+
+	p:change{duration = 10, scaling = 1}
+	p:change{duration = 40, scaling = 2, transparency = 0, remove = true}
+end
+
+TornadoFloatPoof = common.class("TornadoFloatPoof", TornadoFloatPoof, Pic)
 
 -------------------------------------------------------------------------------
 local Leaves = {}
@@ -397,7 +437,8 @@ GemBorderPoofs = common.class("GemBorderPoofs", GemBorderPoofs, Pic)
 
 Gail.fx = {
 	tornado = Tornado,
-	tornadoPoof = TornadoPoof,
+	tornadoMovePoof = TornadoMovePoof,
+	tornadoFloatPoof = TornadoFloatPoof,
 	leaves = Leaves,
 	gemBorderPoofs = GemBorderPoofs,
 }
