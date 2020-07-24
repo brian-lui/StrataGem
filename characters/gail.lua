@@ -222,7 +222,7 @@ function TornadoMovePoof.generate(game, owner, tornado)
 	local p_over = common.instance(TornadoMovePoof, game.particles, p1_params)
 	local p_under = common.instance(TornadoMovePoof, game.particles, p2_params)
 
-	local SEGMENT_TIME = 10
+	local SEGMENT_TIME = 30
 	local FADE_TIME = 5
 	local X1 = tornado.x + (math.random() * 0.1 + 0.4) * tornado.width * sign
 	local Y1 = tornado.y + (math.random() * 0.1 + 0.12) * tornado.height
