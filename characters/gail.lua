@@ -184,26 +184,75 @@ function TornadoPoof:remove()
 end
 
 function TornadoPoof.generate(game, owner, tornado)
-	local x = tornado.x + (math.random() - 0.5) * tornado.width
-	local y = tornado.y + (math.random() - 0.5) * tornado.height
+	local starting_pos = math.random() > 0.5 and "left" or "right"
+	local sign = math.random() > 0.5 and 1 or -1
+	local image = owner.special_images.poof
+	local h_flip = math.random() > 0.5 and true or false
+	local v_flip = math.random() > 0.5 and true or false
+	local x = tornado.x + (math.random() * 0.1 + 0.4) * tornado.width * sign
+	local y = tornado.y + (math.random() * 0.1 + 0.4) * tornado.height
 
-	local params = {
+	-- create two images, one under and one over
+	local p1_params = {
 		x = x,
 		y = y,
-		image = owner.special_images.poof,
+		image = image,
 		owner = owner,
 		player_num = owner.player_num,
 		scaling = 0,
-		h_flip = math.random() > 0.5 and true or false,
-		v_flip = math.random() > 0.5 and true or false,
-		draw_order = math.random() > 0.5 and 2 or -2,
+		h_flip = h_flip,
+		v_flip = v_flip,
+		draw_order = 2,
+		name = "GailTornadoPoof",
+	}
+	local p2_params = {
+		x = x,
+		y = y,
+		image = image,
+		owner = owner,
+		player_num = owner.player_num,
+		scaling = 0,
+		h_flip = h_flip,
+		v_flip = v_flip,
+		draw_order = -2,
 		name = "GailTornadoPoof",
 	}
 
-	local p = common.instance(TornadoPoof, game.particles, params)
+	local p_over = common.instance(TornadoPoof, game.particles, p1_params)
+	local p_under = common.instance(TornadoPoof, game.particles, p2_params)
 
-	p:change{duration = 10, scaling = 1}
-	p:change{duration = 40, scaling = 2, transparency = 0, remove = true}
+	local SEGMENT_TIME = 10
+	local FADE_TIME = 5
+	local X1 = tornado.x + (math.random() * 0.1 + 0.4) * tornado.width * sign
+	local Y1 = tornado.y + (math.random() * 0.1 + 0.12) * tornado.height
+	local X2 = tornado.x - (math.random() * 0.1 + 0.4) * tornado.width * sign
+	local Y2 = tornado.y + (math.random() * 0.1 - 0.22) * tornado.height
+	local X3 = tornado.x + (math.random() * 0.1 + 0.4) * tornado.width * sign
+	local Y3 = tornado.y + (math.random() * 0.1 - 0.5) * tornado.height
+
+	p_over:change{transparency = sign * 0.5 + 0.5}
+	p_under:change{transparency = sign * -0.5 + 0.5}
+
+	p_over:change{duration = FADE_TIME, scaling = 1}
+	p_under:change{duration = FADE_TIME, scaling = 1}
+
+	p_over:change{duration = SEGMENT_TIME, x = X1, y = Y1, easing = "inOutQuad"}
+	p_under:change{duration = SEGMENT_TIME, x = X1, y = Y1, easing = "inOutQuad"}
+
+	p_over:change{duration = 1, transparency = sign * -0.5 + 0.5}
+	p_under:change{duration = 1, transparency = sign * 0.5 + 0.5}
+
+	p_over:change{duration = SEGMENT_TIME, x = X2, y = Y2, easing = "inOutQuad"}
+	p_under:change{duration = SEGMENT_TIME, x = X2, y = Y2, easing = "inOutQuad"}
+
+	p_over:change{duration = 1, transparency = sign * 0.5 + 0.5}
+	p_under:change{duration = 1, transparency = sign * -0.5 + 0.5}
+
+	p_over:change{duration = SEGMENT_TIME, x = X3, y = Y3, easing = "inOutQuad"}
+	p_under:change{duration = SEGMENT_TIME, x = X3, y = Y3, easing = "inOutQuad"}
+
+	p_over:change{duration = FADE_TIME, transparency = sign * -0.5 + 0.5, remove = true}
+	p_under:change{duration = FADE_TIME, transparency = sign * 0.5 + 0.5, remove = true}
 end
 
 TornadoPoof = common.class("TornadoPoof", TornadoPoof, Pic)
