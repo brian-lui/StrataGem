@@ -87,6 +87,7 @@ function Gail:init(...)
 	self.tornado_anim = self.fx.tornado.create(game, self)
 	self.TORNADO_HEIGHT = self.tornado_anim.image:getHeight()
 	self.TORNADO_WIDTH = self.tornado_anim.image:getWidth()
+	self.TORNADO_TIME_PER_ROW = 12
 end
 
 
@@ -109,6 +110,7 @@ function Tornado:appear(x, y)
 	local APPEAR_DURATION = 10
 	self:change{duration = 0, x = x, y = y}
 	self:change{duration = APPEAR_DURATION, transparency = 1}
+	self.destination_y = y
 
 	return APPEAR_DURATION
 end
@@ -117,6 +119,7 @@ function Tornado:disappear()
 	local DISAPPEAR_DURATION = 10
 	self:change{duration = DISAPPEAR_DURATION, transparency = 0}
 	self:change{duration = 0, x = self.tornado_init_x, y = self.tornado_init_y}
+	self.destination_y = self.tornado_init_y
 
 	return DISAPPEAR_DURATION
 end
@@ -143,6 +146,7 @@ function Tornado.create(game, owner)
 		owner = owner,
 		transparency = 0,
 		player_num = owner.player_num,
+		destination_y = game.stage.height * 2,
 		name = "GailTornado",
 	}
 
@@ -223,6 +227,8 @@ function TornadoMovePoof.generate(game, owner, tornado)
 
 	local SEGMENT_TIME = 30
 	local FADE_TIME = 5
+	local x0 = x
+	local y0 = y
 	local x1 = tornado.x + (math.random() * 0.1 + 0.4) * tornado.width * sign
 	local y1 = tornado.y + (math.random() * 0.1 + 0.12) * tornado.height
 	local x2 = tornado.x - (math.random() * 0.1 + 0.4) * tornado.width * sign
@@ -230,7 +236,26 @@ function TornadoMovePoof.generate(game, owner, tornado)
 	local x3 = tornado.x + (math.random() * 0.1 + 0.4) * tornado.width * sign
 	local y3 = tornado.y + (math.random() * 0.1 - 0.5) * tornado.height
 
-	local curve1 = love.math.newBezierCurve(x, y, x1, y, x1, y1)
+	--[[
+	-- adjustments to y-position if the tornado is moving up
+	-- temporarily disabled because it looks bad
+	if tornado.y ~= tornado.destination_y then
+		local y_per_frame = images.GEM_HEIGHT / owner.TORNADO_TIME_PER_ROW
+
+		local y0_adjust = y_per_frame * FADE_TIME
+		local y1_adjust = y_per_frame * (FADE_TIME + SEGMENT_TIME)
+		local y2_adjust = y_per_frame * (FADE_TIME + SEGMENT_TIME * 2)
+		local y3_adjust = y_per_frame * (FADE_TIME + SEGMENT_TIME * 3)
+		local max_y_adjust = tornado.y - tornado.destination_y
+
+		y0 = y0 - math.min(y0_adjust, max_y_adjust)
+		y1 = y1 - math.min(y1_adjust, max_y_adjust)
+		y2 = y2 - math.min(y2_adjust, max_y_adjust)
+		y3 = y3 - math.min(y3_adjust, max_y_adjust)
+	end
+	--]]
+
+	local curve1 = love.math.newBezierCurve(x0, y0, x1, y0, x1, y1)
 	local curve2 = love.math.newBezierCurve(x1, y1, x1, y2, x2, y2)
 	local curve3 = love.math.newBezierCurve(x2, y2, x3, y2, x3, y3)
 
@@ -464,9 +489,8 @@ function Gail:_activateSuper()
 	local START_Y = grid.y[grid.BASIN_END_ROW] + EXTRA_ROWS * images.GEM_HEIGHT
 	local END_Y =  grid.y[END_ROW]
 
-	local TOTAL_GEMHEIGHTS = START_ROW - END_ROW
-	local GEMHEIGHT_MOVE_DURATION = 12
-	local TOTAL_MOVE_DURATION = GEMHEIGHT_MOVE_DURATION * TOTAL_GEMHEIGHTS
+	local TOTAL_ROWS = START_ROW - END_ROW
+	local TOTAL_MOVE_DURATION = self.TORNADO_TIME_PER_ROW * TOTAL_ROWS
 
 	-- find lowest column for the tornado to pick up gems from
 	local lowest_row = 0
@@ -495,6 +519,8 @@ function Gail:_activateSuper()
 
 		-- move tornado to top
 		self.tornado_anim:change{y = END_Y, duration = TOTAL_MOVE_DURATION}
+		self.tornado_anim.destination_y = END_Y
+
 		delay = delay + TOTAL_MOVE_DURATION
 
 		-- identify the gems to be picked up
@@ -510,7 +536,7 @@ function Gail:_activateSuper()
 		-- append to existing tornado gems, preserving LIFO
 		for i = #temp_gems, 1, -1 do
 			local gem = temp_gems[i]
-			local WAIT_TIME = (START_ROW - gem.row) * GEMHEIGHT_MOVE_DURATION
+			local WAIT_TIME = (START_ROW - gem.row) * self.TORNADO_TIME_PER_ROW
 			if not gem.indestructible then
 				local removeGem = function()
 					self.tornado_gems[#self.tornado_gems + 1] = gem
