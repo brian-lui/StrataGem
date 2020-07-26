@@ -185,12 +185,11 @@ function TornadoMovePoof:remove()
 end
 
 function TornadoMovePoof.generate(game, owner, tornado)
-	local starting_pos = math.random() > 0.5 and "left" or "right"
 	local sign = math.random() > 0.5 and 1 or -1
 	local image = owner.special_images.poof
 	local h_flip = math.random() > 0.5 and true or false
 	local v_flip = math.random() > 0.5 and true or false
-	local x = tornado.x + (math.random() * 0.1 + 0.4) * tornado.width * sign
+	local x = tornado.x - (math.random() * 0.1 + 0.4) * tornado.width * sign
 	local y = tornado.y + (math.random() * 0.1 + 0.4) * tornado.height
 
 	-- create two images, one under and one over
@@ -224,12 +223,16 @@ function TornadoMovePoof.generate(game, owner, tornado)
 
 	local SEGMENT_TIME = 30
 	local FADE_TIME = 5
-	local X1 = tornado.x + (math.random() * 0.1 + 0.4) * tornado.width * sign
-	local Y1 = tornado.y + (math.random() * 0.1 + 0.12) * tornado.height
-	local X2 = tornado.x - (math.random() * 0.1 + 0.4) * tornado.width * sign
-	local Y2 = tornado.y + (math.random() * 0.1 - 0.22) * tornado.height
-	local X3 = tornado.x + (math.random() * 0.1 + 0.4) * tornado.width * sign
-	local Y3 = tornado.y + (math.random() * 0.1 - 0.5) * tornado.height
+	local x1 = tornado.x + (math.random() * 0.1 + 0.4) * tornado.width * sign
+	local y1 = tornado.y + (math.random() * 0.1 + 0.12) * tornado.height
+	local x2 = tornado.x - (math.random() * 0.1 + 0.4) * tornado.width * sign
+	local y2 = tornado.y + (math.random() * 0.1 - 0.22) * tornado.height
+	local x3 = tornado.x + (math.random() * 0.1 + 0.4) * tornado.width * sign
+	local y3 = tornado.y + (math.random() * 0.1 - 0.5) * tornado.height
+
+	local curve1 = love.math.newBezierCurve(x, y, x1, y, x1, y1)
+	local curve2 = love.math.newBezierCurve(x1, y1, x1, y2, x2, y2)
+	local curve3 = love.math.newBezierCurve(x2, y2, x3, y2, x3, y3)
 
 	p_over:change{transparency = sign * 0.5 + 0.5}
 	p_under:change{transparency = sign * -0.5 + 0.5}
@@ -237,20 +240,20 @@ function TornadoMovePoof.generate(game, owner, tornado)
 	p_over:change{duration = FADE_TIME, scaling = 1}
 	p_under:change{duration = FADE_TIME, scaling = 1}
 
-	p_over:change{duration = SEGMENT_TIME, x = X1, y = Y1, easing = "inOutQuad"}
-	p_under:change{duration = SEGMENT_TIME, x = X1, y = Y1, easing = "inOutQuad"}
+	p_over:change{duration = SEGMENT_TIME, curve = curve1, easing = "inOutQuad"}
+	p_under:change{duration = SEGMENT_TIME, curve = curve1, easing = "inOutQuad"}
 
 	p_over:change{duration = 1, transparency = sign * -0.5 + 0.5}
 	p_under:change{duration = 1, transparency = sign * 0.5 + 0.5}
 
-	p_over:change{duration = SEGMENT_TIME, x = X2, y = Y2, easing = "inOutQuad"}
-	p_under:change{duration = SEGMENT_TIME, x = X2, y = Y2, easing = "inOutQuad"}
+	p_over:change{duration = SEGMENT_TIME, curve = curve2, easing = "inOutQuad"}
+	p_under:change{duration = SEGMENT_TIME, curve = curve2, easing = "inOutQuad"}
 
 	p_over:change{duration = 1, transparency = sign * 0.5 + 0.5}
 	p_under:change{duration = 1, transparency = sign * -0.5 + 0.5}
 
-	p_over:change{duration = SEGMENT_TIME, x = X3, y = Y3, easing = "inOutQuad"}
-	p_under:change{duration = SEGMENT_TIME, x = X3, y = Y3, easing = "inOutQuad"}
+	p_over:change{duration = SEGMENT_TIME, curve = curve3, easing = "inOutQuad"}
+	p_under:change{duration = SEGMENT_TIME, curve = curve3, easing = "inOutQuad"}
 
 	p_over:change{duration = FADE_TIME, transparency = sign * -0.5 + 0.5, remove = true}
 	p_under:change{duration = FADE_TIME, transparency = sign * 0.5 + 0.5, remove = true}
