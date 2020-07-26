@@ -465,7 +465,7 @@ function Gail:_activateSuper()
 	local END_Y =  grid.y[END_ROW]
 
 	local TOTAL_GEMHEIGHTS = START_ROW - END_ROW
-	local GEMHEIGHT_MOVE_DURATION = 30
+	local GEMHEIGHT_MOVE_DURATION = 12
 	local TOTAL_MOVE_DURATION = GEMHEIGHT_MOVE_DURATION * TOTAL_GEMHEIGHTS
 
 	-- find lowest column for the tornado to pick up gems from
