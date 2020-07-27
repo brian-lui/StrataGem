@@ -125,6 +125,7 @@ function Tornado:disappear()
 end
 
 function Tornado:acquireGem(gem)
+	self.owner.fx.tornadoGem.generate(self.owner.game, self.owner, gem)
 end
 
 function Tornado:releaseGem(column)
@@ -173,6 +174,60 @@ function Tornado:update(dt)
 end
 
 Tornado = common.class("Tornado", Tornado, Pic)
+
+-------------------------------------------------------------------------------
+-- gem images that are in the tornado
+local TornadoGem = {}
+function TornadoGem:init(manager, tbl)
+	Pic.init(self, manager.game, tbl)
+	local counter = self.game.inits.ID.particle
+	manager.allParticles.CharEffects[counter] = self
+	self.manager = manager
+end
+
+function TornadoGem:remove()
+	self.manager.allParticles.CharEffects[self.ID] = nil
+end
+
+function TornadoGem.generate(game, owner, gem)
+	local params = {
+		x = gem.x,
+		y = gem.y,
+		image = gem.image,
+		gem = gem,
+		x_wave_time = 0,
+		y_wave_time = 0,
+		owner = owner,
+		player_num = owner.player_num,
+		name = "GailTornadoGem",
+	}
+
+	common.instance(TornadoGem, game.particles, params)
+end
+
+function TornadoGem:update(dt)
+	local X_PERIOD, Y_PERIOD = 120, 60
+	self.x_wave_time = (self.x_wave_time + 2 * math.pi / X_PERIOD) % (2 * math.pi)
+	self.y_wave_time = (self.y_wave_time + 2 * math.pi / Y_PERIOD) % (2 * math.pi)
+
+	local tornado = self.owner.tornado_anim
+	local x = math.sin(self.x_wave_time) * images.GEM_WIDTH + tornado.x
+	local y = math.sin(self.y_wave_time) * images.GEM_HEIGHT / 2 + tornado.y
+
+	local position -- find gem position to find its scaling
+	for i = 1, #self.owner.tornado_gems do
+		if self.owner.tornado_gems[i] == self.gem then position = i end
+	end
+	assert(position, "TornadoGem gem not found")
+
+	local pos_from_first = #self.owner.tornado_gems - position
+	local scaling = 0.8 ^ pos_from_first
+	local transparency = 0.8 - 0.1 * pos_from_first
+
+	self:change{x = x, y = y, scaling = scaling, transparency = transparency}
+end
+
+TornadoGem = common.class("TornadoGem", TornadoGem, Pic)
 
 -------------------------------------------------------------------------------
 -- Poofs that regularly come out of the tornado
@@ -465,6 +520,7 @@ GemBorderPoofs = common.class("GemBorderPoofs", GemBorderPoofs, Pic)
 
 Gail.fx = {
 	tornado = Tornado,
+	tornadoGem = TornadoGem,
 	tornadoMovePoof = TornadoMovePoof,
 	tornadoFloatPoof = TornadoFloatPoof,
 	leaves = Leaves,
@@ -541,6 +597,7 @@ function Gail:_activateSuper()
 				local removeGem = function()
 					self.tornado_gems[#self.tornado_gems + 1] = gem
 					grid[gem.row][gem.column].gem = false
+					self.tornado_anim:acquireGem(gem)
 				end
 
 				game.queue:add(WAIT_TIME, removeGem)
