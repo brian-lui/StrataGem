@@ -32,9 +32,7 @@ function ai:queueSecondAction(func, args)
 end
 
 function ai:performQueuedAction()
-	if not self.queuedFunc then
-		error("ai tried to perform nonexistent queued action")
-	end
+	assert(self.queuedFunc, "ai tried to perform nonexistent queued action")
 	self.queuedFunc(table.unpack(self.queued_args))
 	self.queuedFunc, self.queued_args = nil, nil	-- Only run once.
 
