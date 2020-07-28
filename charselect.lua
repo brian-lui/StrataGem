@@ -100,7 +100,7 @@ function Charselect:init(game, gamestate)
 		popup_static = {},
 	}
 
-	self.details_displayed = false
+	self.spellbook_displayed = false
 
 	if gamestate.name == "Multiplayer" then
 		self.lobby = common.instance(Lobby, game, self)
@@ -148,7 +148,7 @@ function Charselect:_createCharacterButtons()
 			easing = "inOutSine",
 			pushed_sfx = "buttoncharacter",
 			action = function()
-				if self.my_character ~= char and not self.details_displayed then
+				if self.my_character ~= char and not self.spellbook_displayed then
 					self.my_character = char
 					self.displayed_character_shadow:newImage(images["portraits_shadow_"..char])
 					self.displayed_character:newImage(images["portraits_action_"..char])
@@ -184,7 +184,7 @@ function Charselect:_createUIButtons()
 	local start_action
 	if gamestate.name == "Singleplayer" then
 		start_action = function()
-			if self.my_character and not self.details_displayed then
+			if self.my_character and not self.spellbook_displayed then
 				game:start{
 					gametype = gamestate.gametype,
 					char1 = self.my_character,
@@ -199,7 +199,7 @@ function Charselect:_createUIButtons()
 		end
 	elseif gamestate.name == "Multiplayer" then
 		start_action = function()
-			if self.my_character and not game.client.queuing and not self.details_displayed then
+			if self.my_character and not game.client.queuing and not self.spellbook_displayed then
 				local queue_details = {
 					character = self.my_character,
 					background = game.background:idx_to_str(self.game_background),
@@ -227,24 +227,24 @@ function Charselect:_createUIButtons()
 		action = start_action,
 	}
 
-	-- details button
+	-- spellbook button
 	self:_createButton{
-		name = "details",
-		image = images.buttons_details,
-		image_pushed = images.buttons_detailspush,
+		name = "spellbook",
+		image = images.buttons_spellbook,
+		image_pushed = images.buttons_spellbookpush,
 		duration = 15,
-		end_x = stage.width * 0.155 + images.buttons_details:getWidth(),
+		end_x = stage.width * 0.155 + images.buttons_spellbook:getWidth(),
 		start_y = stage.height + images.buttons_start:getHeight(),
 		end_y = stage.height * 0.9,
 		easing = "outQuad",
 		action = function()
-			if self.my_character and not self.details_displayed then
-				self.character_details[self.my_character]:change{
+			if self.my_character and not self.spellbook_displayed then
+				self.character_spellbook[self.my_character]:change{
 					duration = 20,
 					y = stage.height * 0.5,
 					easing = "outCubic",
 				}
-				self.details_displayed = self.my_character
+				self.spellbook_displayed = self.my_character
 			end
 		end,
 	}
@@ -253,23 +253,23 @@ function Charselect:_createUIButtons()
 	if gamestate.name == "Singleplayer" then
 		back_action = function()
 			game:switchState("gs_title")
-			if self.details_displayed then
-				self.character_details[self.details_displayed]:change{
+			if self.spellbook_displayed then
+				self.character_spellbook[self.spellbook_displayed]:change{
 					duration = 0,
 					y = stage.height * -0.5
 				}
-				self.details_displayed = false
+				self.spellbook_displayed = false
 			end
 		end
 	elseif gamestate.name == "Multiplayer" then
 		back_action = function()
 			self.lobby:goBack()
-			if self.details_displayed then
-				self.character_details[self.details_displayed]:change{
+			if self.spellbook_displayed then
+				self.character_spellbook[self.spellbook_displayed]:change{
 					duration = 0,
 					y = stage.height * -0.5
 				}
-				self.details_displayed = false
+				self.spellbook_displayed = false
 			end
 		end
 	end
@@ -430,24 +430,24 @@ function Charselect:_createUIImages()
 		easing = "linear",
 	}
 
-	-- character details
+	-- character spellbook
 	local actual_chars = {"heath", "walter", "wolfgang", "diggory", "holly", "gail"}
-	self.character_details = {}
+	self.character_spellbook = {}
 
 	for _, name in ipairs(actual_chars) do
-		self.character_details[name] = self:_createButton{
-			name = "details" .. name,
-			image = images["charselect_details_" .. name],
-			image_pushed = images["charselect_details_" .. name],
+		self.character_spellbook[name] = self:_createButton{
+			name = "spellbook" .. name,
+			image = images["spellbook_" .. name .. "_spellbook"],
+			image_pushed = images["spellbook_" .. name .. "_spellbook"],
 			end_x = stage.width * 0.5,
 			end_y = stage.height * -0.5,
 			action = function()
-				self.character_details[name]:change{
+				self.character_spellbook[name]:change{
 					duration = 0,
 					y = stage.height * -0.5
 				}
 
-				self.details_displayed = false
+				self.spellbook_displayed = false
 			end,
 		}
 	end
@@ -518,7 +518,7 @@ function Charselect:draw()
 	self.displayed_character_text:draw{darkened = darkened}
 	for _, v in spairs(gamestate.ui.static) do v:draw{darkened = darkened} end
 	for _, v in pairs(gamestate.ui.clickable) do v:draw{darkened = darkened} end
-	for _, v in spairs(self.character_details) do v:draw{darkened = darkened} end
+	for _, v in spairs(self.character_spellbook) do v:draw{darkened = darkened} end
 	game:_drawSettingsMenu(self.gamestate)
 
 	if gamestate.name == "Multiplayer" then

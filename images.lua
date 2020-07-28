@@ -11,7 +11,7 @@ local lily = require "/libraries/lily"
 
 local buttons = {
 	"vscpu", "vscpupush", "netplay", "netplaypush", "back", "backpush",
-	"details", "detailspush", "start", "startpush", "backgroundleft",
+	"spellbook", "spellbookpush", "start", "startpush", "backgroundleft",
 	"backgroundright", "lobbycreatenew", "lobbyqueueranked",
 	"lobbycancelsearch", "pause", "stop", "settings", "settingspush", "yes",
 	"yespush", "no", "nopush", "quit", "quitpush", "tutorial", "tutorialpush",
@@ -101,9 +101,15 @@ local charselect = {
 
 	"thumbnail_colors", "thumbnail_starfall", "thumbnail_cloud",
 	"thumbnail_rabbitsnowstorm", "thumbnail_checkmate",
+}
 
-	"details_heath", "details_walter", "details_diggory", "details_holly",
-	"details_wolfgang", "details_gail",
+local spellbook = {
+	"heath_spellbook", "heath1", "heath2", "heath3",
+	"walter_spellbook",
+	"diggory_spellbook",
+	"holly_spellbook",
+	"wolfgang_spellbook",
+	"gail_spellbook",
 }
 
 local vs = {
@@ -130,6 +136,7 @@ local categories = {
 	particles = particles,
 	portraits = portraits,
 	charselect = charselect,
+	spellbook = spellbook,
 	vs = vs,
 	tutorial = tutorial,
 }
