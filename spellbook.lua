@@ -50,12 +50,14 @@ function Spellbook:init(charselect)
 			end_x = self.stage.x_mid,
 			end_y = self.stage.height * -0.5,
 			container = self.charselect.gamestate.ui.spellbooks,
+			action = function() self:hideCharacter(char_name) end,
 		}
 
 		local pic_num = 1
 		local next_pic = "pic" .. pic_num
 
 		while data[next_pic] do
+			local current_pic_num = "pic" .. pic_num
 			self.spellbooks[char_name][next_pic] = self.charselect:_createButton{
 				name = "spellbook_" .. char_name .. "_" .. next_pic,
 				image = data[next_pic].image,
@@ -63,12 +65,21 @@ function Spellbook:init(charselect)
 				end_x = self.stage.width * -0.5,
 				end_y = data[next_pic].y,
 				container = self.charselect.gamestate.ui.spellbooks,
+				action = function()
+					if self.spellbooks[char_name][current_pic_num].being_displayed then
+						self:shrinkSubImage(char_name, current_pic_num)
+					else
+						self:magnifySubImage(char_name, current_pic_num)
+					end
+				end,
 			}
 			self.spellbooks[char_name][next_pic]:change{
 				duration = 0,
 				x = self.stage.width * -0.5,
 				scaling = self.spellbook_data[char_name][next_pic].scaling,
 			}
+
+			self.spellbooks[char_name][next_pic].being_displayed = false
 
 			pic_num = pic_num + 1
 			next_pic = "pic" .. pic_num
@@ -98,13 +109,15 @@ function Spellbook:displayCharacter(char_name)
 		pic_num = pic_num + 1
 		next_pic = "pic" .. pic_num
 	end
+
+	self.charselect.spellbook_displayed = char_name
 end
 
 function Spellbook:hideCharacter(char_name)
 	local char = self.spellbooks[char_name]
 	assert(char, "No character in spellbook " .. char_name)
 
-	self.spellbooks[char_name].main: change{
+	self.spellbooks[char_name].main:change{
 		duration = 0,
 		y = self.stage.height * -0.5,
 	}
@@ -122,6 +135,33 @@ function Spellbook:hideCharacter(char_name)
 		pic_num = pic_num + 1
 		next_pic = "pic" .. pic_num
 	end
+
+	self.charselect.spellbook_displayed = false
+end
+
+function Spellbook:magnifySubImage(char_name, pic_name)
+	local picture = self.spellbooks[char_name][pic_name]
+	picture:change{
+		duration = 15,
+		x = self.stage.x_mid,
+		y = self.stage.y_mid,
+		scaling = 1,
+		easing = "outCubic",
+	}
+
+	picture.being_displayed = true
+end
+
+function Spellbook:shrinkSubImage(char_name, pic_name)
+	local picture = self.spellbooks[char_name][pic_name]
+	picture:change{
+		duration = 5,
+		x = self.spellbook_data[char_name][pic_name].x,
+		y = self.spellbook_data[char_name][pic_name].y,
+		scaling = self.spellbook_data[char_name][pic_name].scaling,
+	}
+
+	picture.being_displayed = false
 end
 
 return common.class("Spellbook", Spellbook)

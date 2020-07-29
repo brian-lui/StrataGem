@@ -243,7 +243,6 @@ function Charselect:_createUIButtons()
 		action = function()
 			if self.my_character and not self.spellbook_displayed then
 				self.spellbook:displayCharacter(self.my_character)
-				self.spellbook_displayed = self.my_character
 			end
 		end,
 	}
@@ -253,7 +252,6 @@ function Charselect:_createUIButtons()
 			game:switchState("gs_title")
 			if self.spellbook_displayed then
 				self.spellbook:hideCharacter(self.spellbook_displayed)
-				self.spellbook_displayed = false
 			end
 		end
 	elseif gamestate.name == "Multiplayer" then
@@ -261,7 +259,6 @@ function Charselect:_createUIButtons()
 			self.lobby:goBack()
 			if self.spellbook_displayed then
 				self.spellbook:hideCharacter(self.spellbook_displayed)
-				self.spellbook_displayed = false
 			end
 		end
 	end
@@ -503,6 +500,18 @@ function Charselect:draw()
 end
 
 function Charselect:mousepressed(x, y)
+	local pointIsInRect = require "/helpers/utilities".pointIsInRect
+
+	if self.spellbook_displayed then
+		for _, button in pairs(self.gamestate.ui.spellbooks) do
+			if pointIsInRect(x, y, button:getRect()) then
+				self.gamestate.clicked = button
+				button:pushed()
+				return
+			end
+		end
+	end
+
 	self.game:_mousepressed(x, y, self.gamestate)
 end
 
@@ -510,22 +519,17 @@ function Charselect:mousereleased(x, y)
 	local pointIsInRect = require "/helpers/utilities".pointIsInRect
 
 	if self.spellbook_displayed then
-		local popup_clicked = false
-
 		for _, button in pairs(self.gamestate.ui.spellbooks) do
 			if self.gamestate.clicked == button then button:released() end
 			if pointIsInRect(x, y, button:getRect())
 			and self.gamestate.clicked == button then
 				button.action()
-				popup_clicked = true
-				break
+				return
 			end
 		end
 
-		if not popup_clicked then
-			self.spellbook:hideCharacter(self.spellbook_displayed)
-			self.spellbook_displayed = false
-		end
+		self.spellbook:hideCharacter(self.spellbook_displayed)
+		return
 	end
 
 	self.game:_mousereleased(x, y, self.gamestate)
