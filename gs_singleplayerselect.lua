@@ -32,15 +32,15 @@ function Singleplayer:closeSettingsMenu()
 end
 
 function Singleplayer:mousepressed(x, y)
-	self:_mousepressed(x, y, Singleplayer)
+	self.charselect:mousepressed(x, y)
 end
 
 function Singleplayer:mousereleased(x, y)
-	self:_mousereleased(x, y, Singleplayer)
+	self.charselect:mousereleased(x, y)
 end
 
 function Singleplayer:mousemoved(x, y)
-	self:_mousemoved(x, y, Singleplayer)
+	self.charselect:mousemoved(x, y)
 end
 
 return Singleplayer

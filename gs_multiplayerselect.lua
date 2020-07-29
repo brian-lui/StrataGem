@@ -32,15 +32,15 @@ function Multiplayer:closeSettingsMenu()
 end
 
 function Multiplayer:mousepressed(x, y)
-	self:_mousepressed(x, y, Multiplayer)
+	self.charselect:mousepressed(x, y)
 end
 
 function Multiplayer:mousereleased(x, y)
-	self:_mousereleased(x, y, Multiplayer)
+	self.charselect:mousereleased(x, y)
 end
 
 function Multiplayer:mousemoved(x, y)
-	self:_mousemoved(x, y, Multiplayer)
+	self.charselect:mousemoved(x, y)
 end
 
 return Multiplayer
