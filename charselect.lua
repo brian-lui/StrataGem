@@ -99,7 +99,8 @@ function Charselect:init(game, gamestate)
 		static = {},
 		popup_clickable = {},
 		popup_static = {},
-		spellbooks = {},
+		spellbook_main_images = {},
+		spellbook_sub_images = {},
 	}
 
 	if gamestate.name == "Multiplayer" then
@@ -486,8 +487,18 @@ function Charselect:draw()
 	for _, v in pairs(gamestate.ui.clickable) do v:draw{darkened = darkened} end
 
 	if self.spellbook_displayed then
-		for _, v in spairs(gamestate.ui.spellbooks) do
+		for _, v in spairs(gamestate.ui.spellbook_main_images) do
 			v:draw{darkened = darkened}
+		end
+	end
+
+	if self.spellbook_displayed then
+		for _, v in spairs(gamestate.ui.spellbook_sub_images) do
+			if not v.being_displayed then v:draw{darkened = darkened} end
+		end
+
+		for _, v in spairs(gamestate.ui.spellbook_sub_images) do
+			if v.being_displayed then v:draw{darkened = darkened} end
 		end
 	end
 
@@ -503,13 +514,11 @@ function Charselect:mousepressed(x, y)
 	local pointIsInRect = require "/helpers/utilities".pointIsInRect
 
 	if self.spellbook_displayed then
-		for _, button in pairs(self.gamestate.ui.spellbooks) do
-			if not button.dont_check_click then -- LMAO
-				if pointIsInRect(x, y, button:getRect()) then
-					self.gamestate.clicked = button
-					button:pushed()
-					return
-				end
+		for _, button in pairs(self.gamestate.ui.spellbook_sub_images) do
+			if pointIsInRect(x, y, button:getRect()) then
+				self.gamestate.clicked = button
+				button:pushed()
+				return
 			end
 		end
 	end
@@ -521,7 +530,7 @@ function Charselect:mousereleased(x, y)
 	local pointIsInRect = require "/helpers/utilities".pointIsInRect
 
 	if self.spellbook_displayed then
-		for _, button in pairs(self.gamestate.ui.spellbooks) do
+		for _, button in pairs(self.gamestate.ui.spellbook_sub_images) do
 			if self.gamestate.clicked == button then button:released() end
 			if pointIsInRect(x, y, button:getRect())
 			and self.gamestate.clicked == button then

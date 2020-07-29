@@ -49,11 +49,9 @@ function Spellbook:init(charselect)
 			image_pushed = data.spellbook.image,
 			end_x = self.stage.x_mid,
 			end_y = self.stage.height * -0.5,
-			container = self.charselect.gamestate.ui.spellbooks,
+			container = self.charselect.gamestate.ui.spellbook_main_images,
 			action = function() self:hideCharacter(char_name) end,
 		}
-
-		self.spellbooks[char_name].main.dont_check_click = true -- LMAO
 
 		local pic_num = 1
 		local next_pic = "pic" .. pic_num
@@ -66,7 +64,7 @@ function Spellbook:init(charselect)
 				image_pushed = data[current_pic].image,
 				end_x = self.stage.width * -0.5,
 				end_y = data[current_pic].y,
-				container = self.charselect.gamestate.ui.spellbooks,
+				container = self.charselect.gamestate.ui.spellbook_sub_images,
 				action = function()
 					if self.spellbooks[char_name][current_pic].being_displayed then
 						self:shrinkSubImage(char_name, current_pic)
