@@ -98,13 +98,15 @@ function Charselect:init(game, gamestate)
 		static = {},
 		popup_clickable = {},
 		popup_static = {},
+		spellbooks = {},
 	}
-
-	self.spellbook_displayed = false
 
 	if gamestate.name == "Multiplayer" then
 		self.lobby = common.instance(Lobby, game, self)
 	end
+
+	self.spellbook = common.instance(require "spellbook", self)
+	self.spellbook_displayed = false
 end
 
 -- refer to game.lua for instructions for _createButton and _createImage
@@ -228,6 +230,7 @@ function Charselect:_createUIButtons()
 	}
 
 	-- spellbook button
+	--[[
 	self:_createButton{
 		name = "spellbook",
 		image = images.buttons_spellbook,
@@ -248,7 +251,23 @@ function Charselect:_createUIButtons()
 			end
 		end,
 	}
-
+	--]]
+	self:_createButton{
+		name = "spellbook",
+		image = images.buttons_spellbook,
+		image_pushed = images.buttons_spellbookpush,
+		duration = 15,
+		end_x = stage.width * 0.155 + images.buttons_spellbook:getWidth(),
+		start_y = stage.height + images.buttons_start:getHeight(),
+		end_y = stage.height * 0.9,
+		easing = "outQuad",
+		action = function()
+			if self.my_character and not self.spellbook_displayed then
+				self.spellbook:displayCharacter(self.my_character)
+				self.spellbook_displayed = self.my_character
+			end
+		end,
+	}
 	local back_action
 	if gamestate.name == "Singleplayer" then
 		back_action = function()
@@ -437,8 +456,11 @@ function Charselect:_createUIImages()
 	for _, name in ipairs(actual_chars) do
 		self.character_spellbook[name] = self:_createButton{
 			name = "spellbook" .. name,
-			image = images["spellbook_" .. name .. "_spellbook"],
-			image_pushed = images["spellbook_" .. name .. "_spellbook"],
+			image = images.dummy,
+			image_pushed = images.dummy,
+
+			--image = images["spellbook_" .. name .. "_spellbook"],
+		--	image_pushed = images["spellbook_" .. name .. "_spellbook"],
 			end_x = stage.width * 0.5,
 			end_y = stage.height * -0.5,
 			action = function()
@@ -485,7 +507,6 @@ function Charselect:enter()
 	}
 
 	if gamestate.name == "Multiplayer" then self.lobby:connect() end
-
 end
 
 function Charselect:openSettingsMenu()
@@ -519,6 +540,13 @@ function Charselect:draw()
 	for _, v in spairs(gamestate.ui.static) do v:draw{darkened = darkened} end
 	for _, v in pairs(gamestate.ui.clickable) do v:draw{darkened = darkened} end
 	for _, v in spairs(self.character_spellbook) do v:draw{darkened = darkened} end
+
+	if self.spellbook_displayed then
+		for _, v in spairs(gamestate.ui.spellbooks) do
+			v:draw{darkened = darkened}
+		end
+	end
+
 	game:_drawSettingsMenu(self.gamestate)
 
 	if gamestate.name == "Multiplayer" then
@@ -532,6 +560,27 @@ function Charselect:mousepressed(x, y)
 end
 
 function Charselect:mousereleased(x, y)
+	local pointIsInRect = require "/helpers/utilities".pointIsInRect
+
+	if self.spellbook_displayed then
+		local popup_clicked = false
+
+		for _, button in pairs(self.gamestate.ui.spellbooks) do
+			if self.gamestate.clicked == button then button:released() end
+			if pointIsInRect(x, y, button:getRect())
+			and self.gamestate.clicked == button then
+				button.action()
+				popup_clicked = true
+				break
+			end
+		end
+
+		if not popup_clicked then
+			self.spellbook:hideCharacter(self.spellbook_displayed)
+			self.spellbook_displayed = false
+		end
+	end
+
 	self.game:_mousereleased(x, y, self.gamestate)
 end
 
