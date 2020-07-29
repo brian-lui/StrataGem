@@ -8,6 +8,7 @@ local common = require "class.commons"
 local images = require "images"
 local Pic = require "pic"
 local spairs = require "/helpers/utilities".spairs
+local Spellbook = require "spellbook"
 
 -------------------------------------------------------------------------------
 ------------------------------- LOBBY CLASS -----------------------------------
@@ -105,7 +106,7 @@ function Charselect:init(game, gamestate)
 		self.lobby = common.instance(Lobby, game, self)
 	end
 
-	self.spellbook = common.instance(require "spellbook", self)
+	self.spellbook = common.instance(Spellbook, self)
 	self.spellbook_displayed = false
 end
 
