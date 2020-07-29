@@ -38,25 +38,28 @@ function Spellbook:init(charselect)
 		},
 	}
 
-	self.spellbooks = {}
+	self.spellbooks = {
+		heath = {},
+	}
 
 	for char_name, data in pairs(self.spellbook_data) do
-		self.spellbooks[char_name] = self.charselect:_createButton{
-			name = "spellbook" .. char_name,
+		self.spellbooks[char_name].main = self.charselect:_createButton{
+			name = "spellbook_" .. char_name .. "_main",
 			image = data.spellbook.image,
 			image_pushed = data.spellbook.image,
 			end_x = self.stage.x_mid,
 			end_y = self.stage.height * -0.5,
 			container = self.charselect.gamestate.ui.spellbooks,
 		}
+
 	end
 end
 
 function Spellbook:displayCharacter(char_name)
-	local char = self.spellbook_data[char_name]
-	assert(char, "No data for requested character " .. char_name)
+	local char = self.spellbooks[char_name]
+	assert(char.main, "No data for requested character " .. char_name)
 
-	self.spellbooks[char_name]:change{
+	self.spellbooks[char_name].main:change{
 		duration = 20,
 		y = self.stage.y_mid,
 		easing = "outCubic",
@@ -64,8 +67,10 @@ function Spellbook:displayCharacter(char_name)
 end
 
 function Spellbook:hideCharacter(char_name)
-	assert(self.spellbooks[char_name], "No character in spellbook " .. char_name)
-	self.spellbooks[char_name]: change{
+	local char = self.spellbooks[char_name]
+	assert(char, "No character in spellbook " .. char_name)
+
+	self.spellbooks[char_name].main: change{
 		duration = 0,
 		y = self.stage.height * -0.5,
 	}
