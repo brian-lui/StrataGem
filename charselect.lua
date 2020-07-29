@@ -230,28 +230,6 @@ function Charselect:_createUIButtons()
 	}
 
 	-- spellbook button
-	--[[
-	self:_createButton{
-		name = "spellbook",
-		image = images.buttons_spellbook,
-		image_pushed = images.buttons_spellbookpush,
-		duration = 15,
-		end_x = stage.width * 0.155 + images.buttons_spellbook:getWidth(),
-		start_y = stage.height + images.buttons_start:getHeight(),
-		end_y = stage.height * 0.9,
-		easing = "outQuad",
-		action = function()
-			if self.my_character and not self.spellbook_displayed then
-				self.character_spellbook[self.my_character]:change{
-					duration = 20,
-					y = stage.height * 0.5,
-					easing = "outCubic",
-				}
-				self.spellbook_displayed = self.my_character
-			end
-		end,
-	}
-	--]]
 	self:_createButton{
 		name = "spellbook",
 		image = images.buttons_spellbook,
@@ -273,10 +251,7 @@ function Charselect:_createUIButtons()
 		back_action = function()
 			game:switchState("gs_title")
 			if self.spellbook_displayed then
-				self.character_spellbook[self.spellbook_displayed]:change{
-					duration = 0,
-					y = stage.height * -0.5
-				}
+				self.spellbook:hideCharacter(self.spellbook_displayed)
 				self.spellbook_displayed = false
 			end
 		end
@@ -284,10 +259,7 @@ function Charselect:_createUIButtons()
 		back_action = function()
 			self.lobby:goBack()
 			if self.spellbook_displayed then
-				self.character_spellbook[self.spellbook_displayed]:change{
-					duration = 0,
-					y = stage.height * -0.5
-				}
+				self.spellbook:hideCharacter(self.spellbook_displayed)
 				self.spellbook_displayed = false
 			end
 		end
@@ -448,31 +420,6 @@ function Charselect:_createUIImages()
 		transparency = 0.5,
 		easing = "linear",
 	}
-
-	-- character spellbook
-	local actual_chars = {"heath", "walter", "wolfgang", "diggory", "holly", "gail"}
-	self.character_spellbook = {}
-
-	for _, name in ipairs(actual_chars) do
-		self.character_spellbook[name] = self:_createButton{
-			name = "spellbook" .. name,
-			image = images.dummy,
-			image_pushed = images.dummy,
-
-			--image = images["spellbook_" .. name .. "_spellbook"],
-		--	image_pushed = images["spellbook_" .. name .. "_spellbook"],
-			end_x = stage.width * 0.5,
-			end_y = stage.height * -0.5,
-			action = function()
-				self.character_spellbook[name]:change{
-					duration = 0,
-					y = stage.height * -0.5
-				}
-
-				self.spellbook_displayed = false
-			end,
-		}
-	end
 end
 
 function Charselect:enter()
@@ -539,7 +486,6 @@ function Charselect:draw()
 	self.displayed_character_text:draw{darkened = darkened}
 	for _, v in spairs(gamestate.ui.static) do v:draw{darkened = darkened} end
 	for _, v in pairs(gamestate.ui.clickable) do v:draw{darkened = darkened} end
-	for _, v in spairs(self.character_spellbook) do v:draw{darkened = darkened} end
 
 	if self.spellbook_displayed then
 		for _, v in spairs(gamestate.ui.spellbooks) do
