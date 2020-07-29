@@ -19,20 +19,20 @@ function Spellbook:init(charselect)
 			pic1 = {
 				image = images.spellbook_heath1,
 				scaling = 0.25,
-				x = self.stage.width * 0.4,
-				y = self.stage.height * 0.7,
+				x = self.stage.width * 0.35,
+				y = self.stage.height * 0.725,
 			},
 			pic2 = {
 				image = images.spellbook_heath2,
 				scaling = 0.25,
 				x = self.stage.width * 0.6,
-				y = self.stage.height * 0.7,
+				y = self.stage.height * 0.725,
 			},
 			pic3 = {
 				image = images.spellbook_heath3,
 				scaling = 0.25,
-				x = self.stage.width * 0.8,
-				y = self.stage.height * 0.7,
+				x = self.stage.width * 0.85,
+				y = self.stage.height * 0.725,
 			},
 			spellbook_loc = {x = self.stage.x_mid, y = self.stage.y_mid},
 		},
@@ -52,6 +52,27 @@ function Spellbook:init(charselect)
 			container = self.charselect.gamestate.ui.spellbooks,
 		}
 
+		local pic_num = 1
+		local next_pic = "pic" .. pic_num
+
+		while data[next_pic] do
+			self.spellbooks[char_name][next_pic] = self.charselect:_createButton{
+				name = "spellbook_" .. char_name .. "_" .. next_pic,
+				image = data[next_pic].image,
+				image_pushed = data[next_pic].image,
+				end_x = self.stage.width * -0.5,
+				end_y = data[next_pic].y,
+				container = self.charselect.gamestate.ui.spellbooks,
+			}
+			self.spellbooks[char_name][next_pic]:change{
+				duration = 0,
+				x = self.stage.width * -0.5,
+				scaling = self.spellbook_data[char_name][next_pic].scaling,
+			}
+
+			pic_num = pic_num + 1
+			next_pic = "pic" .. pic_num
+		end
 	end
 end
 
@@ -64,6 +85,19 @@ function Spellbook:displayCharacter(char_name)
 		y = self.stage.y_mid,
 		easing = "outCubic",
 	}
+
+	local pic_num = 1
+	local next_pic = "pic" .. pic_num
+
+	while self.spellbooks[char_name][next_pic] do
+		self.spellbooks[char_name][next_pic]:change{
+			duration = 20,
+			x = self.spellbook_data[char_name][next_pic].x,
+		}
+
+		pic_num = pic_num + 1
+		next_pic = "pic" .. pic_num
+	end
 end
 
 function Spellbook:hideCharacter(char_name)
@@ -74,7 +108,20 @@ function Spellbook:hideCharacter(char_name)
 		duration = 0,
 		y = self.stage.height * -0.5,
 	}
-	-- TODO: hide the pics too
+
+	local pic_num = 1
+	local next_pic = "pic" .. pic_num
+
+	while self.spellbooks[char_name][next_pic] do
+		self.spellbooks[char_name][next_pic]:change{
+			duration = 0,
+			x = self.stage.width * -0.5,
+			scaling = self.spellbook_data[char_name][next_pic].scaling,
+		}
+
+		pic_num = pic_num + 1
+		next_pic = "pic" .. pic_num
+	end
 end
 
 return common.class("Spellbook", Spellbook)
