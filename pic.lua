@@ -157,11 +157,14 @@ function Pic:remove()
 end
 
 function Pic:getRect()
+	local x_scaling = self.x_scaling or self.scaling
+	local y_scaling = self.y_scaling or self.scaling
+
 	return
-		self.x - (self.width / 2),
-		self.y - (self.height / 2),
-		self.width,
-		self.height
+		self.x - (self.width / 2) * x_scaling,
+		self.y - (self.height / 2) * y_scaling,
+		self.width * x_scaling,
+		self.height * y_scaling
 end
 
 -- Instantly swaps current image
