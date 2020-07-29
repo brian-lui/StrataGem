@@ -53,6 +53,8 @@ function Spellbook:init(charselect)
 			action = function() self:hideCharacter(char_name) end,
 		}
 
+		self.spellbooks[char_name].main.dont_check_click = true -- LMAO
+
 		local pic_num = 1
 		local next_pic = "pic" .. pic_num
 
@@ -164,6 +166,13 @@ function Spellbook:shrinkSubImage(char_name, pic_name)
 	}
 
 	picture.being_displayed = false
+end
+
+function Spellbook:test()
+	print("Test")
+	print("heath pic 1 x, y", self.spellbooks.heath.pic1.x, self.spellbooks.heath.pic1.y)
+	print("heath pic 2 x, y", self.spellbooks.heath.pic2.x, self.spellbooks.heath.pic2.y)
+	print("heath pic 3 x, y", self.spellbooks.heath.pic3.x, self.spellbooks.heath.pic3.y)
 end
 
 return common.class("Spellbook", Spellbook)

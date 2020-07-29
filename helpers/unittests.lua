@@ -622,6 +622,10 @@ local function takeScreenshot(game)
 	print("Saved file: " .. filename)
 end
 
+local function spellbookTest(game)
+	game.charselect.spellbook:test()
+end
+
 local Unittests = {
 	f1 = saveGamestate,
 	f2 = loadGamestate,
@@ -630,6 +634,7 @@ local Unittests = {
 	f5 = playReplayTxt,
 	f6 = scanForGlobals,
 	["1"] = playReplayTxt,
+	["2"] = spellbookTest,
 	q = p1Serialize,
 	w = wolfgangLightUp,
 	e = charselectScreenCPUCharToggle,

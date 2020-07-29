@@ -504,10 +504,12 @@ function Charselect:mousepressed(x, y)
 
 	if self.spellbook_displayed then
 		for _, button in pairs(self.gamestate.ui.spellbooks) do
-			if pointIsInRect(x, y, button:getRect()) then
-				self.gamestate.clicked = button
-				button:pushed()
-				return
+			if not button.dont_check_click then -- LMAO
+				if pointIsInRect(x, y, button:getRect()) then
+					self.gamestate.clicked = button
+					button:pushed()
+					return
+				end
 			end
 		end
 	end
