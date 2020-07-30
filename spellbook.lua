@@ -1,9 +1,11 @@
+--[[
+	This is the class to show the "spellbook" character ability details on the
+	select screen.
+--]]
+
 local common = require "class.commons"
 local images = require "images"
 
--------------------------------------------------------------------------------
-------------------------------- SPELLBOOK CLASS -------------------------------
--------------------------------------------------------------------------------
 local Spellbook = {}
 
 function Spellbook:init(charselect)
