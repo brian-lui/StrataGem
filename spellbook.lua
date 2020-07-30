@@ -9,7 +9,6 @@ local Spellbook = {}
 function Spellbook:init(charselect)
 	self.game = charselect.game
 	self.stage = self.game.stage
-	self.charselect = charselect
 
 	self.spellbook_data = {
 		heath = {
@@ -42,14 +41,18 @@ function Spellbook:init(charselect)
 		heath = {},
 	}
 
+	self.main_images = {}
+	self.sub_images = {}
+	self.char_displayed = false
+
 	for char_name, data in pairs(self.spellbook_data) do
-		self.spellbooks[char_name].main = self.charselect:_createButton{
+		self.spellbooks[char_name].main = charselect:_createButton{
 			name = "spellbook_" .. char_name .. "_main",
 			image = data.spellbook.image,
 			image_pushed = data.spellbook.image,
 			end_x = self.stage.x_mid,
 			end_y = self.stage.height * -0.5,
-			container = self.charselect.gamestate.ui.spellbook_main_images,
+			container = self.main_images,
 			action = function() self:hideCharacter(char_name) end,
 		}
 
@@ -58,13 +61,13 @@ function Spellbook:init(charselect)
 
 		while data[next_pic] do
 			local current_pic = "pic" .. pic_num
-			self.spellbooks[char_name][next_pic] = self.charselect:_createButton{
+			self.spellbooks[char_name][next_pic] = charselect:_createButton{
 				name = "spellbook_" .. char_name .. "_" .. next_pic,
 				image = data[current_pic].image,
 				image_pushed = data[current_pic].image,
 				end_x = self.stage.width * -0.5,
 				end_y = data[current_pic].y,
-				container = self.charselect.gamestate.ui.spellbook_sub_images,
+				container = self.sub_images,
 				action = function()
 					if self.spellbooks[char_name][current_pic].being_displayed then
 						self:shrinkSubImage(char_name, current_pic)
@@ -111,14 +114,14 @@ function Spellbook:displayCharacter(char_name)
 		next_pic = "pic" .. pic_num
 	end
 
-	self.charselect.spellbook_displayed = char_name
+	self.char_displayed = char_name
 end
 
-function Spellbook:hideCharacter(char_name)
-	local char = self.spellbooks[char_name]
-	assert(char, "No character in spellbook " .. char_name)
+function Spellbook:hideCharacter()
+	local char = self.char_displayed
+	if not char then return end
 
-	self.spellbooks[char_name].main:change{
+	self.spellbooks[char].main:change{
 		duration = 0,
 		y = self.stage.height * -0.5,
 	}
@@ -126,19 +129,19 @@ function Spellbook:hideCharacter(char_name)
 	local pic_num = 1
 	local next_pic = "pic" .. pic_num
 
-	while self.spellbooks[char_name][next_pic] do
+	while self.spellbooks[char][next_pic] do
 		local current_pic = "pic" .. pic_num
-		self.spellbooks[char_name][current_pic]:change{
+		self.spellbooks[char][current_pic]:change{
 			duration = 0,
 			x = self.stage.width * -0.5,
-			scaling = self.spellbook_data[char_name][current_pic].scaling,
+			scaling = self.spellbook_data[char][current_pic].scaling,
 		}
 
 		pic_num = pic_num + 1
 		next_pic = "pic" .. pic_num
 	end
 
-	self.charselect.spellbook_displayed = false
+	self.char_displayed = false
 end
 
 function Spellbook:magnifySubImage(char_name, pic_name)
@@ -166,11 +169,27 @@ function Spellbook:shrinkSubImage(char_name, pic_name)
 	picture.being_displayed = false
 end
 
-function Spellbook:test()
-	print("Test")
-	print("heath pic 1 x, y", self.spellbooks.heath.pic1.x, self.spellbooks.heath.pic1.y)
-	print("heath pic 2 x, y", self.spellbooks.heath.pic2.x, self.spellbooks.heath.pic2.y)
-	print("heath pic 3 x, y", self.spellbooks.heath.pic3.x, self.spellbooks.heath.pic3.y)
+function Spellbook:update(dt)
+	for _, v in pairs(self.main_images) do v:update(dt) end
+	for _, v in pairs(self.sub_images) do v:update(dt) end
+end
+
+function Spellbook:draw()
+	if self.char_displayed then
+		local darkened = self.game:isScreenDark()
+
+		for _, v in pairs(self.main_images) do
+			v:draw{darkened = darkened}
+		end
+
+		for _, v in pairs(self.sub_images) do
+			if not v.being_displayed then v:draw{darkened = darkened} end
+		end
+
+		for _, v in pairs(self.sub_images) do
+			if v.being_displayed then v:draw{darkened = darkened} end
+		end
+	end
 end
 
 return common.class("Spellbook", Spellbook)

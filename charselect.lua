@@ -99,8 +99,6 @@ function Charselect:init(game, gamestate)
 		static = {},
 		popup_clickable = {},
 		popup_static = {},
-		spellbook_main_images = {},
-		spellbook_sub_images = {},
 	}
 
 	if gamestate.name == "Multiplayer" then
@@ -108,7 +106,6 @@ function Charselect:init(game, gamestate)
 	end
 
 	self.spellbook = common.instance(Spellbook, self)
-	self.spellbook_displayed = false
 end
 
 -- refer to game.lua for instructions for _createButton and _createImage
@@ -152,7 +149,7 @@ function Charselect:_createCharacterButtons()
 			easing = "inOutSine",
 			pushed_sfx = "buttoncharacter",
 			action = function()
-				if self.my_character ~= char and not self.spellbook_displayed then
+				if self.my_character ~= char and not self.spellbook.char_displayed then
 					self.my_character = char
 					self.displayed_character_shadow:newImage(images["portraits_shadow_"..char])
 					self.displayed_character:newImage(images["portraits_action_"..char])
@@ -188,7 +185,7 @@ function Charselect:_createUIButtons()
 	local start_action
 	if gamestate.name == "Singleplayer" then
 		start_action = function()
-			if self.my_character and not self.spellbook_displayed then
+			if self.my_character and not self.spellbook.char_displayed then
 				game:start{
 					gametype = gamestate.gametype,
 					char1 = self.my_character,
@@ -203,7 +200,10 @@ function Charselect:_createUIButtons()
 		end
 	elseif gamestate.name == "Multiplayer" then
 		start_action = function()
-			if self.my_character and not game.client.queuing and not self.spellbook_displayed then
+			if 	self.my_character and
+				not game.client.queuing and
+				not self.spellbook.char_displayed
+			then
 				local queue_details = {
 					character = self.my_character,
 					background = game.background:idx_to_str(self.game_background),
@@ -242,7 +242,7 @@ function Charselect:_createUIButtons()
 		end_y = stage.height * 0.9,
 		easing = "outQuad",
 		action = function()
-			if self.my_character and not self.spellbook_displayed then
+			if self.my_character and not self.spellbook.char_displayed then
 				self.spellbook:displayCharacter(self.my_character)
 			end
 		end,
@@ -251,15 +251,15 @@ function Charselect:_createUIButtons()
 	if gamestate.name == "Singleplayer" then
 		back_action = function()
 			game:switchState("gs_title")
-			if self.spellbook_displayed then
-				self.spellbook:hideCharacter(self.spellbook_displayed)
+			if self.spellbook.char_displayed then
+				self.spellbook:hideCharacter()
 			end
 		end
 	elseif gamestate.name == "Multiplayer" then
 		back_action = function()
 			self.lobby:goBack()
-			if self.spellbook_displayed then
-				self.spellbook:hideCharacter(self.spellbook_displayed)
+			if self.spellbook.char_displayed then
+				self.spellbook:hideCharacter()
 			end
 		end
 	end
@@ -472,6 +472,7 @@ function Charselect:update(dt)
 	self.displayed_character_shadow:update(dt)
 	self.displayed_character:update(dt)
 	self.displayed_character_text:update(dt)
+	self.spellbook:update(dt)
 end
 
 function Charselect:draw()
@@ -486,21 +487,7 @@ function Charselect:draw()
 	for _, v in spairs(gamestate.ui.static) do v:draw{darkened = darkened} end
 	for _, v in pairs(gamestate.ui.clickable) do v:draw{darkened = darkened} end
 
-	if self.spellbook_displayed then
-		for _, v in spairs(gamestate.ui.spellbook_main_images) do
-			v:draw{darkened = darkened}
-		end
-	end
-
-	if self.spellbook_displayed then
-		for _, v in spairs(gamestate.ui.spellbook_sub_images) do
-			if not v.being_displayed then v:draw{darkened = darkened} end
-		end
-
-		for _, v in spairs(gamestate.ui.spellbook_sub_images) do
-			if v.being_displayed then v:draw{darkened = darkened} end
-		end
-	end
+	self.spellbook:draw()
 
 	game:_drawSettingsMenu(self.gamestate)
 
@@ -513,8 +500,8 @@ end
 function Charselect:mousepressed(x, y)
 	local pointIsInRect = require "/helpers/utilities".pointIsInRect
 
-	if self.spellbook_displayed then
-		for _, button in pairs(self.gamestate.ui.spellbook_sub_images) do
+	if self.spellbook.char_displayed then
+		for _, button in pairs(self.spellbook.sub_images) do
 			if pointIsInRect(x, y, button:getRect()) then
 				self.gamestate.clicked = button
 				button:pushed()
@@ -529,8 +516,8 @@ end
 function Charselect:mousereleased(x, y)
 	local pointIsInRect = require "/helpers/utilities".pointIsInRect
 
-	if self.spellbook_displayed then
-		for _, button in pairs(self.gamestate.ui.spellbook_sub_images) do
+	if self.spellbook.char_displayed then
+		for _, button in pairs(self.spellbook.sub_images) do
 			if self.gamestate.clicked == button then button:released() end
 			if pointIsInRect(x, y, button:getRect())
 			and self.gamestate.clicked == button then
@@ -539,7 +526,7 @@ function Charselect:mousereleased(x, y)
 			end
 		end
 
-		self.spellbook:hideCharacter(self.spellbook_displayed)
+		self.spellbook:hideCharacter()
 		return
 	end
 
