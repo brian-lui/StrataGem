@@ -14,9 +14,7 @@ function Client:init(game)
 	self.game = game
 	self.connected = false
 	self.port = 49929
-	--client.host = "64.137.189.132" -- sharpo
-	self.host = "85.234.133.240" -- thelo
-	--client.host = "127.0.0.1" -- local
+	self.host = "165.227.7.122" -- hardlyworkinggames.com
 end
 
 function Client:connect()
