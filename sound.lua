@@ -18,8 +18,8 @@ local soundfiles = {
 		loop_from = 76.307,
 		loop_to = 8.000,
 	},
-	bgm_gail = {
-		filename = "music/gail.ogg",
+	bgm_fuka = {
+		filename = "music/fuka.ogg",
 		loop_from = 61.714,
 		loop_to = 6.857,
 	},

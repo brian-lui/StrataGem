@@ -18,7 +18,7 @@ function Charselect:init(game, gamestate)
 	self.game = game
 	self.gamestate = gamestate
 	self.selectable_chars = {"heath", "walter", "diggory", "holly",
-		"wolfgang", "hailey", "gail", "ivy", "joy", "mort", "buzz", "damon"}
+		"wolfgang", "hailey", "fuka", "ivy", "joy", "mort", "buzz", "damon"}
 	self.gamestate.ui = {
 		clickable = {},
 		static = {},
@@ -94,7 +94,7 @@ function Charselect:_createCharacterButtons()
 		and name ~= "wolfgang"
 		and name ~= "diggory"
 		and name ~= "holly"
-		and name ~= "gail" then
+		and name ~= "fuka" then
 			data.action = function() end
 			data.RGB = {0.35, 0.35, 0.35}
 		end
@@ -363,7 +363,7 @@ function Charselect:enter()
 	self:_createUIButtons()
 	self:_createUIImages()
 	self.my_character = nil -- selected character for gamestart
-	self.opponent_character = math.random() < 0.5 and "gail" or "gail"-- ditto
+	self.opponent_character = math.random() < 0.5 and "fuka" or "fuka"-- ditto
 
 	self:_createImage{
 		name = "fadein",

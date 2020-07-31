@@ -81,21 +81,21 @@ local particles = {
 }
 
 local portraits = {
-	"action_heath", "action_walter", "action_gail", "action_holly",
+	"action_heath", "action_walter", "action_fuka", "action_holly",
 	"action_wolfgang", "action_hailey", "action_diggory", "action_buzz",
 	"action_ivy", "action_joy", "action_mort", "action_damon",
 
-	"shadow_heath", "shadow_walter", "shadow_gail", "shadow_holly",
+	"shadow_heath", "shadow_walter", "shadow_fuka", "shadow_holly",
 	"shadow_wolfgang", "shadow_hailey", "shadow_diggory", "shadow_buzz",
 	"shadow_ivy", "shadow_joy", "shadow_mort", "shadow_damon",
 }
 
 local charselect = {
-	"name_heath", "name_walter", "name_gail", "name_holly", "name_wolfgang",
+	"name_heath", "name_walter", "name_fuka", "name_holly", "name_wolfgang",
 	"name_hailey", "name_diggory", "name_buzz", "name_ivy", "name_joy",
 	"name_mort", "name_damon",
 
-	"ring_heath", "ring_walter", "ring_gail", "ring_holly", "ring_wolfgang",
+	"ring_heath", "ring_walter", "ring_fuka", "ring_holly", "ring_wolfgang",
 	"ring_hailey", "ring_diggory", "ring_buzz", "ring_ivy", "ring_joy",
 	"ring_mort", "ring_damon",
 
@@ -109,12 +109,12 @@ local spellbook = {
 	"diggory_spellbook",
 	"holly_spellbook",
 	"wolfgang_spellbook",
-	"gail_spellbook",
+	"fuka_spellbook",
 }
 
 local vs = {
 	"vs", "bubble_red", "bubble_blue", "bubble_green", "bubble_yellow",
-	"smallword_heath", "smallword_walter", "smallword_gail", "smallword_holly",
+	"smallword_heath", "smallword_walter", "smallword_fuka", "smallword_holly",
 	"smallword_wolfgang", "smallword_hailey", "smallword_diggory",
 	"smallword_buzz", "smallword_ivy", "smallword_joy", "smallword_mort",
 	--"smallword_damon",

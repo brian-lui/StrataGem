@@ -1,10 +1,10 @@
 --[[ Color: yellow
 Passive: Only considers opponent's four columns.
 At end of turn, the highest row of gems "blows" one column over away from the
-casting Gail. If there are multiple gems then all possible gems are blown.
-Matches made in this way are attributed to the blowing Gail.
+casting Fuka. If there are multiple gems then all possible gems are blown.
+Matches made in this way are attributed to the blowing Fuka.
 
-Super: A tornado grabs up to the top 4 gems of Gail's lowest column (random on
+Super: A tornado grabs up to the top 4 gems of Fuka's lowest column (random on
 tie) and then drops the gems into the opponent's lowest column at a rate of one
 gem per turn for (up to) 4 turns. (The order of gems dropped should be the
 topmost grabbed gem to the bottommost).
@@ -28,16 +28,16 @@ local Character = require "character"
 local images = require "images"
 local Pic = require "pic"
 
-local Gail = {}
+local Fuka = {}
 
-Gail.large_image = love.graphics.newImage('images/portraits/gail.png')
-Gail.small_image = love.graphics.newImage('images/portraits/gailsmall.png')
-Gail.action_image = love.graphics.newImage('images/portraits/action_gail.png')
-Gail.shadow_image = love.graphics.newImage('images/portraits/shadow_gail.png')
-Gail.super_fuzz_image = love.graphics.newImage('images/ui/superfuzzyellow.png')
+Fuka.large_image = love.graphics.newImage('images/portraits/fuka.png')
+Fuka.small_image = love.graphics.newImage('images/portraits/fukasmall.png')
+Fuka.action_image = love.graphics.newImage('images/portraits/action_fuka.png')
+Fuka.shadow_image = love.graphics.newImage('images/portraits/shadow_fuka.png')
+Fuka.super_fuzz_image = love.graphics.newImage('images/ui/superfuzzyellow.png')
 
-Gail.character_name = "Gail"
-Gail.meter_gain = {
+Fuka.character_name = "Fuka"
+Fuka.meter_gain = {
 	red = 4,
 	blue = 4,
 	green = 4,
@@ -45,36 +45,36 @@ Gail.meter_gain = {
 	none = 4,
 	wild = 4,
 }
-Gail.primary_colors = {"yellow"}
+Fuka.primary_colors = {"yellow"}
 
-Gail.super_images = {
+Fuka.super_images = {
 	word = images.ui_super_text_yellow,
 	empty = images.ui_super_empty_yellow,
 	full = images.ui_super_full_yellow,
 	glow = images.ui_super_glow_yellow,
-	overlay = love.graphics.newImage('images/characters/gail/gaillogo.png'),
+	overlay = love.graphics.newImage('images/characters/fuka/fukalogo.png'),
 }
-Gail.burst_images = {
+Fuka.burst_images = {
 	partial = images.ui_burst_part_yellow,
 	full = images.ui_burst_full_yellow,
 	glow = {images.ui_burst_partglow_yellow, images.ui_burst_fullglow_yellow}
 }
 
-Gail.special_images = {
-	leaf1 = love.graphics.newImage('images/characters/gail/leaf1.png'),
-	leaf2 = love.graphics.newImage('images/characters/gail/leaf2.png'),
-	poof = love.graphics.newImage('images/characters/gail/poof.png'),
+Fuka.special_images = {
+	leaf1 = love.graphics.newImage('images/characters/fuka/leaf1.png'),
+	leaf2 = love.graphics.newImage('images/characters/fuka/leaf2.png'),
+	poof = love.graphics.newImage('images/characters/fuka/poof.png'),
 	tornado = {
-		love.graphics.newImage('images/characters/gail/tornado1.png'),
-		love.graphics.newImage('images/characters/gail/tornado2.png'),
+		love.graphics.newImage('images/characters/fuka/tornado1.png'),
+		love.graphics.newImage('images/characters/fuka/tornado2.png'),
 	}
 }
 
-Gail.sounds = {
-	bgm = "bgm_gail",
+Fuka.sounds = {
+	bgm = "bgm_fuka",
 }
 
-function Gail:init(...)
+function Fuka:init(...)
 	Character.init(self, ...)
 	self.should_activate_passive = true
 	local game = self.game
@@ -148,7 +148,7 @@ function Tornado.create(game, owner)
 		transparency = 0,
 		player_num = owner.player_num,
 		destination_y = game.stage.height * 2,
-		name = "GailTornado",
+		name = "FukaTornado",
 	}
 
 	return common.instance(Tornado, game.particles, params)
@@ -199,7 +199,7 @@ function TornadoGem.generate(game, owner, gem)
 		y_wave_time = 0,
 		owner = owner,
 		player_num = owner.player_num,
-		name = "GailTornadoGem",
+		name = "FukaTornadoGem",
 	}
 
 	common.instance(TornadoGem, game.particles, params)
@@ -262,7 +262,7 @@ function TornadoMovePoof.generate(game, owner, tornado)
 		h_flip = h_flip,
 		v_flip = v_flip,
 		draw_order = 2,
-		name = "GailTornadoMovePoof",
+		name = "FukaTornadoMovePoof",
 	}
 	local p2_params = {
 		x = x,
@@ -274,7 +274,7 @@ function TornadoMovePoof.generate(game, owner, tornado)
 		h_flip = h_flip,
 		v_flip = v_flip,
 		draw_order = -2,
-		name = "GailTornadoMovePoof",
+		name = "FukaTornadoMovePoof",
 	}
 
 	local p_over = common.instance(TornadoMovePoof, game.particles, p1_params)
@@ -369,7 +369,7 @@ function TornadoFloatPoof.generate(game, owner, tornado)
 		h_flip = math.random() > 0.5 and true or false,
 		v_flip = math.random() > 0.5 and true or false,
 		draw_order = math.random() > 0.5 and 2 or -2,
-		name = "GailTornadoFloatPoof",
+		name = "FukaTornadoFloatPoof",
 	}
 
 	local p = common.instance(TornadoFloatPoof, game.particles, params)
@@ -440,7 +440,7 @@ function Leaves.generate(game, owner, delay)
 			transparency = 0,
 			owner = owner,
 			player_num = owner.player_num,
-			name = "GailLeaves",
+			name = "FukaLeaves",
 		}
 
 		local p = common.instance(Leaves, game.particles, params)
@@ -504,7 +504,7 @@ function GemBorderPoofs.generate(game, owner, gem)
 			h_flip = math.random() > 0.5 and true or false,
 			v_flip = math.random() > 0.5 and true or false,
 			draw_order = math.random() > 0.5 and 1 or -1,
-			name = "GailGemBorderPoofs",
+			name = "FukaGemBorderPoofs",
 		}
 
 		local p = common.instance(GemBorderPoofs, game.particles, params)
@@ -518,7 +518,7 @@ GemBorderPoofs = common.class("GemBorderPoofs", GemBorderPoofs, Pic)
 
 -------------------------------------------------------------------------------
 
-Gail.fx = {
+Fuka.fx = {
 	tornado = Tornado,
 	tornadoGem = TornadoGem,
 	tornadoMovePoof = TornadoMovePoof,
@@ -531,7 +531,7 @@ Gail.fx = {
 
 --[[ Find lowest column non-empty in all own columns, select randomly if more
 	than one. Put up to 4 of the top gems in that column into the tornado. --]]
-function Gail:_activateSuper()
+function Fuka:_activateSuper()
 	local game = self.game
 	local grid = game.grid
 
@@ -611,7 +611,7 @@ function Gail:_activateSuper()
 end
 
 -- returns the animation time and whether to go to gravity phase
-function Gail:_activatePassive()
+function Fuka:_activatePassive()
 	local grid = self.game.grid
 
 	local check_columns = {}
@@ -626,7 +626,7 @@ function Gail:_activatePassive()
 	elseif self.player_num == 2 then
 		check_columns = {1, 2, 3, 4}
 	else
-		error("Gail has invalid player_num!")
+		error("Fuka has invalid player_num!")
 	end
 
 	-- get top row
@@ -654,7 +654,7 @@ function Gail:_activatePassive()
 				elseif self.player_num == 2 then
 					sign = -1
 				else
-					error("Gail has an invalid player_num. Sad!")
+					error("Fuka has an invalid player_num. Sad!")
 				end
 
 				local dest_row = to_move_gem.row
@@ -689,7 +689,7 @@ function Gail:_activatePassive()
 	return animation_delay, go_to_gravity_phase
 end
 
-function Gail:beforeGravity()
+function Fuka:beforeGravity()
 	local delay = 0
 
 	if self.is_supering then
@@ -699,35 +699,35 @@ function Gail:beforeGravity()
 
 	return delay
 --[[
-	Super: A tornado grabs up to the top 4 gems of Gail's lowest column (random on
+	Super: A tornado grabs up to the top 4 gems of Fuka's lowest column (random on
 tie) and then drops the gems into the opponent's lowest column at a rate of one
 gem per turn for (up to) 4 turns. (The order of gems dropped should be the
 topmost grabbed gem to the bottommost). The tornado drop happens before the
-regular gems are dropped. Any matches made are credited to the casting Gail.
+regular gems are dropped. Any matches made are credited to the casting Fuka.
 
-The drop from tornado gems are flagged as owned by Gail
+The drop from tornado gems are flagged as owned by Fuka
 The drop from tornado happens in AfterAllMatches phase.
 --]]
 end
 
-function Gail:beforeTween()
+function Fuka:beforeTween()
 	self.game:brightenScreen(self.player_num)
 end
 
-function Gail:afterAllMatches()
+function Fuka:afterAllMatches()
 	--[[ Super 2
 	if self.should_activate_tornado:
 		Determine lowest column in all enemy columns
 		If more than one: select randomly
 		if tornado[1]:
 			Pop tornado[1] gem
-			Flag gem as owned by Gail
+			Flag gem as owned by Fuka
 			Move gem into enemy's lowest column
 	self.should_activate_tornado = false
 	--]]
 end
 
-function Gail:beforeCleanup()
+function Fuka:beforeCleanup()
 	local delay = 0
 	local go_to_gravity_phase = false
 
@@ -740,7 +740,7 @@ function Gail:beforeCleanup()
 	return delay, go_to_gravity_phase
 end
 
-function Gail:cleanup()
+function Fuka:cleanup()
 	self.should_activate_passive = true
 	self.should_activate_tornado = true
 	--[[
@@ -751,7 +751,7 @@ function Gail:cleanup()
 	--]]
 end
 
-function Gail:update(dt)
+function Fuka:update(dt)
 	--[[ Update the position of gems being moved by passive.
 		Gems normally only update when phase.lua calls grid:updateGravity(dt)
 		This forces them to update every frame.
@@ -764,4 +764,4 @@ function Gail:update(dt)
 	end
 end
 
-return common.class("Gail", Gail, Character)
+return common.class("Fuka", Fuka, Character)
