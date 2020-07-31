@@ -67,8 +67,8 @@ function Spellbook:init(charselect)
 				name = "spellbook_" .. char_name .. "_" .. next_pic,
 				image = data[current_pic].image,
 				image_pushed = data[current_pic].image,
-				end_x = self.stage.width * -0.5,
-				end_y = data[current_pic].y,
+				end_x = data[current_pic].x,
+				end_y = self.stage.height * -0.5,
 				container = self.sub_images,
 				action = function()
 					if self.spellbooks[char_name][current_pic].being_displayed then
@@ -108,8 +108,20 @@ function Spellbook:displayCharacter(char_name)
 	while self.spellbooks[char_name][next_pic] do
 		local current_pic = "pic" .. pic_num
 		self.spellbooks[char_name][current_pic]:change{
-			duration = 20,
+			duration = 0,
 			x = self.spellbook_data[char_name][current_pic].x,
+			y = self.spellbook_data[char_name][current_pic].y - self.stage.height,
+			scaling = self.spellbook_data[char_name][current_pic].scaling * 0.95
+		}
+		self.spellbooks[char_name][current_pic]:change{
+			duration = 20,
+			y = self.spellbook_data[char_name][current_pic].y,
+			easing = "outCubic",
+		}
+		self.spellbooks[char_name][current_pic]:change{
+			duration = 5,
+			scaling = self.spellbook_data[char_name][current_pic].scaling,
+			easing = "outCubic",
 		}
 
 		pic_num = pic_num + 1
@@ -135,7 +147,7 @@ function Spellbook:hideCharacter()
 		local current_pic = "pic" .. pic_num
 		self.spellbooks[char][current_pic]:change{
 			duration = 0,
-			x = self.stage.width * -0.5,
+			y = self.spellbook_data[char][current_pic].y - self.stage.height,
 			scaling = self.spellbook_data[char][current_pic].scaling,
 		}
 
