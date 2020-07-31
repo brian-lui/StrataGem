@@ -8,18 +8,6 @@ Super: A tornado grabs up to the top 4 gems of Fuka's lowest column (random on
 tie) and then drops the gems into the opponent's lowest column at a rate of one
 gem per turn for (up to) 4 turns. (The order of gems dropped should be the
 topmost grabbed gem to the bottommost).
-
-Super Animations:
-Tornado fades between Tornado 1 and 2, just like Walter fountain. Poofs (random
-x and y) constantly appear and follow SWIRL PATTERN (see attached image)
-
-Tornado slides in from the bottom, along the column it initially affects, and
-the affected gems follow SWIRL PATTERN, but disappear behind the tornado rather
-than fade out. When it reaches the top it slides (smooth slide, not a linear
-slide AND NOT A FUCKING BOUNCE) to the column it's going to attack. If it ever
-changes columns, it smooth slides again. (NO BOUNCE)
-
-Gems just drop from the tornado the way gems drop.
 --]]
 
 local love = _G.love
@@ -81,13 +69,15 @@ function Fuka:init(...)
 
 	self.should_activate_tornado = false
 	self.tornado_gems = {}
-	self.moving_gems = {} -- for passive gem update
+	self.moving_gems = {} -- for passive/super gem update
 
 	-- init tornado image
 	self.tornado_anim = self.fx.tornado.create(game, self)
 	self.TORNADO_HEIGHT = self.tornado_anim.image:getHeight()
 	self.TORNADO_WIDTH = self.tornado_anim.image:getWidth()
 	self.TORNADO_TIME_PER_ROW = 12
+
+	self.TORNADO_AT_TOP_ROW = 10 -- where it arrives at, at the top
 end
 
 
@@ -189,6 +179,9 @@ function TornadoGem:remove()
 	self.manager.allParticles.CharEffects[self.ID] = nil
 end
 
+function TornadoGem:removeAnim()
+end
+
 function TornadoGem.generate(game, owner, gem)
 	local params = {
 		x = gem.x,
@@ -206,6 +199,19 @@ function TornadoGem.generate(game, owner, gem)
 end
 
 function TornadoGem:update(dt)
+	-- if gem not in self.owner.tornado_gems, remove this image with the fadeout
+	local gem_still_exists = false
+	for i = 1, #self.owner.tornado_gems do
+		if self.owner.tornado_gems[i] == self.gem then gem_still_exists = true end
+	end
+
+	if not gem_still_exists then
+		self:removeAnim()
+		self:remove()
+		print("removed left gem")
+		return
+	end
+
 	local X_PERIOD, Y_PERIOD = 120, 60
 	self.x_wave_time = (self.x_wave_time + 2 * math.pi / X_PERIOD) % (2 * math.pi)
 	self.y_wave_time = (self.y_wave_time + 2 * math.pi / Y_PERIOD) % (2 * math.pi)
@@ -540,13 +546,15 @@ function Fuka:_activateSuper()
 
 	local EXTRA_ROWS = 2 -- extra rows to appear below basin bottom
 	local START_ROW = grid.BASIN_END_ROW + EXTRA_ROWS
-	local END_ROW = 10
 
 	local START_Y = grid.y[grid.BASIN_END_ROW] + EXTRA_ROWS * images.GEM_HEIGHT
-	local END_Y =  grid.y[END_ROW]
+	local END_Y =  grid.y[self.TORNADO_AT_TOP_ROW]
 
-	local TOTAL_ROWS = START_ROW - END_ROW
+	local TOTAL_ROWS = START_ROW - self.TORNADO_AT_TOP_ROW
 	local TOTAL_MOVE_DURATION = self.TORNADO_TIME_PER_ROW * TOTAL_ROWS
+
+	-- don't activate the tornado this turn if it was empty to start
+	if not self.tornado_gems[1] then self.should_activate_tornado = false end
 
 	-- find lowest column for the tornado to pick up gems from
 	local lowest_row = 0
@@ -608,6 +616,46 @@ function Fuka:_activateSuper()
 	self:emptyMP()
 
 	return delay
+end
+
+-- drop a gem from the tornado at end of turn
+function Fuka:_activateTornado()
+	local to_drop_gem = self.tornado_gems[#self.tornado_gems]
+
+	if to_drop_gem and self.should_activate_tornado then
+		local game = self.game
+		local grid = self.game.grid
+
+		-- Find lowest column in enemy basin to drop gem into
+		local lowest_row = 0
+		for i in grid:cols(self.enemy.player_num) do
+			local row = grid:getFirstEmptyRow(i) + 1
+			if row > lowest_row then lowest_row = row end
+		end
+
+		local lowest_cols = {}
+		for i in grid:cols(self.enemy.player_num) do
+			local row = grid:getFirstEmptyRow(i) + 1
+			if row == lowest_row then lowest_cols[#lowest_cols + 1] = i end
+		end
+
+		local rand = game.rng:random(#lowest_cols)
+		local selected_col = lowest_cols[rand]
+
+		-- Flag and drop gem, then pop from tornado_gems
+		to_drop_gem:setOwner(self.player_num, false)
+		self.moving_gems[to_drop_gem] = true
+
+		grid[self.TORNADO_AT_TOP_ROW][selected_col].gem = to_drop_gem
+		to_drop_gem.row = self.TORNADO_AT_TOP_ROW
+		to_drop_gem.column = selected_col
+		to_drop_gem.x = grid.x[selected_col]
+		to_drop_gem.y = grid.y[self.TORNADO_AT_TOP_ROW]
+
+		self.tornado_gems[#self.tornado_gems] = nil
+	end
+
+	self.should_activate_tornado = false
 end
 
 -- returns the animation time and whether to go to gravity phase
@@ -689,6 +737,8 @@ function Fuka:_activatePassive()
 	return animation_delay, go_to_gravity_phase
 end
 
+-------------------------------------------------------------------------------
+
 function Fuka:beforeGravity()
 	local delay = 0
 
@@ -698,16 +748,6 @@ function Fuka:beforeGravity()
 	end
 
 	return delay
---[[
-	Super: A tornado grabs up to the top 4 gems of Fuka's lowest column (random on
-tie) and then drops the gems into the opponent's lowest column at a rate of one
-gem per turn for (up to) 4 turns. (The order of gems dropped should be the
-topmost grabbed gem to the bottommost). The tornado drop happens before the
-regular gems are dropped. Any matches made are credited to the casting Fuka.
-
-The drop from tornado gems are flagged as owned by Fuka
-The drop from tornado happens in AfterAllMatches phase.
---]]
 end
 
 function Fuka:beforeTween()
@@ -715,16 +755,7 @@ function Fuka:beforeTween()
 end
 
 function Fuka:afterAllMatches()
-	--[[ Super 2
-	if self.should_activate_tornado:
-		Determine lowest column in all enemy columns
-		If more than one: select randomly
-		if tornado[1]:
-			Pop tornado[1] gem
-			Flag gem as owned by Fuka
-			Move gem into enemy's lowest column
-	self.should_activate_tornado = false
-	--]]
+	self:_activateTornado()
 end
 
 function Fuka:beforeCleanup()
@@ -752,7 +783,7 @@ function Fuka:cleanup()
 end
 
 function Fuka:update(dt)
-	--[[ Update the position of gems being moved by passive.
+	--[[ Update the position of gems being moved by passive/super.
 		Gems normally only update when phase.lua calls grid:updateGravity(dt)
 		This forces them to update every frame.
 	--]]
