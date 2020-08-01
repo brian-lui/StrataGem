@@ -37,10 +37,46 @@ function Spellbook:init(charselect)
 			},
 			spellbook_loc = {x = self.stage.x_mid, y = self.stage.y_mid},
 		},
+
+		walter = {
+			spellbook = {
+				image = images.spellbook_walter_spellbook,
+			},
+		},
+
+		diggory = {
+			spellbook = {
+				image = images.spellbook_diggory_spellbook,
+			},
+		},
+
+		holly = {
+			spellbook = {
+				image = images.spellbook_holly_spellbook,
+			},
+		},
+
+		wolfgang = {
+			spellbook = {
+				image = images.spellbook_wolfgang_spellbook,
+			},
+		},
+
+		fuka = {
+			spellbook = {
+				image = images.spellbook_fuka_spellbook,
+			},
+		},
+
 	}
 
 	self.spellbooks = {
 		heath = {},
+		walter = {},
+		diggory = {},
+		holly = {},
+		wolfgang = {},
+		fuka = {},
 	}
 
 	self.main_images = {}
