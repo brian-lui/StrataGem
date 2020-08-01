@@ -19,19 +19,16 @@ function Spellbook:init(charselect)
 			},
 			pic1 = {
 				image = images.spellbook_heath1,
-				scaling = 0.25,
 				x = self.stage.width * 0.35,
 				y = self.stage.height * 0.725,
 			},
 			pic2 = {
 				image = images.spellbook_heath2,
-				scaling = 0.25,
 				x = self.stage.width * 0.6,
 				y = self.stage.height * 0.725,
 			},
 			pic3 = {
 				image = images.spellbook_heath3,
-				scaling = 0.25,
 				x = self.stage.width * 0.85,
 				y = self.stage.height * 0.725,
 			},
@@ -83,6 +80,8 @@ function Spellbook:init(charselect)
 	self.sub_images = {}
 	self.char_displayed = false
 
+	self.THUMBNAIL_SCALING = 0.25
+
 	for char_name, data in pairs(self.spellbook_data) do
 		self.spellbooks[char_name].main = charselect:_createButton{
 			name = "spellbook_" .. char_name .. "_main",
@@ -98,29 +97,29 @@ function Spellbook:init(charselect)
 		local next_pic = "pic" .. pic_num
 
 		while data[next_pic] do
-			local current_pic = "pic" .. pic_num
+			local thumbnail = "pic" .. pic_num
 			self.spellbooks[char_name][next_pic] = charselect:_createButton{
 				name = "spellbook_" .. char_name .. "_" .. next_pic,
-				image = data[current_pic].image,
-				image_pushed = data[current_pic].image,
-				end_x = data[current_pic].x,
+				image = data[thumbnail].image,
+				image_pushed = data[thumbnail].image,
+				end_x = data[thumbnail].x,
 				end_y = self.stage.height * -0.5,
 				container = self.sub_images,
 				action = function()
-					if self.spellbooks[char_name][current_pic].being_displayed then
-						self:shrinkSubImage(char_name, current_pic)
+					if self.spellbooks[char_name][thumbnail].being_displayed then
+						self:shrinkSubImage(char_name, thumbnail)
 					else
-						self:magnifySubImage(char_name, current_pic)
+						self:magnifySubImage(char_name, thumbnail)
 					end
 				end,
 			}
-			self.spellbooks[char_name][current_pic]:change{
+			self.spellbooks[char_name][thumbnail]:change{
 				duration = 0,
 				x = self.stage.width * -0.5,
-				scaling = self.spellbook_data[char_name][current_pic].scaling,
+				scaling = self.THUMBNAIL_SCALING,
 			}
 
-			self.spellbooks[char_name][current_pic].being_displayed = false
+			self.spellbooks[char_name][thumbnail].being_displayed = false
 
 			pic_num = pic_num + 1
 			next_pic = "pic" .. pic_num
@@ -142,21 +141,21 @@ function Spellbook:displayCharacter(char_name)
 	local next_pic = "pic" .. pic_num
 
 	while self.spellbooks[char_name][next_pic] do
-		local current_pic = "pic" .. pic_num
-		self.spellbooks[char_name][current_pic]:change{
+		local thumbnail = "pic" .. pic_num
+		self.spellbooks[char_name][thumbnail]:change{
 			duration = 0,
-			x = self.spellbook_data[char_name][current_pic].x,
-			y = self.spellbook_data[char_name][current_pic].y - self.stage.height,
-			scaling = self.spellbook_data[char_name][current_pic].scaling * 0.95
+			x = self.spellbook_data[char_name][thumbnail].x,
+			y = self.spellbook_data[char_name][thumbnail].y - self.stage.height,
+			scaling = self.THUMBNAIL_SCALING * 0.95
 		}
-		self.spellbooks[char_name][current_pic]:change{
+		self.spellbooks[char_name][thumbnail]:change{
 			duration = 20,
-			y = self.spellbook_data[char_name][current_pic].y,
+			y = self.spellbook_data[char_name][thumbnail].y,
 			easing = "outCubic",
 		}
-		self.spellbooks[char_name][current_pic]:change{
+		self.spellbooks[char_name][thumbnail]:change{
 			duration = 5,
-			scaling = self.spellbook_data[char_name][current_pic].scaling,
+			scaling = self.THUMBNAIL_SCALING,
 			easing = "outCubic",
 		}
 
@@ -180,11 +179,11 @@ function Spellbook:hideCharacter()
 	local next_pic = "pic" .. pic_num
 
 	while self.spellbooks[char][next_pic] do
-		local current_pic = "pic" .. pic_num
-		self.spellbooks[char][current_pic]:change{
+		local thumbnail = "pic" .. pic_num
+		self.spellbooks[char][thumbnail]:change{
 			duration = 0,
-			y = self.spellbook_data[char][current_pic].y - self.stage.height,
-			scaling = self.spellbook_data[char][current_pic].scaling,
+			y = self.spellbook_data[char][thumbnail].y - self.stage.height,
+			scaling = self.THUMBNAIL_SCALING,
 		}
 
 		pic_num = pic_num + 1
@@ -213,7 +212,7 @@ function Spellbook:shrinkSubImage(char_name, pic_name)
 		duration = 5,
 		x = self.spellbook_data[char_name][pic_name].x,
 		y = self.spellbook_data[char_name][pic_name].y,
-		scaling = self.spellbook_data[char_name][pic_name].scaling,
+		scaling = self.THUMBNAIL_SCALING,
 	}
 
 	picture.being_displayed = false
