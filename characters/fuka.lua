@@ -687,7 +687,10 @@ function Fuka:_activateTornado()
 		-- move gem to destination
 		if move_delay > 0 then to_drop_gem:wait(move_delay) end
 		if anim_delay > 0 then to_drop_gem:wait(anim_delay) end
-		local grid_drop_delay = grid:dropColumns()
+
+		local dest_row = grid:getFirstEmptyRow(selected_col)
+		grid:moveGem(to_drop_gem, dest_row, selected_col)
+		local grid_drop_delay = grid:moveGemAnim(to_drop_gem, dest_row, selected_col)
 
 		delay = move_delay + anim_delay + grid_drop_delay
 	end
