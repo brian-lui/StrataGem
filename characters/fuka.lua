@@ -62,6 +62,9 @@ Fuka.sounds = {
 	bgm = "bgm_fuka",
 }
 
+Fuka.MAX_MP = 48
+Fuka.SUPER_COST = 48
+
 function Fuka:init(...)
 	Character.init(self, ...)
 	self.should_activate_passive = true
