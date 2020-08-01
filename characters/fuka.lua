@@ -79,6 +79,7 @@ function Fuka:init(...)
 	self.TORNADO_HEIGHT = self.tornado_anim.image:getHeight()
 	self.TORNADO_WIDTH = self.tornado_anim.image:getWidth()
 	self.TORNADO_TIME_PER_ROW = 12
+	self.TORNADO_H_SPEED = 8 -- pixels per frame
 
 	self.TORNADO_AT_TOP_ROW = 10 -- where it arrives at, at the top
 end
@@ -121,7 +122,21 @@ function Tornado:acquireGem(gem)
 	self.owner.fx.tornadoGem.generate(self.owner.game, self.owner, gem)
 end
 
-function Tornado:releaseGem(column)
+function Tornado:moveToColumn(column)
+	local grid = self.game.grid
+
+	local dest_x = grid.x[column]
+	local dist = dest_x - self.x
+	local duration = math.ceil(math.abs(dist) / self.owner.TORNADO_H_SPEED)
+
+	self:change{duration = duration, x = dest_x}
+
+	return duration
+end
+
+function Tornado:releaseGem()
+	-- a lot of tornadoFloatPoofs
+	return 0
 end
 
 -- Tornado initially appears offscreen
@@ -211,7 +226,6 @@ function TornadoGem:update(dt)
 	if not gem_still_exists then
 		self:removeAnim()
 		self:remove()
-		print("removed left gem")
 		return
 	end
 
@@ -623,6 +637,8 @@ end
 
 -- drop a gem from the tornado at end of turn
 function Fuka:_activateTornado()
+	local delay = 0
+
 	local to_drop_gem = self.tornado_gems[#self.tornado_gems]
 
 	if to_drop_gem and self.should_activate_tornado then
@@ -655,10 +671,30 @@ function Fuka:_activateTornado()
 		to_drop_gem.x = grid.x[selected_col]
 		to_drop_gem.y = grid.y[self.TORNADO_AT_TOP_ROW]
 
-		self.tornado_gems[#self.tornado_gems] = nil
+		local move_delay = self.tornado_anim:moveToColumn(selected_col)
+		local anim_delay = self.tornado_anim:releaseGem()
+
+		to_drop_gem.transparency = 0 -- hide gem until delay ends
+
+		-- when delay ends, show real gem and delete tornado gem image
+		local reappear = function()
+			to_drop_gem.transparency = 1
+			self.tornado_gems[#self.tornado_gems] = nil
+		end
+
+		self.game.queue:add(move_delay + anim_delay, reappear)
+
+		-- move gem to destination
+		if move_delay > 0 then to_drop_gem:wait(move_delay) end
+		if anim_delay > 0 then to_drop_gem:wait(anim_delay) end
+		local grid_drop_delay = grid:dropColumns()
+
+		delay = move_delay + anim_delay + grid_drop_delay
 	end
 
 	self.should_activate_tornado = false
+
+	return delay
 end
 
 -- returns the animation time and whether to go to gravity phase
@@ -758,7 +794,9 @@ function Fuka:beforeTween()
 end
 
 function Fuka:afterAllMatches()
-	self:_activateTornado()
+	local delay = self:_activateTornado()
+
+	return delay
 end
 
 function Fuka:beforeCleanup()
