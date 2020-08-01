@@ -429,16 +429,7 @@ local function showAnimationCanvas(game)
 end
 
 local function showDebugInfo(game)
-	game.debug_drawGemOwners = not game.debug_drawGemOwners
-	game.debug_drawParticleDestinations = not game.debug_drawParticleDestinations
-	game.debug_drawGamestate = not game.debug_drawGamestate
-	game.debug_drawDamage = not game.debug_drawDamage
-	game.debug_drawGrid = not game.debug_drawGrid
-	if game.debug_overlay then
-		game.debug_overlay = nil
-	else
-		game.debug_overlay = function() return game.current_phase end
-	end
+	game.debugconsole.display_all = not game.debugconsole.display_all
 end
 
 local function toggleSlowdown(game)

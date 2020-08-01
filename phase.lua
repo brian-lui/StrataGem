@@ -694,7 +694,7 @@ function Phase:run(...)
 			player:update(...)
 		end
 		todo(self, ...)
-		game.uielements:update(...)		
+		game.uielements:update(...)
 		game.queue:update()
 	end
 end
