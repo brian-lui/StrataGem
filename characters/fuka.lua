@@ -176,7 +176,6 @@ function Tornado:update(dt)
 	self.frames_until_poof = self.frames_until_poof - 1
 	if self.frames_until_poof <= 0 then
 		self.frames_until_poof = self.POOF_FRAMES
-		self.owner.fx.tornadoMovePoof.generate(self.owner.game, self.owner, self)
 		self.owner.fx.tornadoFloatPoof.generate(self.owner.game, self.owner, self)
 	end
 end
@@ -251,118 +250,6 @@ function TornadoGem:update(dt)
 end
 
 TornadoGem = common.class("TornadoGem", TornadoGem, Pic)
-
--------------------------------------------------------------------------------
--- Poofs that regularly come out of the tornado
-local TornadoMovePoof = {}
-function TornadoMovePoof:init(manager, tbl)
-	Pic.init(self, manager.game, tbl)
-	local counter = self.game.inits.ID.particle
-	manager.allParticles.CharEffects[counter] = self
-	self.manager = manager
-end
-
-function TornadoMovePoof:remove()
-	self.manager.allParticles.CharEffects[self.ID] = nil
-end
-
-function TornadoMovePoof.generate(game, owner, tornado)
-	local sign = math.random() > 0.5 and 1 or -1
-	local image = owner.special_images.poof
-	local h_flip = math.random() > 0.5 and true or false
-	local v_flip = math.random() > 0.5 and true or false
-	local x = tornado.x - (math.random() * 0.1 + 0.4) * tornado.width * sign
-	local y = tornado.y + (math.random() * 0.1 + 0.4) * tornado.height
-
-	-- create two images, one under and one over
-	local p1_params = {
-		x = x,
-		y = y,
-		image = image,
-		owner = owner,
-		player_num = owner.player_num,
-		scaling = 0,
-		h_flip = h_flip,
-		v_flip = v_flip,
-		draw_order = 2,
-		name = "FukaTornadoMovePoof",
-	}
-	local p2_params = {
-		x = x,
-		y = y,
-		image = image,
-		owner = owner,
-		player_num = owner.player_num,
-		scaling = 0,
-		h_flip = h_flip,
-		v_flip = v_flip,
-		draw_order = -2,
-		name = "FukaTornadoMovePoof",
-	}
-
-	local p_over = common.instance(TornadoMovePoof, game.particles, p1_params)
-	local p_under = common.instance(TornadoMovePoof, game.particles, p2_params)
-
-	local SEGMENT_TIME = 30
-	local FADE_TIME = 5
-	local x0 = x
-	local y0 = y
-	local x1 = tornado.x + (math.random() * 0.1 + 0.4) * tornado.width * sign
-	local y1 = tornado.y + (math.random() * 0.1 + 0.12) * tornado.height
-	local x2 = tornado.x - (math.random() * 0.1 + 0.4) * tornado.width * sign
-	local y2 = tornado.y + (math.random() * 0.1 - 0.22) * tornado.height
-	local x3 = tornado.x + (math.random() * 0.1 + 0.4) * tornado.width * sign
-	local y3 = tornado.y + (math.random() * 0.1 - 0.5) * tornado.height
-
-	--[[
-	-- adjustments to y-position if the tornado is moving up
-	-- temporarily disabled because it looks bad
-	if tornado.y ~= tornado.destination_y then
-		local y_per_frame = images.GEM_HEIGHT / owner.TORNADO_TIME_PER_ROW
-
-		local y0_adjust = y_per_frame * FADE_TIME
-		local y1_adjust = y_per_frame * (FADE_TIME + SEGMENT_TIME)
-		local y2_adjust = y_per_frame * (FADE_TIME + SEGMENT_TIME * 2)
-		local y3_adjust = y_per_frame * (FADE_TIME + SEGMENT_TIME * 3)
-		local max_y_adjust = tornado.y - tornado.destination_y
-
-		y0 = y0 - math.min(y0_adjust, max_y_adjust)
-		y1 = y1 - math.min(y1_adjust, max_y_adjust)
-		y2 = y2 - math.min(y2_adjust, max_y_adjust)
-		y3 = y3 - math.min(y3_adjust, max_y_adjust)
-	end
-	--]]
-
-	local curve1 = love.math.newBezierCurve(x0, y0, x1, y0, x1, y1)
-	local curve2 = love.math.newBezierCurve(x1, y1, x1, y2, x2, y2)
-	local curve3 = love.math.newBezierCurve(x2, y2, x3, y2, x3, y3)
-
-	p_over:change{transparency = sign * 0.5 + 0.5}
-	p_under:change{transparency = sign * -0.5 + 0.5}
-
-	p_over:change{duration = FADE_TIME, scaling = 1}
-	p_under:change{duration = FADE_TIME, scaling = 1}
-
-	p_over:change{duration = SEGMENT_TIME, curve = curve1, easing = "inOutQuad"}
-	p_under:change{duration = SEGMENT_TIME, curve = curve1, easing = "inOutQuad"}
-
-	p_over:change{duration = 1, transparency = sign * -0.5 + 0.5}
-	p_under:change{duration = 1, transparency = sign * 0.5 + 0.5}
-
-	p_over:change{duration = SEGMENT_TIME, curve = curve2, easing = "inOutQuad"}
-	p_under:change{duration = SEGMENT_TIME, curve = curve2, easing = "inOutQuad"}
-
-	p_over:change{duration = 1, transparency = sign * 0.5 + 0.5}
-	p_under:change{duration = 1, transparency = sign * -0.5 + 0.5}
-
-	p_over:change{duration = SEGMENT_TIME, curve = curve3, easing = "inOutQuad"}
-	p_under:change{duration = SEGMENT_TIME, curve = curve3, easing = "inOutQuad"}
-
-	p_over:change{duration = FADE_TIME, transparency = sign * -0.5 + 0.5, remove = true}
-	p_under:change{duration = FADE_TIME, transparency = sign * 0.5 + 0.5, remove = true}
-end
-
-TornadoMovePoof = common.class("TornadoMovePoof", TornadoMovePoof, Pic)
 
 -------------------------------------------------------------------------------
 -- Poofs that regularly come out of the tornado
@@ -544,7 +431,6 @@ GemBorderPoofs = common.class("GemBorderPoofs", GemBorderPoofs, Pic)
 Fuka.fx = {
 	tornado = Tornado,
 	tornadoGem = TornadoGem,
-	tornadoMovePoof = TornadoMovePoof,
 	tornadoFloatPoof = TornadoFloatPoof,
 	leaves = Leaves,
 	gemBorderPoofs = GemBorderPoofs,
