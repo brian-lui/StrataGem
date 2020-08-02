@@ -134,9 +134,24 @@ function Tornado:moveToColumn(column)
 	return duration
 end
 
-function Tornado:releaseGem()
+function Tornado:releaseGem(delay, x, y)
+	local BATCHES, INTERVAL, POOFS = 5, 15, 15
+
 	-- a lot of tornadoFloatPoofs
-	return 0
+	for poof_delay = 0, (BATCHES - 1) * INTERVAL, INTERVAL do
+		for _ = 1, POOFS do
+			self.owner.fx.tornadoFloatPoof.generate(
+				self.owner.game,
+				self.owner,
+				self,
+				poof_delay + delay,
+				x,
+				y
+			)
+		end
+	end
+
+	return (BATCHES - 1) * INTERVAL
 end
 
 -- Tornado initially appears offscreen
@@ -265,9 +280,10 @@ function TornadoFloatPoof:remove()
 	self.manager.allParticles.CharEffects[self.ID] = nil
 end
 
-function TornadoFloatPoof.generate(game, owner, tornado)
-	local x = tornado.x + (math.random() - 0.5) * tornado.width
-	local y = tornado.y + (math.random() - 0.5) * tornado.height
+-- delay, x, y are optional
+function TornadoFloatPoof.generate(game, owner, tornado, delay, x, y)
+	x = (x or tornado.x) + (math.random() - 0.5) * tornado.width
+	y = (y or tornado.y) + (math.random() - 0.5) * tornado.height
 
 	local params = {
 		x = x,
@@ -284,6 +300,7 @@ function TornadoFloatPoof.generate(game, owner, tornado)
 
 	local p = common.instance(TornadoFloatPoof, game.particles, params)
 
+	if delay then p:wait(delay) end
 	p:change{duration = 10, scaling = 1}
 	p:change{duration = 40, scaling = 2, transparency = 0, remove = true}
 end
@@ -558,7 +575,11 @@ function Fuka:_activateTornado()
 		to_drop_gem.y = grid.y[self.TORNADO_AT_TOP_ROW]
 
 		local move_delay = self.tornado_anim:moveToColumn(selected_col)
-		local anim_delay = self.tornado_anim:releaseGem()
+		local anim_delay = self.tornado_anim:releaseGem(
+			move_delay,
+			to_drop_gem.x,
+			to_drop_gem.y
+		)
 
 		to_drop_gem.transparency = 0 -- hide gem until delay ends
 
