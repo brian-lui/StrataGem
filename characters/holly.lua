@@ -1,14 +1,9 @@
 --[[ Color: green
-Passive: For every match you make, a random gem in your basin gains a flower
-mark. When the flower gem breaks (regardless of who breaks it, including grey
-breaks) the Holly who made the flower heals one damage and the opponent takes
-one damage.
+Passive: Making a match creates a flower in a random non-special gem in the
+opponent's basin. When this gem would destroyed by a match, instead it is not
+destroyed, but the flower disappears.
 
-Super: 2 spores appear randomly in either the topmost row or second top most
-row of any of the opponent’s columns. (So 2 spores randomly appearing in 2 of 8
-possible spaces.) If the opponent breaks a spore through matching, all
-the damage (including combo damage) is reflected. SporePods disappear after three
-turns.
+Super: Spore pod that makes some flower shit
 --]]
 
 local love = _G.love
@@ -260,6 +255,8 @@ function Flower.generate(game, owner, gem, delay)
 		rotation = math.random() * math.pi * 2,
 		num = 4,
 	}
+
+	return owner.flowers[gem]
 end
 
 function Flower:draw()
@@ -353,7 +350,7 @@ function SporePod:_dropSporePod()
 	if self.spore_framecount >= self.FRAMES_PER_SPORE then
 		self.spore_framecount = 0
 		self.owner.fx.spore.generateFalling(self.game, self)
-	end		
+	end
 end
 
 function SporePod:update(dt)
@@ -430,7 +427,6 @@ end
 
 SporePod = common.class("SporePod", SporePod, Pic)
 
-
 -------------------------------------------------------------------------------
 -- Spores generated from spore pods
 local Spore = {}
@@ -487,7 +483,7 @@ function Spore.generateStarburst(game, spore_pod, delay)
 
 	local owner = spore_pod.owner
 	local x, y = spore_pod.x, spore_pod.y
-	
+
 	local starburst_end_xy = function(start_x, start_y)
 		local dist = game.stage.width * 0.1 * (0.5 + math.random())
 		local angle = math.random() * math.pi * 2
@@ -508,7 +504,7 @@ function Spore.generateStarburst(game, spore_pod, delay)
 			owner = owner,
 		}
 
-		local p = common.instance(Spore, game.particles, params)		
+		local p = common.instance(Spore, game.particles, params)
 
 		if delay then
 			p.transparency = 0
@@ -533,70 +529,11 @@ function Spore.generateStarburst(game, spore_pod, delay)
 end
 
 Spore = common.class("Spore", Spore, Pic)
-
--------------------------------------------------------------------------------
--- extra damage petals, follows the bezier to the second platform slowly
-local DamagePetal = {}
-function DamagePetal:init(manager, tbl)
-	Pic.init(self, manager.game, tbl)
-	local counter = self.game.inits.ID.particle
-	manager.allParticles.CharEffects[counter] = self
-	self.manager = manager
-end
-
-function DamagePetal:remove()
-	self.manager.allParticles.CharEffects[self.ID] = nil
-end
-
-function DamagePetal.generate(game, owner, gem, delay)
-	local TRAVEL_TIME = 60
-	local x1, y1 = gem.x, gem.y
-	local x4, y4 = owner.enemy.hand[2].x, owner.enemy.hand[2].y
-	local dist = ((x4 - x1) ^ 2 + (y4 - y1) ^ 2) ^ 0.5
-	local x3, y3 = 0.5 * (x1 + x4), 0.5 * (y1 + y4)
-
-	local images = {
-		owner.special_images[gem.color].petala,
-		owner.special_images[gem.color].petalb,
-	}
-
-	for _, image in ipairs(images) do
-		for i = 1, 4 do
-			local angle = math.random() * math.pi * 2
-			local x2 = x1 + math.cos(angle) * dist * 0.5
-			local y2 = y1 + math.sin(angle) * dist * 0.5
-
-			local curve = love.math.newBezierCurve(x1, y1, x2, y2, x3, y3, x4, y4)
-
-			local params = {
-				x = x1,
-				y = y1,
-				image = image,
-				draw_order = 2,
-				owner = owner,
-			}
-
-			local p = common.instance(DamagePetal, game.particles, params)
-
-			if delay then
-				p.transparency = 0
-				p:wait(delay)
-				p:change{duration = 0, transparency = 1}
-			end
-
-			p:change{duration = TRAVEL_TIME + i * 5, curve = curve, remove = true}
-		end
-	end
-end
-
-DamagePetal = common.class("DamagePetal", DamagePetal, Pic)
-
 -------------------------------------------------------------------------------
 Holly.fx = {
 	flower = Flower,
-	spore_pod = SporePod,
+	sporePod = SporePod,
 	spore = Spore,
-	damagePetal = DamagePetal,
 }
 
 -------------------------------------------------------------------------------
@@ -604,11 +541,10 @@ Holly.fx = {
 function Holly:init(...)
 	Character.init(self, ...)
 
-	self.SPORE_TURNS = 3 -- how many turns until spore pods leave
-
 	self.flowers = {} -- flower image objects
-	self.spore_pods = {} -- spore pod image objects
 	self.matches_made = 0
+
+	self.to_be_removed_flowers = {} -- temporary gemdestroy use
 end
 
 function Holly:beforeGravity()
@@ -617,53 +553,9 @@ function Holly:beforeGravity()
 	local delay = 0
 
 	if self.is_supering then
-		-- select the places to put spore pods
-		local top_gems_first_row, top_gems_second_row = {}, {}
-		for col in grid:cols(self.enemy.player_num) do
-			this_col = {}
-			for row = grid.BASIN_START_ROW, grid.BASIN_END_ROW do
-				local first = grid[row][col].gem
-				if first then
-					if first:isDefaultColor()
-					and not first.holly_spore
-					and not first.holly_flower then
-						top_gems_first_row[#top_gems_first_row + 1] = first
-					end
-
-					local second = grid[row + 1][col].gem
-					if second then
-						if second:isDefaultColor()
-						and not second.holly_spore
-						and not second.holly_flower then
-							top_gems_second_row[#top_gems_second_row + 1] = second
-						end
-					end
-
-					break
-				end
-			end
-		end
-
-		shuffle(top_gems_first_row, game.rng)
-		shuffle(top_gems_second_row, game.rng)
-
-		local spore_places
-		if #top_gems_first_row >= 2 then
-			spore_places = {top_gems_first_row[1], top_gems_first_row[2]}
-		elseif #top_gems_first_row == 1 then
-			spore_places = {top_gems_first_row[1], top_gems_second_row[1]}
-		else
-			spore_places = {top_gems_second_row[1], top_gems_second_row[2]}
-		end
-
-		-- place the spores
-		for _, gem in ipairs(spore_places) do
-			gem.holly_spore = {
-				owner = self.player_num,
-				turns_remaining = self.SPORE_TURNS,
-			}
-			self.fx.spore_pod.generate(game, self, gem, 0)
-		end
+		--[[
+		TODO: generate a spore pod somewhere or other
+		--]]
 
 		delay = 30
 		self:emptyMP()
@@ -701,47 +593,15 @@ function Holly:beforeMatch()
 	local to_unmatch = {}
 	for i = #grid.matched_gems, 1, -1 do
 		local gem = grid.matched_gems[i]
-		if gem.holly_flower then
+		if gem.contained_items.holly_flower then
 			assert(self.flowers[gem], "Tried to remove non-existent flower!")
-			gem.holly_flower = nil
+			gem.contained_items.holly_flower = nil
 			self.flowers[gem]:leavePlay()
 			to_unmatch[#to_unmatch + 1] = gem
 		end
 	end
 
 	for _, unmatch in ipairs(to_unmatch) do grid:clearMatchedGem(unmatch) end
-
-	-- Super reflect.
-	-- Also flags them with gem.holly_reflected for future animation use
-	for _, list in ipairs(grid.matched_gem_lists) do
-		local our_spores, their_spores = 0, 0
-
-		-- count number of matches of both player's spores
-		for _, gem in ipairs(list) do
-			if gem.holly_spore then
-				if gem.holly_spore.owner == self.player_num then
-					our_spores = our_spores + 1
-				elseif gem.holly_spore.owner == self.enemy.player_num then
-					their_spores = their_spores + 1
-				else
-					error("Invalid gem.holly_spore.owner")
-				end
-			end
-		end
-
-		-- if you have more spores than opponent, reflect it
-		if our_spores > their_spores then
-			delay = 60
-			for _, gem in ipairs(list) do
-				if gem.holly_spore then
-					assert(self.spore_pods[gem], "Tried to remove non-existent spore!")
-					self.spore_pods[gem]:leavePlay(delay + game.GEM_EXPLODE_FRAMES)
-				end
-				gem.holly_reflected = true
-				gem:setOwner(self.player_num)
-			end
-		end
-	end
 
 	return delay
 end
@@ -758,8 +618,7 @@ function Holly:afterMatch()
 		if gem.color ~= "none"
 		and gem.color ~= "wild"
 		and not gem.indestructible
-		and not gem.holly_spore
-		and not gem.holly_flower then
+		and not gem.contained_items.holly_flower then
 			eligible_gems[#eligible_gems + 1] = gem
 		end
 	end
@@ -769,8 +628,8 @@ function Holly:afterMatch()
 	for i = 1, self.matches_made do
 		if eligible_gems[i] then
 			local gem = eligible_gems[i]
-			gem.holly_flower = self.player_num 
-			self.fx.flower.generate(game, self, gem, FLOWER_DELAY)
+			local flower = self.fx.flower.generate(game, self, gem, FLOWER_DELAY)
+			gem.contained_items.holly_flower = flower
 		end
 	end
 
@@ -782,37 +641,35 @@ function Holly:cleanup()
 	local grid = game.grid
 	local delay = 0
 
-	-- Count down spores
-	for gem in grid:gems() do
-		if gem.holly_spore and gem.holly_spore.owner == self.player_num then
-			gem.holly_spore.turns_remaining = gem.holly_spore.turns_remaining - 1
-
-			if gem.holly_spore.turns_remaining <= 0 then
-				delay = game.GEM_EXPLODE_FRAMES
-				self.spore_pods[gem]:leavePlay(delay)
-				gem.holly_spore = nil
-			end
-		end
-	end
-
 	Character.cleanup(self)
+
+	return delay
 end
 
 function Holly:onGemDestroyStart(gem, delay)
-	if (gem.holly_flower == self.player_num) and (not gem.indestructible) then
+	if	(gem.contained_items.holly_flower) and
+		(gem.contained_items.holly_flower.player_num == self.player_num) and
+		(not gem.indestructible)
+	then
 		gem.indestructible = true
-		gem.need_to_remove_flower = true
+		self.to_be_removed_flowers[#self.to_be_removed_flowers + 1] = gem
 	end
 end
 
 function Holly:onGemDestroyEnd(gem, delay)
-	if (gem.holly_flower == self.player_num) and gem.need_to_remove_flower then
-		assert(self.flowers[gem], "Tried to remove non-existent flower!")
+	if	(gem.contained_items.holly_flower) and
+		(gem.contained_items.holly_flower.player_num == self.player_num)
+	then
+		for k, this_gem in pairs(self.to_be_removed_flowers) do
+			if this_gem == gem then
+				assert(self.flowers[gem], "Tried to remove non-existent flower!")
 
-		gem.need_to_remove_flower = nil
-		gem.indestructible = nil
-		gem.holly_flower = nil
-		self.flowers[gem]:leavePlay(delay)
+				self.to_be_removed_flowers[k] = nil
+				gem.indestructible = nil
+				gem.contained_items.holly_flower = nil
+				self.flowers[gem]:leavePlay(delay)
+			end
+		end
 	end
 end
 
