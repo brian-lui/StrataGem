@@ -134,6 +134,15 @@ function Tornado:moveToColumn(column)
 	return duration
 end
 
+-- when no more gems
+function Tornado:exitAtTop(delay)
+	local dest_y = -self.height
+	local duration = 30
+
+	if delay then self:wait(delay) end
+	self:change{duration = duration, y = dest_y}
+end
+
 function Tornado:releaseGem(delay, x, y)
 	local BATCHES, INTERVAL, POOFS = 5, 15, 15
 
@@ -587,6 +596,12 @@ function Fuka:_activateTornado()
 		local reappear = function()
 			to_drop_gem.transparency = 1
 			self.tornado_gems[#self.tornado_gems] = nil
+
+			-- remove the tornado if it has no more gems
+			if not self.tornado_gems[1] then
+				local TORNADO_EXIT_DELAY = 30
+				self.tornado_anim:exitAtTop(TORNADO_EXIT_DELAY)
+			end
 		end
 
 		self.game.queue:add(move_delay + anim_delay, reappear)
@@ -600,6 +615,7 @@ function Fuka:_activateTornado()
 		local grid_drop_delay = grid:moveGemAnim(to_drop_gem, dest_row, selected_col)
 
 		delay = move_delay + anim_delay + grid_drop_delay
+
 	end
 
 	self.should_activate_tornado = false
