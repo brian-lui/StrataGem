@@ -1,7 +1,12 @@
 --[[ Color: green
-Passive: Making a match creates a flower in a random non-special gem in the
-opponent's basin. When this gem would destroyed by a match, instead it is not
-destroyed, but the flower disappears.
+Passive: Each newly spawned gem has a 30% chance of having an attached seed.
+Also, if Holly's hand does not contain any gems with seeds, the next gem is
+guaranteed to contain a seed (except for the initial starting hand's piece
+creation).
+
+Matching a seeded gem (match made by Holly) creates a flower in the opponent’s
+basin. When this gem would destroyed by a match, instead it is not destroyed,
+but the flower disappears.
 
 Super: Spore pod that makes some flower shit
 --]]
@@ -70,6 +75,7 @@ Holly.special_images = {
 		petalb = love.graphics.newImage('images/characters/holly/yellowpetalb.png'),
 		rage = love.graphics.newImage('images/characters/holly/yellowrage.png'),
 	},
+	seeds = love.graphics.newImage('images/characters/holly/seeds.png'),
 	spore_pod = love.graphics.newImage('images/characters/holly/sporepod.png'),
 	spore = love.graphics.newImage('images/characters/holly/spore.png'),
 	stem = love.graphics.newImage('images/characters/holly/stem.png'),
