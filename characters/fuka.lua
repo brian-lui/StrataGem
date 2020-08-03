@@ -741,12 +741,6 @@ end
 function Fuka:cleanup()
 	self.should_activate_passive = true
 	self.should_activate_tornado = true
-	--[[
-	if tornado has at least one gem:
-		move the tornado to the appropriate column
-	else:
-		disappear it
-	--]]
 end
 
 function Fuka:update(dt)
@@ -761,5 +755,31 @@ function Fuka:update(dt)
 		end
 	end
 end
+
+--[[
+TODO
+function Fuka:serializeSpecials()
+	local ret = ""
+	for i in self.game.grid:cols() do ret = ret .. self.ready_fires[i] end
+	return ret
+end
+
+function Fuka:deserializeSpecials(str)
+	for i = 1, #str do
+		local col = i
+		local turns_remaining = tonumber(str:sub(i, i))
+		self.ready_fires[col] = turns_remaining
+		if turns_remaining > 0 then
+			self.fx.smallFire.generateSmallFire(
+				self.game,
+				self,
+				col,
+				nil,
+				turns_remaining
+			)
+		end
+	end
+end
+--]]
 
 return common.class("Fuka", Fuka, Character)

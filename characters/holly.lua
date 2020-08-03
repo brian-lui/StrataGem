@@ -673,5 +673,31 @@ function Holly:onGemDestroyEnd(gem, delay)
 	end
 end
 
+--[[
+
+TODO
+function Holly:serializeSpecials()
+	local ret = ""
+	for i in self.game.grid:cols() do ret = ret .. self.ready_fires[i] end
+	return ret
+end
+
+function Holly:deserializeSpecials(str)
+	for i = 1, #str do
+		local col = i
+		local turns_remaining = tonumber(str:sub(i, i))
+		self.ready_fires[col] = turns_remaining
+		if turns_remaining > 0 then
+			self.fx.smallFire.generateSmallFire(
+				self.game,
+				self,
+				col,
+				nil,
+				turns_remaining
+			)
+		end
+	end
+end
+--]]
 
 return common.class("Holly", Holly, Character)
