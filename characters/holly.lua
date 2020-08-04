@@ -8,7 +8,14 @@ Matching a seeded gem (match made by Holly) creates a flower in the opponent’s
 basin. When this gem would destroyed by a match, instead it is not destroyed,
 but the flower disappears.
 
-Super: Spore pod that makes some flower shit
+Super: Summon two spores., one on the topmost gem of a random column, and one
+on the second most gem of a random column, lasts 3 turns.
+When they break they spawn flowers according to my diagram, as long as the
+space fulfills the following conditions:
+1. On the enemy side, not the Holly side
+2. Have a gem in them
+3. Don't already have a flower
+https://www.dropbox.com/s/ac7zvx49a4unl5m/spore%20distribution.png?dl=0
 --]]
 
 local love = _G.love
@@ -75,7 +82,7 @@ Holly.special_images = {
 		petalb = love.graphics.newImage('images/characters/holly/yellowpetalb.png'),
 		rage = love.graphics.newImage('images/characters/holly/yellowrage.png'),
 	},
-	seeds = love.graphics.newImage('images/characters/holly/seeds.png'),
+	seed = love.graphics.newImage('images/characters/holly/seeds.png'),
 	spore_pod = love.graphics.newImage('images/characters/holly/sporepod.png'),
 	spore = love.graphics.newImage('images/characters/holly/spore.png'),
 	stem = love.graphics.newImage('images/characters/holly/stem.png'),
@@ -271,6 +278,75 @@ function Flower:draw()
 end
 
 Flower = common.class("Flower", Flower, Pic)
+
+-------------------------------------------------------------------------------
+-- these are the seeds that appear randomly in Holly's hand gems
+local Seed = {}
+function Seed:init(manager, tbl)
+	Pic.init(self, manager.game, tbl)
+	local counter = self.game.inits.ID.particle
+	manager.allParticles.CharEffects[counter] = self
+	self.manager = manager
+end
+
+function Seed:remove()
+	self.manager.allParticles.CharEffects[self.ID] = nil
+	self.owner.seeds[self.gem] = nil
+end
+
+function Seed:leavePlay(delay)
+	local game = self.game
+	delay = delay or 0
+
+	self:wait(delay)
+	self:change{
+		duration = game.GEM_EXPLODE_FRAMES,
+		x_scaling = 2,
+		y_scaling = 2,
+		transparency = 0,
+		remove = true,
+	}
+
+	self.is_destroyed = true
+end
+
+function Seed:update(dt)
+	if self.gem.is_destroyed and not self.is_destroyed then
+		self:leavePlay(self.gem.time_to_destruction)
+	end
+
+	if not self.is_destroyed then
+		self.x = self.gem.x
+		self.y = self.gem.y
+	end
+
+	Pic.update(self, dt)
+end
+
+function Seed.generate(game, owner, gem, delay)
+	assert(gem:isDefaultColor(), "Tried to create seed on non-default color gem!")
+
+	local params = {
+		x = gem.x,
+		y = gem.y,
+		image = owner.special_images.seed,
+		owner = owner,
+		draw_order = 3,
+		player_num = owner.player_num,
+		name = "HollySeed",
+		gem = gem,
+		scaling = 0,
+		force_max_alpha = true,
+	}
+
+	owner.seeds[gem] = common.instance(Seed, game.particles, params)
+	owner.seeds[gem]:wait(delay)
+	owner.seeds[gem]:change{duration = 15, scaling = 1}
+
+	return owner.seeds[gem]
+end
+
+Seed = common.class("Seed", Seed, Pic)
 
 -------------------------------------------------------------------------------
 -- these are the spore pods that appear for Holly's super
@@ -538,19 +614,130 @@ Spore = common.class("Spore", Spore, Pic)
 -------------------------------------------------------------------------------
 Holly.fx = {
 	flower = Flower,
+	seed = Seed,
 	sporePod = SporePod,
 	spore = Spore,
 }
 
 -------------------------------------------------------------------------------
 
+-- snapshop the current hand gems, so that we don't recheck them for possible
+-- seed generation
+function Holly:_storeCurrentHandGems()
+	self.start_of_turn_gems = {}
+	for piece in self.hand:pieces() do
+		for gem in piece:getGems() do
+			self.start_of_turn_gems[gem] = true
+		end
+	end
+end
+
+function Holly:_addFlowerToGem(gem, delay)
+	local flower = self.fx.flower.generate(self.game, self, gem, delay)
+	gem.contained_items.holly_flower = flower
+	self.flowered_gems[gem] = true
+end
+
+function Holly:_removeFlowerFromGem(gem, delay)
+	assert(self.flowers[gem], "Tried to remove non-existent flower!")
+	self.flowers[gem]:leavePlay(delay)
+	gem.contained_items.holly_flower = nil
+	self.flowered_gems[gem] = nil
+end
+
+function Holly:_addSeedToGem(gem, delay)
+	local seed = self.fx.seed.generate(self.game, self, gem, delay)
+	gem.contained_items.holly_seed = seed
+	self.seeded_gems[gem] = true
+end
+
+function Holly:_removeSeedFromGem(gem, delay)
+	assert(self.seeds[gem], "Tried to remove non-existent seed!")
+	self.seed[gem]:leavePlay(delay)
+	gem.contained_items.holly_seed = nil
+	self.seeded_gems[gem] = nil
+end
+
+function Holly:_addSporePodToGem(gem, delay)
+	local spore_pod = self.fx.sporePod.generate(self.game, self, gem, delay)
+	gem.contained_items.holly_spore_pod= spore_pod
+	self.sporepodded_gems[gem] = true
+end
+
+function Holly:_removeSporePodFromGem(gem, delay)
+	assert(self.spore_pods[gem], "Tried to remove non-existent spore pod!")
+	self.spore_pods[gem]:leavePlay(delay)
+	gem.contained_items.holly_spore_pod = nil
+	self.sporepodded_gems[gem] = nil
+end
+
+function Holly:_addSeedsToHand()
+	local game = self.game
+	local delay = 0
+	local SEED_CHANCE = 30
+
+	for piece in self.hand:pieces() do
+		for gem in piece:getGems() do
+			if not self.start_of_turn_gems[gem] then
+				if game.rng:random(100) < SEED_CHANCE then
+					print("30% chance added seed to gem")
+					delay = self:_addSeedToGem(gem)
+				end
+			end
+		end
+	end
+
+	-- add a seed to a random new piece if no seeds at all
+	local all_gems_in_hand = {}
+	local any_seeds_at_all = false
+	for piece in self.hand:pieces() do
+		for gem in piece:getGems() do
+			if self.seeded_gems[gem] then any_seeds_at_all = true end
+			all_gems_in_hand[#all_gems_in_hand + 1] = gem
+		end
+	end
+
+	if not any_seeds_at_all then
+		print("hand has no seeds, adding seed to random gem in hand")
+		local rand = game.rng:random(#all_gems_in_hand)
+		local chosen_gem = all_gems_in_hand[rand]
+
+		delay = self:_addSeedToGem(chosen_gem)
+	end
+
+	return delay
+end
+
+
+function Holly:_super()
+	--[[
+Super: Summon two spores., one on the topmost gem of a random column, and one
+on the second most gem of a random column, lasts 3 turns.
+When they break they spawn flowers according to my diagram, as long as the
+space fulfills the following conditions:
+1. On the enemy side, not the Holly side
+2. Have a gem in them
+3. Don't already have a flower
+https://www.dropbox.com/s/ac7zvx49a4unl5m/spore%20distribution.png?dl=0
+	--]]
+end
+
 function Holly:init(...)
 	Character.init(self, ...)
 
 	self.flowers = {} -- flower image objects
+	self.seeds = {} -- seed image objects
+	self.spore_pods = {} -- spore pod image objects
 	self.matches_made = 0
 
 	self.to_be_removed_flowers = {} -- temporary gemdestroy use
+
+	self.start_of_turn_gems = {} -- don't check these for possible seed creation
+
+	-- to keep track of state
+	self.flowered_gems = {}
+	self.seeded_gems = {}
+	self.sporepodded_gems = {}
 end
 
 function Holly:beforeGravity()
@@ -568,6 +755,8 @@ function Holly:beforeGravity()
 		self.is_supering = false
 		self.supered_this_turn = true
 	end
+
+	self:_storeCurrentHandGems()
 
 	return delay
 end
@@ -593,22 +782,6 @@ function Holly:beforeMatch()
 		if owned_by_me then self.matches_made = self.matches_made + 1 end
 	end
 
-	-- Check if any of the matched gems have a flower on them
-	-- If so, remove the flower and remove them from the matched list
-	-- This happens before destroyGem, so it doesn't activate onGemDestroy
-	local to_unmatch = {}
-	for i = #grid.matched_gems, 1, -1 do
-		local gem = grid.matched_gems[i]
-		if gem.contained_items.holly_flower then
-			assert(self.flowers[gem], "Tried to remove non-existent flower!")
-			gem.contained_items.holly_flower = nil
-			self.flowers[gem]:leavePlay()
-			to_unmatch[#to_unmatch + 1] = gem
-		end
-	end
-
-	for _, unmatch in ipairs(to_unmatch) do grid:clearMatchedGem(unmatch) end
-
 	return delay
 end
 
@@ -617,7 +790,7 @@ function Holly:afterMatch()
 	local grid = game.grid
 	local FLOWER_DELAY = 20
 
-	-- Passive: For each match, a random gem in your basin gains a flower mark:
+	-- Passive: For each match, a random gem in opponent basin gains a flower mark:
 	-- Get all eligible gems
 	local eligible_gems = {}
 	for gem in grid:basinGems(self.enemy.player_num) do
@@ -634,8 +807,7 @@ function Holly:afterMatch()
 	for i = 1, self.matches_made do
 		if eligible_gems[i] then
 			local gem = eligible_gems[i]
-			local flower = self.fx.flower.generate(game, self, gem, FLOWER_DELAY)
-			gem.contained_items.holly_flower = flower
+			self:_addFlowerToGem(gem, FLOWER_DELAY)
 		end
 	end
 
@@ -643,22 +815,30 @@ function Holly:afterMatch()
 end
 
 function Holly:cleanup()
-	local game = self.game
-	local grid = game.grid
-	local delay = 0
+	local delay = self:_addSeedsToHand()
 
 	Character.cleanup(self)
 
 	return delay
 end
 
+-- This should also activate from matches
 function Holly:onGemDestroyStart(gem, delay)
+	-- If destroyed gem has a flower, remove flower instead of destroying gem
 	if	(gem.contained_items.holly_flower) and
 		(gem.contained_items.holly_flower.player_num == self.player_num) and
 		(not gem.indestructible)
 	then
 		gem.indestructible = true
 		self.to_be_removed_flowers[#self.to_be_removed_flowers + 1] = gem
+	end
+
+	-- TODO: create a flower when destroyed a gem with seed on it
+	if	(gem.contained_items.holly_seed) and
+		(gem.contained_items.holly_seed.player_num == self.player_num) and
+		(not gem.indestructible)
+	then
+		print("TEST: destroyed a gem with a seed on it!")
 	end
 end
 
@@ -668,12 +848,9 @@ function Holly:onGemDestroyEnd(gem, delay)
 	then
 		for k, this_gem in pairs(self.to_be_removed_flowers) do
 			if this_gem == gem then
-				assert(self.flowers[gem], "Tried to remove non-existent flower!")
-
 				self.to_be_removed_flowers[k] = nil
 				gem.indestructible = nil
-				gem.contained_items.holly_flower = nil
-				self.flowers[gem]:leavePlay(delay)
+				self:_removeFlowerFromGem(gem, delay)
 			end
 		end
 	end
