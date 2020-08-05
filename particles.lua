@@ -1548,6 +1548,7 @@ function UpGem:init(manager, gem)
 	Pic.init(self, manager.game, {x = gem.x, y = gem.y, image = gem.image})
 	local counter = self.game.inits.ID.particle
 	manager.allParticles.UpGem[counter] = self
+	self.gem = gem
 	self.manager = manager
 end
 
@@ -1570,6 +1571,19 @@ function UpGem.removeAll(manager)
 	for _, v in pairs(manager.allParticles.UpGem) do v:remove() end
 end
 
+-- draw anything that's contained by the gem, too
+function UpGem:draw()
+	Pic.draw(self)
+--[[
+	TODO: check if this is ok. Sometimes it's wrong when rotated?
+	for _, obj in pairs(self.gem.contained_items) do
+		if obj.draw then
+			obj:draw{x = self.x, y = self.y}
+		end
+	end
+--]]
+end
+
 UpGem = common.class("UpGem", UpGem, Pic)
 
 -------------------------------------------------------------------------------
@@ -1586,6 +1600,7 @@ function PlacedGem:init(manager, gem, y, row, place_type)
 	manager.allParticles.PlacedGem[counter] = self
 	self.manager = manager
 	self.player_num = gem.player_num
+	self.gem = gem
 	self.row = row
 	self.place_type = place_type
 	self.tweened_down = false
@@ -1640,6 +1655,20 @@ end
 -- Remove all gems at end of turn, whether they finished tweening or not
 function PlacedGem.removeAll(manager)
 	for _, v in pairs(manager.allParticles.PlacedGem) do v:remove() end
+end
+
+-- draw anything that's contained by the gem, too
+function PlacedGem:draw()
+	Pic.draw(self)
+
+--[[
+	TODO: check if this is ok. Sometimes it's wrong when rotated?
+	for _, obj in pairs(self.gem.contained_items) do
+		if obj.draw then
+			obj:draw{x = self.x, y = self.y}
+		end
+	end
+--]]
 end
 
 PlacedGem = common.class("PlacedGem", PlacedGem, Pic)
