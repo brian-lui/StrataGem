@@ -91,7 +91,7 @@ function Piece:addGems(gem_freq_table, gem_replace_table)
 			y = self.y,
 			color = gem_color,
 		}
-		self.gems[i].is_in_piece = true
+		self.gems[i].is_in_piece = self
 	end
 
 	-- uses the real rng to decide which gem to replace, if single gem

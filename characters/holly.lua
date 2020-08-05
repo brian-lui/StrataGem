@@ -316,8 +316,8 @@ function Seed:update(dt)
 	end
 
 	if not self.is_destroyed then
-		self.x = self.gem.x
-		self.y = self.gem.y
+		self.x = self.gem:getRealX()
+		self.y = self.gem:getRealY()
 	end
 
 	Pic.update(self, dt)
