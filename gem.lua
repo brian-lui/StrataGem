@@ -43,6 +43,8 @@ function Gem:init(params)
 	self.exploding_gem_image = params.exploding_gem_image
 	self.grey_exploding_gem_image = params.grey_exploding_gem_image
 	self.pop_particle_image = params.pop_particle_image
+	self.is_in_grid = false
+	self.is_in_piece = false
 	self.contained_items = {} -- displayed objects from character abilities
 end
 

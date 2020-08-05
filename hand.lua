@@ -151,6 +151,8 @@ function Hand:movePieceToGrid(grid, piece, locations)
 			gem.no_yoshi_particle = true
 		end
 
+		gem.is_in_piece = false
+
 		-- animations
 		gem.x = grid.x[c] -- snap x-position to column first
 		self.game.particles.upGem.generate(self.game, gem) -- call upGem from current position
@@ -257,9 +259,12 @@ function Hand:createGarbageAnimation(pos, delay_frames)
 			game.uielements,
 			2
 		)
+
+		gem.is_in_piece = false
 	end
 
 	self[pos].piece:breakUp()
+
 	return arrival_frame
 end
 
