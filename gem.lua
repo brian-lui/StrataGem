@@ -128,6 +128,64 @@ function Gem:isStationary()
 	return stationary
 end
 
+
+-- accounts for pivoting if in a piece
+function Gem:getRealX()
+	if self.is_in_piece then
+		-- each rotation is 0.5pi. We calculate x from the current rotation of the piece
+		-- we start from the piece center, then add the x of the gem distance from center
+
+		local piece = self.is_in_piece
+		local rotation = piece.rotation
+		local adj_rotation = rotation + (piece.rotation_index * math.pi * 0.5)
+
+		-- find the gem's placement in the piece
+		local piece_num
+		for i = 1, piece.size do
+			if piece.gems[i] == self then piece_num = 1 end
+		end
+		assert(piece_num, "Gem not found in piece for gem:getRealX")
+
+		local displacement_from_piece_center =
+			images.GEM_WIDTH * (piece_num - (1 + piece.size) * 0.5)
+
+
+		local x_dist = displacement_from_piece_center * math.cos(adj_rotation)
+
+		return piece.x + x_dist
+	else
+		return self.x
+	end
+end
+
+-- accounts for pivoting if in a piece
+function Gem:getRealY()
+	if self.is_in_piece then
+		-- each rotation is 0.5pi. We calculate y from the current rotation of the piece
+		-- we start from the piece center, then add the y of the gem distance from center
+
+		local piece = self.is_in_piece
+		local rotation = piece.rotation
+		local adj_rotation = rotation + (piece.rotation_index * math.pi * 0.5)
+
+		-- find the gem's placement in the piece
+		local piece_num
+		for i = 1, piece.size do
+			if piece.gems[i] == self then piece_num = 1 end
+		end
+		assert(piece_num, "Gem not found in piece for gem:getRealX")
+
+		local displacement_from_piece_center =
+			images.GEM_WIDTH * (piece_num - (1 + piece.size) * 0.5)
+
+		local y_dist = displacement_from_piece_center * math.sin(adj_rotation)
+
+		return piece.y + y_dist
+	else
+		return self.y
+	end
+end
+
 function Gem:updateGrid(row, column)
 	self.row = row
 	self.column = column
