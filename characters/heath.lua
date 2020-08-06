@@ -191,8 +191,8 @@ function SmallFire:update(dt)
 	end
 end
 
-function SmallFire:draw()
-	Pic.draw(self)
+function SmallFire:draw(params)
+	Pic.draw(self, params)
 	local grid = self.game.grid
 	local row = grid:getFirstEmptyRow(self.col)
 	local gem = grid[row + 1][self.col].gem
