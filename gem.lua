@@ -142,7 +142,7 @@ function Gem:getRealX()
 		-- find the gem's placement in the piece
 		local piece_num
 		for i = 1, piece.size do
-			if piece.gems[i] == self then piece_num = 1 end
+			if piece.gems[i] == self then piece_num = i end
 		end
 		assert(piece_num, "Gem not found in piece for gem:getRealX")
 
@@ -171,7 +171,7 @@ function Gem:getRealY()
 		-- find the gem's placement in the piece
 		local piece_num
 		for i = 1, piece.size do
-			if piece.gems[i] == self then piece_num = 1 end
+			if piece.gems[i] == self then piece_num = i end
 		end
 		assert(piece_num, "Gem not found in piece for gem:getRealX")
 
