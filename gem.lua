@@ -220,7 +220,7 @@ function Gem:draw(params)
 		rgbt[3] = rgbt[3] * params.darkened
 	end
 
-	if params.piece then
+	if params.piece then -- draw gem in a piece, possibly rotating
 		local piece = params.piece
 		local rotation = piece.rotation
 		local adj_rotation = rotation + (piece.rotation_index % 2 * math.pi * 0.5)
@@ -261,10 +261,10 @@ function Gem:draw(params)
 		love.graphics.push("all")
 			love.graphics.translate(params.pivot_x or self.x, params.pivot_y or self.y)
 			love.graphics.translate(-self.width * 0.5, -self.height * 0.5)
-			if params.rotation then love.graphics.rotate(params.rotation) end
+			--if params.rotation then love.graphics.rotate(params.rotation) end
 			love.graphics.translate(params.displace_x or 0, params.displace_y or 0)
 			-- reverse the rotation so the gem always maintains its orientation
-			if params.rotation then love.graphics.rotate(-params.rotation) end
+			--if params.rotation then love.graphics.rotate(-params.rotation) end
 			love.graphics.setColor(rgbt)
 			love.graphics.draw(self.image, self.quad)
 			if self.new_image then

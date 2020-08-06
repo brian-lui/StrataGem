@@ -206,24 +206,11 @@ function Piece:draw(params)
 		gem_darkened = 0.5
 	end
 
+	-- draw the gems
 	love.graphics.push("all")
 		love.graphics.translate(h_shake, v_shake)
 		for i = 1, self.size do
-			local displace_x, displace_y = 0, 0
-			if self.is_horizontal then
-				displace_x = images.GEM_WIDTH * (i - (1 + self.size) * 0.5)
-			else
-				displace_y = images.GEM_HEIGHT * (i - (1 + self.size) * 0.5)
-			end
-			local gem_params = {
-				piece = self,
-				pivot_x = self.x,
-				pivot_y = self.y,
-				rotation = self.rotation,
-				displace_x = displace_x,
-				displace_y = displace_y,
-				darkened = gem_darkened,
-			}
+			local gem_params = {piece = self, darkened = gem_darkened}
 			for k, v in pairs(params) do gem_params[k] = v end
 			self.gems[i]:draw(gem_params)
 		end
