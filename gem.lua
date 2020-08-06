@@ -223,7 +223,7 @@ function Gem:draw(params)
 	if params.piece then
 		local piece = params.piece
 		local rotation = piece.rotation
-		local adj_rotation = rotation + (piece.rotation_index * math.pi * 0.5)
+		local adj_rotation = rotation + (piece.rotation_index % 2 * math.pi * 0.5)
 
 		-- find the gem's placement in the piece
 		local piece_num
