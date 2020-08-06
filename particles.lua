@@ -119,6 +119,7 @@ function Particles:reset()
 		WordEffects = {},
 		CharEffects = {},
 		SuperFreezeEffects = {},
+		NotDrawnThruParticles = {}, -- drawn elsewhere e.g. attached to gem
 	}
 	self.count = {
 		created = {

@@ -7,6 +7,7 @@ local love = _G.love
 local common = require "class.commons" -- class support
 local images = require "images"
 local Pic = require "pic"
+local spairs = require "/helpers/utilities".spairs
 
 local gemImages = {
 	red = images.gems_red,
@@ -274,7 +275,7 @@ function Gem:drawContainedItems(params)
 	draw_params.x = params.x or self.x
 	draw_params.y = params.y or self.y
 
-	--for _, v in spairs(self.contained_items) do v:draw(draw_params) end
+	for _, v in spairs(self.contained_items) do v:draw(draw_params) end
 end
 
 -- respects cannot_remove_owners

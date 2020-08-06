@@ -99,7 +99,7 @@ local Flower = {}
 function Flower:init(manager, tbl)
 	Pic.init(self, manager.game, tbl)
 	local counter = self.game.inits.ID.particle
-	manager.allParticles.CharEffects[counter] = self
+	manager.allParticles.NotDrawnThruParticles[counter] = self
 	self.manager = manager
 
 	self.STEM_DOWNSHIFT = 12 -- gem center 39px, stem center 24 + 27px
@@ -125,7 +125,7 @@ function Flower:init(manager, tbl)
 end
 
 function Flower:remove()
-	self.manager.allParticles.CharEffects[self.ID] = nil
+	self.manager.allParticles.NotDrawnThruParticles[self.ID] = nil
 	self.owner.flowers[self.gem] = nil
 end
 
@@ -285,12 +285,12 @@ local Seed = {}
 function Seed:init(manager, tbl)
 	Pic.init(self, manager.game, tbl)
 	local counter = self.game.inits.ID.particle
-	manager.allParticles.CharEffects[counter] = self
+	manager.allParticles.NotDrawnThruParticles[counter] = self
 	self.manager = manager
 end
 
 function Seed:remove()
-	self.manager.allParticles.CharEffects[self.ID] = nil
+	self.manager.allParticles.NotDrawnThruParticles[self.ID] = nil
 	self.owner.seeds[self.gem] = nil
 end
 
@@ -357,7 +357,7 @@ function SporePod:init(manager, tbl)
 
 	Pic.init(self, manager.game, tbl)
 	local counter = self.game.inits.ID.particle
-	manager.allParticles.CharEffects[counter] = self
+	manager.allParticles.NotDrawnThruParticles[counter] = self
 	self.manager = manager
 
 	self.STEM_DOWNSHIFT = 12 -- gem center 39px, stem center 24 + 27px
@@ -385,7 +385,7 @@ function SporePod:init(manager, tbl)
 end
 
 function SporePod:remove()
-	self.manager.allParticles.CharEffects[self.ID] = nil
+	self.manager.allParticles.NotDrawnThruParticles[self.ID] = nil
 	self.owner.spore_pods[self.gem] = nil
 end
 
