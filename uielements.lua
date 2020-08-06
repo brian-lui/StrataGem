@@ -1072,8 +1072,8 @@ local function drawUnderGemShadow(self, piece)
 		local gem_shadow_x = piece.gems[i].x + 0.1 * images.GEM_WIDTH
 		local gem_shadow_y = piece.gems[i].y + 0.1 * images.GEM_HEIGHT
 		piece.gems[i]:draw{
-			pivot_x = gem_shadow_x,
-			pivot_y = gem_shadow_y,
+			x = gem_shadow_x,
+			y = gem_shadow_y,
 			RGBTable = {0, 0, 0, 0.1},
 		}
 	end
@@ -1101,8 +1101,8 @@ local function drawPlacementShadow(self, piece, shift)
 		end
 		if show[i].x and show[i].y then
 			piece.gems[i]:draw{
-				pivot_x = show[i].x,
-				pivot_y = show[i].y,
+				x = show[i].x,
+				y = show[i].y,
 				RGBTable = {0, 0, 0, 0.5},
 			}
 		end
@@ -1137,8 +1137,8 @@ local function drawDestinationShadow(self, piece, shift, account_for_doublecast)
 		toshow[i].y = grid.y[ drop_locs[i][2] ] -- basin r row
 		if toshow[i].x and toshow[i].y then
 			piece.gems[i]:draw{
-				pivot_x = toshow[i].x,
-				pivot_y = toshow[i].y,
+				x = toshow[i].x,
+				y = toshow[i].y,
 				RGBTable = {1, 1, 1, 0.6},
 			}
 		end

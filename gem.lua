@@ -31,8 +31,6 @@ function Gem:init(params)
 	self.target_x = params.x
 	self.target_y = params.y
 	self.target_rotation = 0
-	self.pivot_x = self.width * 0.5
-	self.pivot_y = self.height * 0.5
 	self.color = params.color
 	self.ID = self.game.inits.ID.gem
 	self.row = -1
@@ -258,13 +256,28 @@ function Gem:draw(params)
 			})
 		end
 	else
+		local x = params.x or self.x
+		local y = params.y or self.y
+
+		Pic.draw(self, {x = x, y = y, RGBTable = rgbt})
+
+		if self.new_image then
+			local new_image_rgbt = {
+				rgbt[1],
+				rgbt[2],
+				rgbt[3],
+				self.new_image.transparency or 1,
+			}
+			Pic.draw(self, {
+				image = self.new_image.image,
+				RGBTable = new_image_rgbt,
+			})
+		end
+
+		--[[
 		love.graphics.push("all")
-			love.graphics.translate(params.pivot_x or self.x, params.pivot_y or self.y)
+			love.graphics.translate(params.x or self.x, params.y or self.y)
 			love.graphics.translate(-self.width * 0.5, -self.height * 0.5)
-			--if params.rotation then love.graphics.rotate(params.rotation) end
-			love.graphics.translate(params.displace_x or 0, params.displace_y or 0)
-			-- reverse the rotation so the gem always maintains its orientation
-			--if params.rotation then love.graphics.rotate(-params.rotation) end
 			love.graphics.setColor(rgbt)
 			love.graphics.draw(self.image, self.quad)
 			if self.new_image then
@@ -273,6 +286,7 @@ function Gem:draw(params)
 				love.graphics.draw(self.new_image.image, self.quad)
 			end
 		love.graphics.pop()
+		--]]
 	end
 end
 
