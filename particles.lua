@@ -1575,14 +1575,7 @@ end
 -- draw anything that's contained by the gem, too
 function UpGem:draw()
 	Pic.draw(self)
---[[
-	TODO: check if this is ok. Sometimes it's wrong when rotated?
-	for _, obj in pairs(self.gem.contained_items) do
-		if obj.draw then
-			obj:draw{x = self.x, y = self.y}
-		end
-	end
---]]
+	self.gem:drawContainedItems{x = self.x, y = self.y}
 end
 
 UpGem = common.class("UpGem", UpGem, Pic)

@@ -267,7 +267,6 @@ function Gem:draw(params)
 	self:drawContainedItems{x = x, y = y, RGBTable = rgbt}
 end
 
--- params takes: x, y, RGBTable
 function Gem:drawContainedItems(params)
 	draw_params = params or {}
 
