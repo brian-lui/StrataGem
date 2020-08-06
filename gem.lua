@@ -176,7 +176,7 @@ function Gem:getRealY()
 		assert(piece_num, "Gem not found in piece for gem:getRealX")
 
 		local displacement_from_piece_center =
-			images.GEM_WIDTH * (piece_num - (1 + piece.size) * 0.5)
+			images.GEM_HEIGHT * (piece_num - (1 + piece.size) * 0.5)
 
 		local y_dist = displacement_from_piece_center * math.sin(adj_rotation)
 
@@ -239,29 +239,15 @@ function Gem:draw(params)
 		local x = piece.x + x_dist
 
 		local y_displacement_from_piece_center =
-			images.GEM_WIDTH * (piece_num - (1 + piece.size) * 0.5)
+			images.GEM_HEIGHT * (piece_num - (1 + piece.size) * 0.5)
 
 		local y_dist = y_displacement_from_piece_center * math.sin(adj_rotation)
 
 		local y = piece.y + y_dist
 
-		Pic.draw(self, {
-			x = x,
-			y = y,
-			RGBTable = rgbt,
-		})
+		Pic.draw(self, {x = x, y = y, RGBTable = rgbt})
 
 		love.graphics.push("all")
-		--[[
-			love.graphics.translate(params.pivot_x, params.pivot_y)
-			love.graphics.translate(-self.width * 0.5, -self.height * 0.5)
-			if params.rotation then love.graphics.rotate(params.rotation) end
-			love.graphics.translate(params.displace_x or 0, params.displace_y or 0)
-			-- reverse the rotation so the gem always maintains its orientation
-			if params.rotation then love.graphics.rotate(-params.rotation) end
-			love.graphics.setColor(rgbt)
-			love.graphics.draw(self.image, self.quad)
---]]
 			if self.new_image then
 				local new_image_rgbt = {rgbt[1], rgbt[2], rgbt[3], self.new_image.transparency or 1}
 				love.graphics.setColor(new_image_rgbt)
