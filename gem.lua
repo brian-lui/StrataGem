@@ -135,7 +135,7 @@ function Gem:getRealX()
 
 		local piece = self.is_in_piece
 		local rotation = piece.rotation
-		local adj_rotation = rotation + (piece.rotation_index * math.pi * 0.5)
+		local adj_rotation = rotation + (piece.rotation_index % 2 * math.pi * 0.5)
 
 		-- find the gem's placement in the piece
 		local piece_num
@@ -164,7 +164,7 @@ function Gem:getRealY()
 
 		local piece = self.is_in_piece
 		local rotation = piece.rotation
-		local adj_rotation = rotation + (piece.rotation_index * math.pi * 0.5)
+		local adj_rotation = rotation + (piece.rotation_index % 2 * math.pi * 0.5)
 
 		-- find the gem's placement in the piece
 		local piece_num
@@ -209,8 +209,10 @@ function Gem:landedInGrid()
 end
 
 -- custom function to handle rotation around pivot
+-- params takes: piece, x, y, RGBTable, darkened
 function Gem:draw(params)
 	params = params or {}
+
 	local rgbt = params.RGBTable or {1, 1, 1, self.transparency or 1}
 	if params.darkened and not self.force_max_alpha then
 		rgbt[1] = rgbt[1] * params.darkened
@@ -218,6 +220,7 @@ function Gem:draw(params)
 		rgbt[3] = rgbt[3] * params.darkened
 	end
 
+	local x, y
 	if params.piece then -- draw gem in a piece, possibly rotating
 		local piece = params.piece
 		local rotation = piece.rotation
@@ -238,56 +241,40 @@ function Gem:draw(params)
 		local x_dist = x_displacement_from_piece_center * math.cos(adj_rotation)
 		local y_dist = y_displacement_from_piece_center * math.sin(adj_rotation)
 
-		local x = piece.x + x_dist
-		local y = piece.y + y_dist
-
-		Pic.draw(self, {x = x, y = y, RGBTable = rgbt})
-
-		if self.new_image then
-			local new_image_rgbt = {
-				rgbt[1],
-				rgbt[2],
-				rgbt[3],
-				self.new_image.transparency or 1,
-			}
-			Pic.draw(self, {
-				image = self.new_image.image,
-				RGBTable = new_image_rgbt,
-			})
-		end
+		x = piece.x + x_dist
+		y = piece.y + y_dist
 	else
-		local x = params.x or self.x
-		local y = params.y or self.y
-
-		Pic.draw(self, {x = x, y = y, RGBTable = rgbt})
-
-		if self.new_image then
-			local new_image_rgbt = {
-				rgbt[1],
-				rgbt[2],
-				rgbt[3],
-				self.new_image.transparency or 1,
-			}
-			Pic.draw(self, {
-				image = self.new_image.image,
-				RGBTable = new_image_rgbt,
-			})
-		end
-
-		--[[
-		love.graphics.push("all")
-			love.graphics.translate(params.x or self.x, params.y or self.y)
-			love.graphics.translate(-self.width * 0.5, -self.height * 0.5)
-			love.graphics.setColor(rgbt)
-			love.graphics.draw(self.image, self.quad)
-			if self.new_image then
-				local new_image_rgbt = {rgbt[1], rgbt[2], rgbt[3], self.new_image.transparency or 1}
-				love.graphics.setColor(new_image_rgbt)
-				love.graphics.draw(self.new_image.image, self.quad)
-			end
-		love.graphics.pop()
-		--]]
+		x = params.x or self.x
+		y = params.y or self.y
 	end
+
+	Pic.draw(self, {x = x, y = y, RGBTable = rgbt})
+
+	if self.new_image then
+		local new_image_rgbt = {
+			rgbt[1],
+			rgbt[2],
+			rgbt[3],
+			self.new_image.transparency or 1,
+		}
+		Pic.draw(self, {
+			image = self.new_image.image,
+			RGBTable = new_image_rgbt,
+		})
+	end
+
+	self:drawContainedItems{x = x, y = y, RGBTable = rgbt}
+end
+
+-- params takes: x, y, RGBTable
+function Gem:drawContainedItems(params)
+	draw_params = params or {}
+
+	draw_params.RGBTable = params.RGBTable or {1, 1, 1, self.transparency or 1}
+	draw_params.x = params.x or self.x
+	draw_params.y = params.y or self.y
+
+	--for _, v in spairs(self.contained_items) do v:draw(draw_params) end
 end
 
 -- respects cannot_remove_owners

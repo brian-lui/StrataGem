@@ -272,9 +272,9 @@ function Flower.generate(game, owner, gem, delay)
 	return owner.flowers[gem]
 end
 
-function Flower:draw()
-	if self.stem then self.stem:draw() end
-	Pic.draw(self)
+function Flower:draw(params)
+	if self.stem then self.stem:draw(params) end
+	Pic.draw(self, params)
 end
 
 Flower = common.class("Flower", Flower, Pic)
@@ -502,9 +502,12 @@ function SporePod.generate(game, owner, gem, delay)
 	}
 end
 
-function SporePod:draw()
-	if self.stem then self.stem:draw() end
-	Pic.draw(self, {x = self.draw_x_shift + self.x})
+function SporePod:draw(params)
+	if self.stem then self.stem:draw(params) end
+
+	local draw_params = params or {}
+	draw_params.x = self.draw_x_shift + params.x or self.x
+	Pic.draw(self, draw_params)
 end
 
 SporePod = common.class("SporePod", SporePod, Pic)
