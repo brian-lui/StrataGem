@@ -220,22 +220,71 @@ function Gem:draw(params)
 		rgbt[3] = rgbt[3] * params.darkened
 	end
 
-	love.graphics.push("all")
-		love.graphics.translate(params.pivot_x or self.x, params.pivot_y or self.y)
-		love.graphics.translate(-self.width * 0.5, -self.height * 0.5)
-		if params.rotation then love.graphics.rotate(params.rotation) end
-		love.graphics.translate(params.displace_x or 0, params.displace_y or 0)
-		-- reverse the rotation so the gem always maintains its orientation
-		if params.rotation then love.graphics.rotate(-params.rotation) end
-		love.graphics.setColor(rgbt)
-		love.graphics.draw(self.image, self.quad)
+	if params.piece then
+		local piece = params.piece
+		local rotation = piece.rotation
+		local adj_rotation = rotation + (piece.rotation_index * math.pi * 0.5)
 
-		if self.new_image then
-			local new_image_rgbt = {rgbt[1], rgbt[2], rgbt[3], self.new_image.transparency or 1}
-			love.graphics.setColor(new_image_rgbt)
-			love.graphics.draw(self.new_image.image, self.quad)
+		-- find the gem's placement in the piece
+		local piece_num
+		for i = 1, piece.size do
+			if piece.gems[i] == self then piece_num = i end
 		end
-	love.graphics.pop()
+		assert(piece_num, "Gem not found in piece for gem:draw")
+
+		local x_displacement_from_piece_center =
+			images.GEM_WIDTH * (piece_num - (1 + piece.size) * 0.5)
+
+		local x_dist = x_displacement_from_piece_center * math.cos(adj_rotation)
+		local x = piece.x + x_dist
+
+		local y_displacement_from_piece_center =
+			images.GEM_WIDTH * (piece_num - (1 + piece.size) * 0.5)
+
+		local y_dist = y_displacement_from_piece_center * math.sin(adj_rotation)
+
+		local y = piece.y + y_dist
+
+		Pic.draw(self, {
+			x = x,
+			y = y,
+			RGBTable = rgbt,
+		})
+
+		love.graphics.push("all")
+		--[[
+			love.graphics.translate(params.pivot_x, params.pivot_y)
+			love.graphics.translate(-self.width * 0.5, -self.height * 0.5)
+			if params.rotation then love.graphics.rotate(params.rotation) end
+			love.graphics.translate(params.displace_x or 0, params.displace_y or 0)
+			-- reverse the rotation so the gem always maintains its orientation
+			if params.rotation then love.graphics.rotate(-params.rotation) end
+			love.graphics.setColor(rgbt)
+			love.graphics.draw(self.image, self.quad)
+--]]
+			if self.new_image then
+				local new_image_rgbt = {rgbt[1], rgbt[2], rgbt[3], self.new_image.transparency or 1}
+				love.graphics.setColor(new_image_rgbt)
+				love.graphics.draw(self.new_image.image, self.quad)
+			end
+		love.graphics.pop()
+	else
+		love.graphics.push("all")
+			love.graphics.translate(params.pivot_x or self.x, params.pivot_y or self.y)
+			love.graphics.translate(-self.width * 0.5, -self.height * 0.5)
+			if params.rotation then love.graphics.rotate(params.rotation) end
+			love.graphics.translate(params.displace_x or 0, params.displace_y or 0)
+			-- reverse the rotation so the gem always maintains its orientation
+			if params.rotation then love.graphics.rotate(-params.rotation) end
+			love.graphics.setColor(rgbt)
+			love.graphics.draw(self.image, self.quad)
+			if self.new_image then
+				local new_image_rgbt = {rgbt[1], rgbt[2], rgbt[3], self.new_image.transparency or 1}
+				love.graphics.setColor(new_image_rgbt)
+				love.graphics.draw(self.new_image.image, self.quad)
+			end
+		love.graphics.pop()
+	end
 end
 
 -- respects cannot_remove_owners
@@ -308,4 +357,5 @@ function Gem:isDefaultColor()
 	return self.color == "red" or self.color == "blue" or
 		self.color == "green" or self.color == "yellow"
 end
+
 return common.class("Gem", Gem, Pic)
