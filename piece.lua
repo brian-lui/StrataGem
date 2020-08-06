@@ -216,6 +216,7 @@ function Piece:draw(params)
 				displace_y = images.GEM_HEIGHT * (i - (1 + self.size) * 0.5)
 			end
 			local gem_params = {
+				piece = self,
 				pivot_x = self.x,
 				pivot_y = self.y,
 				rotation = self.rotation,

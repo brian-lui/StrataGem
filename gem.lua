@@ -234,26 +234,29 @@ function Gem:draw(params)
 
 		local x_displacement_from_piece_center =
 			images.GEM_WIDTH * (piece_num - (1 + piece.size) * 0.5)
-
-		local x_dist = x_displacement_from_piece_center * math.cos(adj_rotation)
-		local x = piece.x + x_dist
-
 		local y_displacement_from_piece_center =
 			images.GEM_HEIGHT * (piece_num - (1 + piece.size) * 0.5)
 
+		local x_dist = x_displacement_from_piece_center * math.cos(adj_rotation)
 		local y_dist = y_displacement_from_piece_center * math.sin(adj_rotation)
 
+		local x = piece.x + x_dist
 		local y = piece.y + y_dist
 
 		Pic.draw(self, {x = x, y = y, RGBTable = rgbt})
 
-		love.graphics.push("all")
-			if self.new_image then
-				local new_image_rgbt = {rgbt[1], rgbt[2], rgbt[3], self.new_image.transparency or 1}
-				love.graphics.setColor(new_image_rgbt)
-				love.graphics.draw(self.new_image.image, self.quad)
-			end
-		love.graphics.pop()
+		if self.new_image then
+			local new_image_rgbt = {
+				rgbt[1],
+				rgbt[2],
+				rgbt[3],
+				self.new_image.transparency or 1,
+			}
+			Pic.draw(self, {
+				image = self.new_image.image,
+				RGBTable = new_image_rgbt,
+			})
+		end
 	else
 		love.graphics.push("all")
 			love.graphics.translate(params.pivot_x or self.x, params.pivot_y or self.y)
