@@ -232,6 +232,7 @@ function TornadoGem.generate(game, owner, gem)
 		gem = gem,
 		x_wave_time = 0,
 		y_wave_time = 0,
+		draw_order = 2,
 		owner = owner,
 		player_num = owner.player_num,
 		name = "FukaTornadoGem",
@@ -257,6 +258,19 @@ function TornadoGem:update(dt)
 	self.x_wave_time = (self.x_wave_time + 2 * math.pi / X_PERIOD) % (2 * math.pi)
 	self.y_wave_time = (self.y_wave_time + 2 * math.pi / Y_PERIOD) % (2 * math.pi)
 
+	-- image alternates going behind/in front of tornado. Switch at the edges
+	if 	self.draw_order == 2
+	and self.x_wave_time >= 0.4 * math.pi
+	and self.x_wave_time <= 0.6 * math.pi then
+		self.draw_order = -2
+	end
+
+	if	self.draw_order == -2
+	and self.x_wave_time >= 1.4 * math.pi
+	and self.x_wave_time <= 1.6 * math.pi then
+		self.draw_order = 2
+	end
+
 	local tornado = self.owner.tornado_anim
 	local x = math.sin(self.x_wave_time) * images.GEM_WIDTH + tornado.x
 	local y = math.sin(self.y_wave_time) * images.GEM_HEIGHT / 2 + tornado.y
@@ -269,15 +283,14 @@ function TornadoGem:update(dt)
 
 	local pos_from_first = #self.owner.tornado_gems - position
 	local scaling = 0.8 ^ pos_from_first
-	local transparency = 0.8 - 0.1 * pos_from_first
 
-	self:change{x = x, y = y, scaling = scaling, transparency = transparency}
+	self:change{x = x, y = y, scaling = scaling}
 end
 
 function TornadoGem:draw()
 	Pic.draw(self)
 
-	local params = {x = self.x,	y = self.y, transparency = self.transparency}
+	local params = {x = self.x,	y = self.y}
 	for _, v in spairs(self.gem.contained_items) do v:draw(params) end
 end
 
