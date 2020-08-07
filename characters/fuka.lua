@@ -15,6 +15,7 @@ local common = require "class.commons"
 local Character = require "character"
 local images = require "images"
 local Pic = require "pic"
+local spairs = require "/helpers/utilities".spairs
 
 local Fuka = {}
 
@@ -271,6 +272,13 @@ function TornadoGem:update(dt)
 	local transparency = 0.8 - 0.1 * pos_from_first
 
 	self:change{x = x, y = y, scaling = scaling, transparency = transparency}
+end
+
+function TornadoGem:draw()
+	Pic.draw(self)
+
+	local params = {x = self.x,	y = self.y, transparency = self.transparency}
+	for _, v in spairs(self.gem.contained_items) do v:draw(params) end
 end
 
 TornadoGem = common.class("TornadoGem", TornadoGem, Pic)
