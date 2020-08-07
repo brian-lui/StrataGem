@@ -5,6 +5,25 @@ the gamestate.
 
 There should never be gamestate code that depends on particles, except for
 code that uses particle duration to calculate delay times.
+
+Note about draw_order, as used in gs_main:drawGems(). Draw order is as
+follows, from drawn first to drawn last:
+
+	gem platforms
+	word effects, dust, pop particles
+	-4
+	-3
+	-2
+	-1
+	0
+	gems
+	super particles, damage trails, garbage particles
+	1
+	2
+	3
+	4
+	5
+	super freeze effects
 --]]
 
 local love = _G.love
