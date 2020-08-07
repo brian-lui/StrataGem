@@ -105,10 +105,10 @@ local charselect = {
 
 local spellbook = {
 	"heath_spellbook", "heath1", "heath2", "heath3",
-	"walter_spellbook",
+	"walter_spellbook", "walter1", "walter2",
 	"diggory_spellbook",
 	"holly_spellbook",
-	"wolfgang_spellbook",
+	"wolfgang_spellbook", "wolfgang1", "wolfgang2", "wolfgang3",
 	"fuka_spellbook",
 }
 

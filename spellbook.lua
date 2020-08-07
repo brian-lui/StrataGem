@@ -39,6 +39,16 @@ function Spellbook:init(charselect)
 			spellbook = {
 				image = images.spellbook_walter_spellbook,
 			},
+			pic1 = {
+				image = images.spellbook_walter1,
+				x = self.stage.width * 0.45,
+				y = self.stage.height * 0.725,
+			},
+			pic2 = {
+				image = images.spellbook_walter2,
+				x = self.stage.width * 0.75,
+				y = self.stage.height * 0.725,
+			},
 		},
 
 		diggory = {
@@ -57,6 +67,21 @@ function Spellbook:init(charselect)
 			spellbook = {
 				image = images.spellbook_wolfgang_spellbook,
 			},
+			pic1 = {
+				image = images.spellbook_wolfgang1,
+				x = self.stage.width * 0.35,
+				y = self.stage.height * 0.725,
+			},
+			pic2 = {
+				image = images.spellbook_wolfgang2,
+				x = self.stage.width * 0.6,
+				y = self.stage.height * 0.725,
+			},
+			pic3 = {
+				image = images.spellbook_wolfgang3,
+				x = self.stage.width * 0.85,
+				y = self.stage.height * 0.725,
+			},			
 		},
 
 		fuka = {
