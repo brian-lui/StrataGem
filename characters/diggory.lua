@@ -461,6 +461,7 @@ function Diggory:init(...)
 
 	self.slammy_gems = {}
 	self.crack_images = {} -- Crack image objects
+	self.cracked_gems = {} -- Keep track of state
 end
 
 function Diggory:_activateSuper()
@@ -480,7 +481,7 @@ function Diggory:_activateSuper()
 	local this_turn_new_cracks = {}
 	for gem in grid:basinGems(self.player_num) do
 		if gem.color ~= "none" and (not gem.indestructible) and
-		(not gem.diggory_cracked) then
+		(not self.cracked_gems[gem]) then
 			possible_cracks[#possible_cracks + 1] = gem
 		end
 	end
@@ -490,7 +491,7 @@ function Diggory:_activateSuper()
 
 	for i = 1, total_crack_gems do
 		local gem = possible_cracks[i]
-		gem.diggory_cracked = self.player_num
+		self.cracked_gems[gem] = true
 		this_turn_new_cracks[gem] = true
 	end
 
@@ -539,7 +540,7 @@ function Diggory:_getCrackedGemsToDestroy(destroyed_gems)
 				for _, check in pairs(destroyed_gems) do
 					if check == gem then in_a_match = true end
 				end
-				if gem.diggory_cracked == self.player_num -- it's our crack
+				if self.cracked_gems[gem]
 				and destr_gem.player_num == self.player_num -- it's our match
 				and (not in_a_match)
 				and (not gem.indestructible)
@@ -723,7 +724,7 @@ function Diggory:afterGravity()
 		local below_gem = grid[gem.row + 1][gem.column].gem
 		if below_gem then
 			if not(col_has_match
-			or (below_gem.color == "yellow" and not below_gem.diggory_cracked)
+			or (below_gem.color == "yellow" and not self.cracked_gems[below_gem])
 			or below_gem.color == "none"
 			or below_gem.indestructible) then
 				-- destroy the gem
@@ -751,11 +752,11 @@ function Diggory:afterGravity()
 		local right_gem = grid[gem.row][gem.column + 1].gem
 		local new_cracks = {}
 
-		if left_gem and not left_gem.diggory_cracked then
+		if left_gem and not self.cracked_gems[left_gem] then
 			new_cracks[#new_cracks + 1] = left_gem
 		end
 
-		if right_gem and not right_gem.diggory_cracked then
+		if right_gem and not self.cracked_gems[right_gem] then
 			new_cracks[#new_cracks + 1] = right_gem
 		end
 
@@ -763,7 +764,7 @@ function Diggory:afterGravity()
 			local CRACK_DELAY = explode_delay + delay + 15
 			local rand = game.rng:random(#new_cracks)
 			local to_crack = new_cracks[rand]
-			to_crack.diggory_cracked = self.player_num
+			self.cracked_gems[to_crack] = true
 			self.fx.crack.generate(game, self, to_crack, CRACK_DELAY)
 		end
 	end
@@ -803,7 +804,7 @@ function Diggory:serializeSpecials()
 	local ret = ""
 
 	for gem in grid:gems() do
-		if gem.diggory_cracked == self.player_num then
+		if self.cracked_gems[gem] then
 			local column = tostring(gem.column)
 			local row = tostring(gem.row)
 			if #row == 1 then row = "0" .. row end
@@ -837,7 +838,7 @@ function Diggory:deserializeSpecials(str)
 		local gem = grid[row][col].gem
 		assert(gem, "No gem found in Diggory crack location!")
 
-		gem.diggory_cracked = self.player_num
+		self.cracked_gems[gem] = true
 		self.fx.crack.generate(game, self, gem, 0)
 	end
 end
