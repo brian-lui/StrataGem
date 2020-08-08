@@ -348,12 +348,12 @@ local Crack = {}
 function Crack:init(manager, tbl)
 	Pic.init(self, manager.game, tbl)
 	local counter = self.game.inits.ID.particle
-	manager.allParticles.CharEffects[counter] = self
+	manager.allParticles.NotDrawnThruParticles[counter] = self
 	self.manager = manager
 end
 
 function Crack:remove()
-	self.manager.allParticles.CharEffects[self.ID] = nil
+	self.manager.allParticles.NotDrawnThruParticles[self.ID] = nil	
 	self.owner.crack_images[self.gem] = nil
 end
 
@@ -398,7 +398,6 @@ function Crack.generate(game, owner, gem, delay)
 		force_max_alpha = true,
 	}
 
-	print("crack delay", delay)
 	owner.crack_images[gem] = common.instance(Crack, game.particles, params)
 	owner.crack_images[gem]:wait(delay)
 	owner.crack_images[gem]:change{duration = 5, transparency = 1}
@@ -407,6 +406,8 @@ function Crack.generate(game, owner, gem, delay)
 	for _ = 2, 5 do
 		owner.fx.clod.generate(game, owner, gem.x, gem.y, gem.color, delay, true)
 	end
+
+	return owner.crack_images[gem]
 end
 
 Crack = common.class("Crack", Crack, Pic)
@@ -488,8 +489,8 @@ end
 function Diggory:_removeCrackFromGem(gem, delay)
 	assert(self.crack_images[gem], "Tried to remove non-existent crack!")
 	self.cracked_gems[gem]:leavePlay(delay)
-	gem.contained_items.diggory_crack = nil
 	self.cracked_gems[gem] = nil
+	gem.contained_items.diggory_crack = nil
 end
 
 function Diggory:_activateSuper()
