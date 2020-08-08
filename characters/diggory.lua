@@ -357,6 +357,21 @@ function Crack:remove()
 	self.owner.crack_images[self.gem] = nil
 end
 
+function Crack:leavePlay(delay)
+	local game = self.game
+	delay = delay or 0
+
+	self:wait(delay)
+	self:change{
+		duration = game.GEM_EXPLODE_FRAMES,
+		scaling = 2,
+		transparency = 0,
+		remove = true,
+	}
+
+	self.is_destroyed = true
+end
+
 function Crack:update(dt)
 	Pic.update(self, dt)
 	self.x = self.gem.x
@@ -379,14 +394,14 @@ function Crack.generate(game, owner, gem, delay)
 		h_flip = math.random() < 0.5,
 		v_flip = math.random() < 0.5,
 		gem = gem,
+		transparency = 0,
 		force_max_alpha = true,
 	}
 
 	print("crack delay", delay)
 	owner.crack_images[gem] = common.instance(Crack, game.particles, params)
-	owner.crack_images[gem]:change{duration = 0, transparency = 0}
 	owner.crack_images[gem]:wait(delay)
-	owner.crack_images[gem]:change{duration = 0, transparency = 1}
+	owner.crack_images[gem]:change{duration = 5, transparency = 1}
 
 	-- generate clods
 	for _ = 2, 5 do
@@ -464,6 +479,19 @@ function Diggory:init(...)
 	self.cracked_gems = {} -- Keep track of state
 end
 
+function Diggory:_addCrackToGem(gem, delay)
+	local crack = self.fx.crack.generate(self.game, self, gem, delay)
+	gem.contained_items.diggory_crack = crack
+	self.cracked_gems[gem] = true
+end
+
+function Diggory:_removeCrackFromGem(gem, delay)
+	assert(self.crack_images[gem], "Tried to remove non-existent crack!")
+	self.cracked_gems[gem]:leavePlay(delay)
+	gem.contained_items.diggory_crack = nil
+	self.cracked_gems[gem] = nil
+end
+
 function Diggory:_activateSuper()
 	local game = self.game
 	local grid = game.grid
@@ -491,7 +519,6 @@ function Diggory:_activateSuper()
 
 	for i = 1, total_crack_gems do
 		local gem = possible_cracks[i]
-		self.cracked_gems[gem] = true
 		this_turn_new_cracks[gem] = true
 	end
 
@@ -507,7 +534,7 @@ function Diggory:_activateSuper()
 			if grid[row][col].gem then
 				local gem = grid[row][col].gem
 				if this_turn_new_cracks[gem] then
-					self.fx.crack.generate(game, self, gem, crack_delay)
+					self:_addCrackToGem(gem, crack_delay)
 				end
 			end
 		end
@@ -764,8 +791,7 @@ function Diggory:afterGravity()
 			local CRACK_DELAY = explode_delay + delay + 15
 			local rand = game.rng:random(#new_cracks)
 			local to_crack = new_cracks[rand]
-			self.cracked_gems[to_crack] = true
-			self.fx.crack.generate(game, self, to_crack, CRACK_DELAY)
+			self:_addCrackToGem(to_crack, CRACK_DELAY)
 		end
 	end
 
@@ -789,6 +815,14 @@ end
 function Diggory:duringMatch()
 	local delay = self:_destroyFlaggedGems()
 	return delay
+end
+
+function Diggory:onGemDestroyEnd(gem, delay)
+	if	(gem.contained_items.diggory_crack) and
+		(gem.contained_items.diggory_crack.player_num == self.player_num)
+	then
+		self:_removeCrackFromGem(gem, delay)
+	end
 end
 
 function Diggory:cleanup()
@@ -838,8 +872,7 @@ function Diggory:deserializeSpecials(str)
 		local gem = grid[row][col].gem
 		assert(gem, "No gem found in Diggory crack location!")
 
-		self.cracked_gems[gem] = true
-		self.fx.crack.generate(game, self, gem, 0)
+		self:_addCrackToGem(gem, 0)
 	end
 end
 
