@@ -126,6 +126,7 @@ end
 
 function Flower:remove()
 	self.manager.allParticles.NotDrawnThruParticles[self.ID] = nil
+	self.gem.contained_items.holly_flower = nil	
 	self.owner.flowers[self.gem] = nil
 end
 
@@ -242,9 +243,12 @@ function Flower.generate(game, owner, gem, delay)
 		stem_appear_delay = delay,
 	}
 
-	owner.flowers[gem] = common.instance(Flower, game.particles, params)
-	owner.flowers[gem]:wait(delay)
-	owner.flowers[gem]:change{duration = 0, transparency = 1}
+	local flower = common.instance(Flower, game.particles, params)
+	flower:wait(delay)
+	flower:change{duration = 0, transparency = 1}
+
+	owner.flowers[gem] = flower
+	gem.contained_items.holly_flower = flower
 
 	-- generate garbage appear circle with extra petals
 	game.particles.dust.generateGarbageCircle{
@@ -268,8 +272,6 @@ function Flower.generate(game, owner, gem, delay)
 		rotation = math.random() * math.pi * 2,
 		num = 4,
 	}
-
-	return owner.flowers[gem]
 end
 
 function Flower:draw(params)
@@ -291,6 +293,7 @@ end
 
 function Seed:remove()
 	self.manager.allParticles.NotDrawnThruParticles[self.ID] = nil
+	self.gem.contained_items.holly_seed = nil
 	self.owner.seeds[self.gem] = nil
 end
 
@@ -306,6 +309,7 @@ function Seed:leavePlay(delay)
 		transparency = 0,
 		remove = true,
 	}
+
 
 	self.is_destroyed = true
 end
@@ -339,11 +343,12 @@ function Seed.generate(game, owner, gem, delay)
 		force_max_alpha = true,
 	}
 
-	owner.seeds[gem] = common.instance(Seed, game.particles, params)
-	owner.seeds[gem]:wait(delay)
-	owner.seeds[gem]:change{duration = 15, scaling = 1}
+	local seed = common.instance(Seed, game.particles, params)
+	seed:wait(delay)
+	seed:change{duration = 15, scaling = 1}
 
-	return owner.seeds[gem]
+	owner.seeds[gem] = seed
+	gem.contained_items.holly_seed = seed
 end
 
 Seed = common.class("Seed", Seed, Pic)
@@ -386,6 +391,7 @@ end
 
 function SporePod:remove()
 	self.manager.allParticles.NotDrawnThruParticles[self.ID] = nil
+	self.gem.contained_items.holly_spore_pod = nil
 	self.owner.spore_pods[self.gem] = nil
 end
 
@@ -474,9 +480,12 @@ function SporePod.generate(game, owner, gem, delay)
 		force_max_alpha = true,
 	}
 
-	owner.spore_pods[gem] = common.instance(SporePod, game.particles, params)
-	owner.spore_pods[gem]:wait(delay)
-	owner.spore_pods[gem]:change{duration = 0, transparency = 1}
+	local spore_pod = common.instance(SporePod, game.particles, params)
+	spore_pod:wait(delay)
+	spore_pod:change{duration = 0, transparency = 1}
+
+	owner.spore_pods[gem] = spore_pod
+	gem.contained_items.holly_spore_pod = spore_pod
 
 	-- generate garbage appear circle with extra petals
 	game.particles.dust.generateGarbageCircle{
@@ -636,41 +645,32 @@ function Holly:_storeCurrentHandGems()
 end
 
 function Holly:_addFlowerToGem(gem, delay)
-	local flower = self.fx.flower.generate(self.game, self, gem, delay)
-	gem.contained_items.holly_flower = flower
+	self.fx.flower.generate(self.game, self, gem, delay)
 	self.flowered_gems[gem] = true
 end
 
 function Holly:_removeFlowerFromGem(gem, delay)
-	assert(self.flowers[gem], "Tried to remove non-existent flower!")
 	self.flowers[gem]:leavePlay(delay)
-	gem.contained_items.holly_flower = nil
 	self.flowered_gems[gem] = nil
 end
 
 function Holly:_addSeedToGem(gem, delay)
-	local seed = self.fx.seed.generate(self.game, self, gem, delay)
-	gem.contained_items.holly_seed = seed
+	self.fx.seed.generate(self.game, self, gem, delay)
 	self.seeded_gems[gem] = true
 end
 
 function Holly:_removeSeedFromGem(gem, delay)
-	assert(self.seeds[gem], "Tried to remove non-existent seed!")
 	self.seed[gem]:leavePlay(delay)
-	gem.contained_items.holly_seed = nil
 	self.seeded_gems[gem] = nil
 end
 
 function Holly:_addSporePodToGem(gem, delay)
-	local spore_pod = self.fx.sporePod.generate(self.game, self, gem, delay)
-	gem.contained_items.holly_spore_pod= spore_pod
+	self.fx.sporePod.generate(self.game, self, gem, delay)
 	self.sporepodded_gems[gem] = true
 end
 
 function Holly:_removeSporePodFromGem(gem, delay)
-	assert(self.spore_pods[gem], "Tried to remove non-existent spore pod!")
 	self.spore_pods[gem]:leavePlay(delay)
-	gem.contained_items.holly_spore_pod = nil
 	self.sporepodded_gems[gem] = nil
 end
 
