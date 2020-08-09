@@ -354,7 +354,7 @@ end
 
 function Crack:remove()
 	self.manager.allParticles.NotDrawnThruParticles[self.ID] = nil
-	self.gem.contained_items.diggory_crack = nil	
+	self.gem.contained_items.diggory_crack = nil
 	self.owner.crack_images[self.gem] = nil
 end
 
@@ -588,7 +588,6 @@ end
 function Diggory:_destroyFlaggedGems(to_destroy)
 	local game = self.game
 	local phase = game.phase
-	local grid = game.grid
 	local max_delay, max_particle_t = 0, 0
 	local AFTER_DESTROY_PAUSE = game.GEM_EXPLODE_FRAMES
 
@@ -633,7 +632,7 @@ function Diggory:_clodDestroyGem(gem, delay)
 	local game = self.game
 	local grid = game.grid
 	delay = delay or 0
-	
+
 	local time_to_explode, particle_duration = grid:destroyGem{
 		gem = gem,
 		credit_to = self.player_num,

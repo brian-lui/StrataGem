@@ -1063,7 +1063,7 @@ function Grid:destroyGem(params)
 	gem.time_to_destruction = delay_until_explode -- for animation uses
 	self[gem.row][gem.column].gem = false
 
-	for player in game:players() do 
+	for player in game:players() do
 		local dur = player:onGemDestroyEnd(gem, delay_until_explode)
 		damage_particle_duration = dur or damage_particle_duration
 	end
