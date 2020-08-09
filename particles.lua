@@ -30,6 +30,7 @@ local love = _G.love
 local images = require "images"
 local common = require "class.commons"
 local Pic = require "pic"
+local spairs = require "/helpers/utilities".spairs
 
 local Particles = {}
 
@@ -775,6 +776,16 @@ function ExplodingGem:remove()
 	self.manager.allParticles.ExplodingGem[self.ID] = nil
 end
 
+function ExplodingGem:draw()
+	Pic.draw(self)
+
+	if self.contained_items then
+		for _, item in spairs(self.contained_items) do
+			item:draw()
+		end
+	end
+end
+
 --[[ Mandatory: game, gem
 	Optional:
 	explode_frames - duration of exploding part, default game.GEM_EXPLODE_FRAMES
@@ -818,6 +829,14 @@ function ExplodingGem.generate(params)
 			scaling = 2,
 			remove = true,
 		}
+	end
+
+	-- add any items contained by the gem
+	if gem.contained_items then
+		p.contained_items = {}
+		for key, item in spairs(gem.contained_items) do
+			p.contained_items[key] = item
+		end
 	end
 end
 
