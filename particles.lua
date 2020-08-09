@@ -776,16 +776,6 @@ function ExplodingGem:remove()
 	self.manager.allParticles.ExplodingGem[self.ID] = nil
 end
 
-function ExplodingGem:draw()
-	Pic.draw(self)
-
-	if self.contained_items then
-		for _, item in spairs(self.contained_items) do
-			item:draw()
-		end
-	end
-end
-
 --[[ Mandatory: game, gem
 	Optional:
 	explode_frames - duration of exploding part, default game.GEM_EXPLODE_FRAMES
@@ -829,14 +819,6 @@ function ExplodingGem.generate(params)
 			scaling = 2,
 			remove = true,
 		}
-	end
-
-	-- add any items contained by the gem
-	if gem.contained_items then
-		p.contained_items = {}
-		for key, item in spairs(gem.contained_items) do
-			p.contained_items[key] = item
-		end
 	end
 end
 
@@ -1712,6 +1694,16 @@ function GemImage:remove()
 	self.manager.allParticles.GemImage[self.ID] = nil
 end
 
+function GemImage:draw()
+	Pic.draw(self)
+
+	if self.contained_items then
+		for _, item in spairs(self.contained_items) do
+			item:draw()
+		end
+	end
+end
+
 --[[ Takes mandatory game and duration arguments, and either
 	1) gem: will use the x, y, image from the gem, (takes priority), or
 	2) x, y, image arguments
@@ -1745,6 +1737,14 @@ function GemImage.generate(params)
 		}
 	else
 		p:change{duration = params.duration, remove = true}
+	end
+
+	-- add any items contained by the gem
+	if params.gem and params.gem.contained_items then
+		p.contained_items = {}
+		for key, item in spairs(params.gem.contained_items) do
+			p.contained_items[key] = item
+		end
 	end
 
 	return params.duration + (params.delay_frames or 0)
