@@ -731,7 +731,7 @@ function Holly:init(...)
 	self.flowers = {} -- flower image objects
 	self.seeds = {} -- seed image objects
 	self.spore_pods = {} -- spore pod image objects
-	self.matches_made = 0
+	self.seeds_matched_this_turn = 0
 
 	self.to_be_removed_flowers = {} -- temporary gemdestroy use
 
@@ -773,16 +773,13 @@ function Holly:beforeMatch()
 	local grid = game.grid
 	local delay = 0
 
-	-- Get the number of matches made that belong to us
+	-- Get the number of seeded gems that we matched
 	-- This determines how many flowers will be generated
-	local match_lists = grid.matched_gem_lists
-	for _, list in ipairs(match_lists) do
-		local owned_by_me = false
-		for _, gem in ipairs(list) do
-			if gem.player_num == self.player_num then owned_by_me = true end
+	for _, gem in ipairs(grid.matched_gems) do
+		if gem.player_num == self.player_num and self.seeded_gems[gem] then
+			print("a seeded gem was destroyed!")
+			self.seeds_matched_this_turn = self.seeds_matched_this_turn + 1
 		end
-
-		if owned_by_me then self.matches_made = self.matches_made + 1 end
 	end
 
 	return delay
@@ -807,14 +804,14 @@ function Holly:afterMatch()
 	shuffle(eligible_gems, game.rng)
 
 	-- add the flowers
-	for i = 1, self.matches_made do
+	for i = 1, self.seeds_matched_this_turn do
 		if eligible_gems[i] then
 			local gem = eligible_gems[i]
 			self:_addFlowerToGem(gem, FLOWER_DELAY)
 		end
 	end
 
-	self.matches_made = 0
+	self.seeds_matched_this_turn = 0
 end
 
 function Holly:cleanup()
