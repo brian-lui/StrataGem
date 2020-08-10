@@ -712,7 +712,51 @@ function Holly:_addSeedsToHand()
 end
 
 
-function Holly:_super()
+function Holly:_activateSuper()
+	local game = self.game
+	local grid = game.grid
+
+	local function chooseRandomValidGem(row_str)
+		assert(row_str == "first" or row_str == "second", "Invalid row_str")
+
+		local row_gems = {}
+		local chosen_gem
+
+		for col in grid:cols(self.enemy.player_num) do
+			local row
+			if row_str == "first" then
+				row = grid:getFirstEmptyRow(col) + 1
+			elseif row_str == "second" then
+				row = grid:getFirstEmptyRow(col) + 2
+			end
+
+			if row <= grid.BASIN_END_ROW then
+				local gem = grid[row][col].gem
+
+				-- only valid if no flower and can be broken
+				if 	not (gem.contained_items and gem.contained_items.holly_flower) and
+					not gem.indestructible then
+						row_gems[#row_gems + 1] = gem
+				end
+			end
+		end
+
+		if #row_gems >= 1 then
+			local rand = game.rng:random(#row_gems)
+			chosen_gem = row_gems[rand]
+		end
+
+		return chosen_gem
+	end
+
+	local row_1_gem = chooseRandomValidGem("first")
+	if row_1_gem then self:_addSporePodToGem(row_1_gem) end
+
+	local row_2_gem = chooseRandomValidGem("second")
+	if row_2_gem then self:_addSporePodToGem(row_2_gem) end
+
+	self:emptyMP()
+
 	--[[
 Super: Summon two spores., one on the topmost gem of a random column, and one
 on the second most gem of a random column, lasts 3 turns.
@@ -744,19 +788,11 @@ function Holly:init(...)
 end
 
 function Holly:beforeGravity()
-	local game = self.game
-	local grid = game.grid
 	local delay = 0
 
 	if self.is_supering then
-		--[[
-		TODO: generate a spore pod somewhere or other
-		--]]
-
-		delay = 30
-		self:emptyMP()
+		delay = self:_activateSuper()
 		self.is_supering = false
-		self.supered_this_turn = true
 	end
 
 	self:_storeCurrentHandGems()
