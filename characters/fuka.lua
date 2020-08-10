@@ -290,7 +290,7 @@ end
 function TornadoGem:draw()
 	Pic.draw(self)
 
-	local params = {x = self.x,	y = self.y}
+	local params = {x = self.x,	y = self.y, scaling = self.scaling}
 	for _, v in spairs(self.gem.contained_items) do v:draw(params) end
 end
 
