@@ -790,8 +790,6 @@ function Holly:afterMatch()
 	local grid = game.grid
 	local FLOWER_DELAY = 20
 
-	-- Passive: For each match, a random gem in opponent basin gains a flower mark:
-	-- Get all eligible gems
 	local eligible_gems = {}
 	for gem in grid:basinGems(self.enemy.player_num) do
 		if gem.color ~= "none"
@@ -831,14 +829,6 @@ function Holly:onGemDestroyStart(gem, delay)
 	then
 		gem.indestructible = true
 		self.to_be_removed_flowers[#self.to_be_removed_flowers + 1] = gem
-	end
-
-	-- TODO: create a flower when destroyed a gem with seed on it
-	if	(gem.contained_items.holly_seed) and
-		(gem.contained_items.holly_seed.player_num == self.player_num) and
-		(not gem.indestructible)
-	then
-		print("TEST: destroyed a gem with a seed on it!")
 	end
 end
 
