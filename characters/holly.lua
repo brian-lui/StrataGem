@@ -364,9 +364,6 @@ function SporePod:init(manager, tbl)
 	local counter = self.game.inits.ID.particle
 	manager.allParticles.NotDrawnThruParticles[counter] = self
 	self.manager = manager
-
-	self.STEM_DOWNSHIFT = 12 -- gem center 39px, stem center 24 + 27px
-
 	self.SHAKE_PIXELS = stage.width * 0.001
 	self.SHAKE_PER_FRAME = stage.width * 0.0005
 	self.SHAKE_DIRECTION = 1
@@ -374,19 +371,6 @@ function SporePod:init(manager, tbl)
 
 	self.FRAMES_PER_SPORE = 5
 	self.spore_framecount = 0
-
-	Pic:create{
-		game = manager.game,
-		x = self.x,
-		y = self.y + self.STEM_DOWNSHIFT,
-		image = self.owner.special_images.stem,
-		container = self,
-		name = "stem",
-	}
-
-	self.stem:change{duration = 0, transparency = 0}
-	self.stem:wait(tbl.stem_appear_delay)
-	self.stem:change{duration = 0, transparency = 1}
 end
 
 function SporePod:remove()
@@ -409,17 +393,11 @@ function SporePod:leavePlay(delay)
 		remove = true,
 	}
 
-	self.stem:wait(delay)
-	self.stem:change{
-		duration = game.GEM_EXPLODE_FRAMES,
-		scaling = 2,
-		transparency = 0,
-		remove = true,
-	}
-
 	self.owner.fx.spore.generateStarburst(self.game, self, delay)
 
 	self.is_destroyed = true
+
+	return delay
 end
 
 function SporePod:_shake()
@@ -448,10 +426,6 @@ function SporePod:update(dt)
 	end
 
 	if not self.is_destroyed then
-		self.stem.x = self.gem.x
-		self.stem.y = self.gem.y + self.STEM_DOWNSHIFT
-		self.stem:update(dt)
-
 		self.x = self.gem.x
 		self.y = self.gem.y
 		self:_shake()
@@ -512,10 +486,15 @@ function SporePod.generate(game, owner, gem, delay)
 end
 
 function SporePod:draw(params)
-	if self.stem then self.stem:draw(params) end
-
+	params = params or {}
 	local draw_params = params or {}
-	draw_params.x = self.draw_x_shift + params.x or self.x
+
+	if params.x then
+		draw_params.x = self.draw_x_shift + params.x
+	else
+		draw_params.x = self.draw_x_shift + self.x
+	end
+
 	Pic.draw(self, draw_params)
 end
 
@@ -670,8 +649,10 @@ function Holly:_addSporePodToGem(gem, delay)
 end
 
 function Holly:_removeSporePodFromGem(gem, delay)
-	self.spore_pods[gem]:leavePlay(delay)
+	local ret_delay = self.spore_pods[gem]:leavePlay(delay)
 	self.sporepodded_gems[gem] = nil
+
+	return ret_delay
 end
 
 function Holly:_addSeedsToHand()
@@ -683,7 +664,6 @@ function Holly:_addSeedsToHand()
 		for gem in piece:getGems() do
 			if not self.start_of_turn_gems[gem] then
 				if game.rng:random(100) < SEED_CHANCE then
-					print("30% chance added seed to gem")
 					delay = self:_addSeedToGem(gem)
 				end
 			end
@@ -734,9 +714,11 @@ function Holly:_activateSuper()
 				local gem = grid[row][col].gem
 
 				-- only valid if no flower and can be broken
-				if 	not (gem.contained_items and gem.contained_items.holly_flower) and
-					not gem.indestructible then
-						row_gems[#row_gems + 1] = gem
+				if	not (gem.contained_items and
+					gem.contained_items.holly_flower) and
+					not gem.indestructible
+				then
+					row_gems[#row_gems + 1] = gem
 				end
 			end
 		end
@@ -757,16 +739,98 @@ function Holly:_activateSuper()
 
 	self:emptyMP()
 
-	--[[
-Super: Summon two spores., one on the topmost gem of a random column, and one
-on the second most gem of a random column, lasts 3 turns.
-When they break they spawn flowers according to my diagram, as long as the
-space fulfills the following conditions:
-1. On the enemy side, not the Holly side
-2. Have a gem in them
-3. Don't already have a flower
-https://www.dropbox.com/s/ac7zvx49a4unl5m/spore%20distribution.png?dl=0
-	--]]
+end
+
+--[[ Spore pod explodes and creates flowers in gems surrounding it.
+Cells containing valid gems explode with corresponding percentages.
+Cells one square away have HIGH chance of a flower. Cells two squares away
+except the diagonals have LOW chance of a flower. --]]
+function Holly:_sporePodExplode(gem)
+	assert(gem.contained_items.holly_spore_pod, "No spore pod to explode!")
+	local game = self.game
+	local grid = game.grid
+
+	-- get the valid gems for potential flowers
+	local cols
+	if self.enemy.player_num == 2 then
+		cols = {[5] = true, [6] = true, [7] = true, [8] = true}
+	elseif self.enemy.player_num == 1 then
+		cols = {[1] = true, [2] = true, [3] = true, [4] = true}
+	end
+
+	local high_cells = {
+		{row = gem.row - 1, col = gem.column - 1},
+		{row = gem.row - 1, col = gem.column},
+		{row = gem.row - 1, col = gem.column + 1},
+		{row = gem.row, col = gem.column - 1},
+		{row = gem.row, col = gem.column + 1},
+		{row = gem.row + 1, col = gem.column - 1},
+		{row = gem.row + 1, col = gem.column},
+		{row = gem.row + 1, col = gem.column + 1},
+	}
+
+	local low_cells = {
+		{row = gem.row - 2, col = gem.column - 1},
+		{row = gem.row - 2, col = gem.column},
+		{row = gem.row - 2, col = gem.column + 1},
+		{row = gem.row - 1, col = gem.column - 2},
+		{row = gem.row - 1, col = gem.column + 2},
+		{row = gem.row, col = gem.column - 2},
+		{row = gem.row, col = gem.column + 2},
+		{row = gem.row + 1, col = gem.column - 2},
+		{row = gem.row + 1, col = gem.column + 2},
+		{row = gem.row + 2, col = gem.column - 1},
+		{row = gem.row + 2, col = gem.column},
+		{row = gem.row + 2, col = gem.column + 1},
+	}
+
+	local function getValidGems(tbl)
+		local ret = {}
+		for _, loc in ipairs(tbl) do
+			if loc.row <= grid.BASIN_END_ROW and cols[loc.col] then
+				print("now testing row, col", loc.row, loc.col)
+				if grid[loc.row][loc.col].gem then
+					local possible_gem = grid[loc.row][loc.col].gem
+					if	not possible_gem.indestructible and
+						not possible_gem.contained_items.holly_flower
+					then
+						ret[#ret + 1] = possible_gem
+					end
+				end
+			end
+		end
+
+		return ret
+	end
+
+	-- roll the chance for flower generation
+	local HIGH_CHANCE = 60
+	local LOW_CHANCE = 20
+
+	local high_gems = getValidGems(high_cells)
+	local low_gems = getValidGems(low_cells)
+
+	local to_flower_gems = {}
+	for _, possible_high_gem in ipairs(high_gems) do
+		if game.rng:random(100) < HIGH_CHANCE then
+			to_flower_gems[#to_flower_gems + 1] = possible_high_gem
+		end
+	end
+	for _, possible_low_gem in ipairs(low_gems) do
+		if game.rng:random(100) < LOW_CHANCE then
+			to_flower_gems[#to_flower_gems + 1] = possible_low_gem
+		end
+	end
+
+	-- destroy spore pod
+	local spore_pod_explode_delay = self:_removeSporePodFromGem(gem)
+	local EXTRA_DELAY = 40
+	local flower_delay = spore_pod_explode_delay + EXTRA_DELAY
+
+	-- generate flowers
+	for _, to_flower_gem in ipairs(to_flower_gems) do
+		self:_addFlowerToGem(to_flower_gem, flower_delay)
+	end
 end
 
 function Holly:init(...)
@@ -858,19 +922,26 @@ end
 
 -- This should also activate from matches
 function Holly:onGemDestroyStart(gem, delay)
-	-- If destroyed gem has a flower, remove flower instead of destroying gem
-	if	(gem.contained_items.holly_flower) and
-		(gem.contained_items.holly_flower.player_num == self.player_num) and
+	-- if destroyed gem has a flower, remove flower instead of destroying gem
+	if	gem.contained_items.holly_flower and
+		gem.contained_items.holly_flower.player_num == self.player_num and
 		(not gem.indestructible)
 	then
 		gem.indestructible = true
 		self.to_be_removed_flowers[#self.to_be_removed_flowers + 1] = gem
 	end
+
+	-- if destroyed gem has a spore pod, explode the spore pod
+	if	gem.contained_items.holly_spore_pod and
+		gem.contained_items.holly_spore_pod.player_num == self.player_num
+	then
+		self:_sporePodExplode(gem)
+	end
 end
 
 function Holly:onGemDestroyEnd(gem, delay)
-	if	(gem.contained_items.holly_flower) and
-		(gem.contained_items.holly_flower.player_num == self.player_num)
+	if	gem.contained_items.holly_flower and
+		gem.contained_items.holly_flower.player_num == self.player_num
 	then
 		for k, this_gem in pairs(self.to_be_removed_flowers) do
 			if this_gem == gem then
