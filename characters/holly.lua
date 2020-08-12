@@ -8,14 +8,9 @@ Matching a seeded gem (match made by Holly) creates a flower in the opponent’s
 basin. When this gem would destroyed by a match, instead it is not destroyed,
 but the flower disappears.
 
-Super: Summon two spores., one on the topmost gem of a random column, and one
-on the second most gem of a random column, lasts 3 turns.
-When they break they spawn flowers according to my diagram, as long as the
-space fulfills the following conditions:
-1. On the enemy side, not the Holly side
-2. Have a gem in them
-3. Don't already have a flower
-https://www.dropbox.com/s/ac7zvx49a4unl5m/spore%20distribution.png?dl=0
+Super: Summon two spores pods, one on the topmost gem of a random column, and
+one on the second most gem of a random column. When they break they spawn
+flowers around the spore.
 --]]
 
 local love = _G.love
@@ -714,8 +709,8 @@ function Holly:_activateSuper()
 				local gem = grid[row][col].gem
 
 				-- only valid if no flower and can be broken
-				if	not (gem.contained_items and
-					gem.contained_items.holly_flower) and
+				if	not (gem.contained_items and gem.contained_items.holly_flower) and
+					not (gem.contained_items and gem.contained_items.holly_spore_pod) and
 					not gem.indestructible
 				then
 					row_gems[#row_gems + 1] = gem
