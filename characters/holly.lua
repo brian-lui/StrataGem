@@ -606,24 +606,20 @@ function Holly:_removeFlowerFromGem(gem, delay)
 	self.flowers[gem]:leavePlay(delay)
 	self.flowered_gems[gem] = nil
 
-	self.game.particles.dust.generateBigFountain{
-		game = self.game,
-		x = gem.x,
-		y = gem.y,
-		color = gem.color,
-		image = self.special_images[gem.color].petala,
-		duration = 120,
-		delay_frames = delay,
-	}
-	self.game.particles.dust.generateBigFountain{
-		game = self.game,
-		x = gem.x,
-		y = gem.y,
-		color = gem.color,
-		image = self.special_images[gem.color].petalb,
-		duration = 120,
-		delay_frames = delay,
-	}
+	for i = 1, math.random(8, 16) do
+		self.game.particles.dust.generateLeafFloat{
+			game = self.game,
+			x = gem.x,
+			y = gem.y,
+			image = self.special_images[gem.color].petala,
+			delay = i,
+			y_dist = images.GEM_WIDTH * 0.5,
+			x_drift = images.GEM_WIDTH,
+			swap_image = self.special_images[gem.color].petalb,
+			swap_tween = "y_scaling",
+			swap_period = 30,
+		}
+	end
 end
 
 function Holly:_addSeedToGem(gem, delay)
