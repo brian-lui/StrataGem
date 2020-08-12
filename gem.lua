@@ -268,13 +268,26 @@ function Gem:draw(params)
 end
 
 function Gem:drawContainedItems(params)
-	draw_params = params or {}
+	local draw_params = params or {}
 
 	draw_params.RGBTable = params.RGBTable or {1, 1, 1, self.transparency or 1}
 	draw_params.x = params.x or self.x
 	draw_params.y = params.y or self.y
 
-	for _, v in spairs(self.contained_items) do v:draw(draw_params) end
+	for _, v in spairs(self.contained_items) do
+		if v.transparency then
+			local v_params = draw_params
+			v_params.RGBTable = {
+				draw_params.RGBTable[1],
+				draw_params.RGBTable[2],
+				draw_params.RGBTable[3],
+				draw_params.RGBTable[4] * v.transparency,
+			}
+			v:draw(v_params)
+		else
+			v:draw(draw_params)
+		end
+	end
 end
 
 -- respects cannot_remove_owners
