@@ -99,11 +99,7 @@ function Flower:init(manager, tbl)
 
 	self.STEM_DOWNSHIFT = 12 -- gem center 39px, stem center 24 + 27px
 
-	self.SIZE_DANCE_SPEED = 15 -- frames for each phase
-	self.SIZE_DANCE_PHASE = 0
-	self.size_dance_frame = 0
-
-	self.ROTATE_DANCE_SPEED = math.pi / 240 -- movement each frame
+	self.GLOW_PERIOD = 90 -- frames per glow cycle
 
 	Pic:create{
 		game = manager.game,
@@ -117,11 +113,23 @@ function Flower:init(manager, tbl)
 	self.stem:change{duration = 0, transparency = 0}
 	self.stem:wait(tbl.stem_appear_delay)
 	self.stem:change{duration = 0, transparency = 1}
+
+	Pic:create{
+		game = manager.game,
+		x = self.x,
+		y = self.y,
+		image = self.owner.special_images[self.gem.color].rage,
+		container = self,
+		name = "glow",
+	}
+
+	self.glow:change{duration = 0, transparency = 0}
+	self.glow.timer = 0
 end
 
 function Flower:remove()
 	self.manager.allParticles.NotDrawnThruParticles[self.ID] = nil
-	self.gem.contained_items.holly_flower = nil	
+	self.gem.contained_items.holly_flower = nil
 	self.owner.flowers[self.gem] = nil
 end
 
@@ -146,6 +154,14 @@ function Flower:leavePlay(delay)
 		remove = true,
 	}
 
+	self.glow:wait(delay)
+	self.glow:change{
+		duration = game.GEM_EXPLODE_FRAMES,
+		scaling = 2,
+		transparency = 0,
+		remove = true,
+	}
+
 	self.is_destroyed = true
 end
 
@@ -158,6 +174,17 @@ function Flower:update(dt)
 		self.stem.x = self.gem.x
 		self.stem.y = self.gem.y + self.STEM_DOWNSHIFT
 		self.stem:update(dt)
+
+		self.glow.timer = (self.glow.timer + (math.pi * 2) / self.GLOW_PERIOD) % (math.pi * 2)
+
+		self.glow:change{
+			duration = 0,
+			transparency = (math.cos(self.glow.timer) * 0.5) + 0.5,
+			x = self.gem.x,
+			y = self.gem.y,
+		}
+
+		self.glow:update(dt)
 
 		self.x = self.gem.x
 		self.y = self.gem.y
@@ -221,6 +248,7 @@ end
 function Flower:draw(params)
 	if self.stem then self.stem:draw(params) end
 	Pic.draw(self, params)
+	if self.glow then self.glow:draw() end
 end
 
 Flower = common.class("Flower", Flower, Pic)
