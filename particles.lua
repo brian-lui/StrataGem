@@ -1157,8 +1157,13 @@ function Dust.generateBigFountain(params)
 	local rotation = duration / 60
 
 	for i = 1, num do
-		if color == "wild" then	image = images.lookup.smalldust(color) end
-		if color == "none" then image = images.dummy end
+		if not params.image then
+			if color == "wild" then
+				image = images.lookup.smalldust(color)
+			elseif color == "none" then
+				image = images.dummy
+			end
+		end
 		local p_type = (i % 2 == 1) and "Dust" or "OverDust"
 		local x_vel = (math.random() - 0.5) * 0.4 * game.stage.width
 		local y_vel = (math.random() - 0.75) * 0.52 * game.stage.height
