@@ -57,25 +57,25 @@ Holly.special_images = {
 		flower = love.graphics.newImage('images/characters/holly/redflower.png'),
 		petala = love.graphics.newImage('images/characters/holly/redpetala.png'),
 		petalb = love.graphics.newImage('images/characters/holly/redpetalb.png'),
-		rage = love.graphics.newImage('images/characters/holly/redrage.png'),
+		glow = love.graphics.newImage('images/characters/holly/redflowerglow.png'),
 	},
 	blue = {
 		flower = love.graphics.newImage('images/characters/holly/blueflower.png'),
 		petala = love.graphics.newImage('images/characters/holly/bluepetala.png'),
 		petalb = love.graphics.newImage('images/characters/holly/bluepetalb.png'),
-		rage = love.graphics.newImage('images/characters/holly/bluerage.png'),
+		glow = love.graphics.newImage('images/characters/holly/blueflowerglow.png'),
 	},
 	green = {
 		flower = love.graphics.newImage('images/characters/holly/greenflower.png'),
 		petala = love.graphics.newImage('images/characters/holly/greenpetala.png'),
 		petalb = love.graphics.newImage('images/characters/holly/greenpetalb.png'),
-		rage = love.graphics.newImage('images/characters/holly/greenrage.png'),
+		glow = love.graphics.newImage('images/characters/holly/greenflowerglow.png'),
 	},
 	yellow = {
 		flower = love.graphics.newImage('images/characters/holly/yellowflower.png'),
 		petala = love.graphics.newImage('images/characters/holly/yellowpetala.png'),
 		petalb = love.graphics.newImage('images/characters/holly/yellowpetalb.png'),
-		rage = love.graphics.newImage('images/characters/holly/yellowrage.png'),
+		glow = love.graphics.newImage('images/characters/holly/yellowflowerglow.png'),
 	},
 	seed = love.graphics.newImage('images/characters/holly/seeds.png'),
 	spore_pod = love.graphics.newImage('images/characters/holly/sporepod.png'),
@@ -118,7 +118,7 @@ function Flower:init(manager, tbl)
 		game = manager.game,
 		x = self.x,
 		y = self.y,
-		image = self.owner.special_images[self.gem.color].rage,
+		image = self.owner.special_images[self.gem.color].glow,
 		container = self,
 		name = "glow",
 	}
@@ -246,9 +246,9 @@ function Flower.generate(game, owner, gem, delay)
 end
 
 function Flower:draw(params)
-	if self.stem then self.stem:draw(params) end
-	Pic.draw(self, params)
 	if self.glow then self.glow:draw() end
+	if self.stem then self.stem:draw() end
+	Pic.draw(self, params)
 end
 
 Flower = common.class("Flower", Flower, Pic)
