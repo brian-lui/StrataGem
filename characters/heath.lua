@@ -86,7 +86,7 @@ function Heath:init(...)
 	self.supered_this_turn = false
 	self.pending_fires = {0, 0, 0, 0, 0, 0, 0, 0} -- match fires generated at t0
 	self.ready_fires = {0, 0, 0, 0, 0, 0, 0, 0} -- fires at t1, ready to burn
-	self.column_heights = {0, 0, 0, 0, 0, 0, 0, 0} -- for fire extinguishing
+	self.pending_gem_cols = {} -- pending gems, for extinguishing of ready_fires
 
 	-- transparency of fire gem glowing
 	self.fireGemGlow = function()
@@ -405,33 +405,16 @@ function Heath:_columnHasParticle(column)
 	return false
 end
 
-function Heath:_storeColumnHeights()
-	local grid = self.game.grid
-	for i in grid:cols() do
-		self.column_heights[i] = grid:getFirstEmptyRow(i)
-	end
-end
-
--- Extinguish fires if they should be extinguished. Otherwise update y-pos
-function Heath:_extinguishFires()
-	local grid = self.game.grid
-
-	for i in grid:cols() do
-		local test_height = grid:getFirstEmptyRow(i, true) -- include pending
-		if test_height < self.column_heights[i] then
-			self.ready_fires[i] = 0
-			self:_updateParticleTimers(i)
-		else
-			self:_updateParticlePositions(nil, i)
-		end
-	end
-end
-
 -- get pending gem columns for fire extinguishing, and activate super
 function Heath:beforeGravity()
 	local game = self.game
 	local grid = game.grid
 	local explode_delay, particle_delay = 0, 0
+
+	local pending_gems = grid:getPendingGems()
+	for _, gem in ipairs(pending_gems) do
+		self.pending_gem_cols[gem.column] = true
+	end
 
 	if self.is_supering then
 		for col in grid:cols(self.player_num) do
@@ -483,13 +466,19 @@ end
 
 function Heath:beforeTween()
 	self.game:brightenScreen(self.player_num)
-
-	self:_storeColumnHeights()
 end
 
 -- extinguish ready_fires where a gem landed on them
 function Heath:afterGravity()
-	self:_extinguishFires()
+	for i in self.game.grid:cols() do
+		if self.pending_gem_cols[i] then
+			self.pending_gem_cols[i] = nil
+			self.ready_fires[i] = 0
+			self:_updateParticleTimers(i)
+		else
+			self:_updateParticlePositions(nil, i)
+		end
+	end
 end
 
 -- store horizontal fire locations, used in aftermatch phase
@@ -542,7 +531,8 @@ function Heath:afterMatch()
 	return delay
 end
 
-function Heath:beforeDestroyingPlatforms()
+-- take away super meter, activate fires
+function Heath:afterAllMatches()
 	local grid = self.game.grid
 	local delay, frames_to_explode = 0, 0
 
@@ -564,14 +554,11 @@ function Heath:beforeDestroyingPlatforms()
 	end
 	self.burned_this_turn = true
 
-	self:_storeColumnHeights()
 	self:_updateParticlePositions(frames_to_explode)
-
-	return delay
+	return delay, false
 end
 
 function Heath:whenCreatingGarbageRow()
-	self:_storeColumnHeights()
 	self:_updateParticlePositions()
 end
 
@@ -581,7 +568,7 @@ function Heath:cleanup()
 		self.ready_fires[i] = math.max(self.ready_fires[i] - 1, self.pending_fires[i], 0)
 	end
 	self.pending_fires = {0, 0, 0, 0, 0, 0, 0, 0}
-	--self.pending_gem_cols = {}
+	self.pending_gem_cols = {}
 
 	self:_updateParticlePositions()
 	self:_updateParticleTimers()
