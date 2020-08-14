@@ -542,8 +542,7 @@ function Heath:afterMatch()
 	return delay
 end
 
--- take away super meter, activate fires
-function Heath:afterAllMatches()
+function Heath:beforeDestroyingPlatforms()
 	local grid = self.game.grid
 	local delay, frames_to_explode = 0, 0
 
@@ -568,7 +567,7 @@ function Heath:afterAllMatches()
 	self:_storeColumnHeights()
 	self:_updateParticlePositions(frames_to_explode)
 
-	return delay, false
+	return delay
 end
 
 function Heath:whenCreatingGarbageRow()
