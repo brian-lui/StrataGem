@@ -180,6 +180,9 @@ function Character:whenCreatingGarbageRow() end
 -- (delay, whether to go to gravity phase) accepted as return values
 function Character:afterAllMatches() end
 
+-- After afterAllMatches phase, if it doesn't go back to gravity
+function Character:beforeDestroyingPlatforms() end
+
 -- (delay, whether to go to gravity phase) accepted as return values
 function Character:beforeCleanup() end
 

@@ -386,15 +386,31 @@ end
 -- Delay is player:afterAllMatches() + self.PLATFORM_SPIN_DELAY (if destroyed)
 function Phase:afterAllMatches(dt)
 	local game = self.game
-	local grid = game.grid
-
-	local next_phase = "DestroyDamagedPlatforms"
+	local next_phase = "BeforeDestroyingPlatforms"
 	local delay = 0
+
 	game.grid:setAllGemOwners(0)
+
 	for player in game:players() do
 		local player_delay, go_to_gravity_phase = player:afterAllMatches()
 		delay = math.max(delay, player_delay or 0)
 		if go_to_gravity_phase then next_phase = "DuringGravity" end
+	end
+
+	game.scoring_combo = 0
+
+	self:setPause(delay)
+	self:activatePause(next_phase)
+end
+
+function Phase:beforeDestroyingPlatforms(dt)
+	local game = self.game
+	local grid = game.grid
+	local delay = 0
+
+	for player in game:players() do
+		local player_delay = player:beforeDestroyingPlatforms()
+		delay = math.max(delay, player_delay or 0)
 	end
 
 	local platforms_get_destroyed = false
@@ -407,21 +423,17 @@ function Phase:afterAllMatches(dt)
 		delay = delay + self.PLATFORM_SPIN_DELAY
 	end
 
-	self:setPause(delay)
-
-	game.scoring_combo = 0
-
-	if next_phase == "DestroyDamagedPlatforms" then
-		for i = 1, grid.COLUMNS do --checks if should generate no rush
-			if self.no_rush[i] then
-				if grid[grid.RUSH_ROW][i].gem then
-					game.particles.words.generateNoRush(self.game, i)
-					self.no_rush[i] = false
-				end
+	for i = 1, grid.COLUMNS do --checks if should generate no rush
+		if self.no_rush[i] then
+			if grid[grid.RUSH_ROW][i].gem then
+				game.particles.words.generateNoRush(self.game, i)
+				self.no_rush[i] = false
 			end
 		end
 	end
-	self:activatePause(next_phase)
+
+	self:setPause(delay)
+	self:activatePause("DestroyDamagedPlatforms")
 end
 
 --[[ Destroy fully red playforms.
@@ -668,7 +680,7 @@ Phase.lookup = {
 	DestroyMatchedGems = Phase.destroyMatchedGems,
 	AfterMatch = Phase.afterMatch,
 	AfterAllMatches = Phase.afterAllMatches,
-	PlatformSpinDelay = Phase.platformSpinDelay,
+	BeforeDestroyingPlatforms = Phase.beforeDestroyingPlatforms,
 	DestroyDamagedPlatforms = Phase.destroyDamagedPlatforms,
 	GarbageRowCreation = Phase.garbageRowCreation,
 	GarbageMoving = Phase.garbageMoving,
