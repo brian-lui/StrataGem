@@ -408,11 +408,12 @@ end
 -- can be called by other characters because coder is shit
 function Heath:extinguishFire(col)
 	assert(col, "Column not provided for extinguishing fire!")
-	assert(self.pending_gem_cols[col], "No fire in requested column!")
 
-	self.pending_gem_cols[col] = nil
-	self.ready_fires[col] = 0
-	self:_updateParticleTimers(col)
+	if self.pending_gem_cols[col] then
+		self.pending_gem_cols[col] = nil
+		self.ready_fires[col] = 0
+		self:_updateParticleTimers(col)
+	end
 end
 
 -- get pending gem columns for fire extinguishing, and activate super
