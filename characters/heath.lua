@@ -405,6 +405,16 @@ function Heath:_columnHasParticle(column)
 	return false
 end
 
+-- can be called by other characters because coder is shit
+function Heath:extinguishFire(col)
+	assert(col, "Column not provided for extinguishing fire!")
+	assert(self.pending_gem_cols[col], "No fire in requested column!")
+
+	self.pending_gem_cols[col] = nil
+	self.ready_fires[col] = 0
+	self:_updateParticleTimers(col)
+end
+
 -- get pending gem columns for fire extinguishing, and activate super
 function Heath:beforeGravity()
 	local game = self.game
@@ -472,9 +482,7 @@ end
 function Heath:afterGravity()
 	for i in self.game.grid:cols() do
 		if self.pending_gem_cols[i] then
-			self.pending_gem_cols[i] = nil
-			self.ready_fires[i] = 0
-			self:_updateParticleTimers(i)
+			self:extinguishFire(i)
 		else
 			self:_updateParticlePositions(nil, i)
 		end
