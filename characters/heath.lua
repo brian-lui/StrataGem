@@ -406,12 +406,16 @@ function Heath:_columnHasParticle(column)
 end
 
 -- can be called by other characters because coder is shit
-function Heath:extinguishFire(col)
+-- the delay hack is shit too
+function Heath:extinguishFire(col, delay)
 	assert(col, "Column not provided for extinguishing fire!")
 
-	if self.pending_gem_cols[col] then
-		self.pending_gem_cols[col] = nil
-		self.ready_fires[col] = 0
+	self.pending_gem_cols[col] = nil
+	self.ready_fires[col] = 0
+
+	if delay then
+		self.game.queue:add(delay, self._updateParticleTimers, self, col)
+	else
 		self:_updateParticleTimers(col)
 	end
 end

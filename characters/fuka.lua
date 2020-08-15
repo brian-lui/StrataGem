@@ -648,6 +648,9 @@ end
 function Fuka:_activatePassive()
 	local grid = self.game.grid
 
+	local MOVE_TIME = 40
+	local START_DELAY = 30
+
 	local check_columns = {}
 	local columns = {}
 	local to_move_gems = {}
@@ -701,13 +704,25 @@ function Fuka:_activatePassive()
 
 					self.moving_gems[to_move_gem] = true
 
-					grid:moveGemAnim(to_move_gem, dest_row, dest_col, 40, 30)
-					animation_delay = 70
+					grid:moveGemAnim(
+						to_move_gem,
+						dest_row,
+						dest_col,
+						MOVE_TIME,
+						START_DELAY
+					)
+
+					animation_delay = MOVE_TIME + START_DELAY
 					go_to_gravity_phase = true
 					should_create_leaves = true
 
 					-- move gem
 					grid:moveGem(to_move_gem, dest_row, dest_col)
+
+					-- hacky Heath fire extinguish
+					if self.enemy.character_name == "Heath" then
+						self.enemy:extinguishFire(dest_col, animation_delay)
+					end
 				end
 			end
 		end
