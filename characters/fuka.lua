@@ -637,6 +637,10 @@ function Fuka:_activateTornado()
 
 		delay = move_delay + anim_delay + grid_drop_delay
 
+		-- hacky Heath fire extinguish
+		if self.enemy.character_name == "Heath" then
+			self.enemy:extinguishFire(selected_col, delay)
+		end
 	end
 
 	self.should_activate_tornado = false
