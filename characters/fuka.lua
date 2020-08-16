@@ -285,6 +285,10 @@ function TornadoGem:update(dt)
 	local scaling = 0.8 ^ pos_from_first
 
 	self:change{x = x, y = y, scaling = scaling}
+
+	-- Also change the gem position because some contained_items need it
+	self.gem.x = self.x
+	self.gem.y = self.y
 end
 
 function TornadoGem:draw()

@@ -171,23 +171,21 @@ function Flower:update(dt)
 	end
 
 	if not self.is_destroyed then
-		self.stem.x = self.gem.x
-		self.stem.y = self.gem.y + self.STEM_DOWNSHIFT
-		self.stem:update(dt)
+		self.x = self.gem.x
+		self.y = self.gem.y
 
 		self.glow.timer = (self.glow.timer + (math.pi * 2) / self.GLOW_PERIOD) % (math.pi * 2)
-
 		self.glow:change{
 			duration = 0,
 			transparency = (math.cos(self.glow.timer) * 0.5) + 0.5,
-			x = self.gem.x,
-			y = self.gem.y,
+			x = self.x,
+			y = self.y,
 		}
-
 		self.glow:update(dt)
 
-		self.x = self.gem.x
-		self.y = self.gem.y
+		self.stem.x = self.x
+		self.stem.y = self.y + self.STEM_DOWNSHIFT
+		self.stem:update(dt)
 	end
 
 	Pic.update(self, dt)
