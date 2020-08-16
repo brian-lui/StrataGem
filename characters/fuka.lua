@@ -635,7 +635,7 @@ function Fuka:_activateTornado()
 		grid:moveGem(to_drop_gem, dest_row, selected_col)
 		local grid_drop_delay = grid:moveGemAnim(to_drop_gem, dest_row, selected_col)
 
-		delay = move_delay + anim_delay + grid_drop_delay
+		delay = math.ceil(move_delay + anim_delay + grid_drop_delay)
 
 		-- hacky Heath fire extinguish
 		if self.enemy.character_name == "Heath" then
