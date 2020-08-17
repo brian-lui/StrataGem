@@ -75,8 +75,6 @@ function Game:init()
 		fades = {},
 	}
 	self.debugconsole = common.instance(require "/helpers/debugconsole", self)
-	self.debugconsole:setDefaultDisplayParams()
-	self.debugconsole:replacePrint()
 	self.quotes = require "/quotes/quotes"
 	self.camera = common.instance(require "/libraries/camera")
 	self.inits = require "/helpers/inits"
@@ -97,6 +95,11 @@ function Game:init()
 	self.queue = common.instance(Queue, self)
 	self.statemanager = common.instance(require "/libraries/statemanager", self)
 	self:switchState("gs_title")
+
+	-- need to load it again haha
+	self.debugconsole = common.instance(require "/helpers/debugconsole", self)
+	self.debugconsole:setDefaultDisplayParams()
+	self.debugconsole:replacePrint()
 	self:reset()
 end
 
