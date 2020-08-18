@@ -92,6 +92,13 @@ function Phase:intro(dt)
 
 	self:setPause(delay)
 	self:activatePause("Action")
+
+	love.filesystem.remove("gamelog.txt") -- start a new log
+
+	game.debugtextdump:writeGameInfo()
+	game.debugtextdump:writeTitle("Start of log (intro phase)\n")
+	game.debugtextdump:writeHandsText()
+	game.debugtextdump:writeGridText()
 end
 
 -- Active phase. Time here is set in self.time_to_next
@@ -137,6 +144,8 @@ function Phase:netplaySendDelta(dt)
 	-- check for super at end of turn
 	if game.me_player.is_supering then client:writeDeltaSuper() end
 
+	game.debugtextdump:writeMyDeltaText()
+
 	client:sendDelta()
 	self:setPhase("NetplayWaitForDelta")
 end
@@ -151,6 +160,8 @@ function Phase:netplayWaitForDelta(dt)
 	local client = game.client
 
 	if client.their_delta then
+		game.debugtextdump:writeTheirDeltaText()
+
 		game.ai:evaluateActions(game.them_player)
 		game.ai:performQueuedAction()
 
@@ -159,6 +170,9 @@ function Phase:netplayWaitForDelta(dt)
 		game.particles.placedGem.removeAll(game.particles)
 
 		client:sendDeltaConfirmation()
+
+		game.debugtextdump:writePendingGridText()
+
 		self:setPhase("Resolve")
 	end
 end
@@ -586,6 +600,10 @@ function Phase:cleanup(dt)
 
 	if game.type == "Singleplayer" then game.ai:clearDeltas() end
 
+	game.debugtextdump:writeTitle("Logging state at end of turn (cleanup phase)")
+	game.debugtextdump:writeHandsText()
+	game.debugtextdump:writeGridText()
+
 	if grid:getLoser() then
 		self:activatePause("GameOver")
 	elseif game.type == "Netplay" then
@@ -609,10 +627,8 @@ function Phase:netplayWaitForState(dt)
 	local client = game.client
 
 	if client.their_state then
-		assert(client.our_state == client.their_state, "States don't match! Ours:\n"
-			.. client.our_state .. "\nTheirs:\n" .. client.their_state .. 
-			"\nOur version:" .. string.format("Version %d.%d.%d - %s", love.getVersion()) ..
-			"\nOur OS:" .. love.system.getOS()
+		assert(client.our_state == client.their_state,
+			"States don't match! Upload this file to coder: " .. love.filesystem.getSaveDirectory() .. "/gamelog.txt"
 		)
 		self:setPhase("NetplayNewTurn")
 	end

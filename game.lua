@@ -94,6 +94,7 @@ function Game:init()
 	self.client = common.instance(require "client", self)
 	self.queue = common.instance(Queue, self)
 	self.statemanager = common.instance(require "/libraries/statemanager", self)
+	self.debugtextdump = common.instance(require "/helpers/debugtextdump", self)
 	self:switchState("gs_title")
 
 	-- need to load it again haha
