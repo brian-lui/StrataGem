@@ -19,8 +19,6 @@ function DebugConsole:init(game)
 	self.stage = game.stage
 	self.phase = game.phase
 	self.screencap_number = 0
-	self.prints = {}
-	self.PRINT_DURATION = 240 -- frames to display prints
 end
 
 function DebugConsole:setDisplay(params)
