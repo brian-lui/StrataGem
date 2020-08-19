@@ -1,5 +1,6 @@
 --[[
 This module dumps the gamestate turn by turn. Very annoying but whatever
+It also writes the replays
 --]]
 
 local common = require "class.commons" -- class support
@@ -10,7 +11,80 @@ function DebugTextdump:init(game)
 	assert(game, "Game object not received!")
 	self.game = game
 	self.WRITE_FILE = "gamelog.txt"
+	self.replay_file = ""
 end
+
+------------------------------------REPLAYS------------------------------------
+
+function DebugTextdump:setReplayLocation()
+	local function lpad (s) return string.rep("0", 4 - #s) .. s end
+	local index = 1
+	local padded_index = lpad(tostring(index))
+	local filename = os.date("%Y%m%d_") .. padded_index .. ".txt"
+	while love.filesystem.getInfo(filename, "file") do
+		index = index + 1
+		padded_index = lpad(tostring(index))
+		filename = os.date("%Y%m%d_") .. padded_index .. ".txt"
+	end
+
+	self.replay_file = filename
+end
+
+--[[
+	1	game version (string)
+	2	game type (string)
+	3	char 1 (string)
+	4	char 2 (string)
+	5	player 1 name (string)
+	6	player 2 name (string)
+	7	background (string)
+	8	seed (number)
+	9	active player side (number)
+--]]
+function DebugTextdump:writeReplayHeader()
+	local game = self.game
+	local text = {}
+
+	text[#text+1] = game.VERSION .. ":"
+	text[#text+1] = game.type .. ":"
+	text[#text+1] = game.p1.character_name .. ":"
+	text[#text+1] = game.p2.character_name .. ":"
+	text[#text+1] = game.p1.player_name .. ":"
+	text[#text+1] = game.p2.player_name .. ":"
+	text[#text+1] = game.current_background_name .. ":"
+	text[#text+1] = game.rng:getSeed() .. ":"
+	text[#text+1] = game.me_player.player_num .. ":"
+
+	text = table.concat(text) .. "\n"
+	love.filesystem.append(self.replay_file, text)
+end
+
+function DebugTextdump:writeReplayDeltas()
+	local game = self.game
+
+	local client = game.client
+	local text
+	if game.type == "Netplay" then
+		if game.me_player.player_num == 1 then
+			text = client.our_delta .. ":" .. client.their_delta .. ":\n"
+		elseif game.me_player.player_num == 2 then
+			text = client.their_delta .. ":" .. client.our_delta .. ":\n"
+		else
+			error("invalid me_player.player_num")
+		end
+	elseif game.type == "Singleplayer" then
+		text = game.ai.player_delta .. ":" .. game.ai.ai_delta .. ":\n"
+	end
+
+	love.filesystem.append(self.replay_file, text)
+end
+
+-- Writes END to the replay so we know it's finished
+function DebugTextdump:writeReplayEnd()
+	love.filesystem.append(self.replay_file, "END:END:\n")
+end
+
+------------------------------------VISUAL-------------------------------------
 
 -- write a custom text string
 function DebugTextdump:writeTitle(string)

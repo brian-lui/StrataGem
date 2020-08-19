@@ -83,8 +83,8 @@ function Phase:intro(dt)
 	local delay = 120
 
 	if game.type == "Singleplayer" then	game.ai:clearDeltas() end
-	game:setSaveFileLocation()
-	game:writeReplayHeader()
+	game.debugtextdump:setReplayLocation()
+	game.debugtextdump:writeReplayHeader()
 	game.particles.words.generateReady(game, ready_delay)
 	game.particles.words.generateGo(game, delay)
 	game.queue:add(delay, game.sound.newBGM, game.sound, game.p1.sounds.bgm, true)
@@ -182,7 +182,7 @@ end
 function Phase:resolve(dt)
 	local game = self.game
 
-	if game.type ~= "Replay" then game:writeDeltas() end
+	if game.type ~= "Replay" then game.debugtextdump:writeReplayDeltas() end
 	game.grid:updateRushPriority()
 	game.grid:assignGemOriginators()
 
@@ -662,7 +662,7 @@ end
 function Phase:gameOver(dt)
 	local game = self.game
 	game.grid:animateGameOver(game.grid:getLoser())
-	game:writeGameEnd()
+	game.debugtextdump:writeReplayEnd()
 	if game.type == "Netplay" then game.client:endMatch() end
 	self:setPause(self.GAMEOVER_DELAY)
 	self:activatePause("Leave")

@@ -211,73 +211,8 @@ function Game:start(params)
 	self:switchState("gs_versussplash")
 end
 
-function Game:setSaveFileLocation()
-	local function lpad (s) return string.rep("0", 4 - #s) .. s end
-	local index = 1
-	local padded_index = lpad(tostring(index))
-	local filename = os.date("%Y%m%d_") .. padded_index .. ".txt"
-	while love.filesystem.getInfo(filename, "file") do
-		index = index + 1
-		padded_index = lpad(tostring(index))
-		filename = os.date("%Y%m%d_") .. padded_index .. ".txt"
-	end
-	self.replay_save_location = filename
-	print("set save location to " .. filename)
-end
-
---[[
-	1	game version (string)
-	2	game type (string)
-	3	char 1 (string)
-	4	char 2 (string)
-	5	player 1 name (string)
-	6	player 2 name (string)
-	7	background (string)
-	8	seed (number)
-	9	active player side (number)
--- ]]
-function Game:writeReplayHeader()
-	local text = {}
-	text[#text+1] = self.VERSION .. ":"
-	text[#text+1] = self.type .. ":"
-	text[#text+1] = self.p1.character_name .. ":"
-	text[#text+1] = self.p2.character_name .. ":"
-	text[#text+1] = self.p1.player_name .. ":"
-	text[#text+1] = self.p2.player_name .. ":"
-	text[#text+1] = self.current_background_name .. ":"
-	text[#text+1] = self.rng:getSeed() .. ":"
-	text[#text+1] = self.me_player.player_num .. ":"
-
-	text = table.concat(text) .. "\n"
-	love.filesystem.append(self.replay_save_location, text)
-end
-
-function Game:writeDeltas()
-	local client = self.client
-	local text
-	if self.type == "Netplay" then
-		if self.me_player.player_num == 1 then
-			text = client.our_delta .. ":" .. client.their_delta .. ":\n"
-		elseif self.me_player.player_num == 2 then
-			text = client.their_delta .. ":" .. client.our_delta .. ":\n"
-		else
-			error("invalid me_player.player_num")
-		end
-	elseif self.type == "Singleplayer" then
-		text = self.ai.player_delta .. ":" .. self.ai.ai_delta .. ":\n"
-	end
-
-	love.filesystem.append(self.replay_save_location, text)
-end
-
--- Writes END to the replay so we know it's finished
--- TODO: better handling
-function Game:writeGameEnd()
-	love.filesystem.append(self.replay_save_location, "END:END:\n")
-end
-
 function Game:playReplay(replay_string)
-	replay_string = replay_string or love.filesystem.read(self.replay_save_location)
+	assert(replay_string, "No replay string given!")
 
 	-- convert replay string to table
 	local replay = {}
