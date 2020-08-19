@@ -74,7 +74,6 @@ function Game:init()
 		fx = {},
 		fades = {},
 	}
-	self.debugconsole = common.instance(require "/helpers/debugconsole", self)
 	self.quotes = require "/quotes/quotes"
 	self.camera = common.instance(require "/libraries/camera")
 	self.inits = require "/helpers/inits"
@@ -95,11 +94,10 @@ function Game:init()
 	self.queue = common.instance(Queue, self)
 	self.statemanager = common.instance(require "/libraries/statemanager", self)
 	self.debugtextdump = common.instance(require "/helpers/debugtextdump", self)
-	self:switchState("gs_title")
-
-	-- need to load it again haha
 	self.debugconsole = common.instance(require "/helpers/debugconsole", self)
 	self.debugconsole:setDefaultDisplayParams()
+
+	self:switchState("gs_title")
 	self:reset()
 end
 
@@ -217,11 +215,11 @@ function Game:setSaveFileLocation()
 	local function lpad (s) return string.rep("0", 4 - #s) .. s end
 	local index = 1
 	local padded_index = lpad(tostring(index))
-	local filename = os.date("%Y%m%d") .. padded_index .. ".txt"
+	local filename = os.date("%Y%m%d_") .. padded_index .. ".txt"
 	while love.filesystem.getInfo(filename, "file") do
 		index = index + 1
 		padded_index = lpad(tostring(index))
-		filename = os.date("%Y%m%d") .. padded_index .. ".txt"
+		filename = os.date("%Y%m%d_") .. padded_index .. ".txt"
 	end
 	self.replay_save_location = filename
 	print("set save location to " .. filename)

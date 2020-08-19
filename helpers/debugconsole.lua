@@ -32,7 +32,6 @@ function DebugConsole:setDefaultDisplayParams()
 	local phase = self.phase
 	local params = {
 		display_all = false,
-		display_prints = true,
 		display_player_names = true,
 		display_gem_info = true,
 		display_gem_owners = true,
@@ -312,27 +311,6 @@ function DebugConsole:_drawOverlays()
 	love.graphics.pop()
 end
 
-function DebugConsole:_drawPrints()
-	local game = self.game
-	local y = 30
-	local Y_STEP = 30
-	love.graphics.push("all")
-		love.graphics.setFont(game.inits.FONT.STANDARD_MEDIUM)
-		for i = #self.prints, 1, -1 do
-			local frame_diff = game.frame - self.prints[i][1]
-			local frame_percentage = frame_diff / self.PRINT_DURATION
-			if frame_percentage > 1 then
-				table.remove(self.prints, i)
-			else
-				local toprint = self.prints[i][1] .. ":" .. self.prints[i][2]
-				local x = 400 + frame_diff * 2
-				love.graphics.print(toprint, x, y)
-				y = y + Y_STEP
-			end
-		end
-	love.graphics.pop()
-end
-
 function DebugConsole:draw()
 	if self.display_all then
 		love.graphics.push("all")
@@ -348,7 +326,6 @@ function DebugConsole:draw()
 			if self.display_damage then self:_drawDamage() end
 			if self.display_turn_number then self:_drawTurnNumber() end
 			if self.display_game_frame then self:_drawGameFrame() end
-			if self.display_prints then self:_drawPrints() end
 		love.graphics.pop()
 	end
 end
