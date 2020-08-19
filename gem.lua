@@ -79,12 +79,7 @@ function Gem.random(game, gem_table)
 		end
 	end
 
-	-- debug stuff
-	local start_state = game.rng:getState()
 	local rand = game.rng:random(num)
-	local end_state = game.rng:getState()
-
-	game.debugconsole:writeLog("Start state, end state, rand", start_state, end_state, rand)
 
 	return rand_table[rand]
 end

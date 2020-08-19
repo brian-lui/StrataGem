@@ -100,7 +100,6 @@ function Game:init()
 	-- need to load it again haha
 	self.debugconsole = common.instance(require "/helpers/debugconsole", self)
 	self.debugconsole:setDefaultDisplayParams()
-	self.debugconsole:replacePrint()
 	self:reset()
 end
 
@@ -210,7 +209,7 @@ function Game:start(params)
 	self.current_background_name = params.background
 
 	self.phase:reset()
-	
+
 	self:switchState("gs_versussplash")
 end
 
@@ -253,8 +252,6 @@ function Game:writeReplayHeader()
 
 	text = table.concat(text) .. "\n"
 	love.filesystem.append(self.replay_save_location, text)
-
-	love.filesystem.append("debug.txt", text) -- TODO: remove later
 end
 
 function Game:writeDeltas()

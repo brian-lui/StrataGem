@@ -23,35 +23,6 @@ function DebugConsole:init(game)
 	self.PRINT_DURATION = 240 -- frames to display prints
 end
 
--- makes the print also wrie to debug.txt and display
-function DebugConsole:replacePrint()
-	love.filesystem.remove("debug.txt")
-	local reallyprint = print
-	function print(...)
-		reallyprint(self.game.frame or "", ...)
-		local args = {...}
-		for i = 1, #args do
-			if type(args[i]) == "table" then args[i] = "table"
-			elseif args[i] == true then args[i] = "true"
-			elseif args[i] == false then args[i] = "false"
-			elseif args[i] == nil then args[i] = "nil"
-			elseif type(args[i]) == "userdata" then args[i] = "userdata"
-			elseif type(args[i]) == "function" then args[i] = "function"
-			elseif type(args[i]) == "thread" then args[i] = "thread"
-			end
-		end
-		local write = table.concat(args, ", ")
-		love.filesystem.append("debug.txt", write .. "\n")
-		self.prints[#self.prints+1] = {self.game.frame, write}
-	end
-end
-
--- writes output to the debug instead of to screen
-function DebugConsole:writeLog(...)
-	local write = table.concat({...}, ", ")
-	love.filesystem.append("debug.txt", write .. "\n")
-end
-
 function DebugConsole:setDisplay(params)
 	for k, v in pairs(params) do self[k] = v end
 end
