@@ -604,6 +604,7 @@ function Phase:cleanup(dt)
 	game.debugtextdump:writeMeters()
 	game.debugtextdump:writeHandsText()
 	game.debugtextdump:writeGridText()
+	game.debugtextdump:writeSpecials()
 
 	if grid:getLoser() then
 		self:activatePause("GameOver")

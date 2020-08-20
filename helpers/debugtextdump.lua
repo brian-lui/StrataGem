@@ -309,4 +309,25 @@ function DebugTextdump:writeGridText()
 	love.filesystem.append(self.WRITE_FILE, write .. "\n\n")
 end
 
+-- dumps the specials. Currently only doing it as a string. Thanks
+function DebugTextdump:writeSpecials()
+	local game = self.game
+
+	local write = "Turn " .. game.turn .. ", character specials\n"
+
+	local player1, player2
+	if game.me_player.player_num == 1 then
+		player1, player2 = game.me_player, game.them_player
+	else
+		player1, player2 = game.them_player, game.me_player
+	end
+
+	write = write .. "Player 1 string:\n"
+	write = write .. player1:serializeSpecials() .. "\n"
+	write = write .. "Player 2 string:\n"
+	write = write .. player2:serializeSpecials() .. "\n"
+
+	love.filesystem.append(self.WRITE_FILE, write .. "\n")
+
+end
 return common.class("DebugTextdump", DebugTextdump)
