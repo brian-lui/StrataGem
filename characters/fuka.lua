@@ -15,6 +15,7 @@ local common = require "class.commons"
 local Character = require "character"
 local images = require "images"
 local Pic = require "pic"
+local Gem = require "gem"
 local spairs = require "/helpers/utilities".spairs
 
 local Fuka = {}
@@ -800,30 +801,44 @@ function Fuka:update(dt)
 	end
 end
 
---[[
-TODO
+-- The only state is the gems in the tornado
 function Fuka:serializeSpecials()
 	local ret = ""
-	for i in self.game.grid:cols() do ret = ret .. self.ready_fires[i] end
+	for i = 1, #self.tornado_gems do
+		local info = self.tornado_gems[i]:getInfoString()
+		ret = ret .. info .. "\n"
+	end
+
 	return ret
 end
 
-function Fuka:deserializeSpecials(str)
-	for i = 1, #str do
-		local col = i
-		local turns_remaining = tonumber(str:sub(i, i))
-		self.ready_fires[col] = turns_remaining
-		if turns_remaining > 0 then
-			self.fx.smallFire.generateSmallFire(
-				self.game,
-				self,
-				col,
-				nil,
-				turns_remaining
-			)
+-- Add back gems to the tornado. It's tricky if the gems contain items though, haha
+function Fuka:deserializeSpecials(string)
+	local stage = self.game.stage
+	local grid = self.game.grid
+
+	if string == "" then
+		self.tornado_gems = {}
+		self.tornado_anim:disappear()
+	else
+		self.tornado_gems = {}
+		self.tornado_anim:appear(stage.x_mid, grid.y[self.TORNADO_AT_TOP_ROW])
+
+		local gems = {}
+		for s in (string.."\n"):gmatch("(.-)\n") do table.insert(gems, s) end
+
+		for i = 1, #gems do
+			local gem = Gem:create{
+				game = self.game,
+				x = self.tornado_anim.x,
+				y = self.tornado_anim.y,
+				color = "red",
+			}
+
+			gem:applyInfoString(gems[i])
+			self.tornado_anim:acquireGem(gem)
 		end
 	end
 end
---]]
 
 return common.class("Fuka", Fuka, Character)
