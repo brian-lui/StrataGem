@@ -601,6 +601,7 @@ function Phase:cleanup(dt)
 	if game.type == "Singleplayer" then game.ai:clearDeltas() end
 
 	game.debugtextdump:writeTitle("Logging state at end of turn (cleanup phase)")
+	game.debugtextdump:writeMeters()
 	game.debugtextdump:writeHandsText()
 	game.debugtextdump:writeGridText()
 

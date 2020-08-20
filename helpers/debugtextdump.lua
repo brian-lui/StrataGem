@@ -109,6 +109,30 @@ function DebugTextdump:writeGameInfo()
 	love.filesystem.append(self.WRITE_FILE, write .. "\n")
 end
 
+-- meter, burst, damage info
+function DebugTextdump:writeMeters()
+	local game = self.game
+
+	local write = "Turn " .. game.turn .. ", meter info\n"
+
+	local player1, player2
+	if game.me_player.player_num == 1 then
+		player1, player2 = game.me_player, game.them_player
+	else
+		player1, player2 = game.them_player, game.me_player
+	end
+
+	write = write .. "Player 1 burst: " .. player1.cur_burst .. "\n"
+	write = write .. "Player 1 super: " .. player1.mp .. "/" .. player1.MAX_MP .. "\n"
+	write = write .. "Player 1 damage: " .. player1.hand.damage .. "\n"
+
+	write = write .. "Player 2 burst: " .. player2.cur_burst .. "\n"
+	write = write .. "Player 2 super: " .. player2.mp .. "/" .. player2.MAX_MP .. "\n"
+	write = write .. "Player 2 damage: " .. player2.hand.damage .. "\n"
+
+	love.filesystem.append(self.WRITE_FILE, write .. "\n")
+end
+
 -- dumps the delta in a human-readable format
 function DebugTextdump:writeMyDeltaText()
 	local game = self.game
