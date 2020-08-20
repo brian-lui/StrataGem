@@ -37,6 +37,7 @@ function Gem:init(params)
 	self.row = -1
 	self.column = -1
 	self.player_num = 0 -- 0 = none, 1 = p1, 2 = p2, 3 = both
+	self.indestructible = false
 	self.garbage = params.is_garbage
 	self.pending = false -- piece that's been placed in basin but not activated
 	self.exploding_gem_image = params.exploding_gem_image
@@ -354,6 +355,72 @@ end
 function Gem:isDefaultColor()
 	return self.color == "red" or self.color == "blue" or
 		self.color == "green" or self.color == "yellow"
+end
+
+--[[
+Serial:
+is_in_grid
+row
+column
+color
+indestructible
+player_num
+contained_items
+--]]
+function Gem:getInfoString()
+	local ret = ""
+
+	if self.is_in_grid then
+		ret = ret .. "InGrid_"
+	else
+		ret = ret .. "NotInGrid_"
+	end
+
+	ret = ret .. self.row .. "_"
+	ret = ret .. self.column .. "_"
+	ret = ret .. self.color .. "_"
+
+	if self.indestructible then
+		ret = ret .. "Indestructible_"
+	else
+		ret = ret .. "Destructible_"
+	end
+
+	ret = ret .. self.player_num .. "_"
+
+	for item in spairs(self.contained_items) do
+		ret = ret .. item .. "_"
+	end
+
+	return ret
+end
+
+function Gem:applyInfoString(string)
+	local grid = self.game.grid
+	local info = {}
+	for s in (string.."_"):gmatch("(.-)_") do table.insert(info, s) end
+
+	local is_in_grid = info[1]
+	local row, column, color = info[2], info[3], info[4]
+	local indestructible = info[5]
+	local player_num = info[6]
+
+	self.is_in_grid = is_in_grid
+	self.row = row
+	self.column = column
+
+	if self.is_in_grid then
+		self.x = grid.x[self.column]
+		self.y = grid.y[self.row]
+	end
+
+	self.color = color
+	self.indestructible = indestructible
+	self.player_num = player_num
+
+	for i = 7, #info do -- contained_items
+		-- TODO
+	end
 end
 
 return common.class("Gem", Gem, Pic)
