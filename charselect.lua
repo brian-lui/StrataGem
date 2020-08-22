@@ -363,7 +363,11 @@ function Charselect:enter()
 	self:_createUIButtons()
 	self:_createUIImages()
 	self.my_character = nil -- selected character for gamestart
-	self.opponent_character = math.random() < 0.5 and "fuka" or "fuka"-- ditto
+
+	local opp_chars = {"heath", "walter", "fuka", "holly", "wolfgang", "diggory"}
+	math.randomseed(os.time())
+	local rand = math.random(#opp_chars)
+	self.opponent_character = opp_chars[rand]
 
 	self:_createImage{
 		name = "fadein",
