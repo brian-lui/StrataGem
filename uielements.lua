@@ -1370,8 +1370,8 @@ function uielements:screenUIupdate(dt)
 		local gamestate = game.current_gamestate
 		self.screen_trails_t = self.screen_trails_t - self.SCREEN_TRAILS_TIMER
 
-		if game:_ismousedown() then
-			local x, y = game:_getmouseposition()
+		if game:_isPressedDown(gamestate) then
+			local x, y = game:_getControllerPosition()
 			self.screenDrag.create(game, gamestate, x, y)
 		end
 	end

@@ -1139,56 +1139,65 @@ function Game:_drawGlobals()
 	for _, v in pairs(self.global_ui.fades) do v:draw() end
 end
 
---default mousepressed function if not specified by a sub-state
-function Game:_mousepressed(x, y, gamestate)
+-------------------------------------------------------------------------------
+
+--default controllerPressed function if not specified by a sub-state
+function Game:_controllerPressed(x, y, gamestate)
 	self.uielements.screenPress.create(self, gamestate, x, y)
-
-	if self.settings_menu_open then
-		for _, button in pairs(gamestate.ui.popup_clickable) do
-			if pointIsInRect(x, y, button:getRect()) then
-				gamestate.clicked = button
-				button:pushed()
-				return
+	if gamestate.pressedDown == 0 then
+		if self.settings_menu_open then
+			for _, button in pairs(gamestate.ui.popup_clickable) do
+				if pointIsInRect(x, y, button:getRect()) then
+					gamestate.clicked = button
+					button:pushed()
+					return
+				end
 			end
-		end
-	else
-		for _, button in pairs(gamestate.ui.clickable) do
-			if pointIsInRect(x, y, button:getRect()) then
-				gamestate.clicked = button
-				button:pushed()
-				return
-			end
-		end
-	end
-	gamestate.clicked = false
-end
-
--- default mousereleased function if not specified by a sub-state
-function Game:_mousereleased(x, y, gamestate)
-	if self.settings_menu_open then
-		for _, button in pairs(gamestate.ui.popup_clickable) do
-			if gamestate.clicked == button then button:released() end
-			if pointIsInRect(x, y, button:getRect())
-			and gamestate.clicked == button then
-				button.action()
-				break
-			end
-		end
-	else
-		for _, button in pairs(gamestate.ui.clickable) do
-			if gamestate.clicked == button then button:released() end
-			if pointIsInRect(x, y, button:getRect())
-			and gamestate.clicked == button then
-				button.action()
-				break
+		else
+			for _, button in pairs(gamestate.ui.clickable) do
+				if pointIsInRect(x, y, button:getRect()) then
+					gamestate.clicked = button
+					button:pushed()
+					return
+				end
 			end
 		end
 	end
+
+	gamestate.pressedDown = gamestate.pressedDown + 1
 	gamestate.clicked = false
 end
 
--- default mousemoved function if not specified by a sub-state
-function Game:_mousemoved(x, y, gamestate)
+-- default controllerReleased function if not specified by a sub-state
+function Game:_controllerReleased(x, y, gamestate)
+	if gamestate.clicked then
+		if self.settings_menu_open then
+			for _, button in pairs(gamestate.ui.popup_clickable) do
+				if gamestate.clicked == button then button:released() end
+				if pointIsInRect(x, y, button:getRect())
+				and gamestate.clicked == button then
+					button.action()
+					break
+				end
+			end
+		else
+			for _, button in pairs(gamestate.ui.clickable) do
+				if gamestate.clicked == button then button:released() end
+				if pointIsInRect(x, y, button:getRect())
+				and gamestate.clicked == button then
+					button.action()
+					break
+				end
+			end
+		end
+		gamestate.clicked = false
+	end
+
+	gamestate.pressedDown = gamestate.pressedDown - 1
+end
+
+-- default controllerMoved function if not specified by a sub-state
+function Game:_controllerMoved(x, y, gamestate)
 	if gamestate.clicked then
 		if not pointIsInRect(x, y, gamestate.clicked:getRect()) then
 			gamestate.clicked:released()
@@ -1197,16 +1206,17 @@ function Game:_mousemoved(x, y, gamestate)
 	end
 end
 
--- checks if mouse is down (for ui). Can use different function for touchscreen
-function Game:_ismousedown()
-	return love.mouse.isDown(1)
-end
-
--- get current mouse position
-function Game:_getmouseposition()
+-- get current controller position
+function Game:_getControllerPosition()
 	local drawspace = self.inits.drawspace
 	local x, y = drawspace.tlfres.getMousePosition(drawspace.width, drawspace.height)
 	return x, y
+end
+
+function Game:_isPressedDown(gamestate)
+	if gamestate.pressedDown then
+		return gamestate.pressedDown > 0
+	end
 end
 
 function Game:keypressed(key)

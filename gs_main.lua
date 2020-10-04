@@ -48,6 +48,8 @@ function gs_main:enter()
 
 	self.sound:stopBGM()
 	gs_main.clicked = nil
+	gs_main.pressedDown = 0
+
 	gs_main.current_background = common.instance(self.background[self.current_background_name], self)
 	self.settings_menu_open = false
 
@@ -259,7 +261,8 @@ function gs_main:draw()
 	self:_drawGlobals()
 end
 
-function gs_main:mousepressed(x, y)
+
+function gs_main:_pressed(x, y)
 	self.lastClickedFrame = self.frame
 	self.lastClickedX, self.lastClickedY = x, y
 
@@ -283,8 +286,7 @@ function gs_main:mousepressed(x, y)
 			self.debugconsole:swapGridGem(x, y)
 		end
 	end
-
-	self:_mousepressed(x, y, gs_main)
+	self:_controllerPressed(x, y, gs_main)
 
 	if self.type ~= "Replay" then
 		local my_super = self.me_player.super_button
@@ -297,7 +299,7 @@ end
 local QUICKCLICK_FRAMES = 15
 local QUICKCLICK_MAX_MOVE = 0.05
 
-function gs_main:mousereleased(x, y)
+function gs_main:_released(x, y)
 	if self.type ~= "Replay" then
 		local player = self.me_player
 		if self.active_piece then
@@ -319,10 +321,10 @@ function gs_main:mousereleased(x, y)
 			my_super:action()
 		end
 	end
-	self:_mousereleased(x, y, gs_main)
+	self:_controllerReleased(x, y, gs_main)
 end
 
-function gs_main:mousemoved(x, y)
+function gs_main:_moved(x, y)
 	if self.type ~= "Replay" then
 		local player = self.me_player
 		if self.active_piece
@@ -331,7 +333,18 @@ function gs_main:mousemoved(x, y)
 			self.active_piece:change{x = x, y = y}
 		end
 	end
-	self:_mousemoved(x, y, gs_main)
+
+	self:_controllerMoved(x, y, gs_main)
 end
+
+function gs_main:mousepressed(x, y) gs_main._pressed(self, x, y) end
+function gs_main:touchpressed(_, x, y) gs_main._pressed(self, x, y) end
+
+function gs_main:mousereleased(x, y) gs_main._released(self, x, y) end
+function gs_main:touchreleased(_, x, y) gs_main._released(self, x, y) end
+
+function gs_main:mousemoved(x, y) gs_main._moved(self, x, y) end
+function gs_main:touchmoved(_, x, y) gs_main._moved(self, x, y) end
+
 
 return gs_main

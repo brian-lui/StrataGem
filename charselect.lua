@@ -13,6 +13,8 @@ local Lobby = require "lobby"
 local Charselect = {}
 
 function Charselect:init(game, gamestate)
+	self.pressedDown = 0
+
 	assert(gamestate.name == "Singleplayer" or gamestate.name == "Multiplayer",
 		"Invalid gamestate name '" .. gamestate.name .. "' provided!")
 	self.game = game
@@ -351,6 +353,7 @@ function Charselect:enter()
 	local stage = game.stage
 	local gamestate = self.gamestate
 	self.clicked = nil
+
 	if game.sound:getCurrentBGM() ~= "bgm_menu" then
 		game.sound:stopBGM()
 		game.sound:newBGM("bgm_menu", true)
@@ -426,7 +429,7 @@ function Charselect:draw()
 	game:_drawGlobals()
 end
 
-function Charselect:mousepressed(x, y)
+function Charselect:_controllerPressed(x, y)
 	local pointIsInRect = require "/helpers/utilities".pointIsInRect
 
 	if self.spellbook.char_displayed then
@@ -439,10 +442,10 @@ function Charselect:mousepressed(x, y)
 		end
 	end
 
-	self.game:_mousepressed(x, y, self.gamestate)
+	self.game:_controllerPressed(x, y, self.gamestate)
 end
 
-function Charselect:mousereleased(x, y)
+function Charselect:_controllerReleased(x, y)
 	local pointIsInRect = require "/helpers/utilities".pointIsInRect
 
 	if self.spellbook.char_displayed then
@@ -459,11 +462,11 @@ function Charselect:mousereleased(x, y)
 		return
 	end
 
-	self.game:_mousereleased(x, y, self.gamestate)
+	self.game:_controllerReleased(x, y, self.gamestate)
 end
 
-function Charselect:mousemoved(x, y)
-	self.game:_mousemoved(x, y, self.gamestate)
+function Charselect:_controllerMoved(x, y)
+	self.game:_controllerMoved(x, y, self.gamestate)
 end
 
 return common.class("Charselect", Charselect)

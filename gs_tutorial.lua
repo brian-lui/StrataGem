@@ -183,6 +183,8 @@ end
 
 function Tutorial:enter()
 	Tutorial.clicked = nil
+	Tutorial.pressedDown = 0
+
 	Tutorial.animationReset()
 
 	self.uielements:clearScreenUIColor()
@@ -245,16 +247,27 @@ function Tutorial:draw()
 	self:_drawGlobals()
 end
 
-function Tutorial:mousepressed(x, y)
-	self:_mousepressed(x, y, Tutorial)
+-- add custom things to these three functions
+function Tutorial:_pressed(x, y)
+	self:_controllerPressed(x, y, Tutorial)
 end
 
-function Tutorial:mousereleased(x, y)
-	self:_mousereleased(x, y, Tutorial)
+function Tutorial:_released(x, y)
+	self:_controllerReleased(x, y, Tutorial)
 end
 
-function Tutorial:mousemoved(x, y)
-	self:_mousemoved(x, y, Tutorial)
+function Tutorial:_moved(x, y)
+	self:_controllerMoved(x, y, Tutorial)
 end
+
+function Tutorial:mousepressed(x, y) Tutorial._pressed(self, x, y) end
+function Tutorial:touchpressed(_, x, y) Tutorial._pressed(self, x, y) end
+
+function Tutorial:mousereleased(x, y) Tutorial._released(self, x, y) end
+function Tutorial:touchreleased(_, x, y) Tutorial._released(self, x, y) end
+
+function Tutorial:mousemoved(x, y) Tutorial._moved(self, x, y) end
+function Tutorial:touchmoved(_, x, y) Tutorial._moved(self, x, y) end
+
 
 return Tutorial

@@ -41,6 +41,9 @@ function VersusSplash:init()
 end
 
 function VersusSplash:enter()
+	self.clicked = nil
+	self.pressedDown = 0
+
 	self.uielements:clearScreenUIColor()
 	self.private_framecount = 0 -- screenshake and text depends on framecount
 
@@ -393,17 +396,28 @@ function VersusSplash:draw()
 	self.camera:unset()
 end
 
-function VersusSplash:mousepressed(x, y)
+-- add custom things to these three functions
+function VersusSplash:_pressed(x, y)
 	self.uielements:screenshake(1)
-	self:_mousepressed(x, y, VersusSplash)
+	self:_controllerPressed(x, y, VersusSplash)
 end
 
-function VersusSplash:mousereleased(x, y)
-	self:_mousereleased(x, y, VersusSplash)
+function VersusSplash:_released(x, y)
+	self:_controllerReleased(x, y, VersusSplash)
 end
 
-function VersusSplash:mousemoved(x, y)
-	self:_mousemoved(x, y, VersusSplash)
+function VersusSplash:_moved(x, y)
+	self:_controllerMoved(x, y, VersusSplash)
 end
+
+function VersusSplash:mousepressed(x, y) VersusSplash._pressed(self, x, y) end
+function VersusSplash:touchpressed(_, x, y) VersusSplash._pressed(self, x, y) end
+
+function VersusSplash:mousereleased(x, y) VersusSplash._released(self, x, y) end
+function VersusSplash:touchreleased(_, x, y) VersusSplash._released(self, x, y) end
+
+function VersusSplash:mousemoved(x, y) VersusSplash._moved(self, x, y) end
+function VersusSplash:touchmoved(_, x, y) VersusSplash._moved(self, x, y) end
+
 
 return VersusSplash
