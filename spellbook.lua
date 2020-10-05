@@ -81,7 +81,7 @@ function Spellbook:init(charselect)
 				image = images.spellbook_wolfgang3,
 				x = self.stage.width * 0.85,
 				y = self.stage.height * 0.725,
-			},			
+			},
 		},
 
 		fuka = {

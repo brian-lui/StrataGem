@@ -95,9 +95,6 @@ function Title:init()
 end
 
 function Title:enter()
-	Title.clicked = nil
-	Title.pressedDown = 0
-
 	self.uielements:clearScreenUIColor()
 	self.settings_menu_open = false
 	if self.sound:getCurrentBGM() ~= "bgm_menu" then

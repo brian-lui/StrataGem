@@ -49,7 +49,7 @@ function Charselect:_createCharacterButtons()
 	local game = self.game
 	local gamestate = self.gamestate
 	local stage = game.stage
-	self.clicked = nil
+
 	local end_x, end_y
 	for i = 1, #self.selectable_chars do
 		local char = self.selectable_chars[i]
@@ -352,7 +352,6 @@ function Charselect:enter()
 	local game = self.game
 	local stage = game.stage
 	local gamestate = self.gamestate
-	self.clicked = nil
 
 	if game.sound:getCurrentBGM() ~= "bgm_menu" then
 		game.sound:stopBGM()
@@ -435,7 +434,8 @@ function Charselect:_controllerPressed(x, y)
 	if self.spellbook.char_displayed then
 		for _, button in pairs(self.spellbook.sub_images) do
 			if pointIsInRect(x, y, button:getRect()) then
-				self.gamestate.clicked = button
+				self.game.clicked = button
+				self.game.pressedDown = self.game.pressedDown + 1
 				button:pushed()
 				return
 			end
@@ -450,14 +450,18 @@ function Charselect:_controllerReleased(x, y)
 
 	if self.spellbook.char_displayed then
 		for _, button in pairs(self.spellbook.sub_images) do
-			if self.gamestate.clicked == button then button:released() end
+			if self.game.clicked == button then button:released() end
 			if pointIsInRect(x, y, button:getRect())
-			and self.gamestate.clicked == button then
+			and self.game.clicked == button then
+				self.game.clicked = false
+				self.game.pressedDown = self.game.pressedDown - 1
 				button.action()
 				return
 			end
 		end
 
+		self.game.clicked = false
+		self.game.pressedDown = self.game.pressedDown - 1
 		self.spellbook:hideCharacter()
 		return
 	end

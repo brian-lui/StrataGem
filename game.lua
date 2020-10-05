@@ -97,6 +97,9 @@ function Game:init()
 	self.debugconsole = common.instance(require "/helpers/debugconsole", self)
 	self.debugconsole:setDefaultDisplayParams()
 
+	self.clicked = false
+	self.pressedDown = 0
+
 	self:switchState("gs_title")
 	self:reset()
 end
@@ -1144,11 +1147,14 @@ end
 --default controllerPressed function if not specified by a sub-state
 function Game:_controllerPressed(x, y, gamestate)
 	self.uielements.screenPress.create(self, gamestate, x, y)
-	if gamestate.pressedDown == 0 then
+
+	self.pressedDown = self.pressedDown + 1
+
+	if self.pressedDown == 1 then
 		if self.settings_menu_open then
 			for _, button in pairs(gamestate.ui.popup_clickable) do
 				if pointIsInRect(x, y, button:getRect()) then
-					gamestate.clicked = button
+					self.clicked = button
 					button:pushed()
 					return
 				end
@@ -1156,7 +1162,7 @@ function Game:_controllerPressed(x, y, gamestate)
 		else
 			for _, button in pairs(gamestate.ui.clickable) do
 				if pointIsInRect(x, y, button:getRect()) then
-					gamestate.clicked = button
+					self.clicked = button
 					button:pushed()
 					return
 				end
@@ -1164,44 +1170,48 @@ function Game:_controllerPressed(x, y, gamestate)
 		end
 	end
 
-	gamestate.pressedDown = gamestate.pressedDown + 1
-	gamestate.clicked = false
+	self.clicked = false
 end
 
 -- default controllerReleased function if not specified by a sub-state
 function Game:_controllerReleased(x, y, gamestate)
-	if gamestate.clicked then
+	self.pressedDown = self.pressedDown - 1
+
+	if self.clicked and self.pressedDown == 0 then
 		if self.settings_menu_open then
 			for _, button in pairs(gamestate.ui.popup_clickable) do
-				if gamestate.clicked == button then button:released() end
+
+				if self.clicked == button then button:released() end
+
 				if pointIsInRect(x, y, button:getRect())
-				and gamestate.clicked == button then
+				and self.clicked == button then
+					self.clicked = false
 					button.action()
-					break
+					return
 				end
 			end
 		else
 			for _, button in pairs(gamestate.ui.clickable) do
-				if gamestate.clicked == button then button:released() end
+
+				if self.clicked == button then button:released() end
+
 				if pointIsInRect(x, y, button:getRect())
-				and gamestate.clicked == button then
+				and self.clicked == button then
+					self.clicked = false
 					button.action()
-					break
+					return
 				end
 			end
 		end
-		gamestate.clicked = false
 	end
-
-	gamestate.pressedDown = gamestate.pressedDown - 1
 end
 
 -- default controllerMoved function if not specified by a sub-state
-function Game:_controllerMoved(x, y, gamestate)
-	if gamestate.clicked then
-		if not pointIsInRect(x, y, gamestate.clicked:getRect()) then
-			gamestate.clicked:released()
-			gamestate.clicked = false
+function Game:_controllerMoved(x, y)
+	if self.clicked then
+		if not pointIsInRect(x, y, self.clicked:getRect()) then
+			self.clicked:released()
+			self.clicked = false
 		end
 	end
 end
@@ -1213,9 +1223,9 @@ function Game:_getControllerPosition()
 	return x, y
 end
 
-function Game:_isPressedDown(gamestate)
-	if gamestate.pressedDown then
-		return gamestate.pressedDown > 0
+function Game:_isPressedDown()
+	if self.pressedDown then
+		return self.pressedDown > 0
 	end
 end
 

@@ -182,9 +182,6 @@ function Tutorial:init()
 end
 
 function Tutorial:enter()
-	Tutorial.clicked = nil
-	Tutorial.pressedDown = 0
-
 	Tutorial.animationReset()
 
 	self.uielements:clearScreenUIColor()

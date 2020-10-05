@@ -41,9 +41,6 @@ function VersusSplash:init()
 end
 
 function VersusSplash:enter()
-	self.clicked = nil
-	self.pressedDown = 0
-
 	self.uielements:clearScreenUIColor()
 	self.private_framecount = 0 -- screenshake and text depends on framecount
 

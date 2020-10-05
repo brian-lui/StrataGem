@@ -47,8 +47,6 @@ function gs_main:enter()
 	})
 
 	self.sound:stopBGM()
-	gs_main.clicked = nil
-	gs_main.pressedDown = 0
 
 	gs_main.current_background = common.instance(self.background[self.current_background_name], self)
 	self.settings_menu_open = false
@@ -291,7 +289,7 @@ function gs_main:_pressed(x, y)
 	if self.type ~= "Replay" then
 		local my_super = self.me_player.super_button
 		if pointIsInRect(x, y, my_super:getRect()) then
-			gs_main.clicked = my_super
+			self.clicked = my_super
 		end
 	end
 end
@@ -317,7 +315,7 @@ function gs_main:_released(x, y)
 
 		local my_super = self.me_player.super_button
 		if pointIsInRect(x, y, my_super:getRect())
-		and gs_main.clicked == my_super then
+		and self.clicked == my_super then
 			my_super:action()
 		end
 	end

@@ -7,9 +7,6 @@ local common = require "class.commons"
 
 local Singleplayer = {name = "Singleplayer", gametype = "Singleplayer"}
 function Singleplayer:init()
-	self.pressedDown = 0
-	self.clicked = nil
-
 	self.charselect = common.instance(require "charselect", self, Singleplayer)
 	self.charselect:init(self, Singleplayer)
 end
