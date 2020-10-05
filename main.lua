@@ -17,9 +17,18 @@ function love.load()
 	love.window.setTitle("StrataGem!")
 	game = common.instance(require "game")
 
-	-- default windowed resolution is half native
-	local desktopWidth, desktopHeight = love.window.getDesktopDimensions()
-	love.window.setMode(desktopWidth / 2, desktopHeight / 2, {resizable=true})
+	-- set resolution depending on OS
+	local osString = love.system.getOS()
+	if osString == "Windows" or osString == "OS X" or osString == "Linux" then
+		local windowWidth, windowHeight = love.window.getDesktopDimensions()
+		love.window.setMode(windowWidth / 2, windowHeight / 2, {resizable=true})
+	elseif osString == "Android" or osString == "iOS" then
+		local windowWidth, windowHeight = love.graphics.getDimensions()
+		love.window.setMode(windowWidth, windowHeight, {
+			fullscreen = true,
+			usedpiscale = false,
+		})
+	end
 
 	-- set icon
 	local icon = love.image.newImageData("/images/unclickables/windowicon.png")
