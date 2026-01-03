@@ -24,6 +24,76 @@ local disconnecting = {}
 -- Bug 6 fix: Track matches being ended to prevent race conditions
 local ending_match = {}
 
+-- Bug 4 fix: Rate limiting for connections
+local connection_attempts = {} -- ip -> {count = n, first_attempt = timestamp}
+local connections_per_ip = {} -- ip -> count of active connections
+local RATE_LIMIT_WINDOW = 60 -- seconds
+local RATE_LIMIT_MAX_ATTEMPTS = 10 -- max connection attempts per window
+local MAX_CONNECTIONS_PER_IP = 3 -- max concurrent connections per IP
+
+local function getConnectionIP(conn)
+	local ip, _ = conn:getpeername()
+	return ip or "unknown"
+end
+
+local function checkRateLimit(ip)
+	local now = os.time()
+
+	-- Check concurrent connections limit
+	if connections_per_ip[ip] and connections_per_ip[ip] >= MAX_CONNECTIONS_PER_IP then
+		print("Rate limit: too many concurrent connections from " .. ip)
+		return false
+	end
+
+	-- Check connection attempt rate
+	if connection_attempts[ip] then
+		local record = connection_attempts[ip]
+		if now - record.first_attempt > RATE_LIMIT_WINDOW then
+			-- Reset the window
+			connection_attempts[ip] = {count = 1, first_attempt = now}
+		else
+			if record.count >= RATE_LIMIT_MAX_ATTEMPTS then
+				print("Rate limit: too many connection attempts from " .. ip)
+				return false
+			end
+			record.count = record.count + 1
+		end
+	else
+		connection_attempts[ip] = {count = 1, first_attempt = now}
+	end
+
+	return true
+end
+
+local function incrementConnectionCount(ip)
+	connections_per_ip[ip] = (connections_per_ip[ip] or 0) + 1
+end
+
+local function decrementConnectionCount(ip)
+	if connections_per_ip[ip] then
+		connections_per_ip[ip] = connections_per_ip[ip] - 1
+		if connections_per_ip[ip] <= 0 then
+			connections_per_ip[ip] = nil
+		end
+	end
+end
+
+-- Clean up old rate limit entries periodically
+local last_rate_limit_cleanup = os.time()
+local function cleanupRateLimitEntries()
+	local now = os.time()
+	if now - last_rate_limit_cleanup < RATE_LIMIT_WINDOW then
+		return
+	end
+	last_rate_limit_cleanup = now
+
+	for ip, record in pairs(connection_attempts) do
+		if now - record.first_attempt > RATE_LIMIT_WINDOW then
+			connection_attempts[ip] = nil
+		end
+	end
+end
+
 local function disconnect(_, conn)
 	-- Guard against recursive disconnect calls
 	if not conn or disconnecting[conn] then
@@ -32,16 +102,20 @@ local function disconnect(_, conn)
 	disconnecting[conn] = true
 
 	print("Disconnected", conn)
-	
+
+	-- Bug 4 fix: Decrement connection count for this IP
+	local ip = getConnectionIP(conn)
+	decrementConnectionCount(ip)
+
 	-- Clear from dudes table first to prevent other code from using this connection
 	if dudes[conn] then dudes[conn] = nil end
-	
+
 	-- Try to send disconnect notification (may fail, that's ok)
 	pcall(function() conn:send(json.encode({type = "disconnected"})) end)
-	
+
 	-- Close the connection
 	pcall(function() conn:close() end)
-	
+
 	-- Clear the disconnecting flag
 	disconnecting[conn] = nil
 end
@@ -283,6 +357,20 @@ local function startMatch(dude1, dude2)
 	print(dude1.id)
 	print(dude2)
 	print(dude2.id)
+
+	-- Bug 3 fix: Transaction-like pattern - validate connections before and after setup
+	local conn1, conn2 = getConnFromID(dude1.id), getConnFromID(dude2.id)
+
+	-- Pre-validation: ensure both connections exist
+	if not conn1 or not dudes[conn1] then
+		print("startMatch: dude1 connection no longer valid, aborting")
+		return false
+	end
+	if not conn2 or not dudes[conn2] then
+		print("startMatch: dude2 connection no longer valid, aborting")
+		return false
+	end
+
 	local rng_seed = os.time()
 	local send1 = {
 		type = "start",
@@ -304,13 +392,24 @@ local function startMatch(dude1, dude2)
 		p2_name = dude2.name,
 		seed = rng_seed,
 	}
-	local conn1, conn2 = getConnFromID(dude1.id), getConnFromID(dude2.id)
-	server.send(send1, conn1)
-	server.send(send2, conn2)
+
+	-- Post-validation: re-check before modifying state (connection could have closed during packet construction)
+	if not dudes[conn1] or not dudes[conn2] then
+		print("startMatch: connection lost during setup, aborting")
+		return false
+	end
+
+	-- Set up match state atomically (all or nothing)
 	dude1.opponent, dude2.opponent = dude2.id, dude1.id
 	dude1.playing, dude2.playing = true, true
 	dude1.queuing, dude2.queuing = false, false
+
+	-- Send start messages (if send fails, cleanup will happen via disconnect handler)
+	server.send(send1, conn1)
+	server.send(send2, conn2)
+
 	print("Started game with", conn1, conn2)
+	return true
 end
 
 local function endMatch(data, conn)
@@ -363,9 +462,8 @@ local function endMatch(data, conn)
 end
 
 local function receivePing(data, conn)
-	if dudes[conn] then
-		dudes[conn].last_activity = os.time()
-	end
+	-- Note: last_activity is now updated in processData for ALL packet types
+	-- This function exists just to handle the ping packet type (no additional action needed)
 end
 
 -- Send ping to all connected clients and check for timeouts
@@ -424,6 +522,12 @@ function server:processData(data_str, conn)
 		return
 	end
 
+	-- Update last_activity for ALL valid packet types (not just ping)
+	-- This prevents false timeouts for actively playing clients
+	if dudes[conn] then
+		dudes[conn].last_activity = os.time()
+	end
+
 	if self.lookup[data.type] then
 		self.lookup[data.type](data, conn)
 	else
@@ -432,10 +536,24 @@ function server:processData(data_str, conn)
 end
 
 while true do
+	-- Bug 4 fix: Clean up old rate limit entries periodically
+	cleanupRateLimitEntries()
+
 	local new_conn = server_socket:accept() -- socket:accept() detects a new connection from a client.
 	if new_conn then -- write to dudes with minimal connection info.
-		new_conn:settimeout(0)
-		dudes[new_conn] = {waiting = true, partial_recv = "", name = "Dog", last_activity = os.time()}
+		local ip = getConnectionIP(new_conn)
+		if checkRateLimit(ip) then
+			new_conn:settimeout(0)
+			incrementConnectionCount(ip)
+			dudes[new_conn] = {waiting = true, partial_recv = "", name = "Dog", last_activity = os.time()}
+		else
+			-- Rate limit exceeded, reject connection
+			new_conn:settimeout(1)
+			pcall(function()
+				new_conn:send(json.encode({type = "rejected", message = "RateLimit"}) .. "\n")
+			end)
+			pcall(function() new_conn:close() end)
+		end
 	end
 
 	local recvt = {server_socket} -- server_socket is the first item in the array, needed to test for new connections
@@ -487,6 +605,11 @@ while true do
 	-- Check for client keepalive and send pings
 	checkKeepalive()
 
+	-- Bug 2 fix: Match pairs until fewer than 2 remain (handles 3+ simultaneous queuers)
 	local queuers = getQueuers()
-	if #queuers == 2 then startMatch(queuers[1], queuers[2]) end
+	while #queuers >= 2 do
+		startMatch(queuers[1], queuers[2])
+		-- Re-fetch queuers since startMatch modifies their queuing status
+		queuers = getQueuers()
+	end
 end

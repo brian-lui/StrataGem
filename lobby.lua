@@ -18,7 +18,7 @@ function Lobby:init(game, charselect)
 	self.charselect = charselect
 	self.disconnect_state = DISCONNECT_NONE
 	self.disconnect_start_time = 0
-	self.DISCONNECT_TIMEOUT = 3 -- seconds before forcing disconnect
+	self.DISCONNECT_TIMEOUT = 10 -- Bug 11 fix: increased from 3 to 10 seconds for slow/unreliable networks
 end
 
 function Lobby:connect()

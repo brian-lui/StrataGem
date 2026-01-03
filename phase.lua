@@ -11,6 +11,24 @@ phase
 local love = _G.love
 local common = require "class.commons"
 
+--[[
+	Bug 13 fix: Netplay timeout configuration
+	These values are in frames (60 fps assumed).
+	Adjust these based on network conditions:
+	- For LANs or fast connections, lower values are fine
+	- For high-latency or unreliable connections, increase these values
+--]]
+local NETPLAY_CONFIG = {
+	-- Frames to wait for opponent data before declaring connection lost
+	-- 360 frames = 6 seconds at 60 fps
+	DELTA_WAIT_FRAMES = 360,
+	STATE_WAIT_FRAMES = 360,
+
+	-- Frames between resending unconfirmed data (packet loss recovery)
+	-- 60 frames = 1 second at 60 fps
+	RESEND_INTERVAL_FRAMES = 60,
+}
+
 local Phase = {}
 
 function Phase:init(game)
@@ -19,9 +37,10 @@ function Phase:init(game)
 	self.INIT_TIME_TO_NEXT_REPLAY = 120 -- frames in action phase in replay mode
 	self.PLATFORM_SPIN_DELAY = 30 -- frames to animate platforms exploding
 	self.GAMEOVER_DELAY = 180 -- how long to stay on gameover screen
-	self.NETPLAY_DELTA_WAIT = 360 -- frames to wait for delta before lost connection
-	self.NETPLAY_STATE_WAIT = 360 -- frames to wait for state before lost connection
-	self.NETPLAY_RESEND_INTERVAL = 60 -- frames between resending unconfirmed data
+	-- Bug 13 fix: Use configuration values for netplay timeouts
+	self.NETPLAY_DELTA_WAIT = NETPLAY_CONFIG.DELTA_WAIT_FRAMES
+	self.NETPLAY_STATE_WAIT = NETPLAY_CONFIG.STATE_WAIT_FRAMES
+	self.NETPLAY_RESEND_INTERVAL = NETPLAY_CONFIG.RESEND_INTERVAL_FRAMES
 end
 
 function Phase:reset()
@@ -605,6 +624,12 @@ function Phase:platformsMoving(dt)
 			self:activatePause(next_phase)
 		end
 	end
+end
+
+-- Placeholder phase before cleanup (currently unused but in lookup table)
+function Phase:beforeCleanup(dt)
+	-- No-op: exists for potential future use
+	self:setPhase("Cleanup")
 end
 
 -- Game and player cleanup phase.

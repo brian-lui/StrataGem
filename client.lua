@@ -262,6 +262,10 @@ function Client:queue(action, queue_details)
 	self:send{type = "queue", action = action, queue_details = queue_details}
 end
 
+-- Bug 9 fix: Maximum retries for socket close
+local SOCKET_CLOSE_MAX_RETRIES = 3
+local SOCKET_CLOSE_RETRY_DELAY = 0.1 -- seconds
+
 -- user-initiated disconnect from server
 function Client:disconnect()
 	if self.connected then
@@ -272,8 +276,25 @@ function Client:disconnect()
 		if not success then
 			print("Failed to send disconnect notification: " .. tostring(err))
 		end
-		-- Close socket (also wrapped in pcall in case it's already closed)
-		pcall(function() self.client_socket:close() end)
+		-- Bug 9 fix: Close socket with retry and logging
+		local close_success = false
+		for attempt = 1, SOCKET_CLOSE_MAX_RETRIES do
+			local ok, close_err = pcall(function() self.client_socket:close() end)
+			if ok then
+				close_success = true
+				break
+			else
+				print("Socket close failed (attempt " .. attempt .. "/" .. SOCKET_CLOSE_MAX_RETRIES .. "): " .. tostring(close_err))
+				if attempt < SOCKET_CLOSE_MAX_RETRIES then
+					-- Brief delay before retry
+					local socket = require "socket"
+					socket.sleep(SOCKET_CLOSE_RETRY_DELAY)
+				end
+			end
+		end
+		if not close_success then
+			print("Warning: Socket close failed after " .. SOCKET_CLOSE_MAX_RETRIES .. " attempts, may have ghost connection on server")
+		end
 	else
 		print("Cannot disconnect, you weren't connected")
 	end
@@ -327,15 +348,24 @@ function Client:receiveDelta(recv)
 		return
 	end
 
-	-- Bug 3 fix: Check for duplicate packets using sequence number
+	-- Check for duplicate packets using sequence number
 	local recv_seq = recv.seq
 	if recv_seq ~= nil then
 		if type(recv_seq) ~= "number" then
 			print("Warning: Received delta with invalid sequence type")
 			return
 		end
-		if recv_seq <= self.their_delta_seq then
-			print("Ignoring duplicate delta packet (seq " .. recv_seq .. " <= " .. self.their_delta_seq .. ")")
+		if recv_seq < self.their_delta_seq then
+			-- Truly old packet, ignore completely
+			print("Ignoring old delta packet (seq " .. recv_seq .. " < " .. self.their_delta_seq .. ")")
+			return
+		elseif recv_seq == self.their_delta_seq then
+			-- Same sequence as already processed - this is a resend because our confirmation was lost
+			-- Re-send the confirmation if we're in a valid phase and have already processed their delta
+			if self.their_delta and VALID_DELTA_PHASES[current_phase] then
+				print("Re-sending delta confirmation for seq " .. recv_seq .. " (resend detected)")
+				self:send{type = "confirmed_delta", delta = recv.serial}
+			end
 			return
 		end
 		self.their_delta_seq = recv_seq
@@ -422,15 +452,24 @@ function Client:receiveState(recv)
 		return
 	end
 
-	-- Bug 3 fix: Check for duplicate packets using sequence number
+	-- Check for duplicate packets using sequence number
 	local recv_seq = recv.seq
 	if recv_seq ~= nil then
 		if type(recv_seq) ~= "number" then
 			print("Warning: Received state with invalid sequence type")
 			return
 		end
-		if recv_seq <= self.their_state_seq then
-			print("Ignoring duplicate state packet (seq " .. recv_seq .. " <= " .. self.their_state_seq .. ")")
+		if recv_seq < self.their_state_seq then
+			-- Truly old packet, ignore completely
+			print("Ignoring old state packet (seq " .. recv_seq .. " < " .. self.their_state_seq .. ")")
+			return
+		elseif recv_seq == self.their_state_seq then
+			-- Same sequence as already processed - this is a resend because our confirmation was lost
+			-- Re-send the confirmation if we have already processed their state
+			if self.their_state then
+				print("Re-sending state confirmation for seq " .. recv_seq .. " (resend detected)")
+				self:send{type = "confirmed_state", state = recv.serial}
+			end
 			return
 		end
 		self.their_state_seq = recv_seq
