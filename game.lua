@@ -427,7 +427,18 @@ function Game:serializePassive(current_delta)
 end
 
 -- takes a delta and plays it to the game
+-- returns true on success, false on validation failure
 function Game:deserializeDelta(delta_string, player)
+	-- Validate inputs
+	if type(delta_string) ~= "string" then
+		print("Invalid delta: not a string")
+		return false
+	end
+	if not player then
+		print("Invalid delta: no player provided")
+		return false
+	end
+
 	print("performing delta " .. delta_string .. " for player " .. player.player_num)
 
 	local delta = {}
@@ -436,13 +447,51 @@ function Game:deserializeDelta(delta_string, player)
 	for i, v in ipairs(delta) do
 		if (v == "Pc1") or (v == "Pc2") then
 			local pos = tonumber(delta[i+1])
-			local piece = player.hand[pos].piece
 			local rotation = tonumber(delta[i+2])
 			local column = tonumber(delta[i+3])
 
-			assert(piece, "piece in position " .. pos .. " not found")
-			assert(rotation, "rotation not provided")
-			assert(column, "placement column not provided")
+			-- Validate numeric values
+			if not pos or not rotation or not column then
+				print("Invalid delta: missing or non-numeric piece data")
+				return false
+			end
+
+			-- Validate position is in valid range (1-5 for hand slots)
+			if pos < 1 or pos > 5 then
+				print("Invalid delta: piece position " .. pos .. " out of range")
+				return false
+			end
+
+			-- Validate hand slot exists and has a piece
+			if not player.hand[pos] then
+				print("Invalid delta: hand slot " .. pos .. " does not exist")
+				return false
+			end
+
+			local piece = player.hand[pos].piece
+			if not piece then
+				print("Invalid delta: no piece in position " .. pos)
+				return false
+			end
+
+			-- Validate rotation is in valid range (0-3)
+			if rotation < 0 or rotation > 3 then
+				print("Invalid delta: rotation " .. rotation .. " out of range")
+				return false
+			end
+
+			-- Validate column is in valid range
+			local grid = self.grid
+			if column < 1 or column > grid.COLUMNS then
+				print("Invalid delta: column " .. column .. " out of range")
+				return false
+			end
+
+			-- Check horizontal piece doesn't go off-grid
+			if piece.size == 2 and piece.is_horizontal and column + 1 > grid.COLUMNS then
+				print("Invalid delta: horizontal piece at column " .. column .. " would go off-grid")
+				return false
+			end
 
 			for _ = 1, rotation do piece:rotate() end
 
@@ -460,11 +509,25 @@ function Game:deserializeDelta(delta_string, player)
 			piece:dropIntoBasin(coords, true)
 
 		elseif v == "S" then
-			assert(player.mp >= player.SUPER_COST, "Not enough meter to super")
+			if not player.mp or not player.SUPER_COST then
+				print("Invalid delta: player missing meter data")
+				return false
+			end
+			if player.mp < player.SUPER_COST then
+				print("Invalid delta: not enough meter to super (has " .. player.mp .. ", needs " .. player.SUPER_COST .. ")")
+				return false
+			end
 			player.is_supering = true
 			player.super_params = delta[i+1]
+
+		elseif v ~= "N" and v ~= "" then
+			-- Unknown delta command (not Pc1, Pc2, S, N, or empty)
+			print("Invalid delta: unknown command '" .. v .. "'")
+			return false
 		end
 	end
+
+	return true
 end
 
 -------------------------------------------------------------------------------

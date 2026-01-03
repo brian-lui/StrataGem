@@ -126,6 +126,14 @@ function Client:receiveDudes(recv)
 	end
 end
 
+function Client:receiveEndMatch(recv)
+	print("Match ended by server" .. (recv.reason and (": " .. recv.reason) or ""))
+	self:clear()
+	if self.game.type == "Netplay" then
+		self.game:switchState("gs_multiplayerselect")
+	end
+end
+
 function Client:receiveQueue(recv)
 	if recv.action == "already_queued" then
 		print("Already queued, didn't join again")
@@ -295,6 +303,7 @@ Client.lookup = {
 	ping = Client.receivePing,
 	current_dudes = Client.receiveDudes,
 	queue = Client.receiveQueue,
+	end_match = Client.receiveEndMatch,
 }
 
 -- select/case function

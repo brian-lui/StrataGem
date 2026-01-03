@@ -20,6 +20,7 @@ function Phase:init(game)
 	self.PLATFORM_SPIN_DELAY = 30 -- frames to animate platforms exploding
 	self.GAMEOVER_DELAY = 180 -- how long to stay on gameover screen
 	self.NETPLAY_DELTA_WAIT = 360 -- frames to wait for delta before lost connection
+	self.NETPLAY_STATE_WAIT = 360 -- frames to wait for state before lost connection
 end
 
 function Phase:reset()
@@ -32,6 +33,7 @@ function Phase:reset()
 	self.force_minimum_1_piece = true -- get at least 1 piece per turn
 	self.update_gravity_during_pause = false
 	self.damage_particle_duration = 0 -- for AfterAllMatches phase
+	self.netplay_wait_frames = 0 -- frames spent waiting for opponent data
 	if self.game.type == "Replay" then
 		self.INIT_ACTION_TIME = self.INIT_TIME_TO_NEXT_REPLAY
 	else
@@ -150,19 +152,39 @@ function Phase:netplaySendDelta(dt)
 	self:setPhase("NetplayWaitForDelta")
 end
 
--- Wait for client:receiveDelta here. Once received, push it to game
-function Phase:netplayWaitForDelta(dt)
-	--[[
-	TODO: if self.NETPLAY_DELTA_WAIT frames pass, then go to "lost connection".
-	Future error handling should re-request a delta instead of lost connection.
-	--]]
+-- Handle connection timeout during netplay
+function Phase:handleConnectionTimeout()
 	local game = self.game
 	local client = game.client
 
+	print("Connection timed out waiting for opponent")
+	client:endMatch()
+	game:switchState("gs_multiplayerselect")
+end
+
+-- Wait for client:receiveDelta here. Once received, push it to game
+function Phase:netplayWaitForDelta(dt)
+	local game = self.game
+	local client = game.client
+
+	-- Check for timeout
+	self.netplay_wait_frames = self.netplay_wait_frames + 1
+	if self.netplay_wait_frames >= self.NETPLAY_DELTA_WAIT then
+		self:handleConnectionTimeout()
+		return
+	end
+
 	if client.their_delta then
+		self.netplay_wait_frames = 0 -- reset wait counter
+
 		game.debugtextdump:writeTheirDeltaText()
 
-		game.ai:evaluateActions(game.them_player)
+		local success = game.ai:evaluateActions(game.them_player)
+		if not success then
+			print("Failed to process opponent delta, ending match")
+			self:handleConnectionTimeout()
+			return
+		end
 		game.ai:performQueuedAction()
 
 		game.particles.wordEffects.clear(game.particles)
@@ -628,10 +650,24 @@ function Phase:netplayWaitForState(dt)
 	local game = self.game
 	local client = game.client
 
+	-- Check for timeout
+	self.netplay_wait_frames = self.netplay_wait_frames + 1
+	if self.netplay_wait_frames >= self.NETPLAY_STATE_WAIT then
+		self:handleConnectionTimeout()
+		return
+	end
+
 	if client.their_state then
-		assert(client.our_state == client.their_state,
-			"States don't match! Upload this file to coder: " .. love.filesystem.getSaveDirectory() .. "/gamelog.txt"
-		)
+		self.netplay_wait_frames = 0 -- reset wait counter
+
+		if client.our_state ~= client.their_state then
+			print("States don't match! Desync detected.")
+			print("Upload this file to coder: " .. love.filesystem.getSaveDirectory() .. "/gamelog.txt")
+			self:handleConnectionTimeout()
+			return
+		end
+
+		client:sendStateConfirmation()
 		self:setPhase("NetplayNewTurn")
 	end
 end

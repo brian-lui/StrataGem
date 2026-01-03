@@ -207,7 +207,20 @@ local function startMatch(dude1, dude2)
 end
 
 local function endMatch(data, conn)
+	if not dudes[conn] then return end
+
+	-- Notify opponent that match has ended
+	local opponent_conn = getOpponentConn(conn)
+	if opponent_conn and dudes[opponent_conn] then
+		server.send({type = "end_match", reason = "opponent_left"}, opponent_conn)
+		dudes[opponent_conn].playing = false
+		dudes[opponent_conn].opponent = false
+	end
+
+	-- Update the player who ended the match
 	dudes[conn].playing = false
+	dudes[conn].opponent = false
+
 	sendDudes()
 end
 
