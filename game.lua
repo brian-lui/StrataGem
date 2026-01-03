@@ -518,8 +518,24 @@ function Game:deserializeDelta(delta_string, player)
 				print("Invalid delta: not enough meter to super (has " .. player.mp .. ", needs " .. player.SUPER_COST .. ")")
 				return false
 			end
+
+			-- Validate super_params exists and is a string
+			local super_params = delta[i+1]
+			if super_params == nil then
+				super_params = ""
+			elseif type(super_params) ~= "string" then
+				print("Invalid delta: super_params is not a string")
+				return false
+			end
+
+			-- Validate super_params only contains safe characters (alphanumeric and underscore)
+			if super_params ~= "" and not super_params:match("^[%w_]*$") then
+				print("Invalid delta: super_params contains invalid characters")
+				return false
+			end
+
 			player.is_supering = true
-			player.super_params = delta[i+1]
+			player.super_params = super_params
 
 		elseif v ~= "N" and v ~= "" then
 			-- Unknown delta command (not Pc1, Pc2, S, N, or empty)
@@ -854,6 +870,8 @@ function Game:deserializeState(state_string)
 	-- run p1special, p2special deserialization functions
 	p1:deserializeSpecials(p1_special_str)
 	p2:deserializeSpecials(p2_special_str)
+
+	return true
 end
 
 -------------------------------------------------------------------------------

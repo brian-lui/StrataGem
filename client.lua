@@ -58,8 +58,9 @@ function Client:update()
 		elseif partial_data and partial_data ~= "" then -- still incomplete packet.
 			-- Check for buffer overflow attack
 			if #self.partial_recv + #partial_data > MAX_PARTIAL_RECV_SIZE then
-				print("Partial packet buffer overflow, clearing buffer")
-				self.partial_recv = ""
+				print("Partial packet buffer overflow, disconnecting")
+				self:disconnect()
+				return
 			else
 				self.partial_recv = self.partial_recv .. partial_data
 				print("received partial data:" .. partial_data .. ".")
@@ -177,6 +178,11 @@ function Client:receiveQueue(recv)
 	elseif recv.action == "left" then
 		print("Left queue")
 		self.queuing = false
+	elseif recv.action == "invalid_details" then
+		print("Failed to join queue: invalid queue details")
+		if recv.message then
+			print("  Reason: " .. recv.message)
+		end
 	else
 		print("Invalid queue response")
 	end

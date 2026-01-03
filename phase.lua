@@ -191,7 +191,13 @@ function Phase:netplayWaitForDelta(dt)
 			self:handleConnectionTimeout()
 			return
 		end
-		game.ai:performQueuedAction()
+
+		local action_result = game.ai:performQueuedAction()
+		if action_result == false then
+			print("Failed to execute opponent delta action, ending match")
+			self:handleConnectionTimeout()
+			return
+		end
 
 		game.particles.wordEffects.clear(game.particles)
 		game.particles.upGem.removeAll(game.particles)

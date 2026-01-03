@@ -33,13 +33,19 @@ end
 
 function ai:performQueuedAction()
 	assert(self.queuedFunc, "ai tried to perform nonexistent queued action")
-	self.queuedFunc(table.unpack(self.queued_args))
+	local result = self.queuedFunc(table.unpack(self.queued_args))
 	self.queuedFunc, self.queued_args = nil, nil	-- Only run once.
 
 	if self.queuedSecondFunc then
-		self.queuedSecondFunc(table.unpack(self.queued_second_args))
+		local second_result = self.queuedSecondFunc(table.unpack(self.queued_second_args))
 		self.queuedSecondFunc, self.queued_second_args = nil, nil
+		-- If either action failed, return false
+		if second_result == false then
+			return false
+		end
 	end
+
+	return result
 end
 
 function ai:newTurn()

@@ -112,6 +112,23 @@ local function sendDudes()
 	for connection, _ in pairs(dudes) do server.send(to_send, connection) end
 end
 
+local function validateQueueDetails(queue_details)
+	if type(queue_details) ~= "table" then
+		return false, "queue_details must be a table"
+	end
+	if not queue_details.character or type(queue_details.character) ~= "string" then
+		return false, "queue_details.character must be a string"
+	end
+	if queue_details.character == "" then
+		return false, "queue_details.character cannot be empty"
+	end
+	-- background is optional but must be a string if provided
+	if queue_details.background ~= nil and type(queue_details.background) ~= "string" then
+		return false, "queue_details.background must be a string if provided"
+	end
+	return true
+end
+
 local function joinQueue(conn, queue_details)
 	print("Join queue request from", conn)
 	if dudes[conn] then
@@ -119,6 +136,14 @@ local function joinQueue(conn, queue_details)
 			print("Cannot join queue: Already in queue")
 			server.send({type = "queue", action = "already_queued"}, conn)
 		else
+			-- Validate queue_details structure
+			local valid, err = validateQueueDetails(queue_details)
+			if not valid then
+				print("Invalid queue_details: " .. err)
+				server.send({type = "queue", action = "invalid_details", message = err}, conn)
+				return
+			end
+
 			dudes[conn].queuing = true
 			dudes[conn].queue_details = queue_details
 			server.send({type = "queue", action = "queued"}, conn)
@@ -398,18 +423,31 @@ while true do
 	local ready = socket.select(recvt, nil, 5)
 	for _, conn in ipairs(ready) do -- ready returns any object that sent data
 		if conn ~= server_socket then -- if it's server_socket, do nothing, it's handled in new_conn above
+			-- Check connection still exists before processing
+			if not dudes[conn] then
+				print("Connection no longer in dudes table, skipping")
+				goto continue
+			end
+
 			local recv_str, err, partial_data = conn:receive("*l")
 			if err == "closed" then
 				disconnect(_, conn)
 			elseif recv_str then -- we got a complete packet now
+				-- Re-check after receive in case of concurrent modification
+				if not dudes[conn] then
+					print("Connection removed during receive, skipping")
+					goto continue
+				end
 				recv_str = dudes[conn].partial_recv .. recv_str
 				dudes[conn].partial_recv = ""
-				-- Update last activity time on any received data
-				if dudes[conn] then
-					dudes[conn].last_activity = os.time()
-				end
+				dudes[conn].last_activity = os.time()
 				server:processData(recv_str, conn)
 			elseif partial_data and partial_data ~= "" then -- still a partial packet
+				-- Re-check after receive in case of concurrent modification
+				if not dudes[conn] then
+					print("Connection removed during receive, skipping")
+					goto continue
+				end
 				-- Check for buffer overflow attack
 				if #dudes[conn].partial_recv + #partial_data > MAX_PARTIAL_RECV_SIZE then
 					print("Partial packet buffer overflow from client, disconnecting")
@@ -419,6 +457,7 @@ while true do
 					print("received partial data:" .. partial_data .. ".")
 				end
 			end
+			::continue::
 		end
 	end
 
