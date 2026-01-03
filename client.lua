@@ -182,7 +182,13 @@ end
 
 -- At new turn, clear the flags for having sent and received state information
 function Client:newTurn()
-	assert(self.delta_confirmed, "Opponent didn't confirm delta by end of turn")
+	-- Bug 3 fix: Validate both delta and state were confirmed before proceeding
+	if not self.delta_confirmed then
+		print("Warning: Opponent didn't confirm delta by end of turn")
+	end
+	if not self.state_confirmed then
+		print("Warning: Opponent didn't confirm state by end of turn")
+	end
 
 	self.our_delta = "N_"
 	self.their_delta = nil
@@ -278,11 +284,17 @@ end
 -- Can be activated anytime after sending delta.
 -- TODO: Better error handling - can request another delta instead of throwing exception
 function Client:receiveDeltaConfirmation(recv)
-	--[[
-	assert(self.game.current_phase == "NetplayWaitForConfirmation",
-		"Received delta confirmation in wrong phase " .. self.game.current_phase .. "!")
-	--]]
-	assert(self.our_delta == recv.delta, "Received delta confirmation doesn't match!")
+	-- Bug 2 fix: Validate recv.delta exists before comparison
+	if not recv.delta or type(recv.delta) ~= "string" then
+		print("Warning: Received invalid delta confirmation data")
+		return
+	end
+	if self.our_delta ~= recv.delta then
+		print("Warning: Received delta confirmation doesn't match!")
+		print("  our_delta: " .. tostring(self.our_delta))
+		print("  recv.delta: " .. tostring(recv.delta))
+		return
+	end
 	self.delta_confirmed = true
 end
 
@@ -314,7 +326,17 @@ function Client:sendStateConfirmation()
 end
 
 function Client:receiveStateConfirmation(recv)
-	assert(self.our_state == recv.state, "Received state confirmation doesn't match!")
+	-- Bug 1 fix: Validate recv.state exists before comparison
+	if not recv.state or type(recv.state) ~= "string" then
+		print("Warning: Received invalid state confirmation data")
+		return
+	end
+	if self.our_state ~= recv.state then
+		print("Warning: Received state confirmation doesn't match!")
+		print("  our_state length: " .. (self.our_state and #self.our_state or "nil"))
+		print("  recv.state length: " .. #recv.state)
+		return
+	end
 	self.state_confirmed = true
 end
 

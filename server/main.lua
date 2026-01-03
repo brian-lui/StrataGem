@@ -142,9 +142,17 @@ local function attemptedConnection(data, conn)
 	if not dudes[conn].waiting then
 		print("Client attempted re-connection! lame")
 		blob = {type = "rejected", message = "Nope"}
-	elseif data.version ~= server.VERSION then
-		print("Server/client version mismatch: server " .. server.VERSION .. ", client " .. data.version)
+	elseif not data.version then
+		-- Bug 4 fix: Validate version field exists
+		print("Client sent connect without version field")
 		blob = {type = "rejected", message = "Version", version = server.VERSION}
+	elseif data.version ~= server.VERSION then
+		print("Server/client version mismatch: server " .. server.VERSION .. ", client " .. tostring(data.version))
+		blob = {type = "rejected", message = "Version", version = server.VERSION}
+	elseif not data.name or type(data.name) ~= "string" or data.name == "" then
+		-- Bug 4 fix: Validate name field exists and is non-empty
+		print("Client sent connect without valid name field")
+		blob = {type = "rejected", message = "InvalidName"}
 	else
 		addDude(data, conn)
 		blob = {type = "connected", message = "Thanks"}
@@ -232,7 +240,8 @@ end
 local function endMatch(data, conn)
 	if not dudes[conn] then return end
 
-	-- Store opponent_id before clearing it from current player
+	-- Bug 5 fix: Cache all needed values upfront to avoid TOCTOU issues
+	local my_id = dudes[conn].id
 	local opponent_id = dudes[conn].opponent
 
 	-- Notify opponent that match has ended
@@ -244,9 +253,9 @@ local function endMatch(data, conn)
 	else
 		-- Opponent connection not found - clean up any stale references
 		-- by scanning for dudes that think they're playing against us
-		if opponent_id then
+		if opponent_id and my_id then
 			for other_conn, dude in pairs(dudes) do
-				if dude.opponent == dudes[conn].id then
+				if dude.opponent == my_id then
 					dude.playing = false
 					dude.opponent = false
 					print("Cleaned up stale opponent reference for dude id " .. dude.id)
@@ -255,9 +264,11 @@ local function endMatch(data, conn)
 		end
 	end
 
-	-- Update the player who ended the match
-	dudes[conn].playing = false
-	dudes[conn].opponent = false
+	-- Update the player who ended the match (re-check in case of concurrent modification)
+	if dudes[conn] then
+		dudes[conn].playing = false
+		dudes[conn].opponent = false
+	end
 
 	sendDudes()
 end
