@@ -190,7 +190,8 @@ function Phase:netplayWaitForDelta(dt)
 	-- Resend our delta periodically in case it was lost
 	if self.netplay_wait_frames > 0 and
 	   self.netplay_wait_frames % self.NETPLAY_RESEND_INTERVAL == 0 and
-	   not client.delta_confirmed then
+	   not client.delta_confirmed and
+	   client.connected then
 		print("Resending delta (attempt " .. math.floor(self.netplay_wait_frames / self.NETPLAY_RESEND_INTERVAL) .. ")")
 		client:sendDelta()
 	end
@@ -687,7 +688,8 @@ function Phase:netplayWaitForState(dt)
 	-- Resend our state periodically in case it was lost
 	if self.netplay_wait_frames > 0 and
 	   self.netplay_wait_frames % self.NETPLAY_RESEND_INTERVAL == 0 and
-	   not client.state_confirmed then
+	   not client.state_confirmed and
+	   client.connected then
 		print("Resending state (attempt " .. math.floor(self.netplay_wait_frames / self.NETPLAY_RESEND_INTERVAL) .. ")")
 		client:sendState()
 	end
@@ -705,6 +707,8 @@ function Phase:netplayWaitForState(dt)
 		if client.our_state ~= client.their_state then
 			print("States don't match! Desync detected.")
 			print("Upload this file to coder: " .. love.filesystem.getSaveDirectory() .. "/gamelog.txt")
+			-- Notify opponent about desync before ending match
+			client:sendDesyncNotification()
 			self:handleConnectionTimeout()
 			return
 		end

@@ -18,7 +18,6 @@ function Client:init(game)
 	self.connected = false
 	self.port = 49929
 	self.host = "165.227.7.122" -- hardlyworkinggames.com
-	self.match_start_time = nil -- set when match actually starts
 end
 
 function Client:connect()
@@ -108,8 +107,6 @@ function Client:startMatch(recv)
 		return
 	end
 
-	self.match_start_time = love.timer.getTime()
-
 	local p1_details, p2_details = recv.p1_details, recv.p2_details
 	local p1_char, p2_char = p1_details.character, p2_details.character
 	local background = recv.side == 1 and p1_details.background or p2_details.background
@@ -196,8 +193,6 @@ end
 
 -- call this when initializing client.lua, ending a match, or disconnecting
 function Client:clear()
-	-- Note: Don't reset match_start_time here - it should preserve the actual
-	-- match start time for logging purposes. It gets set in startMatch().
 	self.partial_recv = ""
 	self.playing = false -- this is overwritten in startMatch
 	self.queuing = false
@@ -237,6 +232,13 @@ function Client:endMatch()
 	self:clear()
 end
 
+-- Notify opponent that a desync was detected before ending match
+function Client:sendDesyncNotification()
+	if self.connected then
+		self:send({type = "end_match", reason = "desync"})
+	end
+end
+
 -- queue up for a match
 function Client:queue(action, queue_details)
 	self:send{type = "queue", action = action, queue_details = queue_details}
@@ -245,7 +247,14 @@ end
 -- user-initiated disconnect from server
 function Client:disconnect()
 	if self.connected then
-		self.client_socket:send(json.encode({type = "disconnect"}))
+		-- Try to notify server of disconnect (may fail if connection already broken)
+		local success, err = pcall(function()
+			self.client_socket:send(json.encode({type = "disconnect"}) .. "\n")
+		end)
+		if not success then
+			print("Failed to send disconnect notification: " .. tostring(err))
+		end
+		-- Close socket (also wrapped in pcall in case it's already closed)
 		pcall(function() self.client_socket:close() end)
 	else
 		print("Cannot disconnect, you weren't connected")
@@ -308,11 +317,14 @@ function Client:receiveDelta(recv)
 end
 
 -- Check if there's a pending delta and process it (called when entering valid phase)
+-- Uses local variable to ensure atomic check-and-clear operation
 function Client:checkPendingDelta()
-	if self.pending_their_delta and not self.their_delta then
-		print("Processing queued delta: " .. self.pending_their_delta)
-		self.their_delta = self.pending_their_delta
+	local pending = self.pending_their_delta
+	if pending and not self.their_delta then
+		-- Clear pending first to prevent double-processing
 		self.pending_their_delta = nil
+		print("Processing queued delta: " .. pending)
+		self.their_delta = pending
 		return true
 	end
 	return false

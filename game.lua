@@ -56,8 +56,6 @@ END QUEUE COMPONENT
 
 local Game = {}
 
-Game.NETPLAY_MAX_WAIT = 60
-Game.STATE_SEND_WAIT = 80
 Game.DAMAGE_PARTICLE_TO_PLATFORM_FRAMES = 54
 Game.DAMAGE_PARTICLE_PER_DROP_FRAMES = 26
 Game.GEM_EXPLODE_FRAMES = 20
@@ -421,6 +419,11 @@ function Game:serializeSuper(current_delta)
 end
 
 function Game:serializePassive(current_delta)
+	local player = self.me_player
+	if not player then
+		print("Error: No player set for passive serialization")
+		return current_delta
+	end
 	local serial = player:serializePassiveDeltaParams()
 
 	return "P_" .. serial .. "_"
@@ -671,7 +674,22 @@ end
 function Game:deserializeState(state_string)
 	print("applying state " .. state_string)
 
-	-- Bug 5 fix: Validate input
+	-- Color lookup table for validation and application
+	local color_table = {
+		R = "red",
+		B = "blue",
+		G = "green",
+		Y = "yellow",
+		W = "wild",
+		N = "none",
+		z = "empty",
+	}
+
+	--========================================================================
+	-- PHASE 1: Parse and validate ALL data before modifying any game state
+	--========================================================================
+
+	-- Validate input type
 	if type(state_string) ~= "string" or state_string == "" then
 		print("Invalid state string: not a valid string")
 		return false
@@ -680,7 +698,7 @@ function Game:deserializeState(state_string)
 	local state = {}
 	for s in (state_string.."_"):gmatch("(.-)_") do table.insert(state, s) end
 
-	-- Bug 5 fix: Validate state has correct number of elements
+	-- Validate state has correct number of elements
 	if #state ~= 23 then
 		print("Malformed state string: expected 23 elements, got " .. #state)
 		return false
@@ -688,7 +706,27 @@ function Game:deserializeState(state_string)
 
 	local p1char, p2char = state[1], state[2]
 
-	-- Bug 6 fix: Validate and convert numeric values with nil checks
+	-- Validate character names (prevent path traversal attacks)
+	local function isValidCharacterName(name)
+		if type(name) ~= "string" or name == "" then return false end
+		-- Only allow alphanumeric characters and underscores
+		if not name:match("^[%w_]+$") then return false end
+		-- Prevent path traversal
+		if name:find("%.%.")  then return false end
+		if name:find("[/\\]") then return false end
+		return true
+	end
+
+	if not isValidCharacterName(p1char) then
+		print("Invalid state string: invalid p1 character name '" .. tostring(p1char) .. "'")
+		return false
+	end
+	if not isValidCharacterName(p2char) then
+		print("Invalid state string: invalid p2 character name '" .. tostring(p2char) .. "'")
+		return false
+	end
+
+	-- Validate and convert numeric values
 	local p1burst = tonumber(state[3])
 	local p1super = tonumber(state[4])
 	local p1damage = tonumber(state[5])
@@ -696,7 +734,6 @@ function Game:deserializeState(state_string)
 	local p2super = tonumber(state[7])
 	local p2damage = tonumber(state[8])
 
-	-- Bug 6 fix: Check all numeric conversions succeeded
 	if not p1burst or not p1super or not p1damage or
 	   not p2burst or not p2super or not p2damage then
 		print("Invalid state string: numeric conversion failed for player stats")
@@ -707,32 +744,92 @@ function Game:deserializeState(state_string)
 
 	local grid_str = state[9]
 
-	-- Bug 5 fix: Validate grid string length (8x8 = 64 characters for basin)
+	-- Validate grid string length (8x8 = 64 characters for basin)
 	if type(grid_str) ~= "string" or #grid_str ~= 64 then
 		print("Invalid state string: grid_str should be 64 characters, got " .. (grid_str and #grid_str or "nil"))
 		return false
 	end
 
+	-- Validate all grid colors before applying
+	for i = 1, #grid_str do
+		local color = grid_str:sub(i, i)
+		if not color_table[color] then
+			print("Invalid color '" .. tostring(color) .. "' at position " .. i .. " in grid string!")
+			return false
+		end
+	end
+
 	local p1_hand = {state[10], state[11], state[12], state[13], state[14]}
 	local p2_hand = {state[15], state[16], state[17], state[18], state[19]}
+
+	-- Validate hand piece colors
+	local function validateHandColors(hand, player_name)
+		for i, piece_str in ipairs(hand) do
+			if #piece_str > 0 and #piece_str ~= 1 and #piece_str ~= 2 then
+				print("Invalid " .. player_name .. " hand slot " .. i .. ": expected 0-2 chars, got " .. #piece_str)
+				return false
+			end
+			for j = 1, #piece_str do
+				local color_abbrev = piece_str:sub(j, j)
+				if not color_table[color_abbrev] or color_abbrev == "z" then
+					print("Invalid color '" .. color_abbrev .. "' in " .. player_name .. " hand slot " .. i)
+					return false
+				end
+			end
+		end
+		return true
+	end
+
+	if not validateHandColors(p1_hand, "p1") then return false end
+	if not validateHandColors(p2_hand, "p2") then return false end
+
 	local rng_state = state[20]
 	local p1_special_str, p2_special_str = state[21], state[22]
 
-	-- if p1.character_name or p2.character_name not match, replace them
+	-- Validate RNG state is non-empty
+	if type(rng_state) ~= "string" or rng_state == "" then
+		print("Invalid state string: empty or invalid RNG state")
+		return false
+	end
+
+	-- Try to load character modules (validate they exist before modifying state)
+	local p1_char_module, p2_char_module
 	if p1char ~= self.p1.character_name then
-		print("p1char, id", p1char, self.p1.character_name)
-		self.p1 = common.instance(require("characters." .. p1char), 1, self)
+		local success, result = pcall(require, "characters." .. p1char)
+		if not success then
+			print("Invalid state string: cannot load p1 character '" .. p1char .. "'")
+			return false
+		end
+		p1_char_module = result
 	end
 	if p2char ~= self.p2.character_name then
+		local success, result = pcall(require, "characters." .. p2char)
+		if not success then
+			print("Invalid state string: cannot load p2 character '" .. p2char .. "'")
+			return false
+		end
+		p2_char_module = result
+	end
+
+	--========================================================================
+	-- PHASE 2: All validation passed - now apply changes atomically
+	--========================================================================
+
+	-- Replace characters if needed (now safe since we validated module exists)
+	if p1_char_module then
+		print("p1char, id", p1char, self.p1.character_name)
+		self.p1 = common.instance(p1_char_module, 1, self)
+	end
+	if p2_char_module then
 		print("p2char, id", p2char, self.p2.character_name)
-		self.p2 = common.instance(require("characters." .. p2char), 2, self)
+		self.p2 = common.instance(p2_char_module, 2, self)
 	end
 	self.p1.enemy = self.p2
 	self.p2.enemy = self.p1
 	local p1, p2 = self.p1, self.p2
 	self.me_player, self.them_player = self.p1, self.p2
 
-	-- overwrite burst, super, damage for both players
+	-- Overwrite burst, super, damage for both players
 	p1.cur_burst = p1burst
 	p1.mp = p1super
 	p1.hand.damage = p1damage
@@ -740,136 +837,92 @@ function Game:deserializeState(state_string)
 	p2.mp = p2super
 	p2.hand.damage = p2damage
 
-	local color_table = {
-		R = "red",
-		B = "blue",
-		G = "green",
-		Y = "yellow",
-		W = "wild",
-		N = "none",
-		z = "empty",
-	}
-	-- overwrite grid
-	local function writeGridString(row, col, color)
-		local loc = self.grid[row][col]
+	-- Overwrite grid (already validated all colors)
+	local grid = self.grid
+	for i = 1, #grid_str do
+		local color = grid_str:sub(i, i)
+		local row = math.ceil(i / grid.COLUMNS) + grid.PENDING_END_ROW
+		local col = (i - 1) % grid.COLUMNS + 1
+		local loc = grid[row][col]
 		loc.gem = false
 
-		-- Bug 4 fix: Return false instead of crashing on invalid color
-		if not color_table[color] then
-			print("Invalid color '" .. tostring(color) .. "' provided in grid string!")
-			return false
-		end
 		if color == "R" or color == "B" or color == "G" or color == "Y" then
 			loc.gem = Gem:create{
 				game = self,
-				x = self.grid.x[col],
-				y = self.grid.y[row],
+				x = grid.x[col],
+				y = grid.y[row],
 				color = color_table[color],
 			}
 		elseif color == "W" or color == "N" then
 			loc.gem = Gem:create{
 				game = self,
-				x = self.grid.x[col],
-				y = self.grid.y[row],
+				x = grid.x[col],
+				y = grid.y[row],
 				color = color_table[color],
 				exploding_gem_image = images.dummy,
 				grey_exploding_gem_image = images.dummy,
 				pop_particle_image = images.dummy,
 			}
 		end
-		return true
+		-- color == "z" means empty, gem stays false
 	end
 
-	local grid = self.grid
-	for i = 1, #grid_str do
-		local color = grid_str:sub(i, i)
-		local row = math.ceil(i / grid.COLUMNS) + grid.PENDING_END_ROW
-		local col = (i - 1) % grid.COLUMNS + 1
-		if not writeGridString(row, col, color) then
-			return false
-		end
-	end
+	-- Helper function to create hand pieces
+	local function createHandPieces(player, hand_data)
+		for i = 1, 5 do
+			player.hand[i].piece = nil
+			if #hand_data[i] == 1 or #hand_data[i] == 2 then
+				local gem_replace_table = {}
+				for gem_idx = 1, #hand_data[i] do
+					local color_abbrev = hand_data[i]:sub(gem_idx, gem_idx)
+					local color = color_table[color_abbrev]
 
-	-- delete current hands, overwrite with new hands
-	for i = 1, 5 do
-		p1.hand[i].piece = nil
-		if #p1_hand[i] == 1 or #p1_hand[i] == 2 then
-			local gem_replace_table = {}
-			for gem_idx = 1, #p1_hand[i] do
-				local color_abbrev = p1_hand[i]:sub(gem_idx, gem_idx)
-				local color = color_table[color_abbrev]
-
-				if color == "red"
-				or color == "blue"
-				or color == "green"
-				or color == "yellow" then
-					gem_replace_table[gem_idx] = {color = color}
-				elseif color == "wild" or color == "none" then
-					gem_replace_table[gem_idx] = {
-						color = color,
-						image = images.dummy,
-						exploding_gem_image = images.dummy,
-						grey_exploding_gem_image = images.dummy,
-						pop_particle_image = images.dummy,
-					}
+					if color == "red" or color == "blue" or color == "green" or color == "yellow" then
+						gem_replace_table[gem_idx] = {color = color}
+					elseif color == "wild" or color == "none" then
+						gem_replace_table[gem_idx] = {
+							color = color,
+							image = images.dummy,
+							exploding_gem_image = images.dummy,
+							grey_exploding_gem_image = images.dummy,
+							pop_particle_image = images.dummy,
+						}
+					end
 				end
-			end
 
-			p1.hand[i].piece = Piece:create{
-				game = self,
-				hand_idx = i,
-				owner = p1,
-				player_num = p1.player_num,
-				x = p1.hand[i].x,
-				y = p1.hand[i].y,
-				gem_replace_table = gem_replace_table,
-			}
+				player.hand[i].piece = Piece:create{
+					game = self,
+					hand_idx = i,
+					owner = player,
+					player_num = player.player_num,
+					x = player.hand[i].x,
+					y = player.hand[i].y,
+					gem_replace_table = gem_replace_table,
+				}
+			end
 		end
 	end
 
-	for i = 1, 5 do
-		p2.hand[i].piece = nil
-		if #p2_hand[i] == 1 or #p2_hand[i] == 2 then
-			local gem_replace_table = {}
-			for gem_idx = 1, #p2_hand[i] do
-				local color_abbrev = p2_hand[i]:sub(gem_idx, gem_idx)
-				local color = color_table[color_abbrev]
-
-				if color == "red"
-				or color == "blue"
-				or color == "green"
-				or color == "yellow" then
-					gem_replace_table[gem_idx] = {color = color}
-				elseif color == "wild" or color == "none" then
-					gem_replace_table[gem_idx] = {
-						color = color,
-						image = images.dummy,
-						exploding_gem_image = images.dummy,
-						grey_exploding_gem_image = images.dummy,
-						pop_particle_image = images.dummy,
-					}
-				end
-			end
-
-			p2.hand[i].piece = Piece:create{
-				game = self,
-				hand_idx = i,
-				owner = p2,
-				player_num = p2.player_num,
-				x = p2.hand[i].x,
-				y = p2.hand[i].y,
-				gem_replace_table = gem_replace_table,
-			}
-		end
-	end
+	createHandPieces(p1, p1_hand)
+	createHandPieces(p2, p2_hand)
 	grid:updateGrid()
 
-	-- replace rng state
-	self.rng:setState(rng_state)
+	-- Run p1special, p2special deserialization functions
+	-- Wrap in pcall to catch any errors
+	local special_success1, special_err1 = pcall(p1.deserializeSpecials, p1, p1_special_str)
+	if not special_success1 then
+		print("Warning: Failed to deserialize p1 specials: " .. tostring(special_err1))
+		-- Continue anyway as specials are optional
+	end
 
-	-- run p1special, p2special deserialization functions
-	p1:deserializeSpecials(p1_special_str)
-	p2:deserializeSpecials(p2_special_str)
+	local special_success2, special_err2 = pcall(p2.deserializeSpecials, p2, p2_special_str)
+	if not special_success2 then
+		print("Warning: Failed to deserialize p2 specials: " .. tostring(special_err2))
+		-- Continue anyway as specials are optional
+	end
+
+	-- Replace RNG state LAST (after all other operations that might fail)
+	self.rng:setState(rng_state)
 
 	return true
 end
