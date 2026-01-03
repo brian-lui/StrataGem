@@ -187,10 +187,11 @@ local function attemptedConnection(data, conn)
 		print("Client attempted re-connection! lame")
 		blob = {type = "rejected", message = "Nope"}
 	elseif not data.version then
-		-- Bug 4 fix: Validate version field exists
+		-- Reject without leaking server version - client sent malformed request
 		print("Client sent connect without version field")
-		blob = {type = "rejected", message = "Version", version = server.VERSION}
+		blob = {type = "rejected", message = "MissingVersion"}
 	elseif data.version ~= server.VERSION then
+		-- Only reveal server version when client provided a version (legitimate mismatch)
 		print("Server/client version mismatch: server " .. server.VERSION .. ", client " .. tostring(data.version))
 		blob = {type = "rejected", message = "Version", version = server.VERSION}
 	elseif not data.name or type(data.name) ~= "string" or data.name == "" then

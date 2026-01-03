@@ -21,6 +21,7 @@ function Phase:init(game)
 	self.GAMEOVER_DELAY = 180 -- how long to stay on gameover screen
 	self.NETPLAY_DELTA_WAIT = 360 -- frames to wait for delta before lost connection
 	self.NETPLAY_STATE_WAIT = 360 -- frames to wait for state before lost connection
+	self.NETPLAY_RESEND_INTERVAL = 60 -- frames between resending unconfirmed data
 end
 
 function Phase:reset()
@@ -143,6 +144,9 @@ function Phase:netplaySendDelta(dt)
 	local game = self.game
 	local client = game.client
 
+	-- Check if opponent already sent their delta before we were ready
+	client:checkPendingDelta()
+
 	-- check for super at end of turn
 	if game.me_player.is_supering then client:writeDeltaSuper() end
 
@@ -173,11 +177,22 @@ function Phase:netplayWaitForDelta(dt)
 	local game = self.game
 	local client = game.client
 
+	-- Check if there's a pending delta that arrived before we were ready
+	client:checkPendingDelta()
+
 	-- Check for timeout
 	self.netplay_wait_frames = self.netplay_wait_frames + 1
 	if self.netplay_wait_frames >= self.NETPLAY_DELTA_WAIT then
 		self:handleConnectionTimeout()
 		return
+	end
+
+	-- Resend our delta periodically in case it was lost
+	if self.netplay_wait_frames > 0 and
+	   self.netplay_wait_frames % self.NETPLAY_RESEND_INTERVAL == 0 and
+	   not client.delta_confirmed then
+		print("Resending delta (attempt " .. math.floor(self.netplay_wait_frames / self.NETPLAY_RESEND_INTERVAL) .. ")")
+		client:sendDelta()
 	end
 
 	if client.their_delta then
@@ -667,6 +682,14 @@ function Phase:netplayWaitForState(dt)
 	if self.netplay_wait_frames >= self.NETPLAY_STATE_WAIT then
 		self:handleConnectionTimeout()
 		return
+	end
+
+	-- Resend our state periodically in case it was lost
+	if self.netplay_wait_frames > 0 and
+	   self.netplay_wait_frames % self.NETPLAY_RESEND_INTERVAL == 0 and
+	   not client.state_confirmed then
+		print("Resending state (attempt " .. math.floor(self.netplay_wait_frames / self.NETPLAY_RESEND_INTERVAL) .. ")")
+		client:sendState()
 	end
 
 	if client.their_state then

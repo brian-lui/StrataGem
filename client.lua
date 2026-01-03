@@ -18,6 +18,7 @@ function Client:init(game)
 	self.connected = false
 	self.port = 49929
 	self.host = "165.227.7.122" -- hardlyworkinggames.com
+	self.match_start_time = nil -- set when match actually starts
 end
 
 function Client:connect()
@@ -135,11 +136,16 @@ end
 function Client:connectionRejected(recv)
 	if recv.message == "Version" then
 		print("Incorrect version, please update.")
-		print(" Server " .. recv.version .. ", client " .. self.game.VERSION)
+		print(" Server " .. tostring(recv.version) .. ", client " .. self.game.VERSION)
+	elseif recv.message == "MissingVersion" then
+		print("Connection rejected: client did not send version info")
+		print("This may indicate a bug in the client")
 	elseif recv.message == "Nope" then
 		print("You were already connected")
+	elseif recv.message == "InvalidName" then
+		print("Connection rejected: invalid or missing player name")
 	else
-		print("Unknown rejection reason lol")
+		print("Connection rejected: " .. tostring(recv.message))
 	end
 end
 
@@ -190,13 +196,15 @@ end
 
 -- call this when initializing client.lua, ending a match, or disconnecting
 function Client:clear()
-	self.match_start_time = love.timer.getTime()
+	-- Note: Don't reset match_start_time here - it should preserve the actual
+	-- match start time for logging purposes. It gets set in startMatch().
 	self.partial_recv = ""
 	self.playing = false -- this is overwritten in startMatch
 	self.queuing = false
 
 	self.our_delta = "N_"
 	self.their_delta = nil
+	self.pending_their_delta = nil -- delta received before we were ready
 	self.delta_confirmed = false
 	self.state_confirmed = false
 	self.our_state = nil
@@ -216,6 +224,7 @@ function Client:newTurn()
 
 	self.our_delta = "N_"
 	self.their_delta = nil
+	self.pending_their_delta = nil
 	self.delta_confirmed = false
 	self.state_confirmed = false
 	self.our_state = nil
@@ -281,20 +290,32 @@ local VALID_DELTA_PHASES = {
 function Client:receiveDelta(recv)
 	local current_phase = self.game.current_phase
 
-	-- Validate we're in a phase that can accept delta
-	if not VALID_DELTA_PHASES[current_phase] then
-		print("Warning: Received delta in unexpected phase " .. current_phase .. ", ignoring")
-		return
-	end
-
 	-- Validate the delta data
 	if not recv.serial or type(recv.serial) ~= "string" then
 		print("Warning: Received invalid delta data")
 		return
 	end
 
-	print("received serial: " .. recv.serial)
-	self.their_delta = recv.serial
+	-- If we're in a valid phase, process immediately
+	if VALID_DELTA_PHASES[current_phase] then
+		print("received serial: " .. recv.serial)
+		self.their_delta = recv.serial
+	else
+		-- Queue it for later - opponent sent their delta before we were ready
+		print("Received delta in phase " .. current_phase .. ", queuing for later")
+		self.pending_their_delta = recv.serial
+	end
+end
+
+-- Check if there's a pending delta and process it (called when entering valid phase)
+function Client:checkPendingDelta()
+	if self.pending_their_delta and not self.their_delta then
+		print("Processing queued delta: " .. self.pending_their_delta)
+		self.their_delta = self.pending_their_delta
+		self.pending_their_delta = nil
+		return true
+	end
+	return false
 end
 
 -- Only send the delta confirm during the WaitForDelta phase, to get lockstep
