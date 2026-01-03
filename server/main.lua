@@ -18,11 +18,29 @@ local last_ping_time = os.time()
 -- Maximum size for partial packet buffer (64KB)
 local MAX_PARTIAL_RECV_SIZE = 65536
 
+-- Bug 8 fix: Track connections being disconnected to prevent recursive calls
+local disconnecting = {}
+
 local function disconnect(_, conn)
+	-- Guard against recursive disconnect calls
+	if not conn or disconnecting[conn] then
+		return
+	end
+	disconnecting[conn] = true
+
 	print("Disconnected", conn)
-	if conn then conn:send(json.encode({type = "disconnected"})) end
+	
+	-- Clear from dudes table first to prevent other code from using this connection
 	if dudes[conn] then dudes[conn] = nil end
-	pcall(function() conn:close() end) -- like try/except in python
+	
+	-- Try to send disconnect notification (may fail, that's ok)
+	pcall(function() conn:send(json.encode({type = "disconnected"})) end)
+	
+	-- Close the connection
+	pcall(function() conn:close() end)
+	
+	-- Clear the disconnecting flag
+	disconnecting[conn] = nil
 end
 
 function server.send(data, conn)
@@ -188,6 +206,28 @@ end
 
 local function receiveGameData(data, conn)
 	if dudes[conn] then
+		-- Bug 6 fix: Validate game data structure before forwarding
+		local data_type = data.type
+		if data_type == "delta" or data_type == "state" then
+			-- Delta and state packets must have a serial field
+			if not data.serial or type(data.serial) ~= "string" then
+				print("Invalid " .. data_type .. " packet: missing or invalid serial field")
+				return
+			end
+		elseif data_type == "confirmed_delta" then
+			-- Confirmed delta must have a delta field
+			if not data.delta or type(data.delta) ~= "string" then
+				print("Invalid confirmed_delta packet: missing or invalid delta field")
+				return
+			end
+		elseif data_type == "confirmed_state" then
+			-- Confirmed state must have a state field
+			if not data.state or type(data.state) ~= "string" then
+				print("Invalid confirmed_state packet: missing or invalid state field")
+				return
+			end
+		end
+
 		local opponent = getOpponentConn(conn)
 		if opponent then
 			print("Received game data")
