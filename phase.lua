@@ -666,6 +666,13 @@ function Phase:netplayWaitForState(dt)
 	if client.their_state then
 		self.netplay_wait_frames = 0 -- reset wait counter
 
+		-- Bug 6 fix: Validate our_state exists before comparison
+		if not client.our_state then
+			print("Error: our_state is nil, cannot compare states")
+			self:handleConnectionTimeout()
+			return
+		end
+
 		if client.our_state ~= client.their_state then
 			print("States don't match! Desync detected.")
 			print("Upload this file to coder: " .. love.filesystem.getSaveDirectory() .. "/gamelog.txt")

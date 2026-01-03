@@ -738,7 +738,11 @@ function Game:deserializeState(state_string)
 		local loc = self.grid[row][col]
 		loc.gem = false
 
-		assert(color_table[color], "Invalid color " .. color .. " provided!")
+		-- Bug 4 fix: Return false instead of crashing on invalid color
+		if not color_table[color] then
+			print("Invalid color '" .. tostring(color) .. "' provided in grid string!")
+			return false
+		end
 		if color == "R" or color == "B" or color == "G" or color == "Y" then
 			loc.gem = Gem:create{
 				game = self,
@@ -757,6 +761,7 @@ function Game:deserializeState(state_string)
 				pop_particle_image = images.dummy,
 			}
 		end
+		return true
 	end
 
 	local grid = self.grid
@@ -764,7 +769,9 @@ function Game:deserializeState(state_string)
 		local color = grid_str:sub(i, i)
 		local row = math.ceil(i / grid.COLUMNS) + grid.PENDING_END_ROW
 		local col = (i - 1) % grid.COLUMNS + 1
-		writeGridString(row, col, color)
+		if not writeGridString(row, col, color) then
+			return false
+		end
 	end
 
 	-- delete current hands, overwrite with new hands

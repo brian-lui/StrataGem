@@ -87,7 +87,25 @@ end
 -------------------------------------------------------------------------------
 
 function Client:startMatch(recv)
-	assert(recv.side == 1 or recv.side == 2, "oh craps")
+	-- Bug 1 fix: Validate all required fields exist before accessing
+	if not recv.side or (recv.side ~= 1 and recv.side ~= 2) then
+		print("Invalid start packet: missing or invalid side")
+		return
+	end
+	if not recv.p1_details or not recv.p2_details then
+		print("Invalid start packet: missing player details")
+		return
+	end
+	if not recv.p1_details.character or not recv.p2_details.character then
+		print("Invalid start packet: missing character selection")
+		return
+	end
+	-- Bug 7 fix: Validate seed is a number
+	if not recv.seed or type(recv.seed) ~= "number" then
+		print("Invalid start packet: missing or invalid seed")
+		return
+	end
+
 	self.match_start_time = love.timer.getTime()
 
 	local p1_details, p2_details = recv.p1_details, recv.p2_details
@@ -101,8 +119,8 @@ function Client:startMatch(recv)
 		gametype = "Netplay",
 		char1 = p1_char,
 		char2 = p2_char,
-		playername1 = recv.p1_name,
-		playername2 = recv.p2_name,
+		playername1 = recv.p1_name or "Player 1",
+		playername2 = recv.p2_name or "Player 2",
 		background = background,
 		side = recv.side,
 		seed = recv.seed,
@@ -313,6 +331,11 @@ end
 
 -- Called when we receive a state from opponent.
 function Client:receiveState(recv)
+	-- Bug 2 fix: Validate recv.serial exists before use
+	if not recv.serial or type(recv.serial) ~= "string" then
+		print("Warning: Received invalid state data")
+		return
+	end
 	print("received serial: " .. recv.serial)
 	print("phase in which state was received: " .. self.game.current_phase)
 	self.their_state = recv.serial
@@ -320,8 +343,15 @@ end
 
 -- TODO: think about when it's allowable to send the confirmation. End of turn?
 function Client:sendStateConfirmation()
-	assert(self.game.current_phase == "NetplayWaitForState",
-		"Sending state in wrong phase " .. self.game.current_phase .. "!")
+	-- Bug 8 fix: Check connection before sending
+	if not self.connected then
+		print("Warning: Cannot send state confirmation, not connected")
+		return
+	end
+	if self.game.current_phase ~= "NetplayWaitForState" then
+		print("Warning: Sending state in wrong phase " .. self.game.current_phase)
+		return
+	end
 	self:send{type = "confirmed_state", state = self.their_state}
 end
 
@@ -358,10 +388,19 @@ Client.lookup = {
 
 -- select/case function
 function Client:processData(recv)
+	-- Bug 3 fix: Validate recv and recv.type exist before use
+	if not recv or type(recv) ~= "table" then
+		print("Warning: Received invalid data (not a table)")
+		return
+	end
+	if not recv.type then
+		print("Warning: Received data without type field")
+		return
+	end
 	if self.lookup[recv.type] then
 		self.lookup[recv.type](self, recv)
 	else
-		print("Invalid data type received from server")
+		print("Invalid data type received from server: " .. tostring(recv.type))
 	end
 end
 

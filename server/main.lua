@@ -101,6 +101,7 @@ local function addDude(data, new_conn)
 		partial_recv = "",
 		name = data.name,
 		last_activity = os.time(),
+		waiting = false, -- Bug 5 fix: Explicitly clear waiting flag so keepalive pings are sent
 	}
 	id_count = id_count + 1
 	print("new connection added", new_conn)
