@@ -144,8 +144,9 @@ function Phase:netplaySendDelta(dt)
 	local game = self.game
 	local client = game.client
 
-	-- Check if opponent already sent their delta before we were ready
-	client:checkPendingDelta()
+	-- NOTE: Don't check pending delta here - it creates a race condition
+	-- if delta arrives between this check and the one in netplayWaitForDelta.
+	-- Only check in netplayWaitForDelta for consistent handling.
 
 	-- check for super at end of turn
 	if game.me_player.is_supering then client:writeDeltaSuper() end
@@ -668,6 +669,11 @@ end
 -- Netplay only phase, sends state to opponent. No delay
 function Phase:netplaySendState(dt)
 	local game = self.game
+
+	-- Bug 4 fix: Reset wait counter when entering state phase
+	-- (it was used during delta phase and would carry over incorrectly)
+	self.netplay_wait_frames = 0
+
 	game.client:writeState()
 	game.client:sendState()
 	self:setPhase("NetplayWaitForState")

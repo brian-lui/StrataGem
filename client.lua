@@ -205,11 +205,21 @@ function Client:clear()
 	self.our_state = nil
 	self.their_state = nil
 	self.synced = true
+
+	-- Bug 3 fix: Sequence numbers for duplicate packet detection
+	self.our_delta_seq = 0      -- sequence number we send
+	self.our_state_seq = 0      -- sequence number we send
+	self.their_delta_seq = -1   -- last received delta sequence (-1 = none received)
+	self.their_state_seq = -1   -- last received state sequence (-1 = none received)
+
+	-- Bug 5 fix: Track if we've sent our delta/state (for confirmation race)
+	self.delta_sent = false
+	self.state_sent = false
 end
 
 -- At new turn, clear the flags for having sent and received state information
 function Client:newTurn()
-	-- Bug 3 fix: Validate both delta and state were confirmed before proceeding
+	-- Validate both delta and state were confirmed before proceeding
 	if not self.delta_confirmed then
 		print("Warning: Opponent didn't confirm delta by end of turn")
 	end
@@ -225,6 +235,14 @@ function Client:newTurn()
 	self.our_state = nil
 	self.their_state = nil
 	self.synced = false
+
+	-- Bug 3 fix: Increment sequence numbers for new turn
+	self.our_delta_seq = self.our_delta_seq + 1
+	self.our_state_seq = self.our_state_seq + 1
+
+	-- Bug 5 fix: Reset sent flags for new turn
+	self.delta_sent = false
+	self.state_sent = false
 end
 
 function Client:endMatch()
@@ -283,7 +301,11 @@ function Client:sendDelta()
 	assert(self.connected, "Not connected to opponent")
 	assert(type(self.our_delta) == "string", "Tried to send non-string delta")
 
-	self:send{type = "delta", serial = self.our_delta}
+	-- Bug 5 fix: Mark that we've sent our delta
+	self.delta_sent = true
+
+	-- Bug 3 fix: Include sequence number for duplicate detection
+	self:send{type = "delta", serial = self.our_delta, seq = self.our_delta_seq}
 end
 
 -- Valid phases for receiving opponent delta
@@ -303,6 +325,20 @@ function Client:receiveDelta(recv)
 	if not recv.serial or type(recv.serial) ~= "string" then
 		print("Warning: Received invalid delta data")
 		return
+	end
+
+	-- Bug 3 fix: Check for duplicate packets using sequence number
+	local recv_seq = recv.seq
+	if recv_seq ~= nil then
+		if type(recv_seq) ~= "number" then
+			print("Warning: Received delta with invalid sequence type")
+			return
+		end
+		if recv_seq <= self.their_delta_seq then
+			print("Ignoring duplicate delta packet (seq " .. recv_seq .. " <= " .. self.their_delta_seq .. ")")
+			return
+		end
+		self.their_delta_seq = recv_seq
 	end
 
 	-- If we're in a valid phase, process immediately
@@ -341,7 +377,13 @@ end
 -- Can be activated anytime after sending delta.
 -- TODO: Better error handling - can request another delta instead of throwing exception
 function Client:receiveDeltaConfirmation(recv)
-	-- Bug 2 fix: Validate recv.delta exists before comparison
+	-- Bug 5 fix: Only accept confirmation if we've actually sent a delta
+	if not self.delta_sent then
+		print("Warning: Received delta confirmation before sending delta, ignoring")
+		return
+	end
+
+	-- Validate recv.delta exists before comparison
 	if not recv.delta or type(recv.delta) ~= "string" then
 		print("Warning: Received invalid delta confirmation data")
 		return
@@ -365,16 +407,35 @@ function Client:sendState()
 	assert(self.connected, "Not connected to opponent")
 	assert(type(self.our_state) == "string", "Tried to send non-string state")
 
-	self:send{type = "state", serial = self.our_state}
+	-- Bug 5 fix: Mark that we've sent our state
+	self.state_sent = true
+
+	-- Bug 3 fix: Include sequence number for duplicate detection
+	self:send{type = "state", serial = self.our_state, seq = self.our_state_seq}
 end
 
 -- Called when we receive a state from opponent.
 function Client:receiveState(recv)
-	-- Bug 2 fix: Validate recv.serial exists before use
+	-- Validate recv.serial exists before use
 	if not recv.serial or type(recv.serial) ~= "string" then
 		print("Warning: Received invalid state data")
 		return
 	end
+
+	-- Bug 3 fix: Check for duplicate packets using sequence number
+	local recv_seq = recv.seq
+	if recv_seq ~= nil then
+		if type(recv_seq) ~= "number" then
+			print("Warning: Received state with invalid sequence type")
+			return
+		end
+		if recv_seq <= self.their_state_seq then
+			print("Ignoring duplicate state packet (seq " .. recv_seq .. " <= " .. self.their_state_seq .. ")")
+			return
+		end
+		self.their_state_seq = recv_seq
+	end
+
 	print("received serial: " .. recv.serial)
 	print("phase in which state was received: " .. self.game.current_phase)
 	self.their_state = recv.serial
@@ -395,7 +456,13 @@ function Client:sendStateConfirmation()
 end
 
 function Client:receiveStateConfirmation(recv)
-	-- Bug 1 fix: Validate recv.state exists before comparison
+	-- Bug 5 fix: Only accept confirmation if we've actually sent a state
+	if not self.state_sent then
+		print("Warning: Received state confirmation before sending state, ignoring")
+		return
+	end
+
+	-- Validate recv.state exists before comparison
 	if not recv.state or type(recv.state) ~= "string" then
 		print("Warning: Received invalid state confirmation data")
 		return

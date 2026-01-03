@@ -21,6 +21,9 @@ local MAX_PARTIAL_RECV_SIZE = 65536
 -- Bug 8 fix: Track connections being disconnected to prevent recursive calls
 local disconnecting = {}
 
+-- Bug 6 fix: Track matches being ended to prevent race conditions
+local ending_match = {}
+
 local function disconnect(_, conn)
 	-- Guard against recursive disconnect calls
 	if not conn or disconnecting[conn] then
@@ -233,7 +236,13 @@ end
 
 local function receiveGameData(data, conn)
 	if dudes[conn] then
-		-- Bug 6 fix: Validate game data structure before forwarding
+		-- Bug 2 fix: Verify connection is actually in a match before forwarding
+		if not dudes[conn].playing then
+			print("Received game data from connection not in a match, ignoring")
+			return
+		end
+
+		-- Validate game data structure before forwarding
 		local data_type = data.type
 		if data_type == "delta" or data_type == "state" then
 			-- Delta and state packets must have a serial field
@@ -307,14 +316,24 @@ end
 local function endMatch(data, conn)
 	if not dudes[conn] then return end
 
-	-- Bug 5 fix: Cache all needed values upfront to avoid TOCTOU issues
+	-- Bug 6 fix: Guard against race conditions when both players end match simultaneously
+	if ending_match[conn] then
+		print("endMatch already in progress for this connection, skipping")
+		return
+	end
+	ending_match[conn] = true
+
+	-- Cache all needed values upfront to avoid TOCTOU issues
 	local my_id = dudes[conn].id
 	local opponent_id = dudes[conn].opponent
 
 	-- Notify opponent that match has ended
 	local opponent_conn = getOpponentConn(conn)
 	if opponent_conn and dudes[opponent_conn] then
-		server.send({type = "end_match", reason = "opponent_left"}, opponent_conn)
+		-- Bug 6 fix: Mark opponent as ending too to prevent double cleanup
+		if not ending_match[opponent_conn] then
+			server.send({type = "end_match", reason = "opponent_left"}, opponent_conn)
+		end
 		dudes[opponent_conn].playing = false
 		dudes[opponent_conn].opponent = false
 	else
@@ -336,6 +355,9 @@ local function endMatch(data, conn)
 		dudes[conn].playing = false
 		dudes[conn].opponent = false
 	end
+
+	-- Bug 6 fix: Clear the guard after cleanup is complete
+	ending_match[conn] = nil
 
 	sendDudes()
 end
