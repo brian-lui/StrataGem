@@ -158,6 +158,12 @@ function Phase:handleConnectionTimeout()
 	local client = game.client
 
 	print("Connection timed out waiting for opponent")
+
+	-- Clear any pending delta/state data to prevent late arrivals from being processed
+	-- after we've already transitioned away from the netplay phases
+	client.their_delta = nil
+	client.their_state = nil
+
 	client:endMatch()
 	game:switchState("gs_multiplayerselect")
 end

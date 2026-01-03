@@ -162,19 +162,33 @@ local function getConnFromID(id)
 end
 
 local function getOpponentConn(conn)
+	if not dudes[conn] then
+		print("getOpponentConn: connection not in dudes table")
+		return nil
+	end
 	local opponent_id = dudes[conn].opponent
+	if not opponent_id then
+		print("getOpponentConn: no opponent_id set")
+		return nil
+	end
 	for connection, dude in pairs(dudes) do
 		if opponent_id == dude.id then return connection end
 	end
 	print("Opponent not found!")
+	return nil
 end
 
 local function receiveGameData(data, conn)
 	if dudes[conn] then
 		local opponent = getOpponentConn(conn)
-		print("Received game data")
-		print("Sending to opponent", opponent)
-		server.send(data, opponent)
+		if opponent then
+			print("Received game data")
+			print("Sending to opponent", opponent)
+			server.send(data, opponent)
+		else
+			print("Cannot forward game data: opponent not found, ending match")
+			endMatch(nil, conn)
+		end
 	else
 		print("Got info from an unconnected dude, this shouldn't happen")
 	end
@@ -218,12 +232,27 @@ end
 local function endMatch(data, conn)
 	if not dudes[conn] then return end
 
+	-- Store opponent_id before clearing it from current player
+	local opponent_id = dudes[conn].opponent
+
 	-- Notify opponent that match has ended
 	local opponent_conn = getOpponentConn(conn)
 	if opponent_conn and dudes[opponent_conn] then
 		server.send({type = "end_match", reason = "opponent_left"}, opponent_conn)
 		dudes[opponent_conn].playing = false
 		dudes[opponent_conn].opponent = false
+	else
+		-- Opponent connection not found - clean up any stale references
+		-- by scanning for dudes that think they're playing against us
+		if opponent_id then
+			for other_conn, dude in pairs(dudes) do
+				if dude.opponent == dudes[conn].id then
+					dude.playing = false
+					dude.opponent = false
+					print("Cleaned up stale opponent reference for dude id " .. dude.id)
+				end
+			end
+		end
 	end
 
 	-- Update the player who ended the match

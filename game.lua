@@ -487,13 +487,14 @@ function Game:deserializeDelta(delta_string, player)
 				return false
 			end
 
-			-- Check horizontal piece doesn't go off-grid
+			-- Apply rotation first
+			for _ = 1, rotation do piece:rotate() end
+
+			-- Check horizontal piece doesn't go off-grid AFTER rotation
 			if piece.size == 2 and piece.is_horizontal and column + 1 > grid.COLUMNS then
-				print("Invalid delta: horizontal piece at column " .. column .. " would go off-grid")
+				print("Invalid delta: horizontal piece at column " .. column .. " would go off-grid after rotation")
 				return false
 			end
-
-			for _ = 1, rotation do piece:rotate() end
 
 			local coords
 			if piece.size == 2 then
@@ -653,18 +654,49 @@ end
 --]]
 function Game:deserializeState(state_string)
 	print("applying state " .. state_string)
+
+	-- Bug 5 fix: Validate input
+	if type(state_string) ~= "string" or state_string == "" then
+		print("Invalid state string: not a valid string")
+		return false
+	end
+
 	local state = {}
 	for s in (state_string.."_"):gmatch("(.-)_") do table.insert(state, s) end
-	assert(#state == 23, "Malformed state string " .. #state)
+
+	-- Bug 5 fix: Validate state has correct number of elements
+	if #state ~= 23 then
+		print("Malformed state string: expected 23 elements, got " .. #state)
+		return false
+	end
 
 	local p1char, p2char = state[1], state[2]
+
+	-- Bug 6 fix: Validate and convert numeric values with nil checks
 	local p1burst = tonumber(state[3])
 	local p1super = tonumber(state[4])
 	local p1damage = tonumber(state[5])
 	local p2burst = tonumber(state[6])
 	local p2super = tonumber(state[7])
 	local p2damage = tonumber(state[8])
+
+	-- Bug 6 fix: Check all numeric conversions succeeded
+	if not p1burst or not p1super or not p1damage or
+	   not p2burst or not p2super or not p2damage then
+		print("Invalid state string: numeric conversion failed for player stats")
+		print("  p1burst=" .. tostring(p1burst) .. ", p1super=" .. tostring(p1super) .. ", p1damage=" .. tostring(p1damage))
+		print("  p2burst=" .. tostring(p2burst) .. ", p2super=" .. tostring(p2super) .. ", p2damage=" .. tostring(p2damage))
+		return false
+	end
+
 	local grid_str = state[9]
+
+	-- Bug 5 fix: Validate grid string length (8x8 = 64 characters for basin)
+	if type(grid_str) ~= "string" or #grid_str ~= 64 then
+		print("Invalid state string: grid_str should be 64 characters, got " .. (grid_str and #grid_str or "nil"))
+		return false
+	end
+
 	local p1_hand = {state[10], state[11], state[12], state[13], state[14]}
 	local p2_hand = {state[15], state[16], state[17], state[18], state[19]}
 	local rng_state = state[20]
