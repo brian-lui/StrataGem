@@ -10,6 +10,9 @@ local common = require "class.commons"
 
 local Client = {}
 
+-- Maximum size for partial packet buffer (64KB)
+local MAX_PARTIAL_RECV_SIZE = 65536
+
 function Client:init(game)
 	self.game = game
 	self.connected = false
@@ -45,11 +48,22 @@ function Client:update()
 		if recv_str then -- we got a completed packet now
 			recv_str = self.partial_recv .. recv_str
 			self.partial_recv = ""
-			local recv = json.decode(recv_str)
-			self:processData(recv)
+			local success, recv = pcall(json.decode, recv_str)
+			if success and recv then
+				self:processData(recv)
+			else
+				print("Failed to decode JSON from server: " .. tostring(recv))
+				print("Raw data: " .. recv_str:sub(1, 100)) -- log first 100 chars
+			end
 		elseif partial_data and partial_data ~= "" then -- still incomplete packet.
-			self.partial_recv = self.partial_recv .. partial_data
-			print("received partial data:" .. partial_data .. ".")
+			-- Check for buffer overflow attack
+			if #self.partial_recv + #partial_data > MAX_PARTIAL_RECV_SIZE then
+				print("Partial packet buffer overflow, clearing buffer")
+				self.partial_recv = ""
+			else
+				self.partial_recv = self.partial_recv .. partial_data
+				print("received partial data:" .. partial_data .. ".")
+			end
 		end
 	end
 end
@@ -224,17 +238,31 @@ function Client:sendDelta()
 	self:send{type = "delta", serial = self.our_delta}
 end
 
+-- Valid phases for receiving opponent delta
+-- NetplaySendDelta: We just sent ours, opponent may be faster
+-- NetplayWaitForDelta: This is the expected phase for receiving delta
+local VALID_DELTA_PHASES = {
+	NetplaySendDelta = true,
+	NetplayWaitForDelta = true,
+}
+
 -- Called when we receive a delta from opponent.
 -- Should be activated from Phase:netplayWaitForDelta.
 function Client:receiveDelta(recv)
 	local current_phase = self.game.current_phase
-	assert(
-	current_phase == "NetplayWaitForDelta" or
-	current_phase == "Intro" or
-	current_phase == "Action" or
-	current_phase == "NetplaySendDelta",
-		"Received delta in wrong phase " .. current_phase .. "!"
-	)
+
+	-- Validate we're in a phase that can accept delta
+	if not VALID_DELTA_PHASES[current_phase] then
+		print("Warning: Received delta in unexpected phase " .. current_phase .. ", ignoring")
+		return
+	end
+
+	-- Validate the delta data
+	if not recv.serial or type(recv.serial) ~= "string" then
+		print("Warning: Received invalid delta data")
+		return
+	end
+
 	print("received serial: " .. recv.serial)
 	self.their_delta = recv.serial
 end

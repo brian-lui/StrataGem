@@ -10,6 +10,14 @@ local dudes = {}
 local server_socket = socket.bind("*", 49929)
 server_socket:settimeout(0)
 
+-- Keepalive settings
+local PING_INTERVAL = 30 -- seconds between pings
+local PING_TIMEOUT = 60 -- seconds before considering connection dead
+local last_ping_time = os.time()
+
+-- Maximum size for partial packet buffer (64KB)
+local MAX_PARTIAL_RECV_SIZE = 65536
+
 local function disconnect(_, conn)
 	print("Disconnected", conn)
 	if conn then conn:send(json.encode({type = "disconnected"})) end
@@ -74,6 +82,7 @@ local function addDude(data, new_conn)
 		connected = true,
 		partial_recv = "",
 		name = data.name,
+		last_activity = os.time(),
 	}
 	id_count = id_count + 1
 	print("new connection added", new_conn)
@@ -224,6 +233,43 @@ local function endMatch(data, conn)
 	sendDudes()
 end
 
+local function receivePing(data, conn)
+	if dudes[conn] then
+		dudes[conn].last_activity = os.time()
+	end
+end
+
+-- Send ping to all connected clients and check for timeouts
+local function checkKeepalive()
+	local current_time = os.time()
+
+	-- Only run keepalive check every PING_INTERVAL seconds
+	if current_time - last_ping_time < PING_INTERVAL then
+		return
+	end
+	last_ping_time = current_time
+
+	local to_disconnect = {}
+
+	for conn, dude in pairs(dudes) do
+		if not dude.waiting then -- only ping fully connected clients
+			-- Check for timeout
+			if dude.last_activity and (current_time - dude.last_activity > PING_TIMEOUT) then
+				print("Client timed out:", conn)
+				table.insert(to_disconnect, conn)
+			else
+				-- Send ping
+				server.send({type = "ping"}, conn)
+			end
+		end
+	end
+
+	-- Disconnect timed out clients
+	for _, conn in ipairs(to_disconnect) do
+		disconnect(nil, conn)
+	end
+end
+
 server.lookup = {
 	connect = attemptedConnection,
 	disconnect = disconnect,
@@ -231,18 +277,28 @@ server.lookup = {
 	state = receiveGameData,
 	confirmed_delta = receiveGameData,
 	confirmed_state = receiveGameData,
-	--ping = receivePing,
+	ping = receivePing,
 	queue = receiveQueue,
 	end_match = endMatch,
 }
 
 function server:processData(data_str, conn)
-	local data = json.decode(data_str)
+	local success, data = pcall(json.decode, data_str)
+	if not success or not data then
+		print("Failed to decode JSON from client: " .. tostring(data))
+		print("Raw data: " .. data_str:sub(1, 100)) -- log first 100 chars
+		return
+	end
+
+	if not data.type then
+		print("Received data without type field")
+		return
+	end
+
 	if self.lookup[data.type] then
 		self.lookup[data.type](data, conn)
 	else
-		print("Invalid data type received from client")
-		print(data_str)
+		print("Invalid data type received from client: " .. tostring(data.type))
 	end
 end
 
@@ -250,7 +306,7 @@ while true do
 	local new_conn = server_socket:accept() -- socket:accept() detects a new connection from a client.
 	if new_conn then -- write to dudes with minimal connection info.
 		new_conn:settimeout(0)
-		dudes[new_conn] = {waiting = true, partial_recv = "", name = "Dog"}
+		dudes[new_conn] = {waiting = true, partial_recv = "", name = "Dog", last_activity = os.time()}
 	end
 
 	local recvt = {server_socket} -- server_socket is the first item in the array, needed to test for new connections
@@ -267,13 +323,26 @@ while true do
 			elseif recv_str then -- we got a complete packet now
 				recv_str = dudes[conn].partial_recv .. recv_str
 				dudes[conn].partial_recv = ""
+				-- Update last activity time on any received data
+				if dudes[conn] then
+					dudes[conn].last_activity = os.time()
+				end
 				server:processData(recv_str, conn)
 			elseif partial_data and partial_data ~= "" then -- still a partial packet
-				dudes[conn].partial_recv = dudes[conn].partial_recv .. partial_data
-				print("received partial data:" .. partial_data .. ".")
+				-- Check for buffer overflow attack
+				if #dudes[conn].partial_recv + #partial_data > MAX_PARTIAL_RECV_SIZE then
+					print("Partial packet buffer overflow from client, disconnecting")
+					disconnect(_, conn)
+				else
+					dudes[conn].partial_recv = dudes[conn].partial_recv .. partial_data
+					print("received partial data:" .. partial_data .. ".")
+				end
 			end
 		end
 	end
+
+	-- Check for client keepalive and send pings
+	checkKeepalive()
 
 	local queuers = getQueuers()
 	if #queuers == 2 then startMatch(queuers[1], queuers[2]) end
