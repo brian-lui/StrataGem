@@ -183,6 +183,13 @@ function Phase:handleConnectionTimeout()
 
 	print("Connection timed out waiting for opponent")
 
+	-- Bug 27 fix: Check client exists before accessing properties
+	if not client then
+		print("handleConnectionTimeout: client is nil")
+		game:switchState("gs_multiplayerselect")
+		return
+	end
+
 	-- Clear any pending delta/state data to prevent late arrivals from being processed
 	-- after we've already transitioned away from the netplay phases
 	client.their_delta = nil
@@ -763,7 +770,13 @@ function Phase:netplayNewTurn(dt)
 		return
 	end
 
-	client:newTurn()
+	-- Bug 28 fix: Handle case when newTurn fails due to too many unconfirmed turns
+	local success = client:newTurn()
+	if not success then
+		game:switchState("gs_multiplayerselect")
+		return
+	end
+
 	game:newTurn()
 	self:setPhase("Action")
 end

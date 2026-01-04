@@ -13,6 +13,7 @@ server_socket:settimeout(0)
 -- Keepalive settings
 local PING_INTERVAL = 30 -- seconds between pings
 local PING_TIMEOUT = 60 -- seconds before considering connection dead
+local HANDSHAKE_TIMEOUT = 10 -- Bug 23 fix: seconds before timing out clients that never complete handshake
 local last_ping_time = os.time()
 
 -- Maximum size for partial packet buffer (64KB)
@@ -139,9 +140,13 @@ end
 function server.send(data, conn)
 	local blob = json.encode(data) .. "\n" -- we are using *l receive mode
 	if conn then
-		local success = conn:send(blob)
-		if not success then
-			print("Oh noes, blob send unsuccessful")
+		-- Bug 9 fix: Check that all bytes were sent (send returns bytes sent, not boolean)
+		local bytes_sent, err = conn:send(blob)
+		if not bytes_sent then
+			print("Oh noes, blob send unsuccessful: " .. tostring(err))
+			disconnect(nil, conn)
+		elseif bytes_sent ~= #blob then
+			print("Partial send: sent " .. bytes_sent .. " of " .. #blob .. " bytes")
 			disconnect(nil, conn)
 		end
 	else
@@ -218,6 +223,17 @@ local function validateQueueDetails(queue_details)
 	-- background is optional but must be a string if provided
 	if queue_details.background ~= nil and type(queue_details.background) ~= "string" then
 		return false, "queue_details.background must be a string if provided"
+	end
+	-- Bug 26 fix: Validate background content to prevent path traversal
+	if queue_details.background then
+		-- Only allow alphanumeric characters, underscores, and hyphens
+		if not queue_details.background:match("^[%w_%-]+$") then
+			return false, "queue_details.background contains invalid characters"
+		end
+		-- Prevent path traversal attempts
+		if queue_details.background:find("%.%.") then
+			return false, "queue_details.background cannot contain path traversal"
+		end
 	end
 	return true
 end
@@ -375,6 +391,15 @@ local function receiveGameData(data, conn)
 end
 
 local function startMatch(dude1, dude2)
+	-- Bug 20 fix: Check dudes exist before accessing properties
+	if not dude1 then
+		print("startMatch: dude1 is nil")
+		return false
+	end
+	if not dude2 then
+		print("startMatch: dude2 is nil")
+		return false
+	end
 	print(dude1)
 	print(dude1.id)
 	print(dude2)
@@ -444,41 +469,48 @@ local function endMatch(data, conn)
 	end
 	ending_match[conn] = true
 
-	-- Cache all needed values upfront to avoid TOCTOU issues
-	local my_id = dudes[conn].id
-	local opponent_id = dudes[conn].opponent
+	-- Bug 25 fix: Wrap in pcall to ensure ending_match is always cleared even on error
+	local success, err = pcall(function()
+		-- Cache all needed values upfront to avoid TOCTOU issues
+		local my_id = dudes[conn] and dudes[conn].id
+		local opponent_id = dudes[conn] and dudes[conn].opponent
 
-	-- Notify opponent that match has ended
-	local opponent_conn = getOpponentConn(conn)
-	if opponent_conn and dudes[opponent_conn] then
-		-- Bug 6 fix: Mark opponent as ending too to prevent double cleanup
-		if not ending_match[opponent_conn] then
-			server.send({type = "end_match", reason = "opponent_left"}, opponent_conn)
-		end
-		dudes[opponent_conn].playing = false
-		dudes[opponent_conn].opponent = false
-	else
-		-- Opponent connection not found - clean up any stale references
-		-- by scanning for dudes that think they're playing against us
-		if opponent_id and my_id then
-			for other_conn, dude in pairs(dudes) do
-				if dude.opponent == my_id then
-					dude.playing = false
-					dude.opponent = false
-					print("Cleaned up stale opponent reference for dude id " .. dude.id)
+		-- Notify opponent that match has ended
+		local opponent_conn = getOpponentConn(conn)
+		if opponent_conn and dudes[opponent_conn] then
+			-- Bug 6 fix: Mark opponent as ending too to prevent double cleanup
+			if not ending_match[opponent_conn] then
+				server.send({type = "end_match", reason = "opponent_left"}, opponent_conn)
+			end
+			dudes[opponent_conn].playing = false
+			dudes[opponent_conn].opponent = false
+		else
+			-- Opponent connection not found - clean up any stale references
+			-- by scanning for dudes that think they're playing against us
+			if opponent_id and my_id then
+				for other_conn, dude in pairs(dudes) do
+					if dude.opponent == my_id then
+						dude.playing = false
+						dude.opponent = false
+						print("Cleaned up stale opponent reference for dude id " .. dude.id)
+					end
 				end
 			end
 		end
-	end
 
-	-- Update the player who ended the match (re-check in case of concurrent modification)
-	if dudes[conn] then
-		dudes[conn].playing = false
-		dudes[conn].opponent = false
-	end
+		-- Update the player who ended the match (re-check in case of concurrent modification)
+		if dudes[conn] then
+			dudes[conn].playing = false
+			dudes[conn].opponent = false
+		end
+	end)
 
-	-- Bug 6 fix: Clear the guard after cleanup is complete
+	-- Bug 25 fix: Always clear the guard, even if an error occurred
 	ending_match[conn] = nil
+
+	if not success then
+		print("Error during endMatch cleanup: " .. tostring(err))
+	end
 
 	sendDudes()
 end
@@ -509,6 +541,12 @@ local function checkKeepalive()
 			else
 				-- Send ping
 				server.send({type = "ping"}, conn)
+			end
+		else
+			-- Bug 23 fix: Timeout clients that never complete the handshake
+			if dude.last_activity and (current_time - dude.last_activity > HANDSHAKE_TIMEOUT) then
+				print("Client timed out during handshake:", conn)
+				table.insert(to_disconnect, conn)
 			end
 		end
 	end
@@ -631,7 +669,20 @@ while true do
 	-- Bug 2 fix: Match pairs until fewer than 2 remain (handles 3+ simultaneous queuers)
 	local queuers = getQueuers()
 	while #queuers >= 2 do
-		startMatch(queuers[1], queuers[2])
+		local success = startMatch(queuers[1], queuers[2])
+		-- Bug 19 fix: If startMatch fails, clear queuing status to prevent infinite loop
+		if not success then
+			local conn1 = getConnFromID(queuers[1].id)
+			local conn2 = getConnFromID(queuers[2].id)
+			if conn1 and dudes[conn1] then
+				dudes[conn1].queuing = false
+				server.send({type = "queue", action = "match_failed"}, conn1)
+			end
+			if conn2 and dudes[conn2] then
+				dudes[conn2].queuing = false
+				server.send({type = "queue", action = "match_failed"}, conn2)
+			end
+		end
 		-- Re-fetch queuers since startMatch modifies their queuing status
 		queuers = getQueuers()
 	end

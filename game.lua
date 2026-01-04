@@ -224,21 +224,21 @@ function Game:playReplay(replay_string)
 	local header = {}
 	for s in (header_string):gmatch("(.-):") do table.insert(header, s) end
 
+	-- Bug 30 fix: Check version BEFORE parsing deltas to avoid wasted work
+	local version = header[1]
+	if version ~= self.VERSION then
+		print("Wrong game version for replay!")
+		print("Replay version: " .. tostring(version))
+		print("Game version: " .. self.VERSION)
+		-- TODO: nicer handling
+		return
+	end
+
 	-- convert deltas to tables of deltas[turn][player_num]
 	local deltas = {}
 	for i = 1, #replay do
 		deltas[i] = {}
 		for s in (replay[i]):gmatch("(.-):") do table.insert(deltas[i], s) end
-	end	-- need to change all of this
-
-	-- get parameters
-	local version = header[1]
-	if version ~= self.VERSION then
-		print("Wrong game version for replay!")
-		print("Replay version: " .. version)
-		print("Game version: " .. self.VERSION)
-		-- TODO: nicer handling
-		return
 	end
 
 	self:start{
@@ -248,7 +248,7 @@ function Game:playReplay(replay_string)
 		playername1 = header[5],
 		playername2 = header[6],
 		background = header[7],
-		seed = header[8],
+		seed = tonumber(header[8]), -- Bug 24 fix: Convert seed from string to number
 		side = 1,
 		deltas = deltas,
 	}
@@ -459,6 +459,12 @@ function Game:deserializeDelta(delta_string, player)
 				return false
 			end
 
+			-- Bug 29 fix: Validate pos is an integer
+			if pos ~= math.floor(pos) then
+				print("Invalid delta: piece position " .. pos .. " is not an integer")
+				return false
+			end
+
 			-- Validate position is in valid range (1-5 for hand slots)
 			if pos < 1 or pos > 5 then
 				print("Invalid delta: piece position " .. pos .. " out of range")
@@ -627,12 +633,13 @@ function Game:serializeState()
 	grid_str = table.concat(grid_str)
 
 	-- player hand pieces
+	-- Bug 3 fix: Use | delimiter instead of _ to avoid conflicts with character names
 	local p1hand, p2hand = {}, {}
 	for i = 1, 5 do
 		local p1str = p1.hand[i].piece and getPieceString(p1.hand[i].piece) or ""
 		local p2str = p2.hand[i].piece and getPieceString(p2.hand[i].piece) or ""
-		p1hand[i] = p1str .. "_"
-		p2hand[i] = p2str .. "_"
+		p1hand[i] = p1str .. "|"
+		p2hand[i] = p2str .. "|"
 	end
 	p1hand, p2hand = table.concat(p1hand), table.concat(p2hand)
 
@@ -642,16 +649,17 @@ function Game:serializeState()
 	-- player passives
 	local p1special, p2special = p1:serializeSpecials(), p2:serializeSpecials()
 
+	-- Bug 3 fix: Use | delimiter instead of _ to avoid conflicts with data containing underscores
 	return
-		p1char .. "_" .. p2char .. "_" ..
-		p1burst .. "_" .. p1super .. "_" .. p1damage .. "_" ..
-		p2burst .. "_" .. p2super .. "_" .. p2damage .. "_" ..
-		grid_str .. "_" ..
+		p1char .. "|" .. p2char .. "|" ..
+		p1burst .. "|" .. p1super .. "|" .. p1damage .. "|" ..
+		p2burst .. "|" .. p2super .. "|" .. p2damage .. "|" ..
+		grid_str .. "|" ..
 		p1hand ..
 		p2hand ..
-		rng_state .. "_" ..
-		p1special .. "_" ..
-		p2special .. "_"
+		rng_state .. "|" ..
+		p1special .. "|" ..
+		p2special .. "|"
 end
 
 --[[ replaces the current state with the provided state
@@ -695,8 +703,9 @@ function Game:deserializeState(state_string)
 		return false
 	end
 
+	-- Bug 3 fix: Use | delimiter instead of _ to avoid conflicts with data containing underscores
 	local state = {}
-	for s in (state_string.."_"):gmatch("(.-)_") do table.insert(state, s) end
+	for s in (state_string.."|"):gmatch("(.-)|") do table.insert(state, s) end
 
 	-- Validate state has correct number of elements
 	if #state ~= 23 then
@@ -827,7 +836,13 @@ function Game:deserializeState(state_string)
 	self.p1.enemy = self.p2
 	self.p2.enemy = self.p1
 	local p1, p2 = self.p1, self.p2
-	self.me_player, self.them_player = self.p1, self.p2
+	-- Bug 21 fix: Preserve me_player/them_player based on which side we are
+	-- Check if we were p1 or p2 before the state was deserialized
+	if self.me_player and self.me_player.player_num == 2 then
+		self.me_player, self.them_player = self.p2, self.p1
+	else
+		self.me_player, self.them_player = self.p1, self.p2
+	end
 
 	-- Overwrite burst, super, damage for both players
 	p1.cur_burst = p1burst

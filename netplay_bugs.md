@@ -18,7 +18,7 @@ Using `os.time()` provides only second-level precision. Two matches starting wit
 
 ## MEDIUM
 
-### 6. Hardcoded server address
+### 2. Hardcoded server address
 **File:** `client.lua:20`
 ```lua
 self.host = "165.227.7.122"
@@ -29,22 +29,7 @@ No way to configure the server address for local testing or alternative servers.
 
 ---
 
-### 7. State serialization uses underscore delimiter unsafely
-**File:** `game.lua:646-654`
-```lua
-return
-    p1char .. "_" .. p2char .. "_" ..
-    ...
-    p1special .. "_" ..
-    p2special .. "_"
-```
-If any special/character data contains underscores, deserialization at `game.lua:699` will produce incorrect element count, causing state validation failure or data corruption.
-
-**Status:** Deferred.
-
----
-
-### 8. Shared wait counter between phases
+### 4. Shared wait counter between phases
 **File:** `phase.lua:55`
 ```lua
 self.netplay_wait_frames = 0
@@ -55,7 +40,7 @@ The counter is shared between delta and state phases. While there's a reset in `
 
 ---
 
-### 9. RNG reseeded on every Game:reset() call
+### 5. RNG reseeded on every Game:reset() call
 **File:** `game.lua:116`
 ```lua
 self.rng:setSeed(os.time())
@@ -66,7 +51,7 @@ Every time `Game:reset()` is called (which happens at match start), the RNG is r
 
 ---
 
-### 10. Charselect uses insecure random seeding
+### 6. Charselect uses insecure random seeding
 **File:** `charselect.lua:370-372`
 ```lua
 math.randomseed(os.time())
@@ -79,7 +64,7 @@ Uses `math.randomseed(os.time())` which resets on every `Charselect:enter()`. Wh
 
 ---
 
-### 11. Server main loop has no error recovery
+### 7. Server main loop has no error recovery
 **File:** `server/main.lua:538`
 ```lua
 while true do
@@ -90,7 +75,7 @@ The infinite loop has no try-catch around `socket.select()` or other operations.
 
 ---
 
-### 12. Invalid RNG state could leave game partially modified
+### 8. Invalid RNG state could leave game partially modified
 **File:** `game.lua:925`
 ```lua
 self.rng:setState(rng_state)
@@ -108,7 +93,7 @@ The comment says "Replace RNG state LAST (after all other operations that might 
 
 ## LOW
 
-### 13. Debug prints in production code
+### 10. Debug prints in production code
 **Files:** Throughout codebase
 Examples:
 - `client.lua:66`: `print("received partial data:" .. partial_data .. ".")`
@@ -120,14 +105,14 @@ These clutter logs and may leak sensitive information.
 
 ---
 
-### 14. No reconnection support
+### 11. No reconnection support
 If a player disconnects mid-match (network hiccup, game crash), there's no mechanism to rejoin the same match. The match is simply ended.
 
 **Status:** Deferred.
 
 ---
 
-### 15. Lobby methods have stub implementations
+### 12. Lobby methods have stub implementations
 **File:** `lobby.lua:28-38`
 ```lua
 function Lobby:createCustomGame()
@@ -140,7 +125,7 @@ Unimplemented features that could confuse users if exposed in UI.
 
 ---
 
-### 16. Lobby disconnect timeout may be too long for user experience
+### 13. Lobby disconnect timeout may be too long for user experience
 **File:** `lobby.lua:21`
 ```lua
 self.DISCONNECT_TIMEOUT = 10
@@ -151,7 +136,7 @@ The comment says "increased from 3 to 10 seconds for slow/unreliable networks" b
 
 ---
 
-### 17. ai_netplay doesn't validate player existence
+### 14. ai_netplay doesn't validate player existence
 **File:** `ai_netplay.lua:11`
 ```lua
 function ai_net:evaluateActions(them_player)
@@ -182,7 +167,7 @@ function ai_net:evaluateActions(them_player)
 
 ---
 
-### 18. Sequence numbers could theoretically overflow
+### 15. Sequence numbers could theoretically overflow
 **File:** `client.lua:240-241`
 ```lua
 self.our_delta_seq = self.our_delta_seq + 1
@@ -194,46 +179,7 @@ Sequence numbers increment every turn. While Lua uses 64-bit doubles (safe for ~
 
 ---
 
-### 19. Potential infinite loop in queuer matching
-**File:** `server/main.lua:632-637`
-```lua
-while #queuers >= 2 do
-    startMatch(queuers[1], queuers[2])
-    queuers = getQueuers()
-end
-```
-If `startMatch()` returns `false` (lines 390, 393, 421) without updating the dudes' `queuing` status, the loop will run forever. The dudes remain in the queuers list since their `queuing` flag isn't cleared on failure.
-
-**Status:** Please make it update the queuing status
-
----
-
-### 20. Server crashes on nil dude access in startMatch debug prints
-**File:** `server/main.lua:377-381`
-```lua
-print(dude1)
-print(dude1.id)
-print(dude2)
-print(dude2.id)
-```
-These debug prints access `dude.id` before validation. If a race condition causes `dude1` or `dude2` to be nil (disconnect during queue matching), the server crashes.
-
-**Status:** Please check before printing
-
----
-
-### 21. deserializeState resets me_player/them_player incorrectly
-**File:** `game.lua:830`
-```lua
-self.me_player, self.them_player = self.p1, self.p2
-```
-This always assigns `me_player = p1`, ignoring the player's actual side. If a player joined as side 2, state comparison would work but any state restoration would break player assignment.
-
-**Status:** Please fix
-
----
-
-### 22. Client ping response creates unnecessary traffic
+### 16. Client ping response creates unnecessary traffic
 **File:** `client.lua:185-187`
 ```lua
 function Client:receivePing()
@@ -246,80 +192,140 @@ The client responds to every server ping with another ping. While the server's `
 
 ---
 
-### 23. Assert in sendDeltaConfirmation can crash game
-**File:** `client.lua:437-438`
+### 17. Match pairing order is non-deterministic
+**File:** `server/main.lua:659-677`
 ```lua
-assert(self.game.current_phase == "NetplayWaitForDelta", ...)
+local queuers = getQueuers()
+while #queuers >= 2 do
+    local success = startMatch(queuers[1], queuers[2])
 ```
-Using `assert` crashes the game instead of gracefully handling unexpected phase. One player's game crashes while the opponent continues playing.
+`getQueuers()` iterates over `dudes` using `pairs()`, which has no guaranteed order in Lua. If 3+ players queue simultaneously, the pairing is arbitrary and not FIFO (first-in-first-out).
 
-**Status:** Hmm. Suggest some ways of fixing this one.
+**Status:** Ignored.
 
 ---
 
-### 24. Replay seed is passed as string, not number
-**File:** `game.lua:251`
+### 18. Client:update ignores dt parameter
+**File:** `game.lua:258` and `client.lua:49`
 ```lua
-seed = header[8],
+-- game.lua:258
+self.client:update(dt)
+
+-- client.lua:49
+function Client:update()
 ```
-The seed is extracted from header as a string but the netplay code at `client.lua:132` validates `type(recv.seed) ~= "number"`. The replay path doesn't convert to number, which could cause inconsistent RNG behavior.
+`Game:update(dt)` passes `dt` to `client:update()`, but the client function doesn't accept any parameters. The `dt` is silently ignored. While not currently causing issues, this inconsistency could cause confusion if frame-rate-independent timing is ever needed in the client.
 
-**Status:** Please fix
-
----
-
-### 25. ending_match guard not cleared on error
-**File:** `server/main.lua:445-481`
-The `ending_match[conn]` flag is set at line 445 but only cleared at line 481. If an error occurs during cleanup, the flag remains set and blocks future endMatch calls for that connection.
-
-**Status:** Please fix
+**Status:** Ignored.
 
 ---
 
-### 26. No content validation for background in queue_details
-**File:** `server/main.lua:219-221`
-The server validates `background` is a string but not its content. Malicious clients could send strings like `"../../../etc/passwd"` that might cause path traversal issues when used in image lookups on the client side.
-
-**Status:** Please safeguard
-
----
-
-### 27. handleConnectionTimeout doesn't check client exists
-**File:** `phase.lua:188-192`
+### 19. Stale dude objects in match queue
+**File:** `server/main.lua:659-661`
 ```lua
-client.their_delta = nil
-client.their_state = nil
-client:endMatch()
+local queuers = getQueuers()
+while #queuers >= 2 do
+    local success = startMatch(queuers[1], queuers[2])
 ```
-No check that `client` is valid before accessing properties and calling methods. If the client was already cleared by another code path, this would error.
+`getQueuers()` returns copied dude objects (values from the `dudes` table). If a connection closes between fetching queuers and calling `startMatch`, the code operates on stale data. While `startMatch` validates via `getConnFromID`, there's a brief TOCTOU (time-of-check-time-of-use) gap.
 
-**Status:** New.
+**Status:** Ignored.
 
 ---
 
-### 28. Client:newTurn increments sequence without validating previous turn
-**File:** `client.lua:275-278`
+### 20. No validation in Client:writeDeltaPiece
+**File:** `client.lua:376-378`
 ```lua
-self.our_delta_seq = self.our_delta_seq + 1
-self.our_state_seq = self.our_state_seq + 1
+function Client:writeDeltaPiece(piece, coords)
+    self.our_delta = self.game:serializeDelta(self.our_delta, piece, coords)
+end
 ```
-Sequence numbers increment without verifying the previous turn's delta/state were confirmed. The warnings at lines 259-264 just print without affecting behavior or triggering recovery.
+No validation that `piece` or `coords` are valid before passing to `serializeDelta`. A nil piece or coords would cause a crash in `serializeDelta`.
 
-**Status:** New.
-
----
-
-### 29. pos in deserializeDelta not validated as integer
-**File:** `game.lua:462-467`
-`pos` is validated to be in range 1-5 but not that it's an integer. A floating point value like `1.5` from a malformed delta could cause unexpected behavior when used as array index.
-
-**Status:** New.
+**Status:** Ignored - unreachable through normal code paths.
 
 ---
 
-### 30. Version check happens after replay parsing
-**File:** `game.lua:218-241`
-The replay string is parsed into tables before version is checked at line 236. Processing should stop earlier if version won't match, to avoid wasted work and potential issues with malformed data.
+### 21. Server doesn't validate delta/state sequence numbers
+**File:** `server/main.lua:344-386`
+```lua
+local function receiveGameData(data, conn)
+    -- ...
+    server.send(data, opponent)
+```
+The server blindly forwards delta/state packets without validating or tracking sequence numbers. The client has sequence validation, but a malicious client could craft packets with arbitrary sequence numbers that bypass client-side duplicate detection.
 
-**Status:** New.
+**Status:** Ignored.
 
+---
+
+### 22. endMatch guard has potential race condition
+**File:** `server/main.lua:461-465`
+```lua
+if ending_match[conn] then
+    print("endMatch already in progress for this connection, skipping")
+    return
+end
+ending_match[conn] = true
+```
+If both players call `endMatch` in the exact same server loop iteration (from the same `socket.select` batch processing multiple ready sockets), there's a brief window where both could pass the guard check before either sets their flag. This could cause duplicate cleanup operations.
+
+**Status:** Ignored.
+
+---
+
+### 23. Inconsistent timer APIs between lobby and client
+**File:** `lobby.lua:58,79` vs `client.lua:51,258`
+```lua
+-- lobby.lua uses love.timer
+self.disconnect_start_time = love.timer.getTime()
+
+-- client.lua uses socket.gettime
+local current_time = socket.gettime()
+```
+Mixing `love.timer.getTime()` and `socket.gettime()` for timing operations. While both return seconds with sub-second precision, they may have different reference epochs, making debugging timing issues across the codebase more difficult.
+
+**Status:** Ignored. No functional impact.
+
+---
+
+## Summary Table
+
+| # | Bug | Severity | Status |
+|---|-----|----------|--------|
+| 1 | Weak RNG seed for matches | Critical | Deferred |
+| 2 | Hardcoded server address | Medium | Deferred |
+| 4 | Shared wait counter between phases | Medium | Deferred |
+| 5 | RNG reseeded on Game:reset() | Medium | Ignore |
+| 6 | Charselect insecure random seeding | Medium | Ignore |
+| 7 | Server main loop no error recovery | Medium | Deferred |
+| 8 | Invalid RNG state partial modification | Medium | Deferred |
+| 10 | Debug prints in production | Low | Deferred |
+| 11 | No reconnection support | Low | Deferred |
+| 12 | Lobby stub implementations | Low | Deferred |
+| 13 | Lobby disconnect timeout too long | Low | Ignored |
+| 14 | ai_netplay player validation | Low | Deferred |
+| 15 | Sequence number overflow | Low | Ignored |
+| 16 | Client ping unnecessary traffic | Low | Ignore |
+| 17 | Match pairing non-deterministic | Low | Ignored |
+| 18 | Client:update ignores dt | Low | Ignored |
+| 19 | Stale dude objects in queue | Low | Ignored |
+| 20 | writeDeltaPiece no validation | Low | Ignored |
+| 21 | Server no sequence validation | Low | Ignored |
+| 22 | endMatch race condition | Low | Ignored |
+| 23 | Inconsistent timer APIs | Low | Ignored |
+
+### By Severity
+
+| Severity | Count | Action Required |
+|----------|-------|-----------------|
+| Critical | 1 | 1 deferred |
+| Medium | 6 | 4 deferred, 2 ignore |
+| Low | 14 | 4 deferred, 10 ignored |
+
+### Action Summary
+
+| Status | Count | Bugs |
+|--------|-------|------|
+| Deferred | 9 | #1, #2, #4, #7, #8, #10, #11, #12, #14 |
+| Ignored | 12 | #5, #6, #13, #15, #16, #17, #18, #19, #20, #21, #22, #23 |

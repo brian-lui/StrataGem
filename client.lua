@@ -100,9 +100,13 @@ end
 function Client:send(data)
 	if self.connected then
 		local blob = json.encode(data) .. "\n" -- we are using *l receive mode
-		local success, err = self.client_socket:send(blob)
-		if not success then
+		-- Bug 9 fix: Check that all bytes were sent (send returns bytes sent, not boolean)
+		local bytes_sent, err = self.client_socket:send(blob)
+		if not bytes_sent then
 			print("OH NOES", err)
+			self:disconnect()
+		elseif bytes_sent ~= #blob then
+			print("Partial send: sent " .. bytes_sent .. " of " .. #blob .. " bytes")
 			self:disconnect()
 		end
 	else
@@ -222,6 +226,9 @@ function Client:receiveQueue(recv)
 	end
 end
 
+-- Bug 28 fix: Threshold for consecutive unconfirmed turns before disconnect
+local UNCONFIRMED_TURN_THRESHOLD = 2
+
 -- call this when initializing client.lua, ending a match, or disconnecting
 function Client:clear()
 	self.partial_recv = ""
@@ -247,6 +254,10 @@ function Client:clear()
 	self.delta_sent = false
 	self.state_sent = false
 
+	-- Bug 28 fix: Track consecutive unconfirmed turns
+	self.unconfirmed_delta_count = 0
+	self.unconfirmed_state_count = 0
+
 	-- Bug 5 fix: Initialize keepalive tracking (use socket.gettime for sub-second precision)
 	local current_time = socket.gettime()
 	self.last_server_activity = current_time
@@ -254,13 +265,33 @@ function Client:clear()
 end
 
 -- At new turn, clear the flags for having sent and received state information
+-- Returns false if too many consecutive unconfirmed turns (caller should handle disconnect)
 function Client:newTurn()
-	-- Validate both delta and state were confirmed before proceeding
+	-- Bug 28 fix: Track consecutive unconfirmed turns and disconnect if threshold exceeded
 	if not self.delta_confirmed then
-		print("Warning: Opponent didn't confirm delta by end of turn")
+		self.unconfirmed_delta_count = self.unconfirmed_delta_count + 1
+		print("Warning: Opponent didn't confirm delta (" .. self.unconfirmed_delta_count .. " consecutive)")
+		if self.unconfirmed_delta_count >= UNCONFIRMED_TURN_THRESHOLD then
+			print("Too many unconfirmed deltas, ending match")
+			self:sendDesyncNotification()
+			self:endMatch()
+			return false
+		end
+	else
+		self.unconfirmed_delta_count = 0
 	end
+
 	if not self.state_confirmed then
-		print("Warning: Opponent didn't confirm state by end of turn")
+		self.unconfirmed_state_count = self.unconfirmed_state_count + 1
+		print("Warning: Opponent didn't confirm state (" .. self.unconfirmed_state_count .. " consecutive)")
+		if self.unconfirmed_state_count >= UNCONFIRMED_TURN_THRESHOLD then
+			print("Too many unconfirmed states, ending match")
+			self:sendDesyncNotification()
+			self:endMatch()
+			return false
+		end
+	else
+		self.unconfirmed_state_count = 0
 	end
 
 	self.our_delta = "N_"
@@ -279,6 +310,8 @@ function Client:newTurn()
 	-- Bug 5 fix: Reset sent flags for new turn
 	self.delta_sent = false
 	self.state_sent = false
+
+	return true
 end
 
 function Client:endMatch()
@@ -434,8 +467,14 @@ end
 
 -- Only send the delta confirm during the WaitForDelta phase, to get lockstep
 function Client:sendDeltaConfirmation()
-	assert(self.game.current_phase == "NetplayWaitForDelta",
-		"Sending delta in wrong phase " .. self.game.current_phase .. "!")
+	-- Bug 23 fix: Replace assert with controlled match termination
+	if self.game.current_phase ~= "NetplayWaitForDelta" then
+		print("Phase desync detected in sendDeltaConfirmation: " .. self.game.current_phase)
+		self:sendDesyncNotification()
+		self:endMatch()
+		self.game:switchState("gs_multiplayerselect")
+		return
+	end
 	self:send{type = "confirmed_delta", delta = self.their_delta}
 end
 
