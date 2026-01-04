@@ -13,6 +13,10 @@ local Client = {}
 -- Maximum size for partial packet buffer (64KB)
 local MAX_PARTIAL_RECV_SIZE = 65536
 
+-- Bug 5 fix: Client-initiated keepalive settings
+local CLIENT_PING_INTERVAL = 15 -- seconds between client pings
+local CLIENT_PING_TIMEOUT = 45 -- seconds before considering server dead
+
 function Client:init(game)
 	self.game = game
 	self.connected = false
@@ -44,8 +48,28 @@ end
 
 function Client:update()
 	if self.connected then
+		local current_time = socket.gettime()
+
+		-- Bug 5 fix: Check for server timeout
+		if self.last_server_activity and
+		   (current_time - self.last_server_activity > CLIENT_PING_TIMEOUT) then
+			print("Server connection timed out (no response for " .. CLIENT_PING_TIMEOUT .. "s)")
+			self:disconnect()
+			return
+		end
+
+		-- Bug 5 fix: Send periodic keepalive pings
+		if self.last_client_ping and
+		   (current_time - self.last_client_ping > CLIENT_PING_INTERVAL) then
+			self:send({type = "ping"})
+			self.last_client_ping = current_time
+		end
+
 		local recv_str, _, partial_data = self.client_socket:receive("*l")
 		if recv_str then -- we got a completed packet now
+			-- Bug 5 fix: Update last server activity time
+			self.last_server_activity = current_time
+
 			recv_str = self.partial_recv .. recv_str
 			self.partial_recv = ""
 			local success, recv = pcall(json.decode, recv_str)
@@ -56,6 +80,9 @@ function Client:update()
 				print("Raw data: " .. recv_str:sub(1, 100)) -- log first 100 chars
 			end
 		elseif partial_data and partial_data ~= "" then -- still incomplete packet.
+			-- Bug 5 fix: Partial data also counts as server activity
+			self.last_server_activity = current_time
+
 			-- Check for buffer overflow attack
 			if #self.partial_recv + #partial_data > MAX_PARTIAL_RECV_SIZE then
 				print("Partial packet buffer overflow, disconnecting")
@@ -141,6 +168,10 @@ function Client:connectionRejected(recv)
 		print("You were already connected")
 	elseif recv.message == "InvalidName" then
 		print("Connection rejected: invalid or missing player name")
+	elseif recv.message == "ServerFull" then
+		print("Connection rejected: server is at capacity, please try again later")
+	elseif recv.message == "RateLimit" then
+		print("Connection rejected: too many connection attempts, please wait")
 	else
 		print("Connection rejected: " .. tostring(recv.message))
 	end
@@ -215,6 +246,11 @@ function Client:clear()
 	-- Bug 5 fix: Track if we've sent our delta/state (for confirmation race)
 	self.delta_sent = false
 	self.state_sent = false
+
+	-- Bug 5 fix: Initialize keepalive tracking (use socket.gettime for sub-second precision)
+	local current_time = socket.gettime()
+	self.last_server_activity = current_time
+	self.last_client_ping = current_time
 end
 
 -- At new turn, clear the flags for having sent and received state information

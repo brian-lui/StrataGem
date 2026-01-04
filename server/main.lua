@@ -31,6 +31,10 @@ local RATE_LIMIT_WINDOW = 60 -- seconds
 local RATE_LIMIT_MAX_ATTEMPTS = 10 -- max connection attempts per window
 local MAX_CONNECTIONS_PER_IP = 3 -- max concurrent connections per IP
 
+-- Bug 3 fix: Global server capacity limit
+local MAX_TOTAL_CONNECTIONS = 30 -- max total concurrent connections on the server
+local total_connections = 0
+
 local function getConnectionIP(conn)
 	local ip, _ = conn:getpeername()
 	return ip or "unknown"
@@ -39,10 +43,16 @@ end
 local function checkRateLimit(ip)
 	local now = os.time()
 
+	-- Bug 3 fix: Check global server capacity limit
+	if total_connections >= MAX_TOTAL_CONNECTIONS then
+		print("Server capacity limit reached (" .. MAX_TOTAL_CONNECTIONS .. " connections)")
+		return false, "ServerFull"
+	end
+
 	-- Check concurrent connections limit
 	if connections_per_ip[ip] and connections_per_ip[ip] >= MAX_CONNECTIONS_PER_IP then
 		print("Rate limit: too many concurrent connections from " .. ip)
-		return false
+		return false, "RateLimit"
 	end
 
 	-- Check connection attempt rate
@@ -54,7 +64,7 @@ local function checkRateLimit(ip)
 		else
 			if record.count >= RATE_LIMIT_MAX_ATTEMPTS then
 				print("Rate limit: too many connection attempts from " .. ip)
-				return false
+				return false, "RateLimit"
 			end
 			record.count = record.count + 1
 		end
@@ -62,11 +72,13 @@ local function checkRateLimit(ip)
 		connection_attempts[ip] = {count = 1, first_attempt = now}
 	end
 
-	return true
+	return true, nil
 end
 
 local function incrementConnectionCount(ip)
 	connections_per_ip[ip] = (connections_per_ip[ip] or 0) + 1
+	-- Bug 3 fix: Track total connections
+	total_connections = total_connections + 1
 end
 
 local function decrementConnectionCount(ip)
@@ -75,6 +87,10 @@ local function decrementConnectionCount(ip)
 		if connections_per_ip[ip] <= 0 then
 			connections_per_ip[ip] = nil
 		end
+	end
+	-- Bug 3 fix: Track total connections
+	if total_connections > 0 then
+		total_connections = total_connections - 1
 	end
 end
 
@@ -284,11 +300,17 @@ local function attemptedConnection(data, conn)
 	server.send(blob, conn)
 end
 
+-- Bug 4 fix: Return nil explicitly with proper logging, callers must handle nil
 local function getConnFromID(id)
+	if not id then
+		print("getConnFromID: nil id provided")
+		return nil
+	end
 	for conn, dude in pairs(dudes) do
 		if id == dude.id then return conn end
 	end
-	print("error.")
+	print("getConnFromID: no connection found for id " .. tostring(id))
+	return nil
 end
 
 local function getOpponentConn(conn)
@@ -542,15 +564,16 @@ while true do
 	local new_conn = server_socket:accept() -- socket:accept() detects a new connection from a client.
 	if new_conn then -- write to dudes with minimal connection info.
 		local ip = getConnectionIP(new_conn)
-		if checkRateLimit(ip) then
+		local allowed, reject_reason = checkRateLimit(ip)
+		if allowed then
 			new_conn:settimeout(0)
 			incrementConnectionCount(ip)
 			dudes[new_conn] = {waiting = true, partial_recv = "", name = "Dog", last_activity = os.time()}
 		else
-			-- Rate limit exceeded, reject connection
+			-- Rate limit or server capacity exceeded, reject connection
 			new_conn:settimeout(1)
 			pcall(function()
-				new_conn:send(json.encode({type = "rejected", message = "RateLimit"}) .. "\n")
+				new_conn:send(json.encode({type = "rejected", message = reject_reason}) .. "\n")
 			end)
 			pcall(function() new_conn:close() end)
 		end

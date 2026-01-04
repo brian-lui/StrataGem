@@ -754,15 +754,18 @@ function Phase:netplayNewTurn(dt)
 	local game = self.game
 	local client = game.client
 
+	-- Bug 2 fix: Check connection before proceeding with new turn
+	-- If disconnected, end the match immediately instead of converting to broken singleplayer
+	if not client.connected then
+		print("Disconnected from server during new turn, ending match")
+		client:clear()
+		game:switchState("gs_multiplayerselect")
+		return
+	end
+
 	client:newTurn()
 	game:newTurn()
 	self:setPhase("Action")
-
-	if not client.connected then
-		-- TODO: better handling
-		self.game.type = "Singleplayer"
-		print("Disconnected from server :( changing to 1P mode")
-	end
 end
 
 -- Singleplayer new turn, runs game:newTurn().
