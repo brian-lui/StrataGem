@@ -110,6 +110,36 @@ local function cleanupRateLimitEntries()
 			connection_attempts[ip] = nil
 		end
 	end
+
+	-- Validate connections_per_ip against actual dudes to fix stale entries
+	-- Count actual connections per IP from dudes table
+	local actual_counts = {}
+	for conn, dude in pairs(dudes) do
+		if dude.ip then
+			actual_counts[dude.ip] = (actual_counts[dude.ip] or 0) + 1
+		end
+	end
+	-- Fix any mismatches (stale entries from improper disconnects)
+	for ip, count in pairs(connections_per_ip) do
+		local actual = actual_counts[ip] or 0
+		if count ~= actual then
+			print("Fixing stale connections_per_ip for " .. ip .. ": was " .. count .. ", actual " .. actual)
+			if actual == 0 then
+				connections_per_ip[ip] = nil
+			else
+				connections_per_ip[ip] = actual
+			end
+		end
+	end
+	-- Also update total_connections to match reality
+	local actual_total = 0
+	for _, _ in pairs(dudes) do
+		actual_total = actual_total + 1
+	end
+	if total_connections ~= actual_total then
+		print("Fixing stale total_connections: was " .. total_connections .. ", actual " .. actual_total)
+		total_connections = actual_total
+	end
 end
 
 local function disconnect(_, conn)

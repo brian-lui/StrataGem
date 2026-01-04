@@ -25,6 +25,18 @@ function Client:init(game)
 end
 
 function Client:connect()
+	-- If already connected, don't create a new connection
+	if self.connected then
+		print("Already connected to server")
+		return
+	end
+
+	-- Close any existing socket before creating a new one
+	if self.client_socket then
+		pcall(function() self.client_socket:close() end)
+		self.client_socket = nil
+	end
+
 	self:clear()
 	self.client_socket = socket.tcp()
 	self.client_socket:settimeout(3)
@@ -33,6 +45,33 @@ function Client:connect()
 	if success then
 		print("Connected to server, sending user data")
 		self.connected = true
+
+		-- Check for immediate server rejection before sending
+		-- Server may reject due to rate limit/capacity and close immediately
+		self.client_socket:settimeout(0.5)
+		local recv_str, recv_err = self.client_socket:receive("*l")
+		if recv_str then
+			-- Server sent something immediately (likely a rejection)
+			local decode_success, recv = pcall(json.decode, recv_str)
+			if decode_success and recv and recv.type == "rejected" then
+				print("Connection rejected by server: " .. tostring(recv.message))
+				if recv.message == "ServerFull" then
+					print("Server is at capacity, please try again later")
+				elseif recv.message == "RateLimit" then
+					print("Too many connection attempts, please wait")
+				end
+				self.connected = false
+				self.client_socket:close()
+				return
+			end
+		elseif recv_err == "closed" then
+			-- Server closed connection immediately
+			print("Server closed connection immediately (may be at capacity or rate limited)")
+			self.connected = false
+			return
+		end
+		-- No immediate rejection, proceed with connect
+
 		self.client_socket:settimeout(0)
 		local blob = {
 			type = "connect",
@@ -202,6 +241,18 @@ end
 
 function Client:receiveEndMatch(recv)
 	print("Match ended by server" .. (recv.reason and (": " .. recv.reason) or ""))
+
+	-- If we're still in an active match, mark opponent as left but let the game
+	-- finish naturally so we can see the game over animation
+	if self.playing then
+		print("Opponent left during active match, continuing to game over")
+		self.playing = false
+		self.opponent_left = true
+		-- Don't clear or switch state - let the game detect the loser and show game over
+		return
+	end
+
+	-- Not in active match, just clean up and return to menu
 	self:clear()
 	if self.game.type == "Netplay" then
 		self.game:switchState("gs_multiplayerselect")
@@ -237,6 +288,7 @@ function Client:clear()
 	self.partial_recv = ""
 	self.playing = false -- this is overwritten in startMatch
 	self.queuing = false
+	self.opponent_left = false -- flag set when opponent leaves during active match
 
 	self.our_delta = "N_"
 	self.their_delta = nil

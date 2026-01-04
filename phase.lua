@@ -54,6 +54,8 @@ function Phase:reset()
 	self.update_gravity_during_pause = false
 	self.damage_particle_duration = 0 -- for AfterAllMatches phase
 	self.netplay_wait_frames = 0 -- frames spent waiting for opponent data
+	self.delta_processed = nil -- reset netplay delta processing flag
+	self.state_confirmation_sent = nil -- reset netplay state confirmation flag
 	if self.game.type == "Replay" then
 		self.INIT_ACTION_TIME = self.INIT_TIME_TO_NEXT_REPLAY
 	else
@@ -204,6 +206,16 @@ function Phase:netplayWaitForDelta(dt)
 	local game = self.game
 	local client = game.client
 
+	-- If opponent left during the match, skip waiting and proceed to resolve
+	-- The game will detect the loser naturally
+	if client.opponent_left then
+		print("Opponent left, skipping delta wait")
+		self.netplay_wait_frames = 0
+		self.delta_processed = nil
+		self:setPhase("Resolve")
+		return
+	end
+
 	-- Check if there's a pending delta that arrived before we were ready
 	client:checkPendingDelta()
 
@@ -223,9 +235,8 @@ function Phase:netplayWaitForDelta(dt)
 		client:sendDelta()
 	end
 
-	if client.their_delta then
-		self.netplay_wait_frames = 0 -- reset wait counter
-
+	-- Process opponent's delta and send confirmation as soon as we receive it
+	if client.their_delta and not self.delta_processed then
 		game.debugtextdump:writeTheirDeltaText()
 
 		local success = game.ai:evaluateActions(game.them_player)
@@ -250,6 +261,15 @@ function Phase:netplayWaitForDelta(dt)
 
 		game.debugtextdump:writePendingGridText()
 
+		self.delta_processed = true
+	end
+
+	-- Only advance to Resolve when BOTH conditions are met:
+	-- 1. We received and processed their delta (and sent our confirmation)
+	-- 2. They confirmed they received our delta
+	if client.their_delta and client.delta_confirmed then
+		self.netplay_wait_frames = 0 -- reset wait counter
+		self.delta_processed = nil -- reset for next turn
 		self:setPhase("Resolve")
 	end
 end
@@ -716,6 +736,16 @@ function Phase:netplayWaitForState(dt)
 	local game = self.game
 	local client = game.client
 
+	-- If opponent left during the match, skip waiting and proceed to new turn
+	-- The game will detect the loser naturally
+	if client.opponent_left then
+		print("Opponent left, skipping state wait")
+		self.netplay_wait_frames = 0
+		self.state_confirmation_sent = nil
+		self:setPhase("NetplayNewTurn")
+		return
+	end
+
 	-- Check for timeout
 	self.netplay_wait_frames = self.netplay_wait_frames + 1
 	if self.netplay_wait_frames >= self.NETPLAY_STATE_WAIT then
@@ -732,9 +762,8 @@ function Phase:netplayWaitForState(dt)
 		client:sendState()
 	end
 
-	if client.their_state then
-		self.netplay_wait_frames = 0 -- reset wait counter
-
+	-- Send confirmation as soon as we receive and validate their state
+	if client.their_state and not self.state_confirmation_sent then
 		-- Bug 6 fix: Validate our_state exists before comparison
 		if not client.our_state then
 			print("Error: our_state is nil, cannot compare states")
@@ -752,6 +781,15 @@ function Phase:netplayWaitForState(dt)
 		end
 
 		client:sendStateConfirmation()
+		self.state_confirmation_sent = true
+	end
+
+	-- Only advance to next turn when BOTH conditions are met:
+	-- 1. We received their state (and sent our confirmation)
+	-- 2. They confirmed they received our state
+	if client.their_state and client.state_confirmed then
+		self.netplay_wait_frames = 0 -- reset wait counter
+		self.state_confirmation_sent = nil -- reset for next turn
 		self:setPhase("NetplayNewTurn")
 	end
 end
@@ -794,7 +832,7 @@ function Phase:gameOver(dt)
 	local game = self.game
 	game.grid:animateGameOver(game.grid:getLoser())
 	game.debugtextdump:writeReplayEnd()
-	if game.type == "Netplay" then game.client:endMatch() end
+	-- Don't send endMatch here - wait until Leave phase so opponent can see game over too
 	self:setPause(self.GAMEOVER_DELAY)
 	self:activatePause("Leave")
 end
@@ -802,6 +840,8 @@ end
 function Phase:leave(dt)
 	local game = self.game
 	if game.type == "Netplay" then
+		-- Send endMatch after game over animation has played
+		game.client:endMatch()
 		game:switchState("gs_multiplayerselect")
 	elseif game.type == "Singleplayer" then
 		game:switchState("gs_singleplayerselect")

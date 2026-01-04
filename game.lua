@@ -129,6 +129,12 @@ end
 
 -- takes a string
 function Game:switchState(gamestate)
+	-- Reset input state to prevent clicks from getting stuck across state transitions
+	self.pressedDown = 0
+	self.clicked = false
+	self.settings_menu_open = false
+	self.paused = false
+
 	self.current_gamestate = require(gamestate)
 	self.statemanager:switch(self.current_gamestate)
 end
