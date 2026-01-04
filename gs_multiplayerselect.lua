@@ -34,15 +34,15 @@ end
 
 -- add custom things to these three functions
 function Multiplayer:_pressed(x, y)
-	self.charselect:mousepressed(x, y)
+	self.charselect:_controllerPressed(x, y)
 end
 
 function Multiplayer:_released(x, y)
-	self.charselect:mousereleased(x, y)
+	self.charselect:_controllerReleased(x, y)
 end
 
 function Multiplayer:_moved(x, y)
-	self.charselect:mousemoved(x, y)
+	self.charselect:_controllerMoved(x, y)
 end
 
 function Multiplayer:mousepressed(x, y) Multiplayer._pressed(self, x, y) end

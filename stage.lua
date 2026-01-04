@@ -102,8 +102,8 @@ function stage:init(game)
 	}
 
 	self.tutorial_locations = {
-		left_button = {x = self.width * 0.1, y = self.height * 0.5},
-		right_button = {x = self.width * 0.9, y = self.height * 0.5},
+		left_button = {x = self.width * 0.1 - images.buttons_tutorialleft:getWidth() / 2, y = self.height * 0.5},
+		right_button = {x = self.width * 0.9 + images.buttons_tutorialright:getWidth() / 2, y = self.height * 0.5},
 	}
 end
 
