@@ -12,6 +12,7 @@ local stage = {}
 function stage:init(game)
 	local HALF_SUPER_WIDTH = 0.07 * game.inits.drawspace.width
 	local HALF_SUPER_HEIGHT = 0.09 * game.inits.drawspace.height
+	local METER_Y_OFFSET = 0.04 * game.inits.drawspace.height
 	self.width = game.inits.drawspace.width
 	self.height = game.inits.drawspace.height
 	images.GEM_WIDTH = images.gems_red:getWidth()
@@ -21,11 +22,11 @@ function stage:init(game)
 	self.burst = {{}, {}}
 	self.burst[1].frame = {
 		x = self.x_mid - (9.5 * images.GEM_WIDTH),
-		y = self.y_mid - 3 * images.GEM_HEIGHT,
+		y = self.y_mid - 3 * images.GEM_HEIGHT + METER_Y_OFFSET,
 	}
 	self.burst[2].frame = {
 		x = self.x_mid + (9.5 * images.GEM_WIDTH),
-		y = self.y_mid - 3 * images.GEM_HEIGHT,
+		y = self.y_mid - 3 * images.GEM_HEIGHT + METER_Y_OFFSET,
 	}
 	local burst_width = images.ui_burst_part_red:getWidth()
 
@@ -47,13 +48,13 @@ function stage:init(game)
 	self.super = {
 		{
 			x = self.x_mid - 9.5 * images.GEM_WIDTH,
-			y = self.y_mid - images.GEM_HEIGHT,
-			word_y = self.y_mid - images.GEM_HEIGHT
+			y = self.y_mid - images.GEM_HEIGHT + METER_Y_OFFSET,
+			word_y = self.y_mid - images.GEM_HEIGHT + METER_Y_OFFSET
 		},
 		{
 			x = self.x_mid + 9.5 * images.GEM_WIDTH,
-			y = self.y_mid - images.GEM_HEIGHT,
-			word_y = self.y_mid - images.GEM_HEIGHT
+			y = self.y_mid - images.GEM_HEIGHT + METER_Y_OFFSET,
+			word_y = self.y_mid - images.GEM_HEIGHT + METER_Y_OFFSET
 		},
 	}
 	self.super[1].rect = {
@@ -72,11 +73,11 @@ function stage:init(game)
 
 	self.character = {
 		{
-			x = self.x_mid - (8.2 * images.GEM_WIDTH),
+			x = self.x_mid - (9.2 * images.GEM_WIDTH),
 			y = self.y_mid - (4.6 * images.GEM_HEIGHT),
 		},
 		{
-			x = self.x_mid + (8.2 * images.GEM_WIDTH),
+			x = self.x_mid + (9.2 * images.GEM_WIDTH),
 			y = self.y_mid - (4.6 * images.GEM_HEIGHT),
 		},
 	}

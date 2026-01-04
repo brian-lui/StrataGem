@@ -116,7 +116,7 @@ function Wolfgang:init(...)
 		stage.width * 0.175 + add,
 	}
 	self.BARK_X_MID = stage.width * 0.115 + add
-	self.BARK_Y = stage.height * 0.57
+	self.BARK_Y = stage.height * 0.6
 
 	local super_x = stage.super[self.player_num].x
 	local super_y = stage.super[self.player_num].y
