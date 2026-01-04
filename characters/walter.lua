@@ -10,6 +10,7 @@ local common = require "class.commons"
 local images = require "images"
 local Pic = require "pic"
 local Character = require "character"
+local sorted_pairs = require "/helpers/utilities".sorted_pairs
 
 local Walter = {}
 Walter.character_name = "Walter"
@@ -767,7 +768,7 @@ function Walter:beforeMatch()
 	local frames_until_cloud_forms = 0
 
 	-- Which columns to get rainclouds next turn
-	for _, gem in pairs(grid.matched_gems) do
+	for _, gem in ipairs(grid.matched_gems) do
 		if self.player_num == gem.player_num and gem.is_in_a_vertical_match then
 			self.pending_clouds[gem.column] = true
 		end
@@ -775,7 +776,7 @@ function Walter:beforeMatch()
 
 	-- visual indicator of a vertical match
 	local gem_list = grid.matched_gem_lists
-	for _, list in pairs(gem_list) do
+	for _, list in ipairs(gem_list) do
 		if self.player_num == list[1].player_num and list[1].is_in_a_vertical_match then
 			delay = math.max(delay, game.GEM_EXPLODE_FRAMES)
 			frames_until_cloud_forms = self.fx.matchBubbles.generate(game, self, list)

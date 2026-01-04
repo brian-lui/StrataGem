@@ -17,6 +17,7 @@ local images = require "images"
 local Pic = require "pic"
 local Gem = require "gem"
 local spairs = require "/helpers/utilities".spairs
+local sorted_pairs = require "/helpers/utilities".sorted_pairs
 
 local Fuka = {}
 
@@ -793,7 +794,7 @@ function Fuka:update(dt)
 		Gems normally only update when phase.lua calls grid:updateGravity(dt)
 		This forces them to update every frame.
 	--]]
-	for gem in pairs(self.moving_gems) do
+	for gem in sorted_pairs(self.moving_gems) do
 		gem:update(dt)
 		if gem:isStationary() then
 			self.moving_gems[gem] = nil

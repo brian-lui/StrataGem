@@ -545,7 +545,7 @@ function Phase:destroyDamagedPlatforms(dt)
 		max_delay = math.max(max_delay, last_platform_time)
 
 		-- additional delay waiting for garbage arrival
-		for _, delay in pairs(garbage_arrival_frames) do
+		for _, delay in ipairs(garbage_arrival_frames) do
 			game.queue:add(delay, grid.addBottomRow, grid, player)
 			max_delay = math.max(max_delay, game.EXPLODING_PLATFORM_FRAMES, delay)
 			self.garbage_this_round = self.garbage_this_round + 1

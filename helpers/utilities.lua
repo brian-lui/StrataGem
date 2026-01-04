@@ -38,6 +38,36 @@ function utilities.spairs(tab, ...)
 	end
 end
 
+-- pairs iterator sorted by key, handles object keys with .ID property
+-- Use this for deterministic iteration order in netplay
+function utilities.sorted_pairs(t)
+	local keys = {}
+	for k in pairs(t) do
+		keys[#keys + 1] = k
+	end
+	table.sort(keys, function(a, b)
+		-- If keys have ID property (e.g. gems), sort by ID
+		if type(a) == "table" and type(b) == "table" then
+			if a.ID and b.ID then
+				return a.ID < b.ID
+			end
+		end
+		-- For strings/numbers, sort normally
+		if type(a) == type(b) then
+			return a < b
+		end
+		-- Fallback: sort by type name then tostring
+		return tostring(a) < tostring(b)
+	end)
+	local i = 0
+	return function()
+		i = i + 1
+		if keys[i] then
+			return keys[i], t[keys[i]]
+		end
+	end
+end
+
 function utilities.reverseTable(table)
 	local reversedTable = {}
 	local itemCount = #table

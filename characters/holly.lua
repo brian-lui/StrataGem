@@ -19,6 +19,7 @@ local Pic = require "pic"
 local Character = require "character"
 local images = require "images"
 local shuffle = require "/helpers/utilities".shuffle
+local sorted_pairs = require "/helpers/utilities".sorted_pairs
 
 local Holly = {}
 
@@ -930,7 +931,7 @@ function Holly:onGemDestroyEnd(gem, delay)
 	if	gem.contained_items.holly_flower and
 		gem.contained_items.holly_flower.player_num == self.player_num
 	then
-		for k, this_gem in pairs(self.to_be_removed_flowers) do
+		for k, this_gem in sorted_pairs(self.to_be_removed_flowers) do
 			if this_gem == gem then
 				self.to_be_removed_flowers[k] = nil
 				gem.indestructible = nil

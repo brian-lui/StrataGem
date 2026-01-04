@@ -13,6 +13,7 @@ local images = require "images"
 local Pic = require "pic"
 local Character = require "character"
 local shuffle = require "/helpers/utilities".shuffle
+local sorted_pairs = require "/helpers/utilities".sorted_pairs
 
 local Diggory = {}
 
@@ -599,12 +600,12 @@ function Diggory:_destroyFlaggedGems(to_destroy)
 
 	while keep_on_cracking do
 		keep_on_cracking = false
-		for gem in pairs(cracked_gems) do
+		for gem in sorted_pairs(cracked_gems) do
 			if not gem.is_destroyed then
 
 				-- add adjacent cracked gems
 				local adjacents = self:_getCrackedGemsToDestroy({gem})
-				for adj in pairs(adjacents) do
+				for adj in sorted_pairs(adjacents) do
 					adjacent_cracked_gems[adj] = true
 				end
 
@@ -745,7 +746,7 @@ function Diggory:afterGravity()
 	local destroyed_gems = {}
 	local explode_delay = 0
 
-	for key, gem in pairs(self.slammy_gems) do
+	for key, gem in sorted_pairs(self.slammy_gems) do
 		local col_has_match = _colHasFriendlyMatch(gem)
 		local below_gem = grid[gem.row + 1][gem.column].gem
 		if below_gem then

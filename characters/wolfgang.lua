@@ -17,6 +17,7 @@ local Character = require "character"
 local images = require "images"
 local Pic = require "pic"
 local deepcpy = require "/helpers/utilities".deepcpy
+local sorted_pairs = require "/helpers/utilities".sorted_pairs
 
 local Wolfgang = {}
 
@@ -715,7 +716,7 @@ end
 -- countdown bad dogs and destroy if at zero
 -- Only once per turn
 function Wolfgang:_countdownBadDogs()
-	for dog, counter in pairs(self.bad_dogs) do
+	for dog, counter in sorted_pairs(self.bad_dogs) do
 		assert(counter > 0, "Wolfgang countdown went wrong somewhere")
 		self.bad_dogs[dog] = counter - 1
 	end
@@ -725,7 +726,7 @@ end
 function Wolfgang:_upkeepBadDogs()
 	local any_dogs_destroyed = false
 	local delete_dogs = {}
-	for dog, counter in pairs(self.bad_dogs) do
+	for dog, counter in sorted_pairs(self.bad_dogs) do
 		if counter == 0 then
 			dog.indestructible = false
 			dog:setOwner(self.player_num)
@@ -788,7 +789,7 @@ function Wolfgang:update(dt)
 	end
 
 	-- glowing good dogs
-	for dog in pairs(self.good_dogs) do
+	for dog in sorted_pairs(self.good_dogs) do
 		if dog.is_destroyed then
 			self.good_dogs[dog] = nil
 		else
@@ -804,7 +805,7 @@ function Wolfgang:update(dt)
 	end
 
 	-- glowing bad dogs
-	for dog, turns_remaining in pairs(self.bad_dogs) do
+	for dog, turns_remaining in sorted_pairs(self.bad_dogs) do
 		local actual_turns_remaining = math.min(turns_remaining + 1, 3) -- lol
 		if bad_dog_anim
 		and self.bad_dog_counter % actual_turns_remaining == 0 then
@@ -956,7 +957,7 @@ function Wolfgang:beforeMatch()
 	end
 
 	-- create the colorwords and light up BARK meter for matches
-	for color, pos in pairs(create_words) do
+	for color, pos in sorted_pairs(create_words) do
 		local arrive_time = self.fx.colorWord.generate(
 			self.game,
 			self,
@@ -976,7 +977,7 @@ end
 function Wolfgang:afterMatch()
 	local delay = 0
 	-- For light up triple wilddog match rare case
-	for color in pairs(self.this_turn_matched_colors) do
+	for color in sorted_pairs(self.this_turn_matched_colors) do
 		self.letters[color]:lightUp()
 		delay = 30
 	end
@@ -992,13 +993,13 @@ end
 function Wolfgang:afterAllMatches()
 	local delay = 0
 	local all_lit_up = true
-	for _, letter in pairs(self.letters) do
+	for _, letter in sorted_pairs(self.letters) do
 		if not letter.lighted then all_lit_up = false end
 	end
 
 	if all_lit_up then
 		self.single_dogs_to_make = self.single_dogs_to_make + self.FULL_BARK_DOG_ADDS
-		for _, letter in pairs(self.letters) do letter:darken() end
+		for _, letter in sorted_pairs(self.letters) do letter:darken() end
 		delay = 30
 	end
 
@@ -1155,7 +1156,7 @@ function Wolfgang:deserializeSpecials(str)
 		green = lighting:sub(4, 4),
 	}
 
-	for color, bool in pairs(letters) do
+	for color, bool in sorted_pairs(letters) do
 		assert(bool == "Y" or bool == "N", "Invalid colorletter specified")
 		if bool == "Y" then
 			self.letters[color]:lightUp()

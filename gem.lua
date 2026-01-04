@@ -73,7 +73,15 @@ function Gem.random(game, gem_table)
 	local rand_table = {}
 	local num = 0
 
-	for color, freq in pairs(gem_table) do
+	-- Use sorted color order to ensure deterministic iteration across clients
+	local colors_sorted = {}
+	for color, _ in pairs(gem_table) do
+		colors_sorted[#colors_sorted + 1] = color
+	end
+	table.sort(colors_sorted)
+
+	for _, color in ipairs(colors_sorted) do
+		local freq = gem_table[color]
 		for _ = 1, freq do
 			num = num + 1
 			rand_table[num] = color

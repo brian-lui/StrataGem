@@ -11,6 +11,7 @@ local images = require "images"
 local common = require "class.commons"
 local Gem = require "gem"
 local deepcpy = require "/helpers/utilities".deepcpy
+local sorted_pairs = require "/helpers/utilities".sorted_pairs
 
 local Grid = {}
 
@@ -203,7 +204,7 @@ function Grid:_getRawMatches(min_length)
 	min_length = min_length or 3
 	local match_colors = {"red", "blue", "green", "yellow"}
 	local ret = {}
-	for _, color in pairs(match_colors) do
+	for _, color in ipairs(match_colors) do
 		for _, r, c in self:gems() do
 			if getColor(r, c) == color or getColor(r, c) == "wild" then
 				-- HORIZONTAL MATCHES
@@ -252,7 +253,7 @@ function Grid:updateMatchedGems(min_length)
 	local matches = self:_getRawMatches(minimumLength or 3)
 	local gem_set = {}
 
-	for _, match in pairs(matches) do
+	for _, match in ipairs(matches) do
 		if match.is_a_horizontal_match then
 			for i = 1, match.length do
 				local r, c = match.row, match.column + i - 1
@@ -271,12 +272,12 @@ function Grid:updateMatchedGems(min_length)
 	end
 
 	self.matched_gems = {}
-	for gem in pairs(gem_set) do
+	for gem in sorted_pairs(gem_set) do
 		self.matched_gems[#self.matched_gems + 1] = gem
 	end
 
 	self.matched_gem_lists = {}
-	for _, match in pairs(matches) do
+	for _, match in ipairs(matches) do
 		local gem_list = {}
 		if match.is_a_horizontal_match then
 			for i = 1, match.length do
@@ -426,7 +427,7 @@ function Grid:flagMatchedGems()
 		end
 
 		-- store flags
-		for _, gem in pairs(gems) do
+		for _, gem in ipairs(gems) do
 			if gem_flags[gem] then
 				if gem_flags[gem] == 0 then
 					print("This shouldn't happen")
@@ -444,7 +445,7 @@ function Grid:flagMatchedGems()
 	end
 
 	-- apply the flags
-	for gem, player_num in pairs(gem_flags) do
+	for gem, player_num in sorted_pairs(gem_flags) do
 		gem:setOwner(player_num, true)
 	end
 end
@@ -876,7 +877,7 @@ function Grid:destroyMatchedGems(combo_bonus)
 	local p1_remaining_damage, p2_remaining_damage = combo_bonus, combo_bonus
 	local delay_until_explode, damage_particle_duration = 0, 0
 
-	for _, gem in pairs(self.matched_gems) do
+	for _, gem in ipairs(self.matched_gems) do
 		local extra_damage = 0
 		if p1_remaining_damage > 0 and gem.player_num == 1 then
 			extra_damage = 1
