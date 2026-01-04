@@ -447,7 +447,11 @@ function Game:deserializeDelta(delta_string, player)
 	local delta = {}
 	for s in (delta_string.."_"):gmatch("(.-)_") do table.insert(delta, s) end
 
-	for i, v in ipairs(delta) do
+	-- Use while loop to allow skipping consumed elements
+	local i = 1
+	while i <= #delta do
+		local v = delta[i]
+
 		if (v == "Pc1") or (v == "Pc2") then
 			local pos = tonumber(delta[i+1])
 			local rotation = tonumber(delta[i+2])
@@ -518,6 +522,9 @@ function Game:deserializeDelta(delta_string, player)
 
 			piece:dropIntoBasin(coords, true)
 
+			-- Skip the 3 consumed elements (pos, rotation, column)
+			i = i + 4
+
 		elseif v == "S" then
 			if not player.mp or not player.SUPER_COST then
 				print("Invalid delta: player missing meter data")
@@ -546,8 +553,15 @@ function Game:deserializeDelta(delta_string, player)
 			player.is_supering = true
 			player.super_params = super_params
 
-		elseif v ~= "N" and v ~= "" then
-			-- Unknown delta command (not Pc1, Pc2, S, N, or empty)
+			-- Skip the consumed element (super_params)
+			i = i + 2
+
+		elseif v == "N" or v == "" then
+			-- No action or empty, just move to next
+			i = i + 1
+
+		else
+			-- Unknown delta command
 			print("Invalid delta: unknown command '" .. v .. "'")
 			return false
 		end
