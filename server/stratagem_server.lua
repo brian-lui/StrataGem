@@ -1,5 +1,6 @@
 -- server for StrataGem!
-require "socket"
+local socket = require "socket"
+_G.socket = socket
 local json = require "dkjson"
 
 local server = {

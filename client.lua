@@ -21,7 +21,7 @@ function Client:init(game)
 	self.game = game
 	self.connected = false
 	self.port = 49929
-	self.host = "165.227.7.122" -- hardlyworkinggames.com
+	self.host = "192.9.188.147" -- hardlyworkinggames.com
 end
 
 function Client:connect()
