@@ -128,6 +128,7 @@ function Charselect:_createUIButtons()
 	elseif gamestate.name == "Multiplayer" then
 		start_action = function()
 			if 	self.my_character and
+				game.client.connected and
 				not game.client.queuing and
 				not self.spellbook.char_displayed
 			then

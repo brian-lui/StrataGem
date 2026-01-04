@@ -31,7 +31,7 @@ local connection_attempts = {} -- ip -> {count = n, first_attempt = timestamp}
 local connections_per_ip = {} -- ip -> count of active connections
 local RATE_LIMIT_WINDOW = 60 -- seconds
 local RATE_LIMIT_MAX_ATTEMPTS = 10 -- max connection attempts per window
-local MAX_CONNECTIONS_PER_IP = 3 -- max concurrent connections per IP
+local MAX_CONNECTIONS_PER_IP = 5 -- max concurrent connections per IP
 
 -- Bug 3 fix: Global server capacity limit
 local MAX_TOTAL_CONNECTIONS = 30 -- max total concurrent connections on the server
@@ -122,7 +122,8 @@ local function disconnect(_, conn)
 	print("Disconnected", conn)
 
 	-- Bug 4 fix: Decrement connection count for this IP
-	local ip = getConnectionIP(conn)
+	-- Use stored IP from dudes table (getpeername fails on closed sockets)
+	local ip = (dudes[conn] and dudes[conn].ip) or getConnectionIP(conn)
 	decrementConnectionCount(ip)
 
 	-- Clear from dudes table first to prevent other code from using this connection
@@ -607,7 +608,7 @@ while true do
 		if allowed then
 			new_conn:settimeout(0)
 			incrementConnectionCount(ip)
-			dudes[new_conn] = {waiting = true, partial_recv = "", name = "Dog", last_activity = os.time()}
+			dudes[new_conn] = {waiting = true, partial_recv = "", name = "Dog", last_activity = os.time(), ip = ip}
 		else
 			-- Rate limit or server capacity exceeded, reject connection
 			new_conn:settimeout(1)

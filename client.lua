@@ -179,6 +179,9 @@ function Client:connectionRejected(recv)
 	else
 		print("Connection rejected: " .. tostring(recv.message))
 	end
+	-- Server closes connection after rejection, so mark as disconnected
+	self.connected = false
+	self:clear()
 end
 
 function Client:receiveDisconnect()
