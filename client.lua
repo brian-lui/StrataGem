@@ -13,7 +13,6 @@ local Client = {}
 -- Maximum size for partial packet buffer (64KB)
 local MAX_PARTIAL_RECV_SIZE = 65536
 
--- Bug 5 fix: Client-initiated keepalive settings
 local CLIENT_PING_INTERVAL = 15 -- seconds between client pings
 local CLIENT_PING_TIMEOUT = 45 -- seconds before considering server dead
 
@@ -89,7 +88,6 @@ function Client:update()
 	if self.connected then
 		local current_time = socket.gettime()
 
-		-- Bug 5 fix: Check for server timeout
 		if self.last_server_activity and
 		   (current_time - self.last_server_activity > CLIENT_PING_TIMEOUT) then
 			print("Server connection timed out (no response for " .. CLIENT_PING_TIMEOUT .. "s)")
@@ -97,7 +95,6 @@ function Client:update()
 			return
 		end
 
-		-- Bug 5 fix: Send periodic keepalive pings
 		if self.last_client_ping and
 		   (current_time - self.last_client_ping > CLIENT_PING_INTERVAL) then
 			self:send({type = "ping"})
@@ -106,7 +103,6 @@ function Client:update()
 
 		local recv_str, _, partial_data = self.client_socket:receive("*l")
 		if recv_str then -- we got a completed packet now
-			-- Bug 5 fix: Update last server activity time
 			self.last_server_activity = current_time
 
 			recv_str = self.partial_recv .. recv_str
@@ -119,7 +115,6 @@ function Client:update()
 				print("Raw data: " .. recv_str:sub(1, 100)) -- log first 100 chars
 			end
 		elseif partial_data and partial_data ~= "" then -- still incomplete packet.
-			-- Bug 5 fix: Partial data also counts as server activity
 			self.last_server_activity = current_time
 
 			-- Check for buffer overflow attack
@@ -139,7 +134,6 @@ end
 function Client:send(data)
 	if self.connected then
 		local blob = json.encode(data) .. "\n" -- we are using *l receive mode
-		-- Bug 9 fix: Check that all bytes were sent (send returns bytes sent, not boolean)
 		local bytes_sent, err = self.client_socket:send(blob)
 		if not bytes_sent then
 			print("OH NOES", err)
@@ -158,7 +152,6 @@ end
 -------------------------------------------------------------------------------
 
 function Client:startMatch(recv)
-	-- Bug 1 fix: Validate all required fields exist before accessing
 	if not recv.side or (recv.side ~= 1 and recv.side ~= 2) then
 		print("Invalid start packet: missing or invalid side")
 		return
@@ -171,7 +164,6 @@ function Client:startMatch(recv)
 		print("Invalid start packet: missing character selection")
 		return
 	end
-	-- Bug 7 fix: Validate seed is a number
 	if not recv.seed or type(recv.seed) ~= "number" then
 		print("Invalid start packet: missing or invalid seed")
 		return
@@ -280,7 +272,6 @@ function Client:receiveQueue(recv)
 	end
 end
 
--- Bug 28 fix: Threshold for consecutive unconfirmed turns before disconnect
 local UNCONFIRMED_TURN_THRESHOLD = 2
 
 -- call this when initializing client.lua, ending a match, or disconnecting
@@ -299,21 +290,17 @@ function Client:clear()
 	self.their_state = nil
 	self.synced = true
 
-	-- Bug 3 fix: Sequence numbers for duplicate packet detection
 	self.our_delta_seq = 0      -- sequence number we send
 	self.our_state_seq = 0      -- sequence number we send
 	self.their_delta_seq = -1   -- last received delta sequence (-1 = none received)
 	self.their_state_seq = -1   -- last received state sequence (-1 = none received)
 
-	-- Bug 5 fix: Track if we've sent our delta/state (for confirmation race)
 	self.delta_sent = false
 	self.state_sent = false
 
-	-- Bug 28 fix: Track consecutive unconfirmed turns
 	self.unconfirmed_delta_count = 0
 	self.unconfirmed_state_count = 0
 
-	-- Bug 5 fix: Initialize keepalive tracking (use socket.gettime for sub-second precision)
 	local current_time = socket.gettime()
 	self.last_server_activity = current_time
 	self.last_client_ping = current_time
@@ -322,7 +309,6 @@ end
 -- At new turn, clear the flags for having sent and received state information
 -- Returns false if too many consecutive unconfirmed turns (caller should handle disconnect)
 function Client:newTurn()
-	-- Bug 28 fix: Track consecutive unconfirmed turns and disconnect if threshold exceeded
 	if not self.delta_confirmed then
 		self.unconfirmed_delta_count = self.unconfirmed_delta_count + 1
 		print("Warning: Opponent didn't confirm delta (" .. self.unconfirmed_delta_count .. " consecutive)")
@@ -358,11 +344,9 @@ function Client:newTurn()
 	self.their_state = nil
 	self.synced = false
 
-	-- Bug 3 fix: Increment sequence numbers for new turn
 	self.our_delta_seq = self.our_delta_seq + 1
 	self.our_state_seq = self.our_state_seq + 1
 
-	-- Bug 5 fix: Reset sent flags for new turn
 	self.delta_sent = false
 	self.state_sent = false
 
@@ -386,7 +370,6 @@ function Client:queue(action, queue_details)
 	self:send{type = "queue", action = action, queue_details = queue_details}
 end
 
--- Bug 9 fix: Maximum retries for socket close
 local SOCKET_CLOSE_MAX_RETRIES = 3
 local SOCKET_CLOSE_RETRY_DELAY = 0.1 -- seconds
 
@@ -400,7 +383,6 @@ function Client:disconnect()
 		if not success then
 			print("Failed to send disconnect notification: " .. tostring(err))
 		end
-		-- Bug 9 fix: Close socket with retry and logging
 		local close_success = false
 		for attempt = 1, SOCKET_CLOSE_MAX_RETRIES do
 			local ok, close_err = pcall(function() self.client_socket:close() end)
@@ -446,10 +428,7 @@ function Client:sendDelta()
 	assert(self.connected, "Not connected to opponent")
 	assert(type(self.our_delta) == "string", "Tried to send non-string delta")
 
-	-- Bug 5 fix: Mark that we've sent our delta
 	self.delta_sent = true
-
-	-- Bug 3 fix: Include sequence number for duplicate detection
 	self:send{type = "delta", serial = self.our_delta, seq = self.our_delta_seq}
 end
 
@@ -522,7 +501,6 @@ end
 
 -- Only send the delta confirm during the WaitForDelta phase, to get lockstep
 function Client:sendDeltaConfirmation()
-	-- Bug 23 fix: Replace assert with controlled match termination
 	if self.game.current_phase ~= "NetplayWaitForDelta" then
 		print("Phase desync detected in sendDeltaConfirmation: " .. self.game.current_phase)
 		self:sendDesyncNotification()
@@ -537,7 +515,6 @@ end
 -- Can be activated anytime after sending delta.
 -- TODO: Better error handling - can request another delta instead of throwing exception
 function Client:receiveDeltaConfirmation(recv)
-	-- Bug 5 fix: Only accept confirmation if we've actually sent a delta
 	if not self.delta_sent then
 		print("Warning: Received delta confirmation before sending delta, ignoring")
 		return
@@ -567,10 +544,7 @@ function Client:sendState()
 	assert(self.connected, "Not connected to opponent")
 	assert(type(self.our_state) == "string", "Tried to send non-string state")
 
-	-- Bug 5 fix: Mark that we've sent our state
 	self.state_sent = true
-
-	-- Bug 3 fix: Include sequence number for duplicate detection
 	self:send{type = "state", serial = self.our_state, seq = self.our_state_seq}
 end
 
@@ -612,7 +586,6 @@ end
 
 -- TODO: think about when it's allowable to send the confirmation. End of turn?
 function Client:sendStateConfirmation()
-	-- Bug 8 fix: Check connection before sending
 	if not self.connected then
 		print("Warning: Cannot send state confirmation, not connected")
 		return
@@ -625,7 +598,6 @@ function Client:sendStateConfirmation()
 end
 
 function Client:receiveStateConfirmation(recv)
-	-- Bug 5 fix: Only accept confirmation if we've actually sent a state
 	if not self.state_sent then
 		print("Warning: Received state confirmation before sending state, ignoring")
 		return
@@ -663,7 +635,6 @@ Client.lookup = {
 
 -- select/case function
 function Client:processData(recv)
-	-- Bug 3 fix: Validate recv and recv.type exist before use
 	if not recv or type(recv) ~= "table" then
 		print("Warning: Received invalid data (not a table)")
 		return

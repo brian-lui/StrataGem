@@ -421,7 +421,6 @@ function Charselect:update(dt)
 	self.displayed_character_text:update(dt)
 	self.spellbook:update(dt)
 
-	-- Bug 19 fix: Update lobby disconnect state machine in multiplayer mode
 	if gamestate.name == "Multiplayer" and self.lobby then
 		self.lobby:updateDisconnect()
 	end

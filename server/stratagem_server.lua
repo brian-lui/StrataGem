@@ -14,26 +14,22 @@ server_socket:settimeout(0)
 -- Keepalive settings
 local PING_INTERVAL = 30 -- seconds between pings
 local PING_TIMEOUT = 60 -- seconds before considering connection dead
-local HANDSHAKE_TIMEOUT = 10 -- Bug 23 fix: seconds before timing out clients that never complete handshake
+local HANDSHAKE_TIMEOUT = 10 -- seconds before timing out clients that never complete handshake
 local last_ping_time = os.time()
 
 -- Maximum size for partial packet buffer (64KB)
 local MAX_PARTIAL_RECV_SIZE = 65536
 
--- Bug 8 fix: Track connections being disconnected to prevent recursive calls
 local disconnecting = {}
 
--- Bug 6 fix: Track matches being ended to prevent race conditions
 local ending_match = {}
 
--- Bug 4 fix: Rate limiting for connections
 local connection_attempts = {} -- ip -> {count = n, first_attempt = timestamp}
 local connections_per_ip = {} -- ip -> count of active connections
 local RATE_LIMIT_WINDOW = 60 -- seconds
 local RATE_LIMIT_MAX_ATTEMPTS = 10 -- max connection attempts per window
 local MAX_CONNECTIONS_PER_IP = 5 -- max concurrent connections per IP
 
--- Bug 3 fix: Global server capacity limit
 local MAX_TOTAL_CONNECTIONS = 30 -- max total concurrent connections on the server
 local total_connections = 0
 
@@ -45,7 +41,6 @@ end
 local function checkRateLimit(ip)
 	local now = os.time()
 
-	-- Bug 3 fix: Check global server capacity limit
 	if total_connections >= MAX_TOTAL_CONNECTIONS then
 		print("Server capacity limit reached (" .. MAX_TOTAL_CONNECTIONS .. " connections)")
 		return false, "ServerFull"
@@ -79,7 +74,6 @@ end
 
 local function incrementConnectionCount(ip)
 	connections_per_ip[ip] = (connections_per_ip[ip] or 0) + 1
-	-- Bug 3 fix: Track total connections
 	total_connections = total_connections + 1
 end
 
@@ -90,7 +84,6 @@ local function decrementConnectionCount(ip)
 			connections_per_ip[ip] = nil
 		end
 	end
-	-- Bug 3 fix: Track total connections
 	if total_connections > 0 then
 		total_connections = total_connections - 1
 	end
@@ -151,7 +144,6 @@ local function disconnect(_, conn)
 
 	print("Disconnected", conn)
 
-	-- Bug 4 fix: Decrement connection count for this IP
 	-- Use stored IP from dudes table (getpeername fails on closed sockets)
 	local ip = (dudes[conn] and dudes[conn].ip) or getConnectionIP(conn)
 	decrementConnectionCount(ip)
@@ -172,7 +164,6 @@ end
 function server.send(data, conn)
 	local blob = json.encode(data) .. "\n" -- we are using *l receive mode
 	if conn then
-		-- Bug 9 fix: Check that all bytes were sent (send returns bytes sent, not boolean)
 		local bytes_sent, err = conn:send(blob)
 		if not bytes_sent then
 			print("Oh noes, blob send unsuccessful: " .. tostring(err))
@@ -231,7 +222,7 @@ local function addDude(data, new_conn)
 		partial_recv = "",
 		name = data.name,
 		last_activity = os.time(),
-		waiting = false, -- Bug 5 fix: Explicitly clear waiting flag so keepalive pings are sent
+		waiting = false,
 	}
 	id_count = id_count + 1
 	print("new connection added", new_conn)
@@ -256,7 +247,6 @@ local function validateQueueDetails(queue_details)
 	if queue_details.background ~= nil and type(queue_details.background) ~= "string" then
 		return false, "queue_details.background must be a string if provided"
 	end
-	-- Bug 26 fix: Validate background content to prevent path traversal
 	if queue_details.background then
 		-- Only allow alphanumeric characters, underscores, and hyphens
 		if not queue_details.background:match("^[%w_%-]+$") then
@@ -336,7 +326,6 @@ local function attemptedConnection(data, conn)
 		print("Server/client version mismatch: server " .. server.VERSION .. ", client " .. tostring(data.version))
 		blob = {type = "rejected", message = "Version", version = server.VERSION}
 	elseif not data.name or type(data.name) ~= "string" or data.name == "" then
-		-- Bug 4 fix: Validate name field exists and is non-empty
 		print("Client sent connect without valid name field")
 		blob = {type = "rejected", message = "InvalidName"}
 	else
@@ -348,7 +337,6 @@ local function attemptedConnection(data, conn)
 	server.send(blob, conn)
 end
 
--- Bug 4 fix: Return nil explicitly with proper logging, callers must handle nil
 local function getConnFromID(id)
 	if not id then
 		print("getConnFromID: nil id provided")
@@ -380,7 +368,6 @@ end
 
 local function receiveGameData(data, conn)
 	if dudes[conn] then
-		-- Bug 2 fix: Verify connection is actually in a match before forwarding
 		if not dudes[conn].playing then
 			print("Received game data from connection not in a match, ignoring")
 			return
@@ -423,7 +410,6 @@ local function receiveGameData(data, conn)
 end
 
 local function startMatch(dude1, dude2)
-	-- Bug 20 fix: Check dudes exist before accessing properties
 	if not dude1 then
 		print("startMatch: dude1 is nil")
 		return false
@@ -437,7 +423,6 @@ local function startMatch(dude1, dude2)
 	print(dude2)
 	print(dude2.id)
 
-	-- Bug 3 fix: Transaction-like pattern - validate connections before and after setup
 	local conn1, conn2 = getConnFromID(dude1.id), getConnFromID(dude2.id)
 
 	-- Pre-validation: ensure both connections exist
@@ -494,14 +479,12 @@ end
 local function endMatch(data, conn)
 	if not dudes[conn] then return end
 
-	-- Bug 6 fix: Guard against race conditions when both players end match simultaneously
 	if ending_match[conn] then
 		print("endMatch already in progress for this connection, skipping")
 		return
 	end
 	ending_match[conn] = true
 
-	-- Bug 25 fix: Wrap in pcall to ensure ending_match is always cleared even on error
 	local success, err = pcall(function()
 		-- Cache all needed values upfront to avoid TOCTOU issues
 		local my_id = dudes[conn] and dudes[conn].id
@@ -510,7 +493,6 @@ local function endMatch(data, conn)
 		-- Notify opponent that match has ended
 		local opponent_conn = getOpponentConn(conn)
 		if opponent_conn and dudes[opponent_conn] then
-			-- Bug 6 fix: Mark opponent as ending too to prevent double cleanup
 			if not ending_match[opponent_conn] then
 				server.send({type = "end_match", reason = "opponent_left"}, opponent_conn)
 			end
@@ -537,7 +519,6 @@ local function endMatch(data, conn)
 		end
 	end)
 
-	-- Bug 25 fix: Always clear the guard, even if an error occurred
 	ending_match[conn] = nil
 
 	if not success then
@@ -575,7 +556,6 @@ local function checkKeepalive()
 				server.send({type = "ping"}, conn)
 			end
 		else
-			-- Bug 23 fix: Timeout clients that never complete the handshake
 			if dude.last_activity and (current_time - dude.last_activity > HANDSHAKE_TIMEOUT) then
 				print("Client timed out during handshake:", conn)
 				table.insert(to_disconnect, conn)
@@ -628,7 +608,6 @@ function server:processData(data_str, conn)
 end
 
 while true do
-	-- Bug 4 fix: Clean up old rate limit entries periodically
 	cleanupRateLimitEntries()
 
 	local new_conn = server_socket:accept() -- socket:accept() detects a new connection from a client.
@@ -698,11 +677,9 @@ while true do
 	-- Check for client keepalive and send pings
 	checkKeepalive()
 
-	-- Bug 2 fix: Match pairs until fewer than 2 remain (handles 3+ simultaneous queuers)
 	local queuers = getQueuers()
 	while #queuers >= 2 do
 		local success = startMatch(queuers[1], queuers[2])
-		-- Bug 19 fix: If startMatch fails, clear queuing status to prevent infinite loop
 		if not success then
 			local conn1 = getConnFromID(queuers[1].id)
 			local conn2 = getConnFromID(queuers[2].id)

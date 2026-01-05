@@ -37,7 +37,6 @@ function Phase:init(game)
 	self.INIT_TIME_TO_NEXT_REPLAY = 120 -- frames in action phase in replay mode
 	self.PLATFORM_SPIN_DELAY = 30 -- frames to animate platforms exploding
 	self.GAMEOVER_DELAY = 180 -- how long to stay on gameover screen
-	-- Bug 13 fix: Use configuration values for netplay timeouts
 	self.NETPLAY_DELTA_WAIT = NETPLAY_CONFIG.DELTA_WAIT_FRAMES
 	self.NETPLAY_STATE_WAIT = NETPLAY_CONFIG.STATE_WAIT_FRAMES
 	self.NETPLAY_RESEND_INTERVAL = NETPLAY_CONFIG.RESEND_INTERVAL_FRAMES
@@ -185,7 +184,6 @@ function Phase:handleConnectionTimeout()
 
 	print("Connection timed out waiting for opponent")
 
-	-- Bug 27 fix: Check client exists before accessing properties
 	if not client then
 		print("handleConnectionTimeout: client is nil")
 		game:switchState("gs_multiplayerselect")
@@ -722,8 +720,6 @@ end
 function Phase:netplaySendState(dt)
 	local game = self.game
 
-	-- Bug 4 fix: Reset wait counter when entering state phase
-	-- (it was used during delta phase and would carry over incorrectly)
 	self.netplay_wait_frames = 0
 
 	game.client:writeState()
@@ -764,7 +760,6 @@ function Phase:netplayWaitForState(dt)
 
 	-- Send confirmation as soon as we receive and validate their state
 	if client.their_state and not self.state_confirmation_sent then
-		-- Bug 6 fix: Validate our_state exists before comparison
 		if not client.our_state then
 			print("Error: our_state is nil, cannot compare states")
 			self:handleConnectionTimeout()
@@ -799,8 +794,6 @@ function Phase:netplayNewTurn(dt)
 	local game = self.game
 	local client = game.client
 
-	-- Bug 2 fix: Check connection before proceeding with new turn
-	-- If disconnected, end the match immediately instead of converting to broken singleplayer
 	if not client.connected then
 		print("Disconnected from server during new turn, ending match")
 		client:clear()
@@ -808,7 +801,6 @@ function Phase:netplayNewTurn(dt)
 		return
 	end
 
-	-- Bug 28 fix: Handle case when newTurn fails due to too many unconfirmed turns
 	local success = client:newTurn()
 	if not success then
 		game:switchState("gs_multiplayerselect")
