@@ -7,20 +7,20 @@ local common = require "class.commons"
 
 local Singleplayer = {name = "Singleplayer", gametype = "Singleplayer"}
 function Singleplayer:init()
+	Singleplayer.charselect = common.instance(require "charselect", self, Singleplayer)
+	Singleplayer.charselect:init(self, Singleplayer)
 end
 
 function Singleplayer:enter()
-	self.charselect = common.instance(require "charselect", self, Singleplayer)
-	self.charselect:init(self, Singleplayer)
-	self.charselect:enter()
+	Singleplayer.charselect:enter()
 end
 
 function Singleplayer:update(dt)
-	self.charselect:update(dt)
+	Singleplayer.charselect:update(dt)
 end
 
 function Singleplayer:draw()
-	self.charselect:draw()
+	Singleplayer.charselect:draw()
 end
 
 function Singleplayer:openSettingsMenu()
@@ -34,15 +34,15 @@ end
 
 -- add custom things to these three functions
 function Singleplayer:_pressed(x, y)
-	self.charselect:_controllerPressed(x, y)
+	Singleplayer.charselect:_controllerPressed(x, y)
 end
 
 function Singleplayer:_released(x, y)
-	self.charselect:_controllerReleased(x, y)
+	Singleplayer.charselect:_controllerReleased(x, y)
 end
 
 function Singleplayer:_moved(x, y)
-	self.charselect:_controllerMoved(x, y)
+	Singleplayer.charselect:_controllerMoved(x, y)
 end
 
 function Singleplayer:mousepressed(x, y) Singleplayer._pressed(self, x, y) end

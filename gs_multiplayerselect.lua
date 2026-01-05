@@ -7,20 +7,20 @@ local common = require "class.commons"
 
 local Multiplayer = {name = "Multiplayer", gametype = "Netplay"}
 function Multiplayer:init()
+	Multiplayer.charselect = common.instance(require "charselect", self, Multiplayer)
+	Multiplayer.charselect:init(self, Multiplayer)
 end
 
 function Multiplayer:enter()
-	self.charselect = common.instance(require "charselect", self, Multiplayer)
-	self.charselect:init(self, Multiplayer)
-	self.charselect:enter()
+	Multiplayer.charselect:enter()
 end
 
 function Multiplayer:update(dt)
-	self.charselect:update(dt)
+	Multiplayer.charselect:update(dt)
 end
 
 function Multiplayer:draw()
-	self.charselect:draw()
+	Multiplayer.charselect:draw()
 end
 
 function Multiplayer:openSettingsMenu()
@@ -34,15 +34,15 @@ end
 
 -- add custom things to these three functions
 function Multiplayer:_pressed(x, y)
-	self.charselect:_controllerPressed(x, y)
+	Multiplayer.charselect:_controllerPressed(x, y)
 end
 
 function Multiplayer:_released(x, y)
-	self.charselect:_controllerReleased(x, y)
+	Multiplayer.charselect:_controllerReleased(x, y)
 end
 
 function Multiplayer:_moved(x, y)
-	self.charselect:_controllerMoved(x, y)
+	Multiplayer.charselect:_controllerMoved(x, y)
 end
 
 function Multiplayer:mousepressed(x, y) Multiplayer._pressed(self, x, y) end
