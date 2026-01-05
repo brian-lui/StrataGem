@@ -137,11 +137,26 @@ function Charselect:_createUIButtons()
 					background = game.background:idx_to_str(self.game_background),
 				}
 				self.lobby:joinRankedQueue(queue_details)
-				gamestate.ui.clickable.start:newImage(images.buttons_lobbycancelsearch)
+				local button = gamestate.ui.clickable.start
+				button:newImage(images.buttons_lobbycancelsearch)
+				button.pushed = function(_self)
+					_self.game.sound:newSFX("button")
+					_self:newImage(images.buttons_lobbycancelsearchpush)
+				end
+				button.released = function(_self)
+					_self:newImage(images.buttons_lobbycancelsearch)
+				end
 			elseif self.my_character and game.client.queuing then
 				self.lobby:cancelRankedQueue()
-				gamestate.ui.clickable.start:newImage(images.buttons_start)
-				-- TODO: we should probably have a separate button object here
+				local button = gamestate.ui.clickable.start
+				button:newImage(images.buttons_start)
+				button.pushed = function(_self)
+					_self.game.sound:newSFX("button")
+					_self:newImage(images.buttons_startpush)
+				end
+				button.released = function(_self)
+					_self:newImage(images.buttons_start)
+				end
 			end
 		end
 	end

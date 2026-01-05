@@ -13,7 +13,7 @@ local buttons = {
 	"vscpu", "vscpupush", "netplay", "netplaypush", "back", "backpush",
 	"spellbook", "spellbookpush", "start", "startpush", "backgroundleft",
 	"backgroundright", "lobbycreatenew", "lobbyqueueranked",
-	"lobbycancelsearch", "pause", "stop", "settings", "settingspush", "yes",
+	"lobbycancelsearch", "lobbycancelsearchpush", "pause", "stop", "settings", "settingspush", "yes",
 	"yespush", "no", "nopush", "quit", "quitpush", "tutorial", "tutorialpush",
 	"tutorialleft", "tutorialleftpush", "tutorialright", "tutorialrightpush",
 }

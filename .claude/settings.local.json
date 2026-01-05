@@ -6,7 +6,8 @@
       "Bash(python:*)",
       "Bash(find:*)",
       "Bash(grep:*)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(ls -la \"C:\\\\Users\\\\livin\\\\Desktop\\\\StrataGem\\\\images\\\\buttons\"\" | grep -i \"lobbycancelsearch \")"
     ]
   }
 }
