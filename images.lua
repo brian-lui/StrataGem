@@ -19,8 +19,7 @@ local buttons = {
 }
 
 local unclickables = {
-	"fadein", "titlelogo", "lobbygamebackground", "lobbysearchingnone",
-	"lobbysearchingranked",	"selectstageborder", "settingsframe", "suretoquit",
+	"fadein", "titlelogo", "selectstageborder", "settingsframe", "suretoquit",
 	"pausetext",
 }
 
