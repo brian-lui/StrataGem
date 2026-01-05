@@ -1383,7 +1383,7 @@ end
 
 -- default controllerReleased function if not specified by a sub-state
 function Game:_controllerReleased(x, y, gamestate)
-	self.pressedDown = self.pressedDown - 1
+	self.pressedDown = math.max(0, self.pressedDown - 1)
 
 	if self.clicked and self.pressedDown == 0 then
 		if self.settings_menu_open then

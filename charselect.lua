@@ -475,14 +475,14 @@ function Charselect:_controllerReleased(x, y)
 			if pointIsInRect(x, y, button:getRect())
 			and self.game.clicked == button then
 				self.game.clicked = false
-				self.game.pressedDown = self.game.pressedDown - 1
+				self.game.pressedDown = math.max(0, self.game.pressedDown - 1)
 				button.action()
 				return
 			end
 		end
 
 		self.game.clicked = false
-		self.game.pressedDown = self.game.pressedDown - 1
+		self.game.pressedDown = math.max(0, self.game.pressedDown - 1)
 		self.spellbook:hideCharacter()
 		return
 	end
